@@ -1,0 +1,7 @@
+{
+  "env" : {
+    "default" : {
+      "db" : "http://admin:admin@localhost:5984/bib_db"
+    }
+}
+}
