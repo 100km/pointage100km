@@ -1,10 +1,9 @@
 function(data) {
-  // $.log(data)
   var p;
   return {
     items : data.rows.map(function(r) {
       p = {};
-      p.message = r.value && r.value.message;
+      p.bib = r.value && r.value.bib;
       return p;
     })
   }
