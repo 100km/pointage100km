@@ -1,10 +1,11 @@
 function() {
-  var form = $(this);
-  var fdoc = form.serializeObject();
-  fdoc.created_at = new Date();
+  var form = $(this)[0];
+  var fdoc = {};
+  fdoc.bib  = form["bib"].value;
+  fdoc.type = "contestant-checkpoint";
   $$(this).app.db.saveDoc(fdoc, {
     success : function() {
-      form[0].reset();
+      form.reset();
     }
   });
   return false;
