@@ -9,17 +9,15 @@
 
     <div id="bib_input"></div>
     <div id="items"></div>
+    <div id="laps"></div>
 
-    <div id="sidebar">
-      <p>Edit welcome message.</p>
-      <p>Ideas: You could easily turn this into a photo sharing app, or a grocery list, or a chat room.</p>
-    </div>
   </body>
   <script src="vendor/couchapp/loader.js"></script>
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
       $("#bib_input").evently("bib_input", app);
       $("#items").evently("items", app);
+      $("#laps").evently("laps", app);
     });
   </script>
 </html>
