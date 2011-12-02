@@ -6,6 +6,7 @@ function() {
 
   var fdoc = {};
   fdoc.bib  = bib;
+  fdoc.created_at = new Date();
   fdoc.type = "contestant-checkpoint";
   var app = $$(this).app;
 
