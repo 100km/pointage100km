@@ -13,11 +13,7 @@ function() {
                 key: fdoc.bib,
                 group: true,
                 success: function(data) {
-                   $.log("data is ");
-                   $.log(data);
                    fdoc.lap = (data["rows"][0] && data["rows"][0]["value"] + 1) || 1;
-                   $.log("extracted is");
-                   $.log(fdoc.lap);
                    app.db.saveDoc(fdoc)
 		}});
   return false;
