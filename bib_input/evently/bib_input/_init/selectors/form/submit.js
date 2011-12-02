@@ -10,12 +10,9 @@ function() {
   fdoc.type = "contestant-checkpoint";
   var app = $$(this).app;
 
-  app.db.view("bib_input/current-lap", {
-                key: fdoc.bib,
-                group: true,
-                success: function(data) {
-                   fdoc.lap = (data["rows"][0] && data["rows"][0]["value"] + 1) || 1;
-                   app.db.saveDoc(fdoc)
-		}});
+  call_with_lap(fdoc.bib, app, function(lap) {
+    fdoc.lap = lap;
+    app.db.saveDoc(fdoc);
+  });
   return false;
 };
