@@ -1,10 +1,10 @@
 import dispatch._
 
-case class Database(val host: String, val port: Int,  val database: String, val credentials: Option[Pair[String, String]] = None) {
+case class Database(val host: String, val port: Int,  val database: String, val credentials: Option[(String, String)] = None) {
 
   private def ifCredentials[T](ifClause: (String, String) => T)(elseClause: => T) =
     credentials match {
-	case Some(Pair(login, password)) =>
+	case Some((login, password)) =>
 	  ifClause(login, password)
 	case None =>
 	  elseClause

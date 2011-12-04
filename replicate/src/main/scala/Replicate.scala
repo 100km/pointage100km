@@ -10,10 +10,8 @@ object Replicate {
   }
 
   def startReplication(local: Database, remote: Database) = {
-    val h = new Http
-    h(replicateReq(local, local, remote) >|)
-    h(replicateReq(local, remote, local) >|)
-    h.shutdown()
+    Http(replicateReq(local, local, remote) >|)
+    Http(replicateReq(local, remote, local) >|)
   }
 
   def main(args: Array[String]) = {
