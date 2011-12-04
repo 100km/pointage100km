@@ -10,7 +10,7 @@ case class Database(val host: String, val port: Int,  val database: String, val 
 	  elseClause
     }
 
-  private def addCredentials(req: Request) = ifCredentials(req.as(_, _))(req)
+  private def addCredentials(req: Request) = ifCredentials(req.as_!(_, _))(req)
 
   lazy val connectReq = addCredentials(:/(host, port))
 

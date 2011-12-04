@@ -17,9 +17,10 @@ object Replicate {
   }
 
   def main(args: Array[String]) = {
-    val local = Database("localhost", 5984, "episodes", Some(("sam", "foobar")))
-    val remote = Database("rfc1149.net", 5984, "episodes")
+    val local = Database("localhost", 5984, "steenwerck100km", Some(("sam", "toto")))
+    val remote = Database("couchdb.mindslicer.com", 80, "steenwerck100km", Some(("admin", "p4p4n03l")))
     startReplication(local, remote)
-    }
+
+  }
 
 }
