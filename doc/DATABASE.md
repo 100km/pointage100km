@@ -3,6 +3,9 @@
 We will use CouchDB as our main database, in order to benefit from its
 replication capabilities.
 
+To limit the risk of incompatibilities, all databases should be running
+the same version of CouchDB. For the moment, we have settled on 1.1.1.
+
 ## Database Setup
 
 If we have `n` points of control (POC), we need at least `n+1` databases,
