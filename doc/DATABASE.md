@@ -22,3 +22,9 @@ To accomodate with connection losses, we need to be able to dump every
 database onto an USB key, and reload the data from every other database
 into the current one. This should not conflict with the built-in replication
 mechanism in CouchDB, and will hopefully not need to be used.
+
+## Database version
+
+To avoid a bug in CouchDB 1.1.1 with basic authentication and replication
+of design documents containing attachments, we need to use certificates or
+to use a more recent version.
