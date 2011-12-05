@@ -1,24 +1,19 @@
-import dispatch._
+import dispatch.Http
+import net.rfc1149.canape._
 
 object Replicate {
 
-  def replicateReq(command: Database, source: Database, target: Database) = {
-    val params = """{"source": """" + source.databaseURI(command == source) +
-                 """", "target": """" + target.databaseURI(command == target) +
-		 """","continuous":true}"""
-    command.replicateReq << (params, "application/json")
-  }
-
-  def startReplication(local: Database, remote: Database) = {
-    Http(replicateReq(local, local, remote) >|)
-    Http(replicateReq(local, remote, local) >|)
+  def startReplication(couch: Couch, local: Db, remote: Db, continuous: Boolean) = {
+    Http(couch.replicate(local, remote, continuous))
+    Http(couch.replicate(remote, local, continuous))
   }
 
   def main(args: Array[String]) = {
-    val local = Database("localhost", 5984, "steenwerck100km", Some(("sam", "toto")))
-    val remote = Database("couchdb.mindslicer.com", 80, "steenwerck100km", Some(("admin", "p4p4n03l")))
-    startReplication(local, remote)
-
+    val localCouch = Couch("sam", "toto")
+    val localDb = Db(localCouch, "steenwerck100km")
+    val hubCouch = Couch("couchdb.mindslicer.com", 80, "admin", "p4p4n03l")
+    val hubDb = Db(hubCouch, "steenwerck100km")
+    startReplication(localCouch, localDb, hubDb, true)
   }
 
 }
