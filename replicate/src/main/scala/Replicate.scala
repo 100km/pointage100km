@@ -9,7 +9,7 @@ object Replicate {
   }
 
   def main(args: Array[String]) = {
-    val localCouch = Couch("sam", "toto")
+    val localCouch = Couch("admin", "admin")
     val localDb = Db(localCouch, "steenwerck100km")
     val hubCouch = Couch("couchdb.mindslicer.com", 80, "admin", "p4p4n03l")
     val hubDb = Db(hubCouch, "steenwerck100km")
