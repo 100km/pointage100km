@@ -4,15 +4,14 @@ function() {
   if (bib == "") return false;
   form.reset();
 
-  var fdoc = {};
-  fdoc.bib  = bib;
-  fdoc.created_at = new Date();
-  fdoc.type = "contestant-checkpoint";
   var app = $$(this).app;
 
-  call_with_lap(fdoc.bib, app, function(lap) {
-    fdoc.lap = lap;
-    app.db.saveDoc(fdoc);
+  call_with_checkpoints(bib, app, function(checkpoints) {
+    if (checkpoints["bib"] == undefined) {
+        checkpoints = new_checkpoints(bib);
+    }
+    add_checkpoint(checkpoints);
+    app.db.saveDoc(checkpoints);
   });
   return false;
 };
