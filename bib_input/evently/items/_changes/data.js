@@ -5,6 +5,7 @@ function(data) {
       p = {};
       p.bib = r.value && r.value.bib;
       p.lap = r.value && r.value.lap;
+      p.time = r.key;
       return p;
     })
   }
