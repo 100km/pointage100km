@@ -3,7 +3,13 @@
 <ul>
   {{#items}}
     <li>
-      <p>bib {{bib}}, lap {{lap}} at {{time}}</p>
+      <p>bib {{bib}}, lap {{lap}} at {{time}}
+        <form>
+          <input type="submit" name="delete" value="Delete"/>
+          <input type="hidden" name="bib" value="{{bib}}"/>
+          <input type="hidden" name="lap" value="{{lap}}"/>
+        </form>
+      </p>
       <div style="clear:left;"></div>
     </li>
   {{/items}}
