@@ -1,5 +1,4 @@
 {
-  "view" : "current-lap",
-  "limit" : 50,
-  "group" : true
+  "view" : "contestant-checkpoints",
+  "limit" : 50
 }
