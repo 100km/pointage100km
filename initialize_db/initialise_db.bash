@@ -7,12 +7,12 @@
 ADMIN_USER=admin
 ADMIN_PASSWD=admin
 DB=localhost:5984/steenwerck100km
-
+DOC_NAME=_local/site_info
 
 
 ####### DON'T CHANGE ANYTHING BELOW THAT LINE #######
 
-FULL_DB="http://${ADMIN_USER}:${ADMIN_PASSWD}@${DB}/_local"
+DOC_URL="http://${ADMIN_USER}:${ADMIN_PASSWD}@${DB}/${DOC_NAME}"
 
 usage() {
 cat <<EOF
@@ -32,7 +32,7 @@ usage_and_exit() {
 
 [ "$#" != 1 ] && usage_and_exit 1
 
-which curl &> /dev/null || usage_and_exit 1
+which curl &> /dev/null || { echo "This script needs curl. Please install it." ; exit 1 ; }
 
 
 case $1 in
@@ -51,19 +51,22 @@ case $1 in
     ;;
 esac
 
-echo "Initialise database $FULL_DB for site $name"
+echo "Initialise database $DOC_URL for site $name"
 
 cat <<EOF > data.txt
 {
-"_id":"site_info",
-"name":"$name"
+"name":"$name",
+"site_id":"$1"
 }
 EOF
 
 
-cat <<EOF
-curl -X PUT $FULL_DB
-curl -X POST $FULL_DB -H "Content-Type: application/json" --data @data.txt
-EOF
-curl -X PUT $FULL_DB --data {}
-curl -X POST $FULL_DB -H "Content-Type: application/json" --data @data.txt
+get_request=$( curl -s -X GET $DOC_URL )
+if [[ "$get_request" =~ "$DOC_NAME" ]]
+then
+  rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\",.*#\1#' )
+  #echo $rev
+  echo "The document is already present with revision $rev. Need to delete it first."
+  curl -X DELETE $DOC_URL?rev=$rev
+fi
+curl -X PUT $DOC_URL -H "Content-Type: application/json" --data @data.txt
