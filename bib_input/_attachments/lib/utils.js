@@ -21,6 +21,13 @@ function add_checkpoint(checkpoints) {
         checkpoints["times"].push(ts);
 }
 
-function remove_checkpoint(checkpoints, lap) {
-        checkpoints["times"].splice(lap-1, 1);
+function remove_checkpoint(checkpoints, ts) {
+	$.log("removing " + ts + " in " + checkpoints["times"]);
+	//Why doesn't indexOf work ?!?
+	for (var i = checkpoints["times"].length-1; i>=0; i--) {
+		if (ts == checkpoints["times"][i]) {
+			checkpoints["times"].splice(i, 1);
+			return;
+		}
+	}
 }
