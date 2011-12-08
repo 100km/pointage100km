@@ -1,13 +1,13 @@
 function() {
   var form = $(this)[0];
   var bib = form["bib"].value;
-  var lap = form["lap"].value;
-  if (bib == "" || lap == "") return false;
+  var ts = form["ts"].value;
+  if (bib == "" || ts == "") return false;
 
   var app = $$(this).app;
 
   call_with_checkpoints(bib, app, function(checkpoints) {
-    remove_checkpoint(checkpoints, lap);
+    remove_checkpoint(checkpoints, ts);
     app.db.saveDoc(checkpoints);
   });
   return false;
