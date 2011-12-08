@@ -17,7 +17,8 @@ function new_checkpoints(bib) {
 }
 
 function add_checkpoint(checkpoints) {
-        checkpoints["times"].push(new Date());
+        var ts = new Date().getTime();
+        checkpoints["times"].push(ts);
 }
 
 function remove_checkpoint(checkpoints, lap) {
