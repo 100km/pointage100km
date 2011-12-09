@@ -54,25 +54,33 @@ esac
 echo "Initialise database $DOC_URL for site $name"
 
 
-get_request=$( curl -s -X GET $DOC_URL )
-if [[ "$get_request" =~ "$DOC_NAME" ]]
-then
-  rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\",.*#\1#' )
-  echo "The document is already present with revision $rev. Need to add rev."
-  cat <<EOF > data.txt
+function update_document () {
+  url=$1
+  doc_json="$2"
+
+  get_request=$( curl -s -X GET $url )
+  if ! [[ "$get_request" =~ "missing" ]]
+  then
+    rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\".*#\1#' )
+    echo "The document is already present with revision $rev. Need to add rev."
+data=$(cat <<EOF
 {
 "_rev":"$rev",
-"name":"$name",
-"site_id":"$1"
+$doc_json
 }
 EOF
-else
-  cat <<EOF > data.txt
-{
-"name":"$name",
-"site_id":"$1"
-}
-EOF
-fi
+)
+  fi
 
-curl -X PUT $DOC_URL -H "Content-Type: application/json" --data @data.txt
+  curl -X PUT $url -H "Content-Type: application/json" --data "$data"
+}
+
+
+site_info=$(cat <<EOF
+"name":"$name",
+"site_id":"$1"
+EOF
+)
+
+update_document $DOC_URL "$site_info"
+
