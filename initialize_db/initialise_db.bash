@@ -53,20 +53,26 @@ esac
 
 echo "Initialise database $DOC_URL for site $name"
 
-cat <<EOF > data.txt
-{
-"name":"$name",
-"site_id":"$1"
-}
-EOF
-
 
 get_request=$( curl -s -X GET $DOC_URL )
 if [[ "$get_request" =~ "$DOC_NAME" ]]
 then
   rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\",.*#\1#' )
-  #echo $rev
-  echo "The document is already present with revision $rev. Need to delete it first."
-  curl -X DELETE $DOC_URL?rev=$rev
+  echo "The document is already present with revision $rev. Need to add rev."
+  cat <<EOF > data.txt
+{
+"_rev":"$rev",
+"name":"$name",
+"site_id":"$1"
+}
+EOF
+else
+  cat <<EOF > data.txt
+{
+"name":"$name",
+"site_id":"$1"
+}
+EOF
 fi
+
 curl -X PUT $DOC_URL -H "Content-Type: application/json" --data @data.txt
