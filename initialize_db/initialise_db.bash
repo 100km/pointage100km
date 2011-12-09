@@ -84,3 +84,5 @@ EOF
 
 update_document $DOC_URL "$site_info"
 
+# Workaround to trigger _changes
+update_document http://${ADMIN_USER}:${ADMIN_PASSWD}@${DB}/touch_me ""
