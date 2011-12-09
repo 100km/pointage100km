@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My New CouchApp</title>
+    <title></title> <!-- will be generated from the database -->
     <link rel="stylesheet" href="style/main.css" type="text/css">
   </head>
   <body>
-    <h1>Generated CouchApp</h1>
-
+    <div id="title"></div>
     <div id="bib_input"></div>
     <div id="items"></div>
     <div id="laps"></div>
@@ -19,6 +18,8 @@
       $("#bib_input").evently("bib_input", app);
       $("#items").evently("items", app);
       $("#laps").evently("laps", app);
+      $("#title").evently("title", app);
     });
+
   </script>
 </html>
