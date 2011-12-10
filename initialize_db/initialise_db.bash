@@ -70,6 +70,13 @@ $doc_json
 }
 EOF
 )
+  else
+data=$(cat <<EOF
+{
+$doc_json
+}
+EOF
+)
   fi
 
   curl -X PUT $url -H "Content-Type: application/json" --data "$data"
