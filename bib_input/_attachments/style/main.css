@@ -35,13 +35,21 @@ h1 {
   float:left;
 }
 
-input {
+#bib_input input {
   font-size:32px;
 }
 
 #message_check {
   padding:4px;
+  color:#f00;
   float:left;
+  margin-bottom:-1px;
+}
+
+#message_check p {
+  padding-top:16px;
+  font-size:12pt;
+  margin:0;
 }
 
 /* items CSS */
