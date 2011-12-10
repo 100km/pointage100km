@@ -31,3 +31,10 @@ function remove_checkpoint(checkpoints, ts) {
 		}
 	}
 }
+
+function isBib(bib)
+{
+    var isBib_re       = /^\d+$/;
+    return String(bib).search (isBib_re) != -1
+}
+

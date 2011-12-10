@@ -1,6 +1,21 @@
+<script type="text/javascript" charset="utf-8">
+function checkBib(bib) {
+    if (bib == "") {
+        $(message_check).html("");
+    } else if (isBib(bib)) {
+        $(message_check).html("<img src=img/check.png></img>");
+    } else {
+        $(message_check).html("<img src=img/bad.png></img>");
+    }
+}
+</script>
+
 
 <form>
-  <label>Dossard : <input type="text" name="bib" size=60 value=""></label>
+  <label>Dossard : <input type="text" name="bib" size=4 value="" maxlength=5 onkeyup="checkBib(this.value)" onSubmit=></label>
+  <div id="message_check"></div>
+  <div style="clear:both;"></div>
 </form>
+
 
 <div style="clear:left;"></div>
