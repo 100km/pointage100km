@@ -17,10 +17,6 @@ h1 {
   font-weight:bold;
 }
 
-#account {
-  float:right;
-}
-
 /* bib_input CSS */
 #bib_input {
   border:4px solid #edd;
