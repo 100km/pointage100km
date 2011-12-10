@@ -1,10 +1,9 @@
-<p>Customize this format here: <tt>ddoc.evently.items._changes.mustache</tt></p>
-<h3>Recent Messages</h3>
+<h3>Derniers passages</h3>
 <ul>
   {{#items}}
     <li>
-      <p>bib {{bib}}, lap {{lap}} at {{time}}
-        <form>
+      <p>dossard {{bib}} le {{time_day}} à {{time_hour}}: tour {{lap}}
+        <form id="delete">
           <input type="submit" name="delete" value="Delete"/>
           <input type="hidden" name="bib" value="{{bib}}"/>
           <input type="hidden" name="ts" value="{{ts}}"/>
@@ -14,5 +13,3 @@
     </li>
   {{/items}}
 </ul>
-<p><em>Protip:</em> If you setup continuous replication between this database and a remote one, this list will reflect remote changes in near real-time.</p>
-<p>This would be a good place to add pagination.</p>
