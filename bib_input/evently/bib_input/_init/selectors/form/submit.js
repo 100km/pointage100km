@@ -1,7 +1,7 @@
 function() {
   var form = $(this)[0];
   var bib = form["bib"].value;
-  if (bib == "") return false;
+  if (! isBib(bib)) return false;
   form.reset();
 
   var app = $$(this).app;
