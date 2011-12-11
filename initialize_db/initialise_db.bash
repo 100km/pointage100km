@@ -85,7 +85,7 @@ EOF
 
 site_info=$(cat <<EOF
 "name":"$name",
-"site_id":"$1"
+"site_id":$1
 EOF
 )
 
