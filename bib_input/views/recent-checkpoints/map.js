@@ -3,6 +3,6 @@ function(doc) {
     var res = {};
     res.lap = lap+1;
     res.bib = doc.bib;
-    emit(doc.times[lap], res);
+    emit([doc.site_id, doc.times[lap]], res);
   }
 };
