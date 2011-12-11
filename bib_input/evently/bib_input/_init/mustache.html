@@ -8,12 +8,23 @@ function checkBib(bib) {
         $("#message_check").html("<p>Dossard invalide</p>");
     }
 }
+function update_clk() {
+  var current_time = new Date();
+  var h = current_time.getHours();   if (h<10) h = "0"+ h;
+  var m = current_time.getMinutes(); if (m<10) m = "0"+ m;
+  var s = current_time.getSeconds(); if (s<10) s = "0"+ s;
+  $("#clk").html(h+":"+m+":"+s);
+}
+
+update_clk();
+setInterval( update_clk , 1000);
 </script>
 
 
 <form>
   <label>Dossard : <input type="text" name="bib" size=4 value="" maxlength=5 onkeyup="checkBib(this.value)" onSubmit=></label>
   <div id="message_check"></div>
+  <div id="clk"> <p> coucou </p> </div>
   <div style="clear:both;"></div>
 </form>
 
