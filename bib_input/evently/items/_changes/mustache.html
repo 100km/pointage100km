@@ -2,13 +2,12 @@
 <ul>
   {{#items}}
     <li>
-      <p>dossard {{bib}} le {{time_day}} à {{time_hour}}: tour {{lap}}
-        <form id="delete">
-          <input type="submit" name="delete" value="Delete"/>
-          <input type="hidden" name="bib" value="{{bib}}"/>
-          <input type="hidden" name="ts" value="{{ts}}"/>
-        </form>
-      </p>
+      <p>dossard {{bib}} le {{time_day}} à {{time_hour}}: tour {{lap}}</p>
+      <form id="delete">
+        <input type="image" name="delete" src="img/delete.png"/>
+        <input type="hidden" name="bib" value="{{bib}}"/>
+        <input type="hidden" name="ts" value="{{ts}}"/>
+      </form>
       <div style="clear:left;"></div>
     </li>
   {{/items}}

@@ -71,7 +71,11 @@ h1 {
 #items form {
   padding:4px;
   margin:6px;
-  background-color:#f00;
+  float:left;
+}
+
+#items p {
+  float:left;
 }
 
 #items ul {
