@@ -21,6 +21,9 @@
       $("#laps").evently("laps", app);
       $("#title").evently("title", app);
       $("#previous").evently("previous", app);
+      $.evently.connect("#title","#items", ["post_changes"]);
+      $.evently.connect("#title","#laps", ["post_changes"]);
+      $.evently.connect("#title","#previous", ["post_changes"]);
     });
 
   </script>

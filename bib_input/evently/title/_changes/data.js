@@ -5,6 +5,7 @@ function(data) {
     // Set field in app so that everyone can access the site_id
     var app = $$(this).app;
     app.site_id = data.site_id
+    $(this).trigger("post_changes");
 
     return {
         site_name : data.name,
