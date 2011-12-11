@@ -52,6 +52,10 @@ h1 {
   margin:0;
 }
 
+#clk {
+  float:right;
+}
+
 /* items CSS */
 #items {
   border:4px solid #dde;
