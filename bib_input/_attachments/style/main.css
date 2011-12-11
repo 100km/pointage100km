@@ -13,7 +13,7 @@ h1 {
 /* title CSS */
 #title {
   text-align:center;
-  font-size:3em;
+  font-size:1.5em;
   font-weight:bold;
 }
 
@@ -64,7 +64,6 @@ h1 {
 #items li {
   border:4px solid #f5f5ff;
   background:#fff;
-  padding:8px;
   margin:4px 0;
 }
 
@@ -80,6 +79,16 @@ h1 {
 
 #items ul {
   list-style: none;
+  padding:0px;
+  margin:0px;
+}
+
+/* previous CSS */
+#previous {
+  border:4px solid #dfd;
+  padding:8px;
+  float:right;
+  width:30%;
 }
 
 /* laps CSS */
