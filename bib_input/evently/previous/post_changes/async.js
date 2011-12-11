@@ -1,10 +1,7 @@
 function(cb) {
   var app = $$(this).app;
   var site_id = app.site_id;
-  if (site_id == undefined) {
-    // TODO better handling of events
-    site_id = 0;
-  }
+
   app.db.view("bib_input/recent-checkpoints", {
     limit: 1,
     descending: true,
