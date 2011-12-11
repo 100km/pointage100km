@@ -1,6 +1,6 @@
 function call_with_checkpoints(bib, app, f) {
   app.db.view("bib_input/contestant-checkpoints", {
-    key: bib,
+    key: [app.site_id, bib],
     success: function(data) {
       var checkpoints = (data["rows"][0] && data["rows"][0]["value"]) || {};
       f.call(null, checkpoints);
@@ -8,11 +8,11 @@ function call_with_checkpoints(bib, app, f) {
   });
 }
 
-function new_checkpoints(bib) {
+function new_checkpoints(bib, site_id) {
         var checkpoints = {};
         checkpoints.bib = bib;
+        checkpoints.site_id = site_id;
         checkpoints.times = [];
-        checkpoints.site_id = 0;
         return checkpoints;
 }
 
