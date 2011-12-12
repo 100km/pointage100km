@@ -6,6 +6,7 @@
   </head>
   <body>
     <div id="title"></div>
+    <div id="arrow"><img src="img/TO_REPLACE_arrow.png" width="40"></div>
     <div id="bib_input"></div>
     <div id="items"></div>
     <div id="previous"></div>
@@ -15,6 +16,9 @@
   <script src="vendor/couchapp/loader.js"></script>
   <script src="lib/utils.js"></script>
   <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      $("#arrow").hide();
+    });
     $.couch.app(function(app) {
       $("#bib_input").evently("bib_input", app);
       $("#items").evently("items", app);
