@@ -12,6 +12,9 @@ DOC_NAME=_local/site_info
 
 ####### DON'T CHANGE ANYTHING BELOW THAT LINE #######
 
+PATH=$PATH:$( cd $(dirname $0); echo $PWD;}
+source update_document.bash
+
 DOC_URL="http://${ADMIN_USER}:${ADMIN_PASSWD}@${DB}/${DOC_NAME}"
 
 usage() {
@@ -32,9 +35,6 @@ usage_and_exit() {
 
 [ "$#" != 1 ] && usage_and_exit 1
 
-which curl &> /dev/null || { echo "This script needs curl. Please install it." ; exit 1 ; }
-
-
 case $1 in
   0)
     name="La salle des sports"
@@ -52,36 +52,6 @@ case $1 in
 esac
 
 echo "Initialise database $DOC_URL for site $name"
-
-
-function update_document () {
-  url=$1
-  doc_json="$2"
-
-  get_request=$( curl -s -X GET $url )
-  if ! [[ "$get_request" =~ "missing" ]]
-  then
-    rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\".*#\1#' )
-    echo "The document is already present with revision $rev. Need to add rev."
-data=$(cat <<EOF
-{
-"_rev":"$rev",
-$doc_json
-}
-EOF
-)
-  else
-data=$(cat <<EOF
-{
-$doc_json
-}
-EOF
-)
-  fi
-
-  curl -X PUT $url -H "Content-Type: application/json" --data "$data"
-}
-
 
 site_info=$(cat <<EOF
 "name":"$name",
