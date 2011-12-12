@@ -12,7 +12,7 @@ DOC_NAME=_local/site_info
 
 ####### DON'T CHANGE ANYTHING BELOW THAT LINE #######
 
-PATH=$PATH:$( cd $(dirname $0); echo $PWD;}
+PATH=$PATH:$( cd $(dirname $0); echo $PWD;)
 source update_document.bash
 
 DOC_URL="http://${ADMIN_USER}:${ADMIN_PASSWD}@${DB}/${DOC_NAME}"
