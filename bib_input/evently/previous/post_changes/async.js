@@ -11,6 +11,8 @@ function(cb) {
       if (data.rows.length > 0) {
         var bib = data.rows[0]["value"]["bib"];
         app.db.list("bib_input/next-contestants", "rankings", {
+          startkey : [-site_id,null,null],
+          endkey : [-site_id+1,null,null],
           bib: bib,
           n: 3,
           success: function(data) {
