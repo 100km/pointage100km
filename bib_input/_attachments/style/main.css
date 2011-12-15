@@ -72,13 +72,58 @@ h1 {
 }
 
 #items form {
-  padding:4px;
-  margin:6px;
   float:left;
 }
 
-#items p {
+.items_col_fixed_80
+{
+  width:80px;
+  padding-top:10px;
+  padding-bottom:10px;
   float:left;
+  text-align:center;
+}
+
+.items_col_fixed_80_delete
+{
+  width:32px; /* padding doesn't count inside width */
+  padding-left:24px;
+  padding-right:24px;
+  padding-top:5px;
+  float:left;
+  text-align:center;
+}
+
+.items_col_5
+{
+  width:5%;
+  padding:10px;
+  float:left;
+  text-align:center;
+}
+
+.items_col_10
+{
+  width:10%;
+  padding:10px;
+  float:left;
+  text-align:center;
+}
+
+.items_col_15
+{
+  width:15%;
+  padding:10px;
+  float:left;
+  text-align:center;
+}
+
+.items_col_20
+{
+  width:20%;
+  padding:10px;
+  float:left;
+  text-align:center;
 }
 
 #items ul {
