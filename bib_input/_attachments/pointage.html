@@ -25,7 +25,7 @@
       $("#title").evently("title", app);
       $("#previous").evently("previous", app);
       $.evently.connect("#title","#items", ["post_changes"]);
-      $.evently.connect("#title","#previous", ["post_changes"]);
+      $.evently.connect("#items","#previous", ["change_infos"]);
     });
 
   </script>

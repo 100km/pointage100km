@@ -9,6 +9,23 @@
       <div class="items_col_15">Temps</div>
       <div style="clear:both;"></div>
   </li>
+  {{#item_0}}
+    <li style="background-color:#d0ffd0">
+      <div class="items_col_fixed_80_delete" style="font-weight:bold">
+        <form id="delete">
+          <input type="image" name="delete" src="img/delete.png"/>
+          <input type="hidden" name="bib" value="{{bib}}"/>
+          <input type="hidden" name="ts" value="{{ts}}"/>
+        </form>
+      </div>
+      <div class="items_col_10" style="font-weight:bold">{{bib}}</div>
+      <div class="items_col_5" style="font-weight:bold">{{lap}}</div>
+      <div class="items_col_20" style="font-weight:bold">{{nom}}</div>
+      <div class="items_col_20" style="font-weight:bold">{{prenom}}</div>
+      <div class="items_col_15" style="font-weight:bold">{{time_hour}}</div>
+      <div style="clear:both;"></div>
+    </li>
+  {{/item_0}}
   {{#items}}
     <li>
       <div class="items_col_fixed_80_delete">
