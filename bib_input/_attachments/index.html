@@ -1,34 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title></title> <!-- will be generated from the database -->
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>100 km Steenwerck</title>
     <link rel="stylesheet" href="style/main.css" type="text/css">
   </head>
   <body>
-    <div id="title"></div>
-    <div id="arrow"><img src="img/TO_REPLACE_arrow.png" width="40"></div>
-    <div id="bib_input"></div>
-    <div id="items"></div>
-    <div id="previous"></div>
-    <div id="laps"></div>
-
+    <h1>Bienvenue aux 100 kms de Steenwerck</h1>
+    <p>Choisissez une application ci-dessous :</p>
+    <ul>
+      <li><a href="pointage.html">Pointage</a></li>
+      <li><a href="classement.html">Voir le classement général</a></li>
+    </ul>
   </body>
-  <script src="vendor/couchapp/loader.js"></script>
-  <script src="lib/utils.js"></script>
-  <script type="text/javascript" charset="utf-8">
-    $(document).ready(function(){
-      $("#arrow").hide();
-    });
-    $.couch.app(function(app) {
-      $("#bib_input").evently("bib_input", app);
-      $("#items").evently("items", app);
-      $("#laps").evently("laps", app);
-      $("#title").evently("title", app);
-      $("#previous").evently("previous", app);
-      $.evently.connect("#title","#items", ["post_changes"]);
-      $.evently.connect("#title","#laps", ["post_changes"]);
-      $.evently.connect("#title","#previous", ["post_changes"]);
-    });
-
-  </script>
 </html>
