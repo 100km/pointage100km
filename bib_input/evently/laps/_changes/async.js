@@ -1,7 +1,7 @@
 function(cb) {
   var app = $$(this).app;
-  var site_id = app.site_id;
 
+    $.log("Coucou in laps");
   app.db.list("bib_input/global-ranking","global-ranking", {
     limit : 50,
     success: function(data) {
