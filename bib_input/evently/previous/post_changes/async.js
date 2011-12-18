@@ -10,7 +10,7 @@ function(cb) {
     success: function(data) {
       if (data.rows.length > 0) {
         var bib = data.rows[0]["value"]["bib"];
-        app.db.list("bib_input/next-contestants", "rankings", {
+        app.db.list("bib_input/next-contestants", "local-ranking", {
           startkey : [-site_id,null,null],
           endkey : [-site_id+1,null,null],
           bib: bib,
