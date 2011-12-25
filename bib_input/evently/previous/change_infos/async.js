@@ -15,7 +15,8 @@ function(cb) {
         bib: bib,
         n: 3,
         success: function(data) {
-          cb({infos:infos.rows[0].value, bibs:data.bibs});
+          safe_infos = (infos.rows[0] && infos.rows[0].value) || empty_info();
+          cb({infos:safe_infos, bibs:data.bibs});
         }
       });
     }
