@@ -12,15 +12,17 @@ function(head, req) {
   var bibs = [];
   var rank = 1;
   var res = {};
+  var last_time = 0;
   if (searched_bib == undefined) {
         res.bibs = [];
   }
   else {
     while (row = getRow()) {
-      var tmp = row["value"]["bib"];
-      bibs.push(tmp);
-      if (tmp == searched_bib) {
-        found = true;
+      var tmp_bib = row["value"]["bib"];
+      var tmp_time = row["value"]["times"];
+      var this_time = tmp_time[tmp_time.length - 1]
+      bibs.push({bib:tmp_bib, time:this_time});
+      if (tmp_bib == searched_bib) {
         break;
       }
       rank++;
@@ -30,7 +32,17 @@ function(head, req) {
     var rank_start = Math.max(1, rank-n);
     for (var i = rank_start; i<=rank; i++) {
       var pair = {};
-      pair.bib = bibs[i-1];
+      var time = 0;
+      pair.bib = bibs[i-1].bib;
+      if (i == rank_start) {
+        time = bibs[i-1].time;
+        date = new Date(time)
+        pair.time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+      }
+        else {
+        time = bibs[i-1].time - bibs[i-2].time;
+        pair.time = "+ " + time / 1000 + " s";
+      }
       pair.rank = i;
       tmp.push(pair);
     }
