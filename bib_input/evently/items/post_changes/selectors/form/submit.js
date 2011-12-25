@@ -5,7 +5,7 @@ function() {
   if (bib == "" || ts == "") return false;
 
   var app = $$(this).app;
-  $(this).parent().hide('fast', function() {
+  $(this).parents("li").hide('fast', function() {
 	  call_with_checkpoints(bib, app, function(checkpoints) {
 	    remove_checkpoint(checkpoints, ts);
 	    app.db.saveDoc(checkpoints);
