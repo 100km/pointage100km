@@ -57,3 +57,7 @@ function place_arrow(obj) {
                 top: pos.top, left: pos.left });
   $_arrow.show();
 }
+
+function empty_info() {
+        return {nom:"", prenom:""};
+}
