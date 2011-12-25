@@ -1,6 +1,11 @@
 function(data) {
   var p;
   var app = $$(this).app;
+  if (data[0] == undefined)
+    return {
+      item_0 : [],
+      items : [],
+    }
 
   if (data[0].value && (data[0].value.bib != app.current_bib) ) {
     app.current_li = $($("#items").find("li")[1]); // 1 because 0 is the table's title
@@ -27,7 +32,7 @@ function(data) {
 
   // separate first element from others
   return {
-    item_0 : create_infos(data.shift()),
+    item_0 : [create_infos(data.shift())],
     items : data.map(create_infos)
   }
 };
