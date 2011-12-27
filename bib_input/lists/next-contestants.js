@@ -42,7 +42,12 @@ function(head, req) {
       }
       else {
         time = bibs[i-1].time - bibs[i-2].time;
-        pair.time = "+ " + time / 1000 + " s";
+        sec = parseInt(time / 1000);
+        min = parseInt(sec / 60);
+        hour = parseInt(min / 60);
+        sec = sec % 60;
+        min = min % 60;
+        pair.time = "+ " + hour + "h" + min + "m" + sec + "s";
       }
       pair.rank = i;
       tmp.push(pair);
