@@ -61,3 +61,8 @@ function place_arrow(obj) {
 function empty_info() {
         return {nom:"", prenom:""};
 }
+
+function time_to_hour_string(t) {
+  date = new Date(t)
+  return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+}
