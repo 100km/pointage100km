@@ -36,10 +36,11 @@ function(head, req) {
       pair.bib = bibs[i-1].bib;
       if (i == rank_start) {
         time = bibs[i-1].time;
+        // TODO use time_to_hour_string
         date = new Date(time)
         pair.time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
       }
-        else {
+      else {
         time = bibs[i-1].time - bibs[i-2].time;
         pair.time = "+ " + time / 1000 + " s";
       }
