@@ -15,15 +15,18 @@ sudo make install
 
 
 Here are the commands used to install couchDB on Debian 6.0.3:
+<pre>
 $ sudo apt-get install libmozjs-dev libicu-dev libcurl4-gnutls-dev
 $ sudo apt-get install erlang
 $ wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
 ... (same as ubuntu instructions)...
+</pre>
 
 then as stated here:
    http://git-wip-us.apache.org/repos/asf/couchdb/repo?p=couchdb.git;a=blob;f=INSTALL.Unix;hb=master
 do the following:
 
+<pre>
 $ sudo adduser --system --home /usr/local/var/lib/couchdb --no-create-home --shell /bin/bash --group --gecos "CouchDB Administrator" couchdb
 $ sudo chown -R couchdb:couchdb /usr/local/etc/couchdb
 $ sudo chown -R couchdb:couchdb /usr/local/var/run/couchdb
@@ -35,7 +38,7 @@ $ sudo chmod 0770 /usr/local/var/log/couchdb
 $ sudo chmod 0770 /usr/local/var/run/couchdb
 $ sudo /usr/local/etc/init.d/couchdb status
 $ sudo /usr/local/etc/init.d/couchdb start
-
+</pre>
 
 #couchapp installation
 
