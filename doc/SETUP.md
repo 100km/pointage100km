@@ -3,13 +3,16 @@
 As stated in DATABASE.mb, please install couchDB version 1.1.1
 
 Here are the commands used to install couchDB on Ubuntu 11.10:
-$ sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev 
-$ wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
-$ tar -xzvf apache-couchdb-1.1.1.tar.gz
-$ cd apache-couchdb-1.1.1
-$ ./configure
-$ make
-$ sudo make install
+<pre>
+sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang 
+wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
+tar -xzvf apache-couchdb-1.1.1.tar.gz
+cd apache-couchdb-1.1.1
+./configure
+make
+sudo make install
+</pre>
+
 
 Here are the commands used to install couchDB on Debian 6.0.3:
 $ sudo apt-get install libmozjs-dev libicu-dev libcurl4-gnutls-dev
@@ -39,15 +42,27 @@ $ sudo /usr/local/etc/init.d/couchdb start
 For now, there is no recommended version of couchapp. Versions 0.7 and 1.0.1 have been tested.
 
 Here are the commands to install couchapp version 1.0.1 on Ubuntu 11.10:
-$ sudo apt-get install python-setuptools
-$ sudo easy_install pip
-$ sudo pip install git+http://github.com/couchapp/couchapp.git@1.0.1#egg=Couchapp
+<pre>
+sudo apt-get install python-setuptools
+sudo easy_install pip
+sudo pip install git+http://github.com/couchapp/couchapp.git@1.0.1#egg=Couchapp
 // When asked for bitbucket username and password just hit enter
+</pre>
 
 #try the couchapp
 
 In order to try the couchapp, please launch couchDB and configure it to have local administrative user to be "admin" with password "admin".
+See http://localhost:5984/_utils/
 
 Then, just go to bib_input directory and run "couchapp push". You should see a message like this:
 // date info // [INFO] Visit your CouchApp here:
 http://localhost:5984/steenwerck100km/_design/bib_input/index.html
+
+#Initialise DB
+
+Initialize the site_id and concurrent names with those commands:
+<pre>
+pointage100km/initialize_db/initialize_db.bash {0,1,2}
+pointage100km/initialize_db/mdb2couchdb.bash pointage100km/initialize_db/100km2012.mdb inscription
+</pre>
+
