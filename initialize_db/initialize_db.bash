@@ -19,7 +19,7 @@ DOC_URL="http://${ADMIN_USER}:${ADMIN_PASSWD}@${DB}/${DOC_NAME}"
 
 usage() {
 cat <<EOF
-initialise_db.bash <site_id>
+initialize_db.bash <site_id>
 
 where <site_id> is one of:
   - 0 : Salle des sports
