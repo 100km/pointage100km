@@ -2,6 +2,10 @@ function() {
   var app = $$(this).app;
   var $_this=$(this);
 
+  $.log("this is " + $_this);
+  if ($_this[0] == $("#items").find("li")[0])
+    return;
+
   place_arrow($_this);
 
   // First clear all lines
