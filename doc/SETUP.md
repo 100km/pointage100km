@@ -69,3 +69,7 @@ pointage100km/initialize_db/initialize_db.bash {0,1,2}
 pointage100km/initialize_db/mdb2couchdb.bash pointage100km/initialize_db/100km2012.mdb inscription
 </pre>
 
+Note: you might need to install mdbtools to run mdb2couchdb.bash
+<pre>
+sudo apt-get install mdbtools
+</pre>
