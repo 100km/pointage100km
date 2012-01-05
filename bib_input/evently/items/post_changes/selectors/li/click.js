@@ -17,7 +17,7 @@ function() {
 
   // Keep this and current bib into app
   app.current_li = $_this;
-  app.current_bib = $_this.find("#delete")[0]["bib"]["value"];
+  app.current_bib = parseInt($_this.find("#delete")[0]["bib"]["value"]);
 
   $(this).trigger("change_infos");
 }
