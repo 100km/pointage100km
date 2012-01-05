@@ -34,7 +34,7 @@ function remove_checkpoint(checkpoints, ts) {
 
 function isBib(bib)
 {
-  var isBib_re       = /^\d+$/;
+  var isBib_re       = /^[1-9]\d*$/;
   return String(bib).search (isBib_re) != -1
 }
 
