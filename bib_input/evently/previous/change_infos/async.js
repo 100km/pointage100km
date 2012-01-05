@@ -2,12 +2,11 @@ function(cb) {
   var app = $$(this).app;
   var site_id = app.site_id;
   var bib = app.current_bib;
-  var bib_int = parseInt(bib);
 
   app.db.view("bib_input/bib_info", {
     limit: 1,
-    startkey : bib_int,
-    endkey : bib_int + 1,
+    startkey : bib,
+    endkey : bib + 1,
     success: function(infos) {
       app.db.list("bib_input/next-contestants", "local-ranking", {
         startkey : [-site_id,null,null],

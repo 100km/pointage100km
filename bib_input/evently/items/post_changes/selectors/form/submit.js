@@ -3,6 +3,7 @@ function() {
   var bib = form["bib"].value;
   var ts = form["ts"].value;
   if (bib == "" || ts == "") return false;
+  bib = parseInt(bib);
 
   var app = $$(this).app;
   $(this).parents("li").hide('fast', function() {

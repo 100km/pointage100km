@@ -1,6 +1,6 @@
 function() {
   var form = $(this)[0];
-  var bib = form["bib"].value;
+  var bib = parseInt(form["bib"].value); // we are sure it's an integer because of the regexp check.
   if (! isBib(bib)) return false;
   form.reset();
 
