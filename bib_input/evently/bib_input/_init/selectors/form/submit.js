@@ -1,7 +1,8 @@
 function() {
   var form = $(this)[0];
-  var bib = parseInt(form["bib"].value); // we are sure it's an integer because of the regexp check.
+  var bib = form["bib"].value; // we are sure it's an integer because of the regexp check.
   if (! isBib(bib)) return false;
+  bib = parseInt(bib);
   form.reset();
 
   var app = $$(this).app;
