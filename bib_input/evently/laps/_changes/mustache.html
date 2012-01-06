@@ -1,9 +1,14 @@
 <h3>Classement général</h3>
 <ul>
-  {{#items}}
-    <li>
-      <p> Dossard {{bib}} (au tour {{lap}})</p>
-      <div style="clear:left;"></div>
-    </li>
-  {{/items}}
+  {{#races}}
+  <li> course {{race_id}} </li>
+    <ul>
+      {{#items}}
+      <li>
+        <p> Dossard {{bib}} (au tour {{lap}})</p>
+        <div style="clear:left;"></div>
+      </li>
+      {{/items}}
+    </ul>
+  {{/races}}
 </ul>

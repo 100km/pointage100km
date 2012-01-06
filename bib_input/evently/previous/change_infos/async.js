@@ -14,9 +14,10 @@ function(cb) {
         endkey : [site_id, bib + 1],
         success: function(doc_times_for_bib) {
           var lap = doc_times_for_bib.rows[0].value.times.length;
+          var race_id = infos.rows[0] && infos.rows[0].value["course"];
           app.db.list("bib_input/next-contestants", "local-ranking", {
-            startkey : [-site_id,-lap,null],
-            endkey : [-site_id+1,-lap+1,null],
+            startkey : [-site_id,race_id,-lap,null],
+            endkey : [-site_id,race_id,-lap+1,null],
             bib: bib,
             n: 3,
             lap : lap,
