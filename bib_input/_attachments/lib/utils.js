@@ -75,7 +75,11 @@ function empty_info() {
         return {nom:"", prenom:""};
 }
 
+function pad2(number) {
+  return (number < 10 ? '0' : '') + number
+}
+
 function time_to_hour_string(t) {
-  date = new Date(t)
-  return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  date = new Date(t);
+  return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + ":" + pad2(date.getSeconds());
 }
