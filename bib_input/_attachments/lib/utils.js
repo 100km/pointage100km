@@ -1,3 +1,15 @@
+function call_with_race_id(bib, app, f) {
+  app.db.view("bib_input/bib_info", {
+    key: bib,
+    success: function(data) {
+      //0 is invalid as a race_id
+      //valid race_ids are 1,2,4,8
+      var race_id = (data["rows"][0] && data["rows"][0]["value"] && data["rows"][0]["value"]["course"]) || 0;
+      f(race_id);
+    }
+  });
+}
+
 function call_with_checkpoints(bib, app, f) {
   app.db.view("bib_input/contestant-checkpoints", {
     key: [app.site_id, bib],
@@ -8,9 +20,10 @@ function call_with_checkpoints(bib, app, f) {
   });
 }
 
-function new_checkpoints(bib, site_id) {
+function new_checkpoints(bib, race_id, site_id) {
   var checkpoints = {};
   checkpoints.bib = bib;
+  checkpoints.race_id = race_id;
   checkpoints.site_id = site_id;
   checkpoints.times = [];
   return checkpoints;
