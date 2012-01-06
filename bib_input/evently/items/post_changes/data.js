@@ -7,10 +7,11 @@ function(data) {
       items : [],
     }
 
-  if (data[0].value && (data[0].value.bib != app.current_bib) ) {
+  if (data[0].value && (data[0].value.bib != app.current_bib || data[0].value.lap != app.current_lap) ) {
     app.current_li = $($("#items").find("li")[1]); // 1 because 0 is the table's title
     place_arrow($($("#items").find("li")[1]));
     app.current_bib = data[0].value.bib
+    app.current_lap = data[0].value.lap
     $(this).trigger("change_infos");
   }
 
