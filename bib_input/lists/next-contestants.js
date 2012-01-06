@@ -1,4 +1,7 @@
 function(head, req) {
+  // Next line is CouchApp directive
+  // !code _attachments/lib/utils.js
+
   var searched_bib = req.query["bib"];
   var n = req.query["n"] || 0;
   var bib_lap = req.query["lap"];
@@ -37,19 +40,15 @@ function(head, req) {
       var pair = {};
       var time = 0;
       pair.bib = bibs[i-1].bib;
-      if (i == rank) {
-        time = bib_time;
-        // TODO use time_to_hour_string
-        date = new Date(time)
-        pair.time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-      }
+      if (i == rank)
+        pair.time = time_to_hour_string(bib_time);
       else {
         time = bib_time - bibs[i-1].time;
         sec = parseInt(time / 1000);
         min = parseInt(sec / 60);
-        hour = parseInt(min / 60);
-        sec = sec % 60;
-        min = min % 60;
+        hour = pad2(parseInt(min / 60)); // no need to take % 24 because the race lasts only for 24 hours.
+        sec = pad2(sec % 60);
+        min = pad2(min % 60);
         pair.time = "- " + hour + "h" + min + "m" + sec + "s";
       }
       pair.rank = i;

@@ -10,9 +10,9 @@ function checkBib(bib) {
 }
 function update_clk() {
   var current_time = new Date();
-  var h = current_time.getHours();   if (h<10) h = "0"+ h;
-  var m = current_time.getMinutes(); if (m<10) m = "0"+ m;
-  var s = current_time.getSeconds(); if (s<10) s = "0"+ s;
+  var h = pad2(current_time.getHours());
+  var m = pad2(current_time.getMinutes());
+  var s = pad2(current_time.getSeconds());
   $("#clk").html(h+":"+m+":"+s);
 }
 
