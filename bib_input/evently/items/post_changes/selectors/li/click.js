@@ -15,9 +15,10 @@ function() {
   $_this.children().css("font-weight", "bold");
   $_this.css("background-color", "#d0ffd0");
 
-  // Keep this and current bib into app
+  // Keep this, current bib and current lap into app
   app.current_li = $_this;
   app.current_bib = parseInt($_this.find("#delete")[0]["bib"]["value"]);
+  app.current_lap = parseInt($_this.find("#delete")[0]["lap"]["value"]);
 
   $(this).trigger("change_infos");
 }
