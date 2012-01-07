@@ -2,11 +2,9 @@ function() {
   var app = $$(this).app;
   var $_this=$(this);
 
-  $.log("this is " + $_this);
+  // return immediately if we clicked on the header
   if ($_this[0] == $("#items").find("li")[0])
     return;
-
-  place_arrow($_this);
 
   // First clear all lines
   $_this.parents("ul").children().children().css("font-weight", "");
@@ -20,5 +18,6 @@ function() {
   app.current_bib = parseInt($_this.find("#delete")[0]["bib"]["value"]);
   app.current_lap = parseInt($_this.find("#delete")[0]["lap"]["value"]);
 
+  place_arrow(app.current_li);
   $(this).trigger("change_infos");
 }
