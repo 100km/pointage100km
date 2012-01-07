@@ -9,16 +9,18 @@ function(cb) {
     startkey : bib,
     endkey : bib + 1,
     success: function(infos) {
-      var race_id = infos.rows[0] && infos.rows[0].value["course"];
+      var race_id = infos.rows[0] && infos.rows[0].value["course"] || 0;
+      var n = race_id == 0 ? 0 : 3;
+      var warning = race_id == 0;
       app.db.list("bib_input/next-contestants", "local-ranking", {
         startkey : [-site_id,race_id,-lap,null],
         endkey : [-site_id,race_id,-lap+1,null],
         bib: bib,
-        n: 3,
+        n: n,
         lap : lap,
         success: function(data) {
           safe_infos = (infos.rows[0] && infos.rows[0].value) || empty_info();
-          cb({infos:safe_infos, bibs:data.bibs});
+          cb({infos:safe_infos, bibs:data.bibs, warning: warning});
         }
       });
     }
