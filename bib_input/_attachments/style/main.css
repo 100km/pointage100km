@@ -137,13 +137,23 @@ h1 {
 }
 
 /* previous CSS */
-#previous {
+#previous_container {
+  position:relative;
+  float:right;
   border:4px solid #afa;
   padding:8px;
-  float:right;
   width:35%;
-  height:2000px; /* TODO find a better way to calculate this */
+  height:3000px; /* TODO find a better way to calculate this */
   background-color:#d0ffd0;
+  z-index:0;
+}
+
+#previous {
+  position:fixed;
+  right:12px;
+  padding:1%; /* here padding + width must be equal to width of previous_container */
+  width:34%;
+  z-index:2;
 }
 
 /* laps CSS */
@@ -154,7 +164,9 @@ h1 {
 
 /* arrow CSS */
 #arrow {
-  width:70px;
+  position:absolute;
+  width:300px;
   height:42px;
   background-color:#d0ffd0;
+  z-index:1;
 }
