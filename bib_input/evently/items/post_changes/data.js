@@ -7,12 +7,17 @@ function(data) {
       items : [],
     }
 
-  if (data[0].value && (data[0].value.bib != app.current_bib || data[0].value.lap != app.current_lap) ) {
-    app.current_li = $($("#items").find("li")[1]); // 1 because 0 is the table's title
-    place_arrow($($("#items").find("li")[1]));
-    app.current_bib = data[0].value.bib
-    app.current_lap = data[0].value.lap
-    $(this).trigger("change_infos");
+  $.log("In post_changes for items");
+  // If no current_bib / current_lap, take the first one
+  if (! (app.current_bib && app.current_lap)) {
+    if (data[0].value && (data[0].value.bib != app.current_bib || data[0].value.lap != app.current_lap) ) {
+      $.log("In after of items change values");
+      // current_li will be dealed after rendering mustache in after.js
+      app.current_bib = data[0].value.bib
+      app.current_lap = data[0].value.lap
+
+      $(this).trigger("change_infos");
+    }
   }
 
   function create_infos(r) {
@@ -31,7 +36,6 @@ function(data) {
 
   // separate first element from others
   return {
-    item_0 : [create_infos(data.shift())],
     items : data.map(create_infos)
   }
 };
