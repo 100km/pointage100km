@@ -1,3 +1,9 @@
+{{#warning}}
+    {{#bibs}}
+<h3>Le dossard {{current_bib}} au tour {{current_lap}}, {{time}}, n'est pas connu !</h3>
+    {{/bibs}}
+{{/warning}}
+{{^warning}}
 <h3>Infos détaillées du dossard {{current_bib}} au tour {{current_lap}}</h3>
 <ul>
   <li><i>Nom : </i>{{nom}}</li>
@@ -19,3 +25,4 @@
   </table>
   <li><i>Adresse : </i>{{adresse}} {{cp}} {{commune}}</li>
 </ul>
+{{/warning}}
