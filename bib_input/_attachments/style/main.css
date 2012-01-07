@@ -40,7 +40,8 @@ h1 {
 }
 
 #message_check {
-  padding:4px;
+  padding-top:4px;
+  padding-left:4px;
   color:#f00;
   float:left;
   margin-bottom:-1px;
