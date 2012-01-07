@@ -41,7 +41,7 @@ function(head, req) {
       var time = 0;
       pair.bib = bibs[i-1].bib;
       if (i == rank)
-        pair.time = time_to_hour_string(bib_time);
+        pair.time = "&nbsp; " + time_to_hour_string(bib_time);
       else {
         time = bib_time - bibs[i-1].time;
         sec = parseInt(time / 1000);
@@ -49,7 +49,7 @@ function(head, req) {
         hour = pad2(parseInt(min / 60)); // no need to take % 24 because the race lasts only for 24 hours.
         sec = pad2(sec % 60);
         min = pad2(min % 60);
-        pair.time = "- " + hour + "h" + min + "m" + sec + "s";
+        pair.time = "- " + hour + ":" + min + ":" + sec;
       }
       pair.rank = i;
       tmp.push(pair);
