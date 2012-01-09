@@ -4,7 +4,7 @@ function(cb) {
     app.db.openDoc("_local/site_info", {
             success: function(data) {
                 console.log(data);
-                cb.call(this, data);
+                cb(data);
             },
             error: function(status) {
                 console.log(status);

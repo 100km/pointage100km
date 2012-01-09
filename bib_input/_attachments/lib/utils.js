@@ -18,11 +18,11 @@ function call_with_checkpoints(bib, app, f) {
   app.db.openDoc(checkpoints_id(bib, app.site_id), {
     success: function(checkpoints) {
       $.log(" got " + JSON.stringify(checkpoints));
-      f.call(null, checkpoints);
+      f(checkpoints);
     },
     error: function(stat, err, reason) {
      if(not_found(stat, err, reason)) {
-      f.call(null, {});
+      f({});
      }
      else {
        $.log("stat" + JSON.stringify(stat));
