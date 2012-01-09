@@ -6,6 +6,8 @@ function() {
   form.reset();
 
   var app = $$(this).app;
+  app.current_bib = 0;
+  app.current_lap = 0;
 
   call_with_race_id(bib, app, function(race_id) {
     call_with_checkpoints(bib, app, function(checkpoints) {
