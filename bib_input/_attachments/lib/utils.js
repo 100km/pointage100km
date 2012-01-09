@@ -10,18 +10,37 @@ function call_with_race_id(bib, app, f) {
   });
 }
 
+function not_found(stat, err, reason) {
+  return (stat==404 && err == "not_found" && (reason == "missing" || reason=="deleted"));
+}
+
 function call_with_checkpoints(bib, app, f) {
-  app.db.view("bib_input/contestant-checkpoints", {
-    key: [app.site_id, bib],
-    success: function(data) {
-      var checkpoints = (data["rows"][0] && data["rows"][0]["value"]) || {};
+  app.db.openDoc(checkpoints_id(bib, app.site_id), {
+    success: function(checkpoints) {
+      $.log(" got " + JSON.stringify(checkpoints));
       f.call(null, checkpoints);
+    },
+    error: function(stat, err, reason) {
+     if(not_found(stat, err, reason)) {
+      f.call(null, {});
+     }
+     else {
+       $.log("stat" + JSON.stringify(stat));
+       $.log("err" + JSON.stringify(err));
+       $.log("reason" + JSON.stringify(reason));
+       alert("Error, but not missing doc");
+     }
     }
   });
 }
 
+function checkpoints_id(bib, site_id) {
+  return "checkpoints-" + site_id + "-" + bib;
+}
+
 function new_checkpoints(bib, race_id, site_id) {
   var checkpoints = {};
+  checkpoints._id = checkpoints_id(bib, site_id);
   checkpoints.bib = bib;
   checkpoints.race_id = race_id;
   checkpoints.site_id = site_id;
