@@ -13,9 +13,14 @@ function update_document () {
   then
     rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\".*#\1#' )
     echo "The document is already present with revision $rev. Need to add rev."
+if [ -z "$doc_json" ]; then
+  comma=""
+else
+  comma=","
+fi
 data=$(cat <<EOF
 {
-"_rev":"$rev",
+"_rev":"$rev"$comma
 $doc_json
 }
 EOF
@@ -28,6 +33,7 @@ $doc_json
 EOF
 )
   fi
+echo $data > /tmp/docjson
 
   curl -X PUT $url -H "Content-Type: application/json" --data "$data"
 }
