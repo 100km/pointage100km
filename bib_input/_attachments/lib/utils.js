@@ -64,7 +64,7 @@ function place_arrow(obj) {
   var x_offset = obj.width();
   var y_offset = (obj.height()-42)/2+4; // +4 because of the border
   pos.top = pos.top + y_offset;
-  pos.left = pos.left + x_offset - 100; // should not be necessary but prevent some artifact
+  pos.left = pos.left + x_offset;
 
   // Set the div to link concurrent with its infos
   $_arrow.css({ marginLeft: 0, marginTop: 0,
