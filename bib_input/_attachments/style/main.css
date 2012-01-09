@@ -166,7 +166,7 @@ h1 {
 /* arrow CSS */
 #arrow {
   position:absolute;
-  width:300px;
+  width:200px;
   height:42px;
   background-color:#d0ffd0;
   z-index:1;
