@@ -4,14 +4,11 @@ function(cb) {
   var bib = app.current_bib;
   var lap = app.current_lap;
 
-  app.db.view("bib_input/bib_info", {
-    limit: 1,
-    startkey : bib,
-    endkey : bib + 1,
-    success: function(infos) {
-      var race_id = infos.rows[0] && infos.rows[0].value["course"] || 0;
+  var handle_open = function(infos) {
+      var race_id = infos["course"] || 0;
       var n = race_id == 0 ? 0 : 3;
       var warning = race_id == 0;
+      $.log("getting " + site_id +","+ race_id +","+ lap +","+ bib);
       app.db.list("bib_input/next-contestants", "local-ranking", {
         startkey : [-site_id,race_id,-lap,null],
         endkey : [-site_id,race_id,-lap+1,null],
@@ -19,10 +16,23 @@ function(cb) {
         n: n,
         lap : lap,
         success: function(data) {
-          safe_infos = (infos.rows[0] && infos.rows[0].value) || empty_info();
+          safe_infos = infos || empty_info();
           cb({infos:safe_infos, bibs:data.bibs, warning: warning});
         }
       });
+    }
+  app.db.openDoc(infos_id(bib), {
+    success: handle_open,
+    error: function(stat, err, reason) {
+      if(not_found(stat, err, reason)) {
+        handle_open({});
+      }
+      else {
+        $.log("stat" + JSON.stringify(stat));
+        $.log("err" + JSON.stringify(err));
+        $.log("reason" + JSON.stringify(reason));
+        alert("Error, but not missing or deleted doc");
+      }
     }
   });
 };

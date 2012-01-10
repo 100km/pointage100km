@@ -38,6 +38,10 @@ function checkpoints_id(bib, site_id) {
   return "checkpoints-" + site_id + "-" + bib;
 }
 
+function infos_id(bib) {
+  return "infos-" + bib;
+}
+
 function new_checkpoints(bib, race_id, site_id) {
   var checkpoints = {};
   checkpoints._id = checkpoints_id(bib, site_id);

@@ -57,6 +57,10 @@ mdb-export -S -H -d $DELIM "$db" "$table" | while read line
 do
   json=$( for ((i=1; i <= ${#fields[@]}; i++))
   do
+    if [ "${fields[$(( $i - 1 ))]}" == "dossard" ]
+    then
+    echo "\"_id\":\"infos-$( echo $line | cut -d $DELIM -f $i )\","
+    fi
     echo -n "\"${fields[$(( $i - 1 ))]}\":$( echo $line | cut -d $DELIM -f $i )"
     if [ "$i" != "${#fields[@]}" ]
     then
