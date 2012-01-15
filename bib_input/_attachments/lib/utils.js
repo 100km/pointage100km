@@ -1,3 +1,17 @@
+function submit_bib(bib, app, cb) {
+  call_with_race_id(bib, app, function(race_id) {
+    call_with_checkpoints(bib, app, function(checkpoints) {
+      if (checkpoints["bib"] == undefined) {
+        checkpoints = new_checkpoints(bib, race_id, app.site_id);
+      }
+      add_checkpoint(checkpoints);
+      app.db.saveDoc(checkpoints, {
+        success: cb
+      });
+    });
+  });
+}
+
 function call_with_race_id(bib, app, f) {
   app.db.view("bib_input/bib_info", {
     key: bib,
