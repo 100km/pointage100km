@@ -13,13 +13,24 @@ function submit_bib(bib, app, cb) {
 }
 
 function call_with_race_id(bib, app, f) {
-  app.db.view("bib_input/bib_info", {
-    key: bib,
-    success: function(data) {
+  var invalid_race_id = 0;
+  app.db.openDoc(infos_id(bib), {
+    success: function(bib_info) {
       //0 is invalid as a race_id
       //valid race_ids are 1,2,4,8
-      var race_id = (data["rows"][0] && data["rows"][0]["value"] && data["rows"][0]["value"]["course"]) || 0;
+      var race_id = bib_info["course"] || invalid_race_id;
       f(race_id);
+    },
+    error: function(stat, err, reason) {
+     if(not_found(stat, err, reason)) {
+      f(invalid_race_id);
+     }
+     else {
+       $.log("stat" + JSON.stringify(stat));
+       $.log("err" + JSON.stringify(err));
+       $.log("reason" + JSON.stringify(reason));
+       alert("Error, but not missing doc");
+     }
     }
   });
 }
