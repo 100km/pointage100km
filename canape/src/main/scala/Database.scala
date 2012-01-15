@@ -89,9 +89,12 @@ case class Db(val couch: Couch, val database: String) extends Request(couch.couc
   def apply(id: String, rev: String) = this / id <<? List("rev" -> rev)
 
   lazy val allDocs = {
-    implicit val formats = DefaultFormats
     val query = new Query[String, Map[String, JValue]](this, this / "_all_docs")
     query()
   }
+
+  def create() = this.PUT >|
+
+  def startCompaction() = (this / "_compact") << ("", "application/json") >|
 
 }
