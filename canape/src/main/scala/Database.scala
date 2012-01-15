@@ -72,6 +72,8 @@ class DbStatus(js: JValue) {
 
 case class Db(val couch: Couch, val database: String) extends Request(couch.couchRequest / database) {
 
+  implicit private val formats = DefaultFormats
+
   val uri = couch.uri + "/" + database
 
   private[canape] def uriFrom(other: Couch) = if (couch == other) database else uri
