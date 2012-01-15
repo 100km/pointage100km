@@ -26,6 +26,10 @@ case class Couch(val host: String = "localhost", val port: Int = 5984, val auth:
 
   def status = couchRequest ># (new CouchStatus(_))
 
+  def activeTasks = (couchRequest / "_active_tasks") ># ((js: JValue) => js)
+
+  def db(databaseName: String) = Db(this, databaseName)
+
 }
 
 object Couch {
