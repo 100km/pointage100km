@@ -1,5 +1,5 @@
 function(doc) {
-  if (doc.dossard) {
+  if (doc.dossard != undefined) {
     emit(doc.dossard, doc);
   }
 };
