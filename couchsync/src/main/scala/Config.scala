@@ -35,6 +35,7 @@ class Config(srcDir: File, usbBaseDir: File) {
     ini.load(Source.fromFile(new File(srcDir, "local.ini")))
 
     ini.set("couchdb", "database_dir", dbDir)
+    ini.set("couchdb", "delayed_commits", false)
     ini.set("couchdb", "index_dir", dbDir)
     ini.set("couchdb", "uri_file", uriFile)
     ini.set("httpd", "bind_address", "127.0.0.1")
