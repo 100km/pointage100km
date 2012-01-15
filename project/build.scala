@@ -4,7 +4,7 @@ object Steenwerck extends Build {
 
   lazy val replicate = Project("replicate", file("replicate")) dependsOn(canape)
 
-  lazy val couchsync = Project("couchsync", file("couchsync"))
+  lazy val couchsync = Project("couchsync", file("couchsync")) dependsOn(canape)
 
   lazy val canape = Project("canape", file("canape")) dependsOn(dispatchLiftJson)
 
