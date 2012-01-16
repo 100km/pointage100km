@@ -74,6 +74,7 @@ function new_checkpoints(bib, race_id, site_id) {
   checkpoints.race_id = race_id;
   checkpoints.site_id = site_id;
   checkpoints.times = [];
+  checkpoints.deleted_times = [];
   return checkpoints;
 }
 
@@ -87,7 +88,7 @@ function remove_checkpoint(checkpoints, ts) {
   //Why doesn't indexOf work ?!?
   for (var i = checkpoints["times"].length-1; i>=0; i--) {
     if (ts == checkpoints["times"][i]) {
-      checkpoints["times"].splice(i, 1);
+      checkpoints["deleted_times"].push(checkpoints["times"].splice(i, 1)[0]);
       return;
     }
   }
