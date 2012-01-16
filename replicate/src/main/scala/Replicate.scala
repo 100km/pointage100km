@@ -13,7 +13,10 @@ object Replicate {
     val localDb = Db(localCouch, "steenwerck100km")
     val hubCouch = Couch("tomobox.fr", 5984, "admin", "admin")
     val hubDb = Db(hubCouch, "steenwerck100km")
-    startReplication(localCouch, localDb, hubDb, true)
+    while (true) {
+      startReplication(localCouch, localDb, hubDb, true)
+      Thread.sleep(5000)
+    }
   }
 
 }
