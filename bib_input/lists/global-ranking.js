@@ -11,10 +11,10 @@ function(head, req) {
   var arr = [];
   var set = {};
   var current_race_id;
-  var row;
-  while (row || (row = getRow())) {
+  var row = getRow();
+  while (row) {
     current_race_id = row["value"]["race_id"];
-    while (row || (row = getRow())) {
+    do {
       var tmp_bib = row["value"]["bib"];
       var tmp_race_id = row["value"]["race_id"];
       if (tmp_race_id!=current_race_id) {
@@ -23,9 +23,9 @@ function(head, req) {
       if (!set[tmp_bib]) {
         set[tmp_bib] = true;
         arr.push(row);
-        row = false;
       }
-    }
+    } while (row = getRow())
+
     pair = {};
     pair.race_id = current_race_id;
     pair.contestants = arr;
