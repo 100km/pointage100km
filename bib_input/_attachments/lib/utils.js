@@ -133,3 +133,19 @@ function time_to_hour_string(t) {
   date = new Date(t);
   return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + ":" + pad2(date.getSeconds());
 }
+
+//From http://stackoverflow.com/questions/4631774/coordinating-parallel-execution-in-node-js
+function fork (async_calls, shared_callback) {
+  var counter = async_calls.length;
+  var callback = function () {
+    $.log("counter : " + counter);
+    counter --;
+    if (counter == 0) {
+      shared_callback()
+    }
+  }
+
+  for (var i=0;i<async_calls.length;i++) {
+    async_calls[i](callback);
+  }
+}
