@@ -4,8 +4,12 @@ import net.rfc1149.canape._
 object Replicate {
 
   def startReplication(couch: Couch, local: Db, remote: Db, continuous: Boolean) = {
-    Http(couch.replicate(local, remote, continuous))
-    Http(couch.replicate(remote, local, continuous))
+    try {
+      Http(couch.replicate(local, remote, continuous))
+      Http(couch.replicate(remote, local, continuous))
+    } catch {
+      case _ =>
+    }
   }
 
   def main(args: Array[String]) = {
