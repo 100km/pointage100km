@@ -2,6 +2,7 @@ import dispatch._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import net.rfc1149.canape.helpers._
 
 object Replicate {
 
@@ -18,24 +19,15 @@ object Replicate {
     ref.replace("deleted_times" :: Nil, deleted).replace("times" :: Nil, times(ref).union(times(conflicting)).diff(deleted).distinct.sorted)
   }
 
-  def mergeAllInto(ref: JValue, conflicting: Seq[JValue]): JValue =
-    conflicting.foldLeft(ref)(mergeInto(_, _))
+  def mergeAllInto(docs: Seq[JValue]): JValue =
+    docs.tail.foldLeft(docs.head)(mergeInto(_, _))
 
   def solveConflicts(db: Db, ref: JValue) = {
     val id = (ref \ "_id").extract[String]
     println("solving conflict on " + id)
-    val conflictingRevs = (ref \ "_conflicts").extract[List[String]]
-    val revsList = "[" + conflictingRevs.map("\"" + _ + "\"").mkString(",") + "]"
-    val conflicting = Http(db(id, Map("open_revs" -> revsList)))
-    val conflictingDocs = conflicting.children.map(_ \ "ok")
-    val mergedDoc = mergeAllInto(ref, conflictingDocs).remove(_ match {
-	case JField("_conflicts", _) => true
-	case _ => false
-    })
-    val allDocs = mergedDoc +: conflictingDocs.map { doc =>
-      ("_id" -> doc \ "_id") ~ ("_rev" -> doc \ "_rev") ~ ("_deleted" -> true)
-    }
-    Http(db.bulkDocs(allDocs, true))
+    val revs = (ref \ "_conflicts").extract[List[String]]
+    val conflictingDocs = Http(getRevs(db, id, revs))
+    Http(solve(db, ref, conflictingDocs, mergeAllInto _))
   }
 
   def startReplication(couch: Couch, local: Db, remote: Db, continuous: Boolean) = {
