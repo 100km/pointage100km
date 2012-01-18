@@ -10,7 +10,7 @@ case class Couch(val host: String = "localhost", val port: Int = 5984, val auth:
   val uri = "http://" + auth.map(x => x._1 + ":" + x._2 + "@").getOrElse("") + host + ":" + port
 
   val couchRequest = {
-    val base = :/(host, port)
+    val base = :/(host, port) <:< Map("Accept" -> "application/json")
     auth match {
       case Some((login, password)) => base.as_!(login, password)
       case None                    => base
