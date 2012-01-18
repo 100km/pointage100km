@@ -43,8 +43,8 @@ object Replicate {
       Http(couch.replicate(local, remote, continuous))
       Http(couch.replicate(remote, local, continuous))
     } catch {
-      case StatusCode(404, _) =>
-	println("unable to start replication")
+      case StatusCode(status, _) =>
+	println("unable to start replication: " + status)
     }
   }
 
