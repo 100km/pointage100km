@@ -103,4 +103,16 @@ case class Db(val couch: Couch, val database: String) extends Request(couch.couc
 
   def startCompaction() = (this / "_compact") << ("", "application/json") >|
 
+  def bulkDocs(docs: Seq[JValue], allOrNothing: Boolean = false): Handler[JValue] = {
+    val args = ("all_or_nothing" -> allOrNothing) ~ ("docs" -> docs)
+    (this / "_bulk_docs").POST << (compact(render(args)), "application/json") ># {js: JValue => js}
+  }
+
+  def insert(doc: JValue, id: Option[String] = None) = {
+    (id getOrElse (doc \ "_id").extractOpt[String] match {
+	case Some(docId: String) => (this / docId) PUT
+	case None                => this POST
+    }) << (compact(render(doc)), "application/json") ># {js: JValue => js}
+  }
+
 }
