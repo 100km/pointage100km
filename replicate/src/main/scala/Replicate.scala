@@ -19,15 +19,14 @@ object Replicate {
     ref.replace("deleted_times" :: Nil, deleted).replace("times" :: Nil, times(ref).union(times(conflicting)).diff(deleted).distinct.sorted)
   }
 
-  def mergeAllInto(docs: Seq[JValue]): JValue =
+  def mergeAllInto(docs: Seq[JValue]): JValue = {
     docs.tail.foldLeft(docs.head)(mergeInto(_, _))
+  }
 
-  def solveConflicts(db: Db, ref: JValue) = {
-    val id = (ref \ "_id").extract[String]
-    println("solving conflict on " + id)
-    val revs = (ref \ "_conflicts").extract[List[String]]
-    val conflictingDocs = Http(getRevs(db, id, revs))
-    Http(solve(db, ref +: conflictingDocs, mergeAllInto _))
+  def solveConflicts(db: Db, id: String, revs: List[String]) = {
+    println("solving conflicts for " + id + " (" + revs.size + " documents)")
+    val docs = Http(getRevs(db, id, revs))
+    Http(solve(db, docs, mergeAllInto _))
   }
 
   def startReplication(couch: Couch, local: Db, remote: Db, continuous: Boolean) = {
@@ -48,8 +47,10 @@ object Replicate {
     while (true) {
       startReplication(localCouch, localDb, hubDb, true)
       Thread.sleep(5000)
-      val conflicting = Http(new View[Nothing, JValue](localDb, "bib_input", "conflicting-checkpoints").apply()).rows
-      conflicting foreach { r: Row[Nothing, JValue] => solveConflicts(localDb, r.value) }
+      val conflicting = Http(new View[Nothing, List[String]](localDb, "bib_input", "conflicting-checkpoints").apply()).rows
+      for (row <- conflicting) {
+	solveConflicts(localDb, row.id, row.value)
+      }
     }
   }
 

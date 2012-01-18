@@ -24,7 +24,7 @@ package object helpers {
   def getRevs(db: Db, id: String, revs: Seq[String] = Seq()): Handler[List[JValue]] = {
     val revsList = if (revs.isEmpty) "all" else "[" + revs.map("\"" + _ + "\"").mkString(",") + "]"
     db(id, Map("open_revs" -> revsList)) ~> { _.children.collect {
-      case JField("ok", value) => value
+      case JObject(JField("ok", value) :: _) => value
     } }
   }
 
