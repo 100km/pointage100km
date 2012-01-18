@@ -27,7 +27,7 @@ object Replicate {
     println("solving conflict on " + id)
     val revs = (ref \ "_conflicts").extract[List[String]]
     val conflictingDocs = Http(getRevs(db, id, revs))
-    Http(solve(db, ref, conflictingDocs, mergeAllInto _))
+    Http(solve(db, ref +: conflictingDocs, mergeAllInto _))
   }
 
   def startReplication(couch: Couch, local: Db, remote: Db, continuous: Boolean) = {
