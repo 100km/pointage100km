@@ -84,9 +84,15 @@ case class Db(val couch: Couch, val database: String) extends Request(couch.couc
 
   def status = this ># (new DbStatus(_))
 
-  def apply(id: String) = this / id
+  def apply(id: String): Handler[JValue] = this / id ># {js: JValue => js}
 
-  def apply(id: String, rev: String) = this / id <<? List("rev" -> rev)
+  def apply(id: String, properties: Map[String, String]): Handler[JValue] =
+    apply(id, properties.toSeq)
+
+  def apply(id: String, properties: Seq[(String, String)]): Handler[JValue] =
+    this / id <<? properties ># {js: JValue => js}
+
+  def apply(id: String, rev: String): Handler[JValue] = apply(id, List("rev" -> rev))
 
   lazy val allDocs = {
     val query = new Query[String, Map[String, JValue]](this, this / "_all_docs")
