@@ -99,6 +99,19 @@ function add_checkpoint(checkpoints) {
   checkpoints["times"].push(ts);
 }
 
+function submit_remove_checkpoint(bib, app, ts) {
+  retries(3, function(fail) {
+    submit_remove_checkpoint_once(bib, app, ts, fail);
+  }, "remove checkpoint");
+}
+function submit_remove_checkpoint_once(bib, app, ts, fail) {
+  call_with_checkpoints(bib, app, function(checkpoints) {
+    remove_checkpoint(checkpoints, ts);
+    app.db.saveDoc(checkpoints, {
+      error: fail
+    });
+  });
+}
 function remove_checkpoint(checkpoints, ts) {
   $.log("removing " + ts + " in " + checkpoints["times"]);
   //Why doesn't indexOf work ?!?
