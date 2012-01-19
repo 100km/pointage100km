@@ -52,7 +52,19 @@ object Replicate {
       }
     }
 
+  def createLocalInfo(db: Database, site: Int) = {
+    val doc: JObject = try {
+      Http(db("_local/site-info")).asInstanceOf[JObject]
+    } catch {
+	case StatusCode(404, _) => new JObject(new JField("_id", "_local/site-info") :: Nil)
+    }
+    val newDoc = doc ~ ("site-id" -> site)
+    println(compact(render(newDoc)))
+    Http(db.insert(newDoc))
+  }
+
   def main(args: Array[String]) = {
+    val site = Integer.parseInt(args(0))
     val localCouch = Couch("admin", "admin")
     val localDatabase = Database(localCouch, "steenwerck100km")
     val hubCouch = Couch(config.read[String]("master.host"),
@@ -67,6 +79,8 @@ object Replicate {
 	case StatusCode(status, _) =>
 	  println("cannot create database: " + status)
     }
+
+    createLocalInfo(localDatabase, site)
 
     while (true) {
       startReplication(localCouch, localDatabase, hubDatabase, true)

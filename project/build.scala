@@ -2,7 +2,7 @@ import sbt._
 
 object Steenwerck extends Build {
 
-  lazy val root = Project("root", file(".")) aggregate(replicate, couchsync)
+  lazy val root = Project("root", file(".")) aggregate(replicate, couchsync, wipe)
 
   lazy val replicate = Project("replicate", file("replicate")) dependsOn(canape, config)
 
