@@ -5,86 +5,42 @@ import dispatch.liftjson.Js._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 
-case class Couch(val host: String = "localhost", val port: Int = 5984, val auth: Option[(String, String)] = None) {
+object Database {
 
-  val uri = "http://" + auth.map(x => x._1 + ":" + x._2 + "@").getOrElse("") + host + ":" + port
+  class Status(js: JValue) {
 
-  val couchRequest = {
-    val base = :/(host, port) <:< Map("Accept" -> "application/json")
-    auth match {
-      case Some((login, password)) => base.as_!(login, password)
-      case None                    => base
-    }
-  }
+    private implicit val formats = DefaultFormats
 
-  def replicate(source: Db, target: Db, continuous: Boolean) = {
-    val params = ("source" -> source.uriFrom(this)) ~
-                 ("target" -> target.uriFrom(this)) ~
-                 ("continuous" -> continuous)
-    couchRequest / "_replicate" << (compact(render(params)), "application/json") >|
-  }
-
-  def status = couchRequest ># (new CouchStatus(_))
-
-  def activeTasks = (couchRequest / "_active_tasks") ># ((js: JValue) => js)
-
-  def db(databaseName: String) = Db(this, databaseName)
-
-}
-
-object Couch {
-
-  def apply(host: String, port: Int, login: String, password: String): Couch = Couch(host, port, Some((login, password)))
-
-  def apply(login: String, password: String): Couch = Couch(auth = Some((login, password)))
-
-  def apply(host: String, login: String, password: String): Couch = Couch(host, auth = Some((login, password)))
-
-}
-
-class CouchStatus(js: JValue) {
-
-  private implicit val formats = DefaultFormats
-
-  val JString(couchdb) = js \ "couchdb"
-  val JString(version) = js \ "version"
-  val vendorVersion = (js \ "vendor" \ "version").extractOpt[String]
-  val vendorName = (js \ "vendor" \ "name").extractOpt[String]
-
-}
-
-class DbStatus(js: JValue) {
-
-  private implicit val formats = DefaultFormats
-
-  val JString(db_name) = js \ "db_name"
-  val JInt(doc_count) = js \ "doc_count"
-  val JInt(doc_del_count) = js \ "doc_del_count"
-  val JInt(update_seq) = js \ "update_seq"
-  val JInt(purge_seq) = js \ "purge_seq"
-  val JBool(compact_running) = js \ "compact_running"
-  val JInt(disk_size) = js \ "disk_size"
-  val data_size = js \ "data_size" match {
+    val JString(db_name) = js \ "db_name"
+    val JInt(doc_count) = js \ "doc_count"
+    val JInt(doc_del_count) = js \ "doc_del_count"
+    val JInt(update_seq) = js \ "update_seq"
+    val JInt(purge_seq) = js \ "purge_seq"
+    val JBool(compact_running) = js \ "compact_running"
+    val JInt(disk_size) = js \ "disk_size"
+    val data_size = js \ "data_size" match {
       case JInt(s) => Some(s)
       case _       => None
+    }
+    val instance_start_time = BigInt((js \ "instance_start_time").extract[String])
+    val JInt(disk_format_version) = js \ "disk_format_version"
+    val JInt(committed_update_seq) = js \ "committed_update_seq"
+
   }
-  val instance_start_time = BigInt((js \ "instance_start_time").extract[String])
-  val JInt(disk_format_version) = js \ "disk_format_version"
-  val JInt(committed_update_seq) = js \ "committed_update_seq"
 
 }
 
-case class Db(val couch: Couch, val database: String) extends Request(couch.couchRequest / database) {
+case class Database(val couch: Couch, val database: String)
+     extends Request(couch.couchRequest / database) {
 
-  implicit private val formats = DefaultFormats
-
-  val uri = couch.uri + "/" + database
+  private[this] val uri = couch.uri + "/" + database
 
   private[canape] def uriFrom(other: Couch) = if (couch == other) database else uri
 
-  def status = this ># (new DbStatus(_))
+  def status(): Handler[Database.Status] = this ># (new Database.Status(_))
 
-  def apply(id: String): Handler[JValue] = this / id ># {js: JValue => js}
+  def apply(id: String): Handler[JValue] =
+    this / id ># {js: JValue => js}
 
   def apply(id: String, properties: Map[String, String]): Handler[JValue] =
     apply(id, properties.toSeq)
@@ -92,23 +48,27 @@ case class Db(val couch: Couch, val database: String) extends Request(couch.couc
   def apply(id: String, properties: Seq[(String, String)]): Handler[JValue] =
     this / id <<? properties ># {js: JValue => js}
 
-  def apply(id: String, rev: String): Handler[JValue] = apply(id, List("rev" -> rev))
+  def apply(id: String, rev: String): Handler[JValue] =
+    apply(id, List("rev" -> rev))
 
-  lazy val allDocs = {
+  def allDocs(): Handler[Result[String, Map[String, JValue]]] = {
+    implicit val formats = DefaultFormats
     val query = new Query[String, Map[String, JValue]](this, this / "_all_docs")
     query()
   }
 
-  def create() = this.PUT >|
+  def create(): Handler[Unit] = this.PUT >|
 
-  def startCompaction() = (this / "_compact") << ("", "application/json") >|
+  def startCompaction(): Handler[Unit] =
+    (this / "_compact") << ("", "application/json") >|
 
   def bulkDocs(docs: Seq[JValue], allOrNothing: Boolean = false): Handler[JValue] = {
     val args = ("all_or_nothing" -> allOrNothing) ~ ("docs" -> docs)
     (this / "_bulk_docs").POST << (compact(render(args)), "application/json") ># {js: JValue => js}
   }
 
-  def insert(doc: JValue, id: Option[String] = None) = {
+  def insert(doc: JValue, id: Option[String] = None): Handler[JValue] = {
+    implicit val formats = DefaultFormats
     (id getOrElse (doc \ "_id").extractOpt[String] match {
 	case Some(docId: String) => (this / docId) PUT
 	case None                => this POST

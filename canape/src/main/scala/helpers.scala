@@ -8,7 +8,7 @@ package object helpers {
 
   type ConflictSolver = Seq[JValue] => JValue
 
-  def solve(db: Db, documents: Seq[JValue], solver: ConflictSolver): Handler[JValue] = {
+  def solve(db: Database, documents: Seq[JValue], solver: ConflictSolver): Handler[JValue] = {
     val mergedDoc = solver(documents).remove(_ match {
 	case JField("_conflicts", _) => true
 	case _ => false
@@ -21,7 +21,7 @@ package object helpers {
     db.bulkDocs(mergedDoc +: deletedDocs, true)
   }
 
-  def getRevs(db: Db, id: String, revs: Seq[String] = Seq()): Handler[List[JValue]] = {
+  def getRevs(db: Database, id: String, revs: Seq[String] = Seq()): Handler[List[JValue]] = {
     val revsList = if (revs.isEmpty) "all" else "[" + revs.map("\"" + _ + "\"").mkString(",") + "]"
     db(id, Map("open_revs" -> revsList)) ~> { _.children.collect {
       case JObject(JField("ok", value) :: _) => value
