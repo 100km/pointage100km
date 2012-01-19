@@ -166,15 +166,39 @@ function time_to_hour_string(t) {
 //From http://stackoverflow.com/questions/4631774/coordinating-parallel-execution-in-node-js
 function fork (async_calls, shared_callback) {
   var counter = async_calls.length;
-  var callback = function () {
-    $.log("counter : " + counter);
-    counter --;
-    if (counter == 0) {
-      shared_callback()
+  var all_results = [];
+  function makeCallback (index) {
+    return function () {
+      counter --;
+      var results = [];
+      // we use the arguments object here because some callbacks
+      // in Node pass in multiple arguments as result.
+      for (var i=0;i<arguments.length;i++) {
+        results.push(arguments[i]);
+      }
+      all_results[index] = results;
+      if (counter == 0) {
+        shared_callback(all_results);
+      }
     }
   }
 
   for (var i=0;i<async_calls.length;i++) {
-    async_calls[i](callback);
+    async_calls[i](makeCallback(i));
   }
 }
+
+// TODO : remove console.log
+function get_doc(app, cb, doc_name) {
+  $.log("in get_doc " + doc_name);
+  app.db.openDoc(doc_name, {
+    success: function(data) {
+      console.log(data);
+      cb(data);
+    },
+    error: function(status) {
+      console.log(status);
+    }
+  });
+}
+
