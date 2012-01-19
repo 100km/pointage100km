@@ -80,7 +80,7 @@ function checkpoints_id(bib, site_id) {
 }
 
 function infos_id(bib) {
-  return "infos-" + bib;
+  return "contestant-" + bib;
 }
 
 function new_checkpoints(bib, race_id, site_id) {

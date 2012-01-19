@@ -41,7 +41,7 @@ object Replicate {
     for (doc <- Http(db.view[Nothing, JValue]("bib_input", "incomplete-checkpoints")).values) {
       try {
 	val JInt(bib) = doc \ "bib"
-	val JInt(race) = Http(db("infos-" + bib)) \ "course"
+	val JInt(race) = Http(db("contestant-" + bib)) \ "course"
 	if (race != 0) {
 	  println("Fixing incomplete race " + race + " for bib " + bib)
 	  Http(db.insert(doc.replace("race_id" :: Nil, race)))
