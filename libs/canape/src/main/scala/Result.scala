@@ -11,6 +11,10 @@ final class Result[K: Manifest, V: Manifest](js: JValue,
   val JInt(offset: BigInt) = js \ "offset"
   val rows: List[Result.Row[K, V]] = (js \ "rows").children map { new Result.Row[K, V](_, formats) }
 
+  lazy val ids = rows map (_.id)
+  lazy val keys = rows map (_.key)
+  lazy val values = rows map (_.value)
+
 }
 
 object Result {
