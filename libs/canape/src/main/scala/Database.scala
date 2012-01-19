@@ -84,4 +84,7 @@ case class Database(val couch: Couch, val database: String)
 				     formats: Formats = DefaultFormats): Handler[Result[K, V]] =
     query("_design/" + design + "/_view/" + viewName, params, formats)
 
+  def delete(id: String, rev: String): Handler[Unit] =
+    (this / id).DELETE <<? Map("rev" -> rev) >|
+
 }
