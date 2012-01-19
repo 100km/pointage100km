@@ -9,7 +9,7 @@ function update_document () {
   doc_json="$2"
 
   get_request=$( curl -s -X GET $url )
-  if ! [[ "$get_request" =~ "missing" ]]
+  if ! [[ "$get_request" =~ "missing" || "$get_request" =~ "deleted" ]]
   then
     rev=$( echo $get_request | sed 's#.*_rev\":\"\([^\"]*\)\".*#\1#' )
     echo "The document is already present with revision $rev. Need to add rev."
