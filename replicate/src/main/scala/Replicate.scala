@@ -6,6 +6,8 @@ import net.rfc1149.canape.helpers._
 
 object Replicate {
 
+  val config = Config("steenwerck.cfg")
+
   implicit val formats = DefaultFormats
 
   def getTimes(from: JValue, name: String) = (from \ name).extract[List[BigInt]]
@@ -38,8 +40,11 @@ object Replicate {
   def main(args: Array[String]) = {
     val localCouch = Couch("admin", "admin")
     val localDatabase = Database(localCouch, "steenwerck100km")
-    val hubCouch = Couch("tomobox.fr", 5984, "admin", "admin")
-    val hubDatabase = Database(hubCouch, "steenwerck100km")
+    val hubCouch = Couch(config.read[String]("master.host"),
+			 config.read[Int]("master.port"),
+			 config.read[String]("master.user"),
+			 config.read[String]("master.password"))
+    val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
     while (true) {
       startReplication(localCouch, localDatabase, hubDatabase, true)
       Thread.sleep(5000)
