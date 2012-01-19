@@ -23,13 +23,13 @@ object Replicate {
     docs.tail.foldLeft(docs.head)(mergeInto(_, _))
   }
 
-  def solveConflicts(db: Db, id: String, revs: List[String]) = {
+  def solveConflicts(db: Database, id: String, revs: List[String]) = {
     println("solving conflicts for " + id + " (" + revs.size + " documents)")
     val docs = Http(getRevs(db, id, revs))
     Http(solve(db, docs, mergeAllInto _))
   }
 
-  def startReplication(couch: Couch, local: Db, remote: Db, continuous: Boolean) = {
+  def startReplication(couch: Couch, local: Database, remote: Database, continuous: Boolean) = {
     try {
       Http(couch.replicate(local, remote, continuous))
       Http(couch.replicate(remote, local, continuous))
@@ -41,15 +41,15 @@ object Replicate {
 
   def main(args: Array[String]) = {
     val localCouch = Couch("admin", "admin")
-    val localDb = Db(localCouch, "steenwerck100km")
+    val localDatabase = Database(localCouch, "steenwerck100km")
     val hubCouch = Couch("tomobox.fr", 5984, "admin", "admin")
-    val hubDb = Db(hubCouch, "steenwerck100km")
+    val hubDatabase = Database(hubCouch, "steenwerck100km")
     while (true) {
-      startReplication(localCouch, localDb, hubDb, true)
+      startReplication(localCouch, localDatabase, hubDatabase, true)
       Thread.sleep(5000)
-      val conflicting = Http(new View[Nothing, List[String]](localDb, "bib_input", "conflicting-checkpoints").apply()).rows
+      val conflicting = Http(new View[Nothing, List[String]](localDatabase, "bib_input", "conflicting-checkpoints").apply()).rows
       for (row <- conflicting) {
-	solveConflicts(localDb, row.id, row.value)
+	solveConflicts(localDatabase, row.id, row.value)
       }
     }
   }
