@@ -67,7 +67,7 @@ case class Database(val couch: Couch, val database: String)
 
   def insert(doc: JValue, id: Option[String] = None): Handler[JValue] = {
     implicit val formats = DefaultFormats
-    (id getOrElse (doc \ "_id").extractOpt[String] match {
+    (id orElse (doc \ "_id").extractOpt[String] match {
 	case Some(docId: String) => (this / docId) <<< compact(render(doc))
 	case None                => this << (compact(render(doc)), "application/json")
     }) ># {js: JValue => js}
