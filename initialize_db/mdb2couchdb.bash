@@ -59,7 +59,7 @@ do
   do
     if [ "${fields[$(( $i - 1 ))]}" == "dossard" ]
     then
-    echo "\"_id\":\"infos-$( echo $line | cut -d $DELIM -f $i )\","
+    echo "\"_id\":\"contestant-$( echo $line | cut -d $DELIM -f $i )\","
     fi
     echo -n "\"${fields[$(( $i - 1 ))]}\":$( echo $line | cut -d $DELIM -f $i )"
     if [ "$i" != "${#fields[@]}" ]
