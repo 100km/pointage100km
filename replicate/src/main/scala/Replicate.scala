@@ -52,6 +52,7 @@ object Replicate {
       }
     }
 
+
   def createLocalInfo(db: Database, site: Int) = {
     val doc: JObject = try {
       Http(db("_local/site-info")).asInstanceOf[JObject]
@@ -61,6 +62,17 @@ object Replicate {
     val newDoc = doc ~ ("site-id" -> site)
     println(compact(render(newDoc)))
     Http(db.insert(newDoc))
+    touchMe(db)
+  }
+
+  def touchMe(db: Database) = {
+    try {
+      val touchMe = Http(db("touch_me"))
+      Http(db.insert(touchMe))
+    } catch {
+	case StatusCode(404, _) =>
+	  Http(db.insert(new JObject(Nil), Some("touch_me")))
+    }
   }
 
   def main(args: Array[String]) = {
