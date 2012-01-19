@@ -51,10 +51,8 @@ case class Database(val couch: Couch, val database: String)
   def apply(id: String, rev: String): Handler[JValue] =
     apply(id, List("rev" -> rev))
 
-  def allDocs(): Handler[Result[String, Map[String, JValue]]] = {
-    implicit val formats = DefaultFormats
-    val query = new Query[String, Map[String, JValue]](this, this / "_all_docs")
-    query()
+  def allDocs(params: Map[String, String] = Map()): Handler[Result[String, Map[String, JValue]]] = {
+    query[String, Map[String, JValue]]("_all_docs", params)
   }
 
   def create(): Handler[Unit] = this.PUT >|
@@ -74,5 +72,16 @@ case class Database(val couch: Couch, val database: String)
 	case None                => this POST
     }) << (compact(render(doc)), "application/json") ># {js: JValue => js}
   }
+
+  def query[K: Manifest, V: Manifest](query: String,
+				      params: Map[String, String] = Map(),
+				      formats: Formats = DefaultFormats): Handler[Result[K, V]] =
+    (this / query) <<? params ># (new Result[K, V](_, formats))
+
+  def view[K: Manifest, V: Manifest](design: String,
+				     viewName: String,
+				     params: Map[String, String] = Map(),
+				     formats: Formats = DefaultFormats): Handler[Result[K, V]] =
+    query("_design/" + design + "/_view/" + viewName, params, formats)
 
 }

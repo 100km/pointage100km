@@ -47,7 +47,7 @@ object Replicate {
     while (true) {
       startReplication(localCouch, localDatabase, hubDatabase, true)
       Thread.sleep(5000)
-      val conflicting = Http(new View[Nothing, List[String]](localDatabase, "bib_input", "conflicting-checkpoints").apply()).rows
+      val conflicting = Http(localDatabase.view[Nothing, List[String]]("bib_input", "conflicting-checkpoints")).rows
       for (row <- conflicting) {
 	solveConflicts(localDatabase, row.id, row.value)
       }
