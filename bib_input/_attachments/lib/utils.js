@@ -1,4 +1,9 @@
 function submit_bib(bib, app, cb) {
+  retries(3, function(fail) {
+    submit_bib_once(bib, app, cb, fail);
+  }, "submit_bib");
+}
+function submit_bib_once(bib, app, cb, fail) {
   call_with_race_id(bib, app, function(race_id) {
     call_with_checkpoints(bib, app, function(checkpoints) {
       if (checkpoints["bib"] == undefined) {
@@ -6,10 +11,21 @@ function submit_bib(bib, app, cb) {
       }
       add_checkpoint(checkpoints);
       app.db.saveDoc(checkpoints, {
-        success: cb
+        success: cb,
+        error: fail
       });
     });
   });
+}
+
+function retries(n, f, debug_name) {
+  if (n<=0) {
+    alert("Too many retries for " + debug_name);
+  } else {
+    f(function () {
+      retries(n-1, f);
+    });
+  }
 }
 
 function call_with_race_id(bib, app, f) {
