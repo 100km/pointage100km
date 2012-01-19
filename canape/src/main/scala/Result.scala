@@ -4,7 +4,7 @@ import dispatch._
 import dispatch.liftjson.Js._
 import net.liftweb.json._
 
-class Result[K, V](js: JValue)(implicit val formats: Formats, implicit val k: Manifest[K], implicit val v: Manifest[V]) {
+class Result[K, V](js: JValue, implicit val formats: Formats)(implicit val k: Manifest[K], implicit val v: Manifest[V]) {
 
   val JInt(total_rows: BigInt) = js \ "total_rows"
   val JInt(offset: BigInt) = js \ "offset"
