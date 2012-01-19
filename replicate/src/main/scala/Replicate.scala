@@ -45,6 +45,14 @@ object Replicate {
 			 config.read[String]("master.user"),
 			 config.read[String]("master.password"))
     val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
+
+    try {
+      Http(localDatabase.create)
+    } catch {
+	case StatusCode(status, _) =>
+	  println("cannot create database: " + status)
+    }
+
     while (true) {
       startReplication(localCouch, localDatabase, hubDatabase, true)
       Thread.sleep(5000)
