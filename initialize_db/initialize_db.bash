@@ -35,27 +35,10 @@ usage_and_exit() {
 
 [ "$#" != 1 ] && usage_and_exit 1
 
-case $1 in
-  0)
-    name="La salle des sports"
-    ;;
-  1)
-    name="La Croix du Bac"
-    ;;
-  2)
-    name="Le crampon"
-    ;;
-  *)
-    usage
-    exit 1;
-    ;;
-esac
-
 echo "Initialise database $DOC_URL for site $name"
 
 site_info=$(cat <<EOF
-"name":"$name",
-"site_id":$1
+"site-id":$1
 EOF
 )
 
