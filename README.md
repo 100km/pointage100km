@@ -21,3 +21,11 @@ You can find the specification and state of the project (in French) [in this doc
 Please see [doc/SETUP.md](pointage100km/blob/master/doc/SETUP.md) in order to install the needed tools.
 
 Feel free to comment/contact us for more information.
+
+#Wiping the database
+
+Use:
+
+    sbt "wipe/run login password"
+
+where login and password are your admin credentials. This wipes the total database onto the master.

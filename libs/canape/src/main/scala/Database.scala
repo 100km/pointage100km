@@ -87,4 +87,10 @@ case class Database(val couch: Couch, val database: String)
   def delete(id: String, rev: String): Handler[Unit] =
     (this / id).DELETE <<? Map("rev" -> rev) >|
 
+  def delete(doc: JValue): Handler[Unit] = {
+    val JString(id) = doc \ "_id"
+    val JString(rev) = doc \ "_rev"
+    delete(id, rev)
+  }
+
 }
