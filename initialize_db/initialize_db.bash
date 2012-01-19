@@ -7,7 +7,7 @@
 ADMIN_USER=admin
 ADMIN_PASSWD=admin
 DB=localhost:5984/steenwerck100km
-DOC_NAME=_local/site_info
+DOC_NAME=_local/site-info
 
 
 ####### DON'T CHANGE ANYTHING BELOW THAT LINE #######

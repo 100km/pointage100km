@@ -6,7 +6,7 @@ function(cb) {
   }
 
   fork([
-    function(cb) { get_doc(app, cb, "_local/site_info") },
+    function(cb) { get_doc(app, cb, "_local/site-info") },
     function(cb) { get_doc(app, cb, "infos") }
   ], title_cb);
 
