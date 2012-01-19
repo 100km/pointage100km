@@ -37,6 +37,21 @@ object Replicate {
     }
   }
 
+  def fixIncompleteCheckpoints(db: Database) =
+    for (doc <- Http(db.view[Nothing, JValue]("bib_input", "incomplete-checkpoints")).values) {
+      try {
+	val JInt(bib) = doc \ "bib"
+	val JInt(race) = Http(db("infos-" + bib)) \ "course"
+	if (race != 0) {
+	  println("Fixing incomplete race " + race + " for bib " + bib)
+	  Http(db.insert(doc.replace("race_id" :: Nil, race)))
+	}
+      } catch {
+	  case x: Exception =>
+	    println("Unable to fix contestant: " + x)
+      }
+    }
+
   def main(args: Array[String]) = {
     val localCouch = Couch("admin", "admin")
     val localDatabase = Database(localCouch, "steenwerck100km")
@@ -60,6 +75,7 @@ object Replicate {
       for (row <- conflicting) {
 	solveConflicts(localDatabase, row.id, row.value)
       }
+      fixIncompleteCheckpoints(localDatabase)
     }
   }
 
