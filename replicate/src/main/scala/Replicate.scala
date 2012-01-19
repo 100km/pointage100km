@@ -19,14 +19,10 @@ object Replicate {
     ref.replace("deleted_times" :: Nil, deleted).replace("times" :: Nil, times(ref).union(times(conflicting)).diff(deleted).distinct.sorted)
   }
 
-  def mergeAllInto(docs: Seq[JValue]): JValue = {
-    docs.tail.foldLeft(docs.head)(mergeInto(_, _))
-  }
-
   def solveConflicts(db: Database, id: String, revs: List[String]) = {
     println("solving conflicts for " + id + " (" + revs.size + " documents)")
     val docs = Http(getRevs(db, id, revs))
-    Http(solve(db, docs, mergeAllInto _))
+    Http(solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) })
   }
 
   def startReplication(couch: Couch, local: Database, remote: Database, continuous: Boolean) = {

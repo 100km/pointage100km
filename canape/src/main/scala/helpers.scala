@@ -6,9 +6,9 @@ import net.liftweb.json.JsonDSL._
 
 package object helpers {
 
-  type ConflictSolver = Seq[JValue] => JValue
+  def solve(db: Database,
+	    documents: Seq[JValue])(solver: Seq[JValue] => JValue): Handler[JValue] = {
 
-  def solve(db: Database, documents: Seq[JValue], solver: ConflictSolver): Handler[JValue] = {
     val mergedDoc = solver(documents).remove(_ match {
 	case JField("_conflicts", _) => true
 	case _ => false
