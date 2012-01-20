@@ -1,4 +1,3 @@
-import com.typesafe.config.ConfigFactory
 import dispatch._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
@@ -29,10 +28,10 @@ object Replicate {
   def touchMe(db: Database) = {
     try {
       val touchMe = http(db("touch_me"))
-      Http(db.insert(touchMe))
+      http(db.insert(touchMe))
     } catch {
 	case StatusCode(404, _) =>
-	  Http(db.insert(new JObject(Nil), Some("touch_me")))
+	  http(db.insert(new JObject(Nil), Some("touch_me")))
     }
   }
 
@@ -47,7 +46,7 @@ object Replicate {
     val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
 
     try {
-      Http(localDatabase.create)
+      http(localDatabase.create)
     } catch {
 	case StatusCode(status, _) =>
 	  log.info("cannot create database: " + status)
