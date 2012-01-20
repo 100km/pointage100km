@@ -1,3 +1,6 @@
+import akka.actor.{ActorSystem, Props}
+import akka.event.{Logging, LoggingAdapter}
+import com.typesafe.config.ConfigFactory
 import dispatch._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
@@ -8,66 +11,41 @@ object Replicate {
 
   val config = Config("steenwerck.cfg")
 
-  implicit val formats = DefaultFormats
+  val system = ActorSystem("Replicator", ConfigFactory.load.getConfig("Replicator"))
 
-  def getTimes(from: JValue, name: String) = (from \ name).extract[List[BigInt]]
+  val pinnedProps = Props().withDispatcher("pinned-dispatcher")
 
-  def times(from: JValue): List[BigInt] = getTimes(from, "times")
+  val log = Logging(system, "Replicate")
 
-  def deletedTimes(from: JValue): List[BigInt] = getTimes(from, "deleted_times")
-
-  def mergeInto(ref: JObject, conflicting: JObject): JObject = {
-    val deleted = deletedTimes(ref).union(deletedTimes(conflicting)).distinct.sorted
-    ref.replace("deleted_times" :: Nil, deleted).replace("times" :: Nil, times(ref).union(times(conflicting)).diff(deleted).distinct.sorted).asInstanceOf[JObject]
-  }
-
-  def solveConflicts(db: Database, id: String, revs: List[String]) = {
-    println("solving conflicts for " + id + " (" + revs.size + " documents)")
-    val docs = Http(getRevs(db, id, revs))
-    Http(solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) })
-  }
-
-  def startReplication(couch: Couch, local: Database, remote: Database, continuous: Boolean) = {
-    try {
-      Http(couch.replicate(local, remote, continuous))
-      Http(couch.replicate(remote, local, continuous))
-    } catch {
-      case StatusCode(status, _) =>
-	println("unable to start replication: " + status)
-    }
-  }
-
-  def fixIncompleteCheckpoints(db: Database) =
-    for (doc <- Http(db.view[Nothing, JValue]("bib_input", "incomplete-checkpoints")).values) {
-      try {
-	val JInt(bib) = doc \ "bib"
-	val JInt(race) = Http(db("contestant-" + bib)) \ "course"
-	if (race != 0) {
-	  println("Fixing incomplete race " + race + " for bib " + bib)
-	  Http(db.insert(doc.replace("race_id" :: Nil, race)))
-	}
-      } catch {
-	  case x: Exception =>
-	    println("Unable to fix contestant: " + x)
+  def makeHttp(adapter: LoggingAdapter) =
+    new Http {
+      override def make_logger = new Logger {
+	override def info(msg: String, items: Any*) = adapter.debug(msg.format(items: _*))
+	override def warn(msg: String, items: Any*) = adapter.warning(msg.format(items: _*))
       }
     }
 
 
+  val http = makeHttp(log)
+
   def createLocalInfo(db: Database, site: Int) = {
-    val doc: JObject = try {
-      Http(db("_local/site-info")).asInstanceOf[JObject]
+    val name = "_local/site-info"
+    val doc = try {
+      http(db(name))
     } catch {
-	case StatusCode(404, _) => new JObject(new JField("_id", "_local/site-info") :: Nil)
+	case StatusCode(404, _) => new JObject(Nil)
     }
-    val newDoc = doc ~ ("site-id" -> site)
-    println(compact(render(newDoc)))
-    Http(db.insert(newDoc))
+    val newDoc = doc \ "site-id" match {
+	case JNothing => doc ~ ("site-id" -> site)
+	case _        => doc replace ("site-id" :: Nil, site)
+    }
+    http(db.insert(name, newDoc))
     touchMe(db)
   }
 
   def touchMe(db: Database) = {
     try {
-      val touchMe = Http(db("touch_me"))
+      val touchMe = http(db("touch_me"))
       Http(db.insert(touchMe))
     } catch {
 	case StatusCode(404, _) =>
@@ -89,20 +67,18 @@ object Replicate {
       Http(localDatabase.create)
     } catch {
 	case StatusCode(status, _) =>
-	  println("cannot create database: " + status)
+	  log.info("cannot create database: " + status)
     }
 
     createLocalInfo(localDatabase, site)
 
-    while (true) {
-      startReplication(localCouch, localDatabase, hubDatabase, true)
-      Thread.sleep(5000)
-      val conflicting = Http(localDatabase.view[Nothing, List[String]]("bib_input", "conflicting-checkpoints")).rows
-      for (row <- conflicting) {
-	solveConflicts(localDatabase, row.id, row.value)
-      }
-      fixIncompleteCheckpoints(localDatabase)
-    }
+    system.actorOf(pinnedProps.withCreator(new ReplicationActor(localCouch, localDatabase, hubDatabase)),
+		   "replication")
+    system.actorOf(pinnedProps.withCreator(new ConflictsSolverActor(localDatabase)),
+		   "conflictsSolver")
+    system.actorOf(pinnedProps.withCreator(new IncompleteCheckpointsActor(localDatabase)),
+		   "incompleteCheckpoints")
+
   }
 
 }
