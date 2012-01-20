@@ -16,9 +16,9 @@ object Replicate {
 
   def deletedTimes(from: JValue): List[BigInt] = getTimes(from, "deleted_times")
 
-  def mergeInto(ref: JValue, conflicting: JValue): JValue = {
+  def mergeInto(ref: JObject, conflicting: JObject): JObject = {
     val deleted = deletedTimes(ref).union(deletedTimes(conflicting)).distinct.sorted
-    ref.replace("deleted_times" :: Nil, deleted).replace("times" :: Nil, times(ref).union(times(conflicting)).diff(deleted).distinct.sorted)
+    ref.replace("deleted_times" :: Nil, deleted).replace("times" :: Nil, times(ref).union(times(conflicting)).diff(deleted).distinct.sorted).asInstanceOf[JObject]
   }
 
   def solveConflicts(db: Database, id: String, revs: List[String]) = {

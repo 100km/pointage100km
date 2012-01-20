@@ -24,7 +24,7 @@ object Config {
 
     var activeTasksCount: Int = -2
     do {
-      activeTasksCount = Http(couch.activeTasks).children.size
+      activeTasksCount = Http(couch.activeTasks).size
       println("Active tasks count: " + activeTasksCount)
       Thread.sleep(100)
     } while (activeTasksCount > 0)

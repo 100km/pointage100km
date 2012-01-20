@@ -9,8 +9,7 @@ case class Couch(val host: String = "localhost",
 		 val port: Int = 5984,
 		 val auth: Option[(String, String)] = None) {
 
-  private[canape] val uri =
-    "http://" + auth.map(x => x._1 + ":" + x._2 + "@").getOrElse("") + host + ":" + port
+  val uri = "http://" + auth.map(x => x._1 + ":" + x._2 + "@").getOrElse("") + host + ":" + port
 
   private[canape] val couchRequest = {
     val base = :/(host, port) <:< Map("Accept" -> "application/json")
@@ -29,7 +28,11 @@ case class Couch(val host: String = "localhost",
 
   def status(): Handler[Couch.Status] = couchRequest ># (new Couch.Status(_))
 
-  def activeTasks(): Handler[JValue] = (couchRequest / "_active_tasks") ># { js: JValue => js }
+  def activeTasks(): Handler[List[JObject]] =
+    (couchRequest / "_active_tasks") ># { js: JValue =>
+      implicit val f = DefaultFormats
+      js.extract[List[JObject]]
+    }
 
   def db(databaseName: String) = Database(this, databaseName)
 

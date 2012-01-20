@@ -33,14 +33,14 @@ object Database {
 case class Database(val couch: Couch, val database: String)
      extends Request(couch.couchRequest / database) {
 
-  private[this] val uri = couch.uri + "/" + database
+  val uri = couch.uri + "/" + database
 
   private[canape] def uriFrom(other: Couch) = if (couch == other) database else uri
 
   def status(): Handler[Database.Status] = this ># (new Database.Status(_))
 
-  def apply(id: String): Handler[JValue] =
-    this / id ># {js: JValue => js}
+  def apply(id: String): Handler[JObject] =
+    apply(id, Seq()) ~> (_.asInstanceOf[JObject])
 
   def apply(id: String, properties: Map[String, String]): Handler[JValue] =
     apply(id, properties.toSeq)
@@ -48,8 +48,8 @@ case class Database(val couch: Couch, val database: String)
   def apply(id: String, properties: Seq[(String, String)]): Handler[JValue] =
     this / id <<? properties ># {js: JValue => js}
 
-  def apply(id: String, rev: String): Handler[JValue] =
-    apply(id, List("rev" -> rev))
+  def apply(id: String, rev: String): Handler[JObject] =
+    apply(id, List("rev" -> rev)) ~> (_.asInstanceOf[JObject])
 
   def allDocs(params: Map[String, String] = Map()): Handler[Result[String, Map[String, JValue]]] = {
     query[String, Map[String, JValue]]("_all_docs", params)
@@ -60,17 +60,19 @@ case class Database(val couch: Couch, val database: String)
   def startCompaction(): Handler[Unit] =
     (this / "_compact") << ("", "application/json") >|
 
-  def bulkDocs(docs: Seq[JValue], allOrNothing: Boolean = false): Handler[JValue] = {
+  def bulkDocs(docs: Seq[JValue], allOrNothing: Boolean = false): Handler[List[JObject]] = {
     val args = ("all_or_nothing" -> allOrNothing) ~ ("docs" -> docs)
-    (this / "_bulk_docs").POST << (compact(render(args)), "application/json") ># {js: JValue => js}
+    (this / "_bulk_docs").POST << (compact(render(args)), "application/json") ># { js: JValue =>
+      js.children.map(_.asInstanceOf[JObject])
+    }
   }
 
-  def insert(doc: JValue, id: Option[String] = None): Handler[JValue] = {
+  def insert(doc: JValue, id: Option[String] = None): Handler[(String, String)] = {
     implicit val formats = DefaultFormats
     (id orElse (doc \ "_id").extractOpt[String] match {
 	case Some(docId: String) => (this / docId) <<< compact(render(doc))
 	case None                => this << (compact(render(doc)), "application/json")
-    }) ># {js: JValue => js}
+    }) ># { js: JValue => ((js \ "id").extract[String], (js \ "rev").extract[String]) }
   }
 
   def query[K: Manifest, V: Manifest](query: String,
@@ -86,6 +88,9 @@ case class Database(val couch: Couch, val database: String)
 
   def delete(id: String, rev: String): Handler[Unit] =
     (this / id).DELETE <<? Map("rev" -> rev) >|
+
+  def delete(): Handler[Unit] =
+    this.DELETE >|
 
   def delete(doc: JValue): Handler[Unit] = {
     val JString(id) = doc \ "_id"
