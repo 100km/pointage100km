@@ -1,5 +1,3 @@
-import akka.actor.{ActorSystem, Props}
-import akka.event.{Logging, LoggingAdapter}
 import com.typesafe.config.ConfigFactory
 import dispatch._
 import net.liftweb.json._
@@ -9,22 +7,7 @@ import net.rfc1149.canape.helpers._
 
 object Replicate {
 
-  val config = Config("steenwerck.cfg")
-
-  val system = ActorSystem("Replicator", ConfigFactory.load.getConfig("Replicator"))
-
-  val pinnedProps = Props().withDispatcher("pinned-dispatcher")
-
-  val log = Logging(system, "Replicate")
-
-  def makeHttp(adapter: LoggingAdapter) =
-    new Http {
-      override def make_logger = new Logger {
-	override def info(msg: String, items: Any*) = adapter.debug(msg.format(items: _*))
-	override def warn(msg: String, items: Any*) = adapter.warning(msg.format(items: _*))
-      }
-    }
-
+  import Global._
 
   val http = makeHttp(log)
 
@@ -72,12 +55,9 @@ object Replicate {
 
     createLocalInfo(localDatabase, site)
 
-    system.actorOf(pinnedProps.withCreator(new ReplicationActor(localCouch, localDatabase, hubDatabase)),
-		   "replication")
-    system.actorOf(pinnedProps.withCreator(new ConflictsSolverActor(localDatabase)),
-		   "conflictsSolver")
-    system.actorOf(pinnedProps.withCreator(new IncompleteCheckpointsActor(localDatabase)),
-		   "incompleteCheckpoints")
+    createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+    createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
+    createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
 
   }
 
