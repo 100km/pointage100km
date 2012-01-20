@@ -14,6 +14,10 @@ class DatabaseSpec extends DbSpecification {
   "db.insert()" should {
 
     "be able to insert a new document with an explicit id" in {
+      http(db.insert("docid", JObject(Nil)))._1 must be equalTo("docid")
+    }
+
+    "be able to insert a new document with an explicit id in option" in {
       http(db.insert(JObject(Nil), Some("docid")))._1 must be equalTo("docid")
     }
 
@@ -32,7 +36,7 @@ class DatabaseSpec extends DbSpecification {
     }
 
     "return a consistent rev" in {
-      http(db.insert(JObject(Nil), Some("docid")))._2 must be matching("1-[0-9a-f]{32}")
+      http(db.insert("docid", JObject(Nil)))._2 must be matching("1-[0-9a-f]{32}")
     }
 
   }

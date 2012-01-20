@@ -75,6 +75,9 @@ case class Database(val couch: Couch, val database: String)
     }) ># { js: JValue => ((js \ "id").extract[String], (js \ "rev").extract[String]) }
   }
 
+  def insert(id: String, doc: JValue): Handler[(String, String)] =
+    insert(doc, Some(id))
+
   def query[K: Manifest, V: Manifest](query: String,
 				      params: Map[String, String] = Map(),
 				      formats: Formats = DefaultFormats): Handler[Result[K, V]] =
