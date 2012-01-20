@@ -3,7 +3,7 @@ package net.rfc1149.canape
 import net.liftweb.json.parse
 import org.specs2.mutable._
 
-class DatabaseTest extends Specification {
+class URISpec extends Specification {
 
   val cunauth = Couch("db.example.com", 5984)
   val cauth = Couch("db.example.com", 5984, Some(("admin", "xyzzy")))
@@ -26,7 +26,7 @@ class DatabaseTest extends Specification {
     }
 
     "properly analyze the status" in {
-      val status = new CouchStatus(parse("""{"couchdb":"Welcome","version":"1.3.0a-0c6f529-git","vendor":{"version":"1.3.0a-0c6f529-git","name":"The Apache Software Foundation"}}"""))
+      val status = new Couch.Status(parse("""{"couchdb":"Welcome","version":"1.3.0a-0c6f529-git","vendor":{"version":"1.3.0a-0c6f529-git","name":"The Apache Software Foundation"}}"""))
       (status.couchdb mustEqual "Welcome") &&
       (status.version mustEqual "1.3.0a-0c6f529-git") &&
       (status.vendorVersion mustEqual Some("1.3.0a-0c6f529-git")) &&
@@ -34,10 +34,10 @@ class DatabaseTest extends Specification {
     }
   }
 
-  val dbunauth = Db(cunauth, "test")
-  val dbauth = Db(cauth, "test")
+  val dbunauth = Database(cunauth, "test")
+  val dbauth = Database(cauth, "test")
 
-  "The 'Db' class" should {
+  "The 'Database' class" should {
     "return the right unauthentified URI" in {
       dbunauth.uri mustEqual "http://db.example.com:5984/test"
     }
@@ -55,7 +55,7 @@ class DatabaseTest extends Specification {
     }
 
     "properly analyze the status" in {
-      val status = new DbStatus(parse("""{"db_name":"episodes","doc_count":110,"doc_del_count":656,"update_seq":780,"purge_seq":0,"compact_running":false,"disk_size":532600,"data_size":228323,"instance_start_time":"1323036107518987","disk_format_version":6,"committed_update_seq":780}"""))
+      val status = new Database.Status(parse("""{"db_name":"episodes","doc_count":110,"doc_del_count":656,"update_seq":780,"purge_seq":0,"compact_running":false,"disk_size":532600,"data_size":228323,"instance_start_time":"1323036107518987","disk_format_version":6,"committed_update_seq":780}"""))
       (status.db_name mustEqual "episodes") &&
       (status.doc_count mustEqual 110) &&
       (status.doc_del_count mustEqual 656) &&
