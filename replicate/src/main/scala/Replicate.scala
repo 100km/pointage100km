@@ -8,9 +8,9 @@ object Replicate {
 
   import Global._
 
-  val http = makeHttp(log)
+  private val http = makeHttp(log)
 
-  def createLocalInfo(db: Database, site: Int) = {
+  private def createLocalInfo(db: Database, site: Int) = {
     val name = "_local/site-info"
     val doc = try {
       http(db(name))
@@ -25,7 +25,7 @@ object Replicate {
     touchMe(db)
   }
 
-  def touchMe(db: Database) = {
+  private def touchMe(db: Database) = {
     try {
       val touchMe = http(db("touch_me"))
       http(db.insert(touchMe))
