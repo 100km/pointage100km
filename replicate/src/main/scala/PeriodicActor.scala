@@ -8,13 +8,29 @@ trait PeriodicActor extends Actor {
 
   private var wakeupTimer: Cancellable = _
 
+  private def startTimer() =
+    wakeupTimer = context.system.scheduler.schedule(0 seconds, period, self, 'wakeup)
+
+  private def stopTimer() =
+    wakeupTimer.cancel()
+
   override def preStart() = {
     super.preStart()
-    wakeupTimer = context.system.scheduler.schedule(0 seconds, period, self, 'wakeup)
+    startTimer()
+  }
+
+  override def preRestart(cause: Throwable, msg: Option[Any]) = {
+    stopTimer()
+    super.preRestart(cause, msg)
+  }
+
+  override def postRestart(cause: Throwable) = {
+    super.postRestart(cause)
+    startTimer()
   }
 
   override def postStop() = {
-    wakeupTimer.cancel()
+    stopTimer()
     super.postStop()
   }
 

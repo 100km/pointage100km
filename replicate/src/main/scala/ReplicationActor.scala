@@ -11,8 +11,8 @@ class ReplicationActor(couch: Couch, local: Database, remote: Database) extends 
       http(couch.replicate(local, remote, true))
       http(couch.replicate(remote, local, true))
     } catch {
-      case StatusCode(status, _) =>
-	log.warning("unable to replicate: " + status)
+      case e: Exception =>
+	log.warning("unable to replicate: " + e)
     }
 
 }

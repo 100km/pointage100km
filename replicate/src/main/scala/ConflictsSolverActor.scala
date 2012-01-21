@@ -42,8 +42,8 @@ class ConflictsSolverActor(db: Database) extends DispatchActor with PeriodicActo
     try {
       solveAllConflicts()
     } catch {
-      case StatusCode(status, _) =>
-	log.warning("unable to get conflicting checkpoints: " + status)
+      case e: Exception =>
+	log.warning("unable to fix conflicting checkpoints: " + e)
     }
 
 }

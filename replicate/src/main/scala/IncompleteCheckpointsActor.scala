@@ -18,8 +18,8 @@ class IncompleteCheckpointsActor(db: Database) extends DispatchActor with Period
 	  http(db.insert(doc.replace("race_id" :: Nil, race)))
 	}
       } catch {
-	  case x: Exception =>
-	    log.warning("unable to fix contestant: " + x)
+	  case e: Exception =>
+	    log.warning("unable to fix contestant: " + e)
       }
     }
 
@@ -28,8 +28,8 @@ class IncompleteCheckpointsActor(db: Database) extends DispatchActor with Period
     try {
       fixIncompleteCheckpoints()
     } catch {
-      case StatusCode(status, _) =>
-	log.warning("unable to get incomplete checkpoints: " + status)
+      case e: Exception =>
+	log.warning("unable to get incomplete checkpoints: " + e)
     }
 
 }
