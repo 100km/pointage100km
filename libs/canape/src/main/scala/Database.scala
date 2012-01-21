@@ -33,7 +33,18 @@ object Database {
 case class Database(val couch: Couch, val database: String)
      extends Request(couch.couchRequest / database) {
 
-  val uri = couch.uri + "/" + database
+  private[canape] val uri = couch.uri + "/" + database
+
+  override def toString = couch.toString + "/" + database
+
+  override def hashCode = uri.hashCode
+
+  override def canEqual(that: Any) = that.isInstanceOf[Database]
+
+  override def equals(that: Any): Boolean = that match {
+      case other: Database if other.canEqual(this) => uri == other.uri
+      case _                                       => false
+  }
 
   private[canape] def uriFrom(other: Couch) = if (couch == other) database else uri
 
