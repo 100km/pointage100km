@@ -2,3 +2,4 @@
 target/
 tests/bib_input
 steenwerck.cfg
+bin/*.jar

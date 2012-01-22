@@ -1,4 +1,5 @@
 import sbt._
+import Keys._
 
 object Steenwerck extends Build {
 
@@ -15,5 +16,10 @@ object Steenwerck extends Build {
   lazy val dispatchLiftJson = uri("git://github.com/dispatch/dispatch-lift-json#0.1.1")
 
   lazy val config = Project(id = "config", base = file("libs/config"))
+
+  // minJarPath for ProguardPlugin
+  val mjp = (baseDirectory in root, name) { (b, n) => b / "bin" / (n + ".jar") }
+
+  libraryDependencies ++= Seq("net.databinder" %% "dispatch-http" % "0.8.7" % "compile")
 
 }

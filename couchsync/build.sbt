@@ -2,4 +2,4 @@ seq(proguardSettings: _*)
 
 minJarPath <<= mjp
 
-proguardOptions += keepMain("Wipe")
+proguardOptions += keepMain("Config")
