@@ -12,10 +12,15 @@ class IncompleteCheckpointsActor(db: Database) extends DispatchActor with Period
     for (doc <- http(db.view[Nothing, JValue]("bib_input", "incomplete-checkpoints")).values) {
       try {
 	val JInt(bib) = doc \ "bib"
-	val JInt(race) = http(db("contestant-" + bib)) \ "course"
-	if (race != 0) {
-	  log.info("fixing incomplete race " + race + " for bib " + bib)
-	  http(db.insert(doc.replace("race_id" :: Nil, race)))
+	try {
+	  val JInt(race) = http(db("contestant-" + bib)) \ "course"
+	  if (race != 0) {
+	    log.info("fixing incomplete race " + race + " for bib " + bib)
+	    http(db.insert(doc.replace("race_id" :: Nil, race)))
+	  }
+	} catch {
+	    case StatusCode(404, _) =>
+	      log.debug("no information available for contestant " + bib)
 	}
       } catch {
 	  case e: Exception =>
