@@ -5,38 +5,36 @@ import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.io.Source
 
-object Config {
+object Config extends App {
 
-  def main(args: Array[String]): Unit = {
-    val c = new Config(new File(args(0)), new File(args(1)))
-    c.runCouchDb()
-    Thread.sleep(5000)
-    val couch = c.couch
-    val db = couch.db("steenwerck100km")
-    try {
-      Http(db.create())
-    } catch {
-	case _ =>
-    }
-    val referenceDb = Couch(args(2), "admin", "admin").db("steenwerck100km")
-    Http(couch.replicate(db, referenceDb, false))
-    Http(couch.replicate(referenceDb, db, false))
-
-    var activeTasksCount: Int = -2
-    do {
-      activeTasksCount = Http(couch.activeTasks).size
-      println("Active tasks count: " + activeTasksCount)
-      Thread.sleep(100)
-    } while (activeTasksCount > 0)
-
-    db.startCompaction
-    while (Http(db.status).compact_running) {
-      println("Compaction running")
-      Thread.sleep(100)
-    }
-
-    c.stopCouchDb()
+  val c = new Config(new File(args(0)), new File(args(1)))
+  c.runCouchDb()
+  Thread.sleep(5000)
+  val couch = c.couch
+  val db = couch.db("steenwerck100km")
+  try {
+    Http(db.create())
+  } catch {
+    case _ =>
   }
+  val referenceDb = Couch(args(2), "admin", "admin").db("steenwerck100km")
+  Http(couch.replicate(db, referenceDb, false))
+  Http(couch.replicate(referenceDb, db, false))
+
+  var activeTasksCount: Int = -2
+  do {
+    activeTasksCount = Http(couch.activeTasks).size
+    println("Active tasks count: " + activeTasksCount)
+    Thread.sleep(100)
+  } while (activeTasksCount > 0)
+
+  db.startCompaction
+  while (Http(db.status).compact_running) {
+    println("Compaction running")
+    Thread.sleep(100)
+  }
+
+  c.stopCouchDb()
 
 }
 

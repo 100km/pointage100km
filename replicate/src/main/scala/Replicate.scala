@@ -4,7 +4,7 @@ import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 
-object Replicate {
+object Replicate extends App {
 
   import Global._
 
@@ -35,29 +35,35 @@ object Replicate {
     }
   }
 
-  def main(args: Array[String]) = {
-    val site = Integer.parseInt(args(0))
-    val localCouch = Couch("admin", "admin")
-    val localDatabase = Database(localCouch, "steenwerck100km")
-    val hubCouch = Couch(config.read[String]("master.host"),
-			 config.read[Int]("master.port"),
-			 config.read[String]("master.user"),
-			 config.read[String]("master.password"))
-    val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
-
-    try {
-      http(localDatabase.create)
-    } catch {
-	case StatusCode(status, _) =>
-	  log.info("cannot create database: " + status)
-    }
-
-    createLocalInfo(localDatabase, site)
-
-    createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
-    createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
-    createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
-
+  private def usage() = {
+    println("Usage: replicate N")
+    println("   N: number of the site this program runs on")
+    sys.exit(1)
   }
+
+  if (args.size != 1)
+    usage()
+
+  val site = Integer.parseInt(args(0))
+  val localCouch = Couch("admin", "admin")
+  val localDatabase = Database(localCouch, "steenwerck100km")
+  val hubCouch = Couch(config.read[String]("master.host"),
+		       config.read[Int]("master.port"),
+		       config.read[String]("master.user"),
+		       config.read[String]("master.password"))
+  val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
+
+  try {
+    http(localDatabase.create)
+  } catch {
+    case StatusCode(status, _) =>
+      log.info("cannot create database: " + status)
+  }
+
+  createLocalInfo(localDatabase, site)
+
+  createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+  createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
+  createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
 
 }
