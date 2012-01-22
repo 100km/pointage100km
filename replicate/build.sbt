@@ -11,4 +11,7 @@ libraryDependencies ++= Seq("net.databinder" %% "dispatch-http" % "0.8.7" % "com
 
 seq(ProguardPlugin.proguardSettings: _*)
 
-proguardOptions ++= Seq(keepMain("Replicate"), "-keep class ch.qos.logback.** { *; }", "-keep class org.apache.commons.logging.** { *; }")
+proguardOptions ++= Seq(keepMain("Replicate"),
+			"-keep class ch.qos.logback.** { *; }",
+			"-keep class org.apache.commons.logging.** { *; }",
+			"-keep public class akka.** { *; }")
