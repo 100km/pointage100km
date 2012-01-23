@@ -101,10 +101,6 @@ class DatabaseSpec extends DbSpecification {
   "db.bulkDocs" should {
 
     "be able to insert a single document" in {
-      (http(db.bulkDocs(Seq(Map("_id" -> "docid")))).head \ "ok").extract[Boolean]
-    }
-
-    "identifu the inserted document" in {
       (http(db.bulkDocs(Seq(Map("_id" -> "docid")))).head \ "id").extract[String] must be equalTo("docid")
     }
 
