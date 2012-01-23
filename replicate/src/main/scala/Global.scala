@@ -5,7 +5,7 @@ import dispatch._
 
 object Global {
 
-  val config = Config("steenwerck.cfg")
+  val config = Config("steenwerck.cfg", "../steenwerck.cfg")
 
   val system = ActorSystem("Replicator", ConfigFactory.load.getConfig("Replicator"))
 

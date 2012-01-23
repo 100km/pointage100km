@@ -1,3 +1,5 @@
+seq(Revolver.settings: _*)
+
 seq(proguardSettings: _*)
 
 minJarPath <<= mjp
