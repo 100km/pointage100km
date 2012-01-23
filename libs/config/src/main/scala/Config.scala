@@ -28,8 +28,14 @@ class Config(file: File) extends Ini(file) {
 
 object Config {
 
-  def apply(file: File) = new Config(file)
+  def apply(file: File): Config = new Config(file)
 
-  def apply(fileName: String) = new Config(new File(fileName))
+  def apply(fileNames: String*): Config =
+    try {
+      new Config(new File(fileNames.head))
+    } catch {
+      case _: java.io.FileNotFoundException if fileNames.size > 1 =>
+	apply(fileNames.tail: _*)
+    }
 
 }
