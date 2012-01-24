@@ -6,13 +6,15 @@ trait PeriodicActor extends Actor {
 
   protected val period: Duration
 
-  private var wakeupTimer: Cancellable = _
+  private var wakeupTimer: Option[Cancellable] = None
 
   private def startTimer() =
-    wakeupTimer = context.system.scheduler.schedule(0 seconds, period, self, 'wakeup)
+    wakeupTimer = wakeupTimer orElse Some(context.system.scheduler.schedule(0 seconds, period, self, 'wakeup))
 
-  private def stopTimer() =
-    wakeupTimer.cancel()
+  private def stopTimer() = {
+    wakeupTimer.foreach (_.cancel())
+    wakeupTimer = None
+  }
 
   override def preStart() = {
     super.preStart()
