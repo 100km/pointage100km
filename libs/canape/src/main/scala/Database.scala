@@ -1,37 +1,12 @@
 package net.rfc1149.canape
 
-import dispatch._
-import dispatch.liftjson.Js._
 import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
+import net.liftweb.json.Serialization.write
+import org.jboss.netty.handler.codec.http._
 
-object Database {
+case class Database(val couch: Couch, val database: String) {
 
-  class Status(js: JValue) {
-
-    private implicit val formats = DefaultFormats
-
-    val JString(db_name) = js \ "db_name"
-    val JInt(doc_count) = js \ "doc_count"
-    val JInt(doc_del_count) = js \ "doc_del_count"
-    val JInt(update_seq) = js \ "update_seq"
-    val JInt(purge_seq) = js \ "purge_seq"
-    val JBool(compact_running) = js \ "compact_running"
-    val JInt(disk_size) = js \ "disk_size"
-    val data_size = js \ "data_size" match {
-      case JInt(s) => Some(s)
-      case _       => None
-    }
-    val instance_start_time = BigInt((js \ "instance_start_time").extract[String])
-    val JInt(disk_format_version) = js \ "disk_format_version"
-    val JInt(committed_update_seq) = js \ "committed_update_seq"
-
-  }
-
-}
-
-case class Database(val couch: Couch, val database: String)
-     extends Request(couch.couchRequest / database) {
+  import implicits._
 
   private[canape] val uri = couch.uri + "/" + database
 
@@ -48,68 +23,78 @@ case class Database(val couch: Couch, val database: String)
 
   private[canape] def uriFrom(other: Couch) = if (couch == other) database else uri
 
-  def status(): Handler[Database.Status] = this ># (new Database.Status(_))
-
-  def apply(id: String): Handler[JObject] =
-    apply(id, Seq()) ~> (_.asInstanceOf[JObject])
-
-  def apply(id: String, properties: Map[String, String]): Handler[JValue] =
-    apply(id, properties.toSeq)
-
-  def apply(id: String, properties: Seq[(String, String)]): Handler[JValue] =
-    this / id <<? properties ># {js: JValue => js}
-
-  def apply(id: String, rev: String): Handler[JObject] =
-    apply(id, List("rev" -> rev)) ~> (_.asInstanceOf[JObject])
-
-  def allDocs(params: Map[String, String] = Map()): Handler[Result[String, Map[String, JValue]]] = {
-    query[String, Map[String, JValue]]("_all_docs", params)
+  private def encode(extra: String, properties: Seq[(String, String)] = Seq()) = {
+    val encoder = new QueryStringEncoder(database + "/" + extra)
+    properties foreach { case (name, value) => encoder.addParam(name, value) }
+    encoder.toString
   }
 
-  def create(): Handler[Unit] = this.PUT >|
+  def status(): CouchRequest[mapObject] = couch.makeGetRequest[mapObject](database)
 
-  def startCompaction(): Handler[Unit] =
-    (this / "_compact") << ("", "application/json") >|
+  def apply(id: String): CouchRequest[Map[String, JValue]] =
+    couch.makeGetRequest[Map[String, JValue]](encode(id))
 
-  def bulkDocs(docs: Seq[JValue], allOrNothing: Boolean = false): Handler[List[JObject]] = {
-    val args = ("all_or_nothing" -> allOrNothing) ~ ("docs" -> docs)
-    (this / "_bulk_docs").POST << (compact(render(args)), "application/json") ># { js: JValue =>
-      js.children.map(_.asInstanceOf[JObject])
+  def apply(id: String, rev: String): CouchRequest[Map[String, JValue]] =
+    couch.makeGetRequest[Map[String, JValue]](encode(id, Seq("rev" -> rev)))
+
+  def apply(id: String, properties: Map[String, String]): CouchRequest[JValue] =
+    apply(id, properties.toSeq)
+
+  def apply(id: String, properties: Seq[(String, String)]): CouchRequest[JValue] =
+    couch.makeGetRequest[JValue](encode(id, properties))
+
+  def query(id: String, properties: Seq[(String, String)]): CouchRequest[Result] = {
+    couch.makeGetRequest[Result](encode(id, properties))
+  }
+
+  def view(design: String, name: String, properties: Seq[(String, String)] = Seq()) =
+    query("_design/" + design + "/_view/" + name, properties)
+
+  def allDocs(): CouchRequest[Result] = allDocs(Map())
+
+  def allDocs(params: Map[String, String]): CouchRequest[Result] =
+    query("_all_docs", params.toSeq)
+
+  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, "")
+
+  def startCompaction(): CouchRequest[JValue] =
+    couch.makePostRequest[JValue](database + "/_compact", "")
+
+  def bulkDocs(docs: Seq[Any], allOrNothing: Boolean = false): CouchRequest[JValue] = {
+    val args = Map("all_or_nothing" -> allOrNothing, "docs" -> docs)
+    couch.makePostRequest[JValue](database + "/_bulk_docs", args)
+  }
+
+  def insert(doc: AnyRef, id: Option[String] = None): CouchRequest[JValue] = {
+    val jsDoc = doc match {
+	case js: JObject => js
+	case _           => parse(write(doc)).extract[JObject]
+    }
+    id orElse (jsDoc \ "_id" match {
+      case JString(docId) => Some(docId)
+      case _              => None
+    }) match {
+      case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, jsDoc)
+      case None                => couch.makePostRequest[JValue](database, jsDoc)
     }
   }
 
-  def insert(doc: JValue, id: Option[String] = None): Handler[(String, String)] = {
-    implicit val formats = DefaultFormats
-    (id orElse (doc \ "_id").extractOpt[String] match {
-	case Some(docId: String) => (this / docId) <<< compact(render(doc))
-	case None                => this << (compact(render(doc)), "application/json")
-    }) ># { js: JValue => ((js \ "id").extract[String], (js \ "rev").extract[String]) }
-  }
-
-  def insert(id: String, doc: JValue): Handler[(String, String)] =
+  def insert(id: String, doc: AnyRef): CouchRequest[JValue] =
     insert(doc, Some(id))
 
-  def query[K: Manifest, V: Manifest](query: String,
-				      params: Map[String, String] = Map(),
-				      formats: Formats = DefaultFormats): Handler[Result[K, V]] =
-    (this / query) <<? params ># (new Result[K, V](_, formats))
+  def delete(id: String, rev: String): CouchRequest[JValue] =
+    couch.makeDeleteRequest[JValue](database + "/" + id + "?rev=" + rev)
 
-  def view[K: Manifest, V: Manifest](design: String,
-				     viewName: String,
-				     params: Map[String, String] = Map(),
-				     formats: Formats = DefaultFormats): Handler[Result[K, V]] =
-    query("_design/" + design + "/_view/" + viewName, params, formats)
+  def delete(): CouchRequest[JValue] = couch.makeDeleteRequest[JValue](database)
 
-  def delete(id: String, rev: String): Handler[Unit] =
-    (this / id).DELETE <<? Map("rev" -> rev) >|
-
-  def delete(): Handler[Unit] =
-    this.DELETE >|
-
-  def delete(doc: JValue): Handler[Unit] = {
-    val JString(id) = doc \ "_id"
-    val JString(rev) = doc \ "_rev"
+  def delete(doc: AnyRef): CouchRequest[JValue] = {
+    val jsDoc = parse(write(doc)).extract[JObject]
+    val JString(id) = jsDoc \ "_id"
+    val JString(rev) = jsDoc \ "_rev"
     delete(id, rev)
   }
+
+  def changes(params: Map[String, String] = Map()): CouchRequest[JValue] =
+    couch.makeGetRequest[JValue](encode("_changes", params.toSeq))
 
 }

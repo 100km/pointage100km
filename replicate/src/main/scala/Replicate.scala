@@ -1,4 +1,3 @@
-import dispatch._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
@@ -8,30 +7,25 @@ object Replicate extends App {
 
   import Global._
 
-  private val http = makeHttp(log)
-
   private def createLocalInfo(db: Database, site: Int) = {
     val name = "_local/site-info"
-    val doc = try {
-      http(db(name))
+    val doc: mapObject = try {
+      db(name).execute
     } catch {
-	case StatusCode(404, _) => new JObject(Nil)
+	case StatusCode(404, _) => Map()
     }
-    val newDoc = doc \ "site-id" match {
-	case JNothing => doc ~ ("site-id" -> site)
-	case _        => doc replace ("site-id" :: Nil, site)
-    }
-    http(db.insert(name, newDoc))
+    val newDoc = doc + ("site-id" -> JInt(site))
+    db.insert(name, newDoc).execute
     touchMe(db)
   }
 
   private def touchMe(db: Database) = {
     try {
-      val touchMe = http(db("touch_me"))
-      http(db.insert(touchMe))
+      val touchMe = db("touch_me").execute
+      db.insert(touchMe).execute
     } catch {
 	case StatusCode(404, _) =>
-	  http(db.insert(new JObject(Nil), Some("touch_me")))
+	  db.insert("touch_me", Map()).execute
     }
   }
 
@@ -45,19 +39,21 @@ object Replicate extends App {
     usage()
 
   val site = Integer.parseInt(args(0))
-  val localCouch = Couch("admin", "admin")
-  val localDatabase = Database(localCouch, "steenwerck100km")
-  val hubCouch = Couch(config.read[String]("master.host"),
-		       config.read[Int]("master.port"),
-		       config.read[String]("master.user"),
-		       config.read[String]("master.password"))
-  val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
+  val localCouch = new NioCouch(auth = Some("admin", "admin"))
+  val localDatabase = localCouch.db("steenwerck100km")
+  val hubCouch = new NioCouch(config.read[String]("master.host"),
+			      config.read[Int]("master.port"),
+			      Some(config.read[String]("master.user"),
+				   config.read[String]("master.password")))
+  val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
 
   try {
-    http(localDatabase.create)
+    localDatabase.create.execute
   } catch {
-    case StatusCode(status, _) =>
-      log.info("cannot create database: " + status)
+    case StatusCode(412, _) =>
+      log.info("database already exists")
+    case t =>
+      log.error("cannot create database: " + t)
   }
 
   createLocalInfo(localDatabase, site)

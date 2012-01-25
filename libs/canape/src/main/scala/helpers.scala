@@ -1,47 +1,43 @@
 package net.rfc1149.canape
 
-import dispatch._
-import dispatch.liftjson.Js._
 import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
+import org.jboss.netty.handler.codec.http._
 
 package object helpers {
 
-  type Solver = Seq[JObject] => JObject
+  import implicits._
+
+  type Solver = Seq[Map[String, JValue]] => Map[String, JValue]
 
   def solve(db: Database,
-	    documents: Seq[JObject])(solver: Solver): Handler[List[JObject]] = {
-    val mergedDoc = solver(documents).remove(_ match {
-	case JField("_conflicts", _) => true
-	case _ => false
-    })
-    val JString(id) = mergedDoc \ "_id"
-    val JString(rev) = mergedDoc \ "_rev"
+	    documents: Seq[JObject])(solver: Solver): CouchRequest[JValue] = {
+    val mergedDoc = solver(documents.map(_.toMap)) - "_conflicts"
+    val JString(id) = mergedDoc("_id")
+    val rev = mergedDoc("_rev")
     val deletedDocs = documents map { doc =>
-      ("_id" -> id) ~ ("_rev" -> doc \ "_rev") ~ ("_deleted" -> true)
-    } filterNot { _ \ "_rev" == rev }
+      Map("_id" -> id, "_rev" -> doc \ "_rev", "_deleted" -> true)
+    } filterNot { _("_rev") == rev }
     db.bulkDocs(mergedDoc +: deletedDocs, true)
   }
 
-  def getRevs(db: Database, id: String, revs: Seq[String] = Seq()): Handler[List[JObject]] = {
+  def getRevs(db: Database, id: String, revs: Seq[String] = Seq()): CouchRequest[Seq[JObject]] = {
     val revsList = if (revs.isEmpty) "all" else "[" + revs.map("\"" + _ + "\"").mkString(",") + "]"
-    db(id, Map("open_revs" -> revsList)) ~> { _.children.collect {
-      case JObject(JField("ok", value: JObject) :: _) => value
-    } }
+    val request = db(id, Map("open_revs" -> revsList))
+    new TransformerRequest(request,
+			   { js: JValue =>
+			     js.childrenAs[JObject] map (_ \ "ok") map (_.asInstanceOf[JObject]) })
   }
 
-  def getConflicting(db: Database, doc: JObject): Handler[List[JObject]] = {
-    implicit val formats = DefaultFormats
+  def getConflicting(db: Database, doc: JObject): CouchRequest[Seq[JObject]] = {
     val JString(id) = doc \ "_id"
-    val revs = (doc \ "_conflicts").extract[List[String]]
-    getRevs(db, id, revs) ~> (doc :: _)
+    val revs = doc.subSeq[String]("_conflicts")
+    new TransformerRequest(getRevs(db, id, revs), { docs: Seq[JObject] => doc +: docs })
   }
 
-  def getConflictingRevs(db: Database, id: String): Handler[List[String]] = {
-    implicit val formats = DefaultFormats
-    db(id, Map("conflicts" -> "true")) ~> { doc =>
-      (doc \ "_rev").extract[String] :: (doc \ "_conflicts").extract[List[String]]
-    }
-  }
+  def getConflictingRevs(db: Database, id: String): CouchRequest[Seq[String]] =
+    new TransformerRequest(db(id, Map("conflicts" -> "true")),
+			   { js: JValue =>
+			     (js \ "_rev").extract[String] +: (js \ "_conflicts").extract[List[String]]
+			   })
 
 }

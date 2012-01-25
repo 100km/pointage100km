@@ -1,4 +1,3 @@
-import dispatch._
 import net.liftweb.json._
 import net.rfc1149.canape._
 
@@ -11,12 +10,13 @@ object Wipe extends App {
   implicit val formats = DefaultFormats
 
   val config = Config("steenwerck.cfg")
-  val hubCouch = Couch(config.read[String]("master.host"),
-		       config.read[Int]("master.port"),
-		       args(0),
-		       args(1))
+  val hubCouch = new NioCouch(config.read[String]("master.host"),
+			      config.read[Int]("master.port"),
+			      Some(args(0), args(1)))
   val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
-  for (doc <- Http(hubDatabase.allDocs()).rows)
-    Http(hubDatabase.delete(doc.id, doc.value("rev").extract[String]))
+  for ((id, _, value) <- hubDatabase.allDocs.execute.items[String, JObject])
+    hubDatabase.delete(id, (value \ "rev").extract[String]).execute
+
+  hubCouch.releaseExternalResources
 
 }

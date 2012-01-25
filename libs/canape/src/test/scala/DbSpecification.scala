@@ -1,4 +1,3 @@
-import dispatch._
 import net.rfc1149.canape._
 import org.specs2.mutable._
 import org.specs2.specification._
@@ -11,22 +10,21 @@ trait DbSpecification extends Specification with BeforeAfterExample {
 
   val dbSuffix: String
 
-  lazy val couch = Couch("admin", "admin")
+  lazy val couch = new NioCouch(auth = Some("admin", "admin"))
   lazy val db = couch.db("canape-test-" + dbSuffix)
-  lazy val http = new Http with NoLogging
 
   override def before() =
     try {
-      http(db.create())
+      db.create.execute
     } catch {
-	case StatusCode(412, _) =>
+	case _ =>
     }
 
   override def after() =
     try {
-      http(db.delete())
+      db.delete.execute
     } catch {
-	case StatusCode(404, _) =>
+	case _ =>
     }
 
 }

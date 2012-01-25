@@ -1,4 +1,3 @@
-import dispatch._
 import net.rfc1149.canape._
 import org.specs2.mutable._
 import org.specs2.specification._
@@ -10,7 +9,7 @@ class ConnectionSpec extends DbSpecification {
   "couch.status()" should {
 
     "have a version we are comfortable with" in {
-      http(couch.status).version must startWith("1.")
+      couch.status.execute.version must startWith("1.")
     }
 
   }
@@ -18,7 +17,7 @@ class ConnectionSpec extends DbSpecification {
   "couch.activeTasks()" should {
 
     "be queryable" in {
-      http(couch.activeTasks)
+      couch.activeTasks.execute
       success
     }
 
@@ -27,13 +26,13 @@ class ConnectionSpec extends DbSpecification {
   "db.delete()" should {
 
     "be able to delete an existing database" in {
-      http(db.delete())
+      db.delete.execute
       success
     }
 
     "fail when we trying to delete a non-existing database" in {
-      http(db.delete())
-      http(db.delete()) must throwA[StatusCode]
+      db.delete.execute
+      db.delete.execute must throwA[Exception]
     }
 
   }
@@ -41,13 +40,13 @@ class ConnectionSpec extends DbSpecification {
   "db.create()" should {
 
     "be able to create a non-existing database" in {
-      http(db.delete())
-      http(db.create())
+      db.delete.execute
+      db.create.execute
       success
     }
 
     "fail when trying to create an existing database" in {
-      http(db.create()) must throwA[StatusCode]
+      db.create.execute must throwA[Exception]
     }
 
   }

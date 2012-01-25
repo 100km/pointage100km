@@ -1,33 +1,23 @@
 package net.rfc1149.canape
 
-import dispatch._
-import dispatch.liftjson.Js._
 import net.liftweb.json._
 
-final class Result[K: Manifest, V: Manifest](js: JValue,
-					     formats: Formats) {
+import implicits._
 
-  val JInt(total_rows: BigInt) = js \ "total_rows"
-  val JInt(offset: BigInt) = js \ "offset"
-  val rows: List[Result.Row[K, V]] = (js \ "rows").children map { new Result.Row[K, V](_, formats) }
+case class Result(val total_rows: Long,
+		  val offset: Long,
+		  val rows: List[Row]) {
 
   lazy val ids = rows map (_.id)
-  lazy val keys = rows map (_.key)
-  lazy val values = rows map (_.value)
+  def keys[T: Manifest] = rows map (_.key.extract[T])
+  def values[T: Manifest] = rows map (_.value.extract[T])
+  def items[K: Manifest, V: Manifest] = rows map (_.extract[K, V])
 
 }
 
-object Result {
+case class Row(val id: String, val key: JValue, val value: JValue) {
 
-  final class Row[K: Manifest, V: Manifest](js: JValue,
-					    formats: Formats) {
-
-    private[this] implicit val f = formats
-
-    val JString(id: String) = js \ "id"
-    val key: K = (js \ "key").extract[K]
-    val value: V = (js \ "value").extract[V]
-
-  }
+  def extract[K: Manifest, V: Manifest]: (String, K, V) =
+    (id, key.extract[K], value.extract[V])
 
 }

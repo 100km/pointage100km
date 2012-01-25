@@ -1,4 +1,3 @@
-import dispatch._
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
 import net.liftweb.json._
@@ -7,34 +6,39 @@ import scala.io.Source
 
 object Config extends App {
 
+  implicit val formats = DefaultFormats
+
   val c = new Config(new File(args(0)), new File(args(1)))
   c.runCouchDb()
   Thread.sleep(5000)
   val couch = c.couch
   val db = couch.db("steenwerck100km")
   try {
-    Http(db.create())
+    db.create.execute
   } catch {
-    case _ =>
+    case StatusCode(412, _) => // Database already exists
   }
-  val referenceDb = Couch(args(2), "admin", "admin").db("steenwerck100km")
-  Http(couch.replicate(db, referenceDb, false))
-  Http(couch.replicate(referenceDb, db, false))
+  val referenceDb = new NioCouch(args(2), auth = Some("admin", "admin")).db("steenwerck100km")
+  couch.replicate(db, referenceDb, false).execute
+  couch.replicate(referenceDb, db, false).execute
 
   var activeTasksCount: Int = -2
   do {
-    activeTasksCount = Http(couch.activeTasks).size
+    activeTasksCount = couch.activeTasks.execute.size
     println("Active tasks count: " + activeTasksCount)
     Thread.sleep(100)
   } while (activeTasksCount > 0)
 
   db.startCompaction
-  while (Http(db.status).compact_running) {
+  while (db.status.execute()("compact_running").extract[Boolean]) {
     println("Compaction running")
     Thread.sleep(100)
   }
 
   c.stopCouchDb()
+
+  couch.releaseExternalResources
+  referenceDb.couch.releaseExternalResources
 
 }
 
@@ -82,13 +86,13 @@ class Config(srcDir: File, usbBaseDir: File) {
   def runCouchDb() = {
     fixDefaultIni()
 
-    val pb = new ProcessBuilder("/usr/bin/couchdb",
+    val pb = new ProcessBuilder("couchdb",
 				"-n", "-a", defaultFile.toString,
 				"-p", pidFile.toString)
     pb.directory(usbBaseDir)
     process = Some(pb.start())
 
-    _couch = Some(Couch("localhost", 5983, "admin", "admin"))
+    _couch = Some(new NioCouch("localhost", 5983, Some("admin", "admin")))
   }
 
   def stopCouchDb() = {
