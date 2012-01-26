@@ -22,9 +22,9 @@ cat <<EOF
 initialize_db.bash <site_id>
 
 where <site_id> is one of:
-  - 0 : Salle des sports
-  - 1 : Croix du Bac
-  - 2 : Crampon
+  - 0 : Croix du Bac
+  - 1 : Crampon
+  - 2 : Salle des sports
 EOF
 }
 
@@ -34,6 +34,8 @@ usage_and_exit() {
 }
 
 [ "$#" != 1 ] && usage_and_exit 1
+
+[ "$1" != 0 ] && [ "$1" != 1 ] && [ "$1" != 2 ] && usage_and_exit 1
 
 echo "Initialise database $DOC_URL for site $name"
 
