@@ -5,8 +5,8 @@ object Steenwerck extends Build {
 
   val dispatch = Seq("net.databinder" %% "dispatch-http" % "0.8.7" % "compile")
 
-  val akka = Seq("com.typesafe.akka" % "akka-actor" % "2.0-M2",
-		 "com.typesafe.akka" % "akka-slf4j" % "2.0-M2",
+  val akka = Seq("com.typesafe.akka" % "akka-actor" % "2.0-M3",
+		 "com.typesafe.akka" % "akka-slf4j" % "2.0-M3",
 		 "ch.qos.logback" % "logback-classic" % "1.0.0" % "compile")
 
   lazy val root =
