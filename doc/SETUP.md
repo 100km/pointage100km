@@ -57,7 +57,7 @@ sudo pip install git+http://github.com/couchapp/couchapp.git@1.0.1#egg=Couchapp
 In order to try the couchapp, please launch couchDB and configure it to have local administrative user to be "admin" with password "admin".
 See http://localhost:5984/_utils/
 
-Then, just go to bib_input directory and run "./push_me". You should see a message like this:
+Then, just go to bib_input directory and run "couchapp push". You should see a message like this:
 // date info // [INFO] Visit your CouchApp here:
 http://localhost:5984/steenwerck100km/_design/bib_input/index.html
 
