@@ -1,3 +1,5 @@
+resolvers += "Typesafe Repository (releases)" at "http://repo.typesafe.com/typesafe/releases/"
+
 seq(Revolver.settings: _*)
 
 seq(proguardSettings: _*)
