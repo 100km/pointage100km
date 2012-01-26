@@ -15,10 +15,11 @@ function(data) {
       // current_li will be dealed after rendering mustache in after.js
       app.current_bib = data[0].value.bib
       app.current_lap = data[0].value.lap
-
-      $(this).trigger("change_infos");
     }
   }
+
+  // Always trigger change_infos event so that infos are always up to date with database
+  $(this).trigger("change_infos");
 
   function create_infos(r) {
     p = {};
