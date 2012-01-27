@@ -23,6 +23,7 @@ object Steenwerck extends Build {
 				  "-keep class net.rfc1149.canape.** { *; }")) :+
 	 (minJarPath <<= mjp)
 
+  lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "1.1.3")
 
   lazy val json = Seq(libraryDependencies += "net.liftweb" %% "lift-json" % "2.4-RC1")
 
@@ -33,7 +34,7 @@ object Steenwerck extends Build {
     Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config)
 
   lazy val replicate =
-    Project("replicate", file("replicate")) dependsOn(canape, config) settings(proguard: _*) settings(akka: _*)
+    Project("replicate", file("replicate")) dependsOn(canape, config) settings(proguard: _*) settings(akka: _*) settings(scopt: _*)
 
   lazy val couchsync =
     Project("couchsync", file("couchsync")) dependsOn(canape) settings(proguard: _*)

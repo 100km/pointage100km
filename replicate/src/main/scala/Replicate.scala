@@ -2,8 +2,23 @@ import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
+import scopt.OptionParser
 
 object Replicate extends App {
+
+  private object Options {
+    var initOnly: Boolean = false
+    var siteId: Int = _
+  }
+
+  private val parser = new OptionParser("replicate") {
+    help("h", "help", "show this help")
+    opt("init-only", "initialize database but do not start tasks", { Options.initOnly = true })
+    arg("site_id", "numerical id of the current site", { s: String => Options.siteId = Integer.parseInt(s) })
+  }
+
+  if (!parser.parse(args))
+    sys.exit(1)
 
   import Global._
 
@@ -29,18 +44,8 @@ object Replicate extends App {
     }
   }
 
-  private def usage() = {
-    println("Usage: replicate N")
-    println("   N: number of the site this program runs on")
-    sys.exit(1)
-  }
-
-  if (args.size != 1)
-    usage()
-
-  val site = Integer.parseInt(args(0))
-  val localCouch = new NioCouch(auth = Some("admin", "admin"))
-  val localDatabase = localCouch.db("steenwerck100km")
+  private val localCouch = new NioCouch(auth = Some("admin", "admin"))
+  private val localDatabase = localCouch.db("steenwerck100km")
 
   try {
     localDatabase.create.execute
@@ -50,27 +55,36 @@ object Replicate extends App {
     case t =>
       log.error("cannot create database: " + t)
       localCouch.releaseExternalResources
-      sys.exit(1)
+      exit(1)
   }
 
   try {
-    createLocalInfo(localDatabase, site)
+    createLocalInfo(localDatabase, Options.siteId)
   } catch {
     case t =>
       log.error("cannot create local information: " + t)
       localCouch.releaseExternalResources
-      sys.exit(1)
+      exit(1)
   }
 
-  {
-    val hubCouch = new NioCouch(config.read[String]("master.host"),
-				config.read[Int]("master.port"),
-				Some(config.read[String]("master.user"),
-				     config.read[String]("master.password")))
-    val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
-    createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+  if (Options.initOnly)
+    exit(0)
+  else {
+    {
+      val hubCouch = new NioCouch(config.read[String]("master.host"),
+				  config.read[Int]("master.port"),
+				  Some(config.read[String]("master.user"),
+				       config.read[String]("master.password")))
+      val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
+      createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+    }
+    createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
+    createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
   }
-  createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
-  createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
 
+  private def exit(status: Int) = {
+    localCouch.releaseExternalResources
+    system.shutdown
+    System.exit(status)
+  }
 }
