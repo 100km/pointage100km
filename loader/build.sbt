@@ -1,0 +1,1 @@
+proguardOptions += keepMain("Loader")

@@ -1,4 +1,4 @@
-JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar
+JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
 SBT = ./sbt
 
 all:: $(JARFILES)
