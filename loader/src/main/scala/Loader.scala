@@ -17,11 +17,17 @@ object Loader extends App {
 
   def get(id: String) = try { Some(db(id).execute) } catch { case StatusCode(404, _) => None }
 
-  def capitalize(id: AnyRef) = id.asInstanceOf[String].toLowerCase.capitalize
+  def capitalize(name: String) = {
+    val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
+    capitalized.zip(name) map { _ match {
+      case (_, '-') => '-'
+      case (c, _)   => c
+    } } mkString
+  }
 
   def fix(contestant: Map[String, AnyRef]) =
-    contestant + ("nom" -> capitalize(contestant("nom"))) +
-		 ("prenom" -> capitalize(contestant("prenom")))
+    contestant + ("nom" -> capitalize(contestant("nom").asInstanceOf[String])) +
+		 ("prenom" -> capitalize(contestant("prenom").asInstanceOf[String]))
 
   for (row <- table) {
     val id = "contestant-" + row("dossard")
