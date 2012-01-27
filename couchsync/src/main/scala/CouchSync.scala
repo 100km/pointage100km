@@ -3,12 +3,29 @@ import java.lang.{Process, ProcessBuilder}
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.io.Source
+import scopt.OptionParser
 
-object Config extends App {
+object CouchSync extends App {
 
   implicit val formats = DefaultFormats
 
-  val c = new Config(new File(args(0)), new File(args(1)))
+  private object Options {
+    var localDir: File = _
+    var usbDir: File = _
+    var hostName: String = _
+  }
+
+  private val parser = new OptionParser("wipe") {
+    help("h", "help", "show this help")
+    arg("local", "local database directory", { s: String => Options.localDir = new File(s) })
+    arg("usb_key", "usb key directory", { s: String => Options.usbDir = new File(s) })
+    arg("host", "local host name", { Options.hostName = _ })
+  }
+
+  if (!parser.parse(args))
+    sys.exit(1)
+
+  val c = new CouchSync(Options.localDir, Options.usbDir)
   c.runCouchDb()
   Thread.sleep(5000)
   val couch = c.couch
@@ -18,7 +35,7 @@ object Config extends App {
   } catch {
     case StatusCode(412, _) => // Database already exists
   }
-  val referenceDb = new NioCouch(args(2), auth = Some("admin", "admin")).db("steenwerck100km")
+  val referenceDb = new NioCouch(Options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
   couch.replicate(db, referenceDb, false).execute
   couch.replicate(referenceDb, db, false).execute
 
@@ -42,7 +59,7 @@ object Config extends App {
 
 }
 
-class Config(srcDir: File, usbBaseDir: File) {
+class CouchSync(srcDir: File, usbBaseDir: File) {
 
   val dbDir = new File(usbBaseDir, "db")
   val etcDir = new File(usbBaseDir, "etc")

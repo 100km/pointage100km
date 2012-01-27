@@ -37,7 +37,7 @@ object Steenwerck extends Build {
     Project("replicate", file("replicate")) dependsOn(canape, config) settings(proguard: _*) settings(akka: _*) settings(scopt: _*)
 
   lazy val couchsync =
-    Project("couchsync", file("couchsync")) dependsOn(canape) settings(proguard: _*)
+    Project("couchsync", file("couchsync")) dependsOn(canape) settings(proguard: _*) settings(scopt: _*)
 
   lazy val loader =
     Project("loader", file("loader")) dependsOn(canape) settings(proguard: _*) settings(jackcess: _*) settings(scopt: _*)
