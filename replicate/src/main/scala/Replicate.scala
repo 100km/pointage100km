@@ -41,11 +41,6 @@ object Replicate extends App {
   val site = Integer.parseInt(args(0))
   val localCouch = new NioCouch(auth = Some("admin", "admin"))
   val localDatabase = localCouch.db("steenwerck100km")
-  val hubCouch = new NioCouch(config.read[String]("master.host"),
-			      config.read[Int]("master.port"),
-			      Some(config.read[String]("master.user"),
-				   config.read[String]("master.password")))
-  val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
 
   try {
     localDatabase.create.execute
@@ -58,7 +53,14 @@ object Replicate extends App {
 
   createLocalInfo(localDatabase, site)
 
-  createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+  {
+    val hubCouch = new NioCouch(config.read[String]("master.host"),
+				config.read[Int]("master.port"),
+				Some(config.read[String]("master.user"),
+				     config.read[String]("master.password")))
+    val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
+    createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+  }
   createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
   createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
 
