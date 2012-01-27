@@ -1,7 +1,6 @@
 package net.rfc1149.canape
 
 import net.liftweb.json._
-import org.jboss.netty.channel._
 
 object implicits {
 
@@ -14,5 +13,7 @@ object implicits {
     lazy val toMap: mapObject = js.extract[mapObject]
     def subSeq[T: Manifest](field: String): Seq[T] = (js \ field).children.map(_.extract[T])
   }
+
+  implicit def toJObject(doc: AnyRef): JObject = util.toJObject(doc)
 
 }

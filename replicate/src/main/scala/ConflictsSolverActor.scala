@@ -4,6 +4,7 @@ import net.liftweb.json._
 import net.liftweb.json.Serialization.write
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
+import net.rfc1149.canape.util._
 
 class ConflictsSolverActor(db: Database) extends PeriodicActor {
 
@@ -22,7 +23,7 @@ class ConflictsSolverActor(db: Database) extends PeriodicActor {
   private def mergeInto(ref: mapObject, conflicting: mapObject): mapObject = {
     val deleted = deletedTimes(ref).union(deletedTimes(conflicting)).distinct.sorted
     val remaining = times(ref).union(times(conflicting)).diff(deleted).distinct.sorted
-    ref + ("deleted_times" -> parse(write(deleted))) + ("times" -> parse(write(remaining)))
+    ref + ("deleted_times" -> toJObject(deleted)) + ("times" -> toJObject(remaining))
   }
 
   private def solveConflicts(id: String, revs: List[String]) = {

@@ -1,7 +1,6 @@
 package net.rfc1149.canape
 
 import net.liftweb.json._
-import net.liftweb.json.Serialization.write
 import org.jboss.netty.handler.codec.http._
 
 case class Database(val couch: Couch, val database: String) {
@@ -65,21 +64,17 @@ case class Database(val couch: Couch, val database: String) {
     couch.makePostRequest[JValue](database + "/_bulk_docs", args)
   }
 
-  def insert(doc: AnyRef, id: Option[String] = None): CouchRequest[JValue] = {
-    val jsDoc = doc match {
-	case js: JObject => js
-	case _           => parse(write(doc)).extract[JObject]
-    }
-    id orElse (jsDoc \ "_id" match {
+  def insert[T <% JObject](doc: T, id: Option[String] = None): CouchRequest[JValue] = {
+    id orElse (doc \ "_id" match {
       case JString(docId) => Some(docId)
       case _              => None
     }) match {
-      case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, jsDoc)
-      case None                => couch.makePostRequest[JValue](database, jsDoc)
+      case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, doc)
+      case None                => couch.makePostRequest[JValue](database, doc)
     }
   }
 
-  def insert(id: String, doc: AnyRef): CouchRequest[JValue] =
+  def insert[T <% JObject](id: String, doc: T): CouchRequest[JValue] =
     insert(doc, Some(id))
 
   def delete(id: String, rev: String): CouchRequest[JValue] =
@@ -87,10 +82,9 @@ case class Database(val couch: Couch, val database: String) {
 
   def delete(): CouchRequest[JValue] = couch.makeDeleteRequest[JValue](database)
 
-  def delete(doc: AnyRef): CouchRequest[JValue] = {
-    val jsDoc = parse(write(doc)).extract[JObject]
-    val JString(id) = jsDoc \ "_id"
-    val JString(rev) = jsDoc \ "_rev"
+  def delete[T <% JObject](doc: T): CouchRequest[JValue] = {
+    val JString(id) = doc \ "_id"
+    val JString(rev) = doc \ "_rev"
     delete(id, rev)
   }
 

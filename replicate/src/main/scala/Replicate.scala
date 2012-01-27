@@ -25,7 +25,7 @@ object Replicate extends App {
       db.insert(touchMe).execute
     } catch {
 	case StatusCode(404, _) =>
-	  db.insert("touch_me", Map()).execute
+	  db.insert("touch_me", JObject(Nil)).execute
     }
   }
 
