@@ -19,6 +19,7 @@ object Steenwerck extends Build {
          (proguardOptions ++= Seq("-keep class ch.qos.logback.** { *; }",
 				  "-keep class org.apache.commons.logging.** { *; }",
 				  "-keep public class akka.** { *; }",
+				  "-keepclasseswithmembers public class * { public static void main(java.lang.String[]); }",
 				  "-keep class net.rfc1149.canape.** { *; }")) :+
 	 (minJarPath <<= mjp)
 

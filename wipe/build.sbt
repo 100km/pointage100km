@@ -1,1 +1,0 @@
-proguardOptions += keepMain("Wipe")
