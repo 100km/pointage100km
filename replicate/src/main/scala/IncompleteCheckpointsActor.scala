@@ -5,6 +5,8 @@ import net.rfc1149.canape._
 
 class IncompleteCheckpointsActor(db: Database) extends PeriodicActor {
 
+  import implicits._
+
   private val log = Logging(context.system, this)
 
   protected val period = 5 seconds
