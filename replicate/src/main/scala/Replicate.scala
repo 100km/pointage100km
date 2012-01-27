@@ -49,9 +49,18 @@ object Replicate extends App {
       log.info("database already exists")
     case t =>
       log.error("cannot create database: " + t)
+      localCouch.releaseExternalResources
+      sys.exit(1)
   }
 
-  createLocalInfo(localDatabase, site)
+  try {
+    createLocalInfo(localDatabase, site)
+  } catch {
+    case t =>
+      log.error("cannot create local information: " + t)
+      localCouch.releaseExternalResources
+      sys.exit(1)
+  }
 
   {
     val hubCouch = new NioCouch(config.read[String]("master.host"),
