@@ -1,18 +1,29 @@
 import net.liftweb.json._
 import net.rfc1149.canape._
-
-// Usage: wipe login password
-// Wipe everything on the main database
-// You have to be an admin to remove the design documents
+import scopt.OptionParser
 
 object Wipe extends App {
 
   implicit val formats = DefaultFormats
 
+  private object Options {
+    var login: String = _
+    var password: String = _
+  }
+
+  private val parser = new OptionParser("wipe") {
+    help("h", "help", "show this help")
+    arg("login", "login to access the master database", { s: String => Options.login = s })
+    arg("password", "pasword to access the master database", { s: String => Options.password = s })
+  }
+
+  if (!parser.parse(args))
+    sys.exit(1)
+
   val config = Config("steenwerck.cfg")
   val hubCouch = new NioCouch(config.read[String]("master.host"),
 			      config.read[Int]("master.port"),
-			      Some(args(0), args(1)))
+			      Some(Options.login, Options.password))
   val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
   try {
     for ((id, _, value) <- hubDatabase.allDocs.execute.items[String, JObject])

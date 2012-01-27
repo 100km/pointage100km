@@ -40,9 +40,9 @@ object Steenwerck extends Build {
     Project("couchsync", file("couchsync")) dependsOn(canape) settings(proguard: _*)
 
   lazy val loader =
-    Project("loader", file("loader")) dependsOn(canape) settings(proguard: _*) settings(jackcess: _*)
+    Project("loader", file("loader")) dependsOn(canape) settings(proguard: _*) settings(jackcess: _*) settings(scopt: _*)
 
-  lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(proguard: _*)
+  lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(proguard: _*) settings(scopt: _*)
 
   lazy val canape = Project("canape", file("libs/canape"))
 

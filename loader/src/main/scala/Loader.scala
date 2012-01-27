@@ -4,6 +4,7 @@ import net.liftweb.json._
 import net.liftweb.json.Serialization.write
 import net.rfc1149.canape._
 import scala.collection.JavaConversions._
+import scopt.OptionParser
 
 // Usage: loader dbfile
 
@@ -11,9 +12,21 @@ object Loader extends App {
 
   implicit val formats = DefaultFormats
 
-  val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
+  private object Options {
+    var file: File = _
+  }
 
-  val table = jackcess.Database.open(new File(args(0))).getTable("inscription")
+  private val parser = new OptionParser("loader") {
+    help("h", "help", "show this help")
+    arg("database", "MS access database to import", { s: String => Options.file = new File(s) })
+  }
+
+  if (!parser.parse(args))
+    sys.exit(1)
+
+  val table = jackcess.Database.open(Options.file).getTable("inscription")
+
+  val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
 
   def get(id: String) = try { Some(db(id).execute) } catch { case StatusCode(404, _) => None }
 
