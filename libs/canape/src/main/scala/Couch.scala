@@ -28,7 +28,7 @@ abstract class Couch(val host: String,
   def connect(allowChunks: Boolean = false): ChannelFuture = {
     val future = bootstrap.connect(new InetSocketAddress(host, port))
     if (!allowChunks)
-      future.getChannel.getPipeline.addLast("aggregator", new HttpChunkAggregator(1024*1024))
+      future.getChannel.getPipeline.addLast("aggregator", new Couch.ChunkAggregator(1024*1024))
     future
   }
 
@@ -153,5 +153,12 @@ object Couch {
 
   case class VendorInfo(name: String,
 			version: String)
+
+  private class ChunkAggregator(capacity: Int) extends HttpChunkAggregator(capacity) {
+
+    override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
+      ctx.sendUpstream(e)
+
+  }
 
 }
