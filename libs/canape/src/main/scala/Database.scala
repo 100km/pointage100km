@@ -54,7 +54,7 @@ case class Database(val couch: Couch, val database: String) {
   def allDocs(params: Map[String, String]): CouchRequest[Result] =
     query("_all_docs", params.toSeq)
 
-  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, "")
+  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, None)
 
   def startCompaction(): CouchRequest[JValue] =
     couch.makePostRequest[JValue](database + "/_compact", "")
@@ -69,8 +69,8 @@ case class Database(val couch: Couch, val database: String) {
       case JString(docId) => Some(docId)
       case _              => None
     }) match {
-      case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, doc)
-      case None                => couch.makePostRequest[JValue](database, doc)
+      case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, Some(doc))
+      case None                => couch.makePostRequest[JValue](database, Some(doc))
     }
   }
 

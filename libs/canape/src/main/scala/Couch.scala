@@ -67,7 +67,7 @@ abstract class Couch(val host: String,
       request.setHeader(HttpHeaders.Names.AUTHORIZATION, authorization)
     }
     data foreach { d =>
-      val cb = ChannelBuffers.copiedBuffer(write(d), CharsetUtil.UTF_8)
+      val cb = ChannelBuffers.copiedBuffer(if (d == null) "" else write(d), CharsetUtil.UTF_8)
       request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, cb.readableBytes())
       request.setHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
       request.setContent(cb)
@@ -81,8 +81,8 @@ abstract class Couch(val host: String,
   def makePostRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.POST, Some(data))
 
-  def makePutRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
-    makeRequest[T](query, HttpMethod.PUT, Some(data))
+  def makePutRequest[T: Manifest](query: String, data: Option[AnyRef]): CouchRequest[T] =
+    makeRequest[T](query, HttpMethod.PUT, data orElse Some(null))
 
   def makeDeleteRequest[T: Manifest](query: String): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.DELETE, None)
