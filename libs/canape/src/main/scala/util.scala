@@ -14,4 +14,12 @@ object util {
     }
   }
 
+  def toJValue(something: Any): JValue = {
+    implicit val formats = DefaultFormats
+    something match {
+	case js: JValue => js
+	case _          => decompose(something)
+    }
+  }
+
 }

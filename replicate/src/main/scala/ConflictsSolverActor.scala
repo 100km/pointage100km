@@ -23,7 +23,7 @@ class ConflictsSolverActor(db: Database) extends PeriodicActor {
   private def mergeInto(ref: mapObject, conflicting: mapObject): mapObject = {
     val deleted = deletedTimes(ref).union(deletedTimes(conflicting)).distinct.sorted
     val remaining = times(ref).union(times(conflicting)).diff(deleted).distinct.sorted
-    ref + ("deleted_times" -> toJObject(deleted)) + ("times" -> toJObject(remaining))
+    ref + ("deleted_times" -> toJValue(deleted)) + ("times" -> toJValue(remaining))
   }
 
   private def solveConflicts(id: String, revs: List[String]) = {
