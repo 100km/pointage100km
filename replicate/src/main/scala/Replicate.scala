@@ -13,7 +13,7 @@ object Replicate extends App {
 
   private val parser = new OptionParser("replicate") {
     help("h", "help", "show this help")
-    opt("init-only", "initialize database but do not start tasks", { Options.initOnly = true })
+    opt("i", "init-only", "initialize database but do not start tasks", { Options.initOnly = true })
     arg("site_id", "numerical id of the current site", { s: String => Options.siteId = Integer.parseInt(s) })
   }
 
