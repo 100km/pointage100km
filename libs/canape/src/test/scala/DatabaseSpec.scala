@@ -167,6 +167,32 @@ class DatabaseSpec extends DbSpecification {
       (value \ "rev").extract[String] must be matching ("1-[0-9a-f]{32}")
     }
 
+    "be convertible to an items quartuple in include_docs mode" in {
+      db.insert("docid", Map("key" -> "value")).execute
+      val (id: String, key: String, value: JValue, doc: JValue) =
+	db.allDocs(Map("include_docs" -> "true")).execute.itemsWithDoc[String, JValue, JValue].head
+      ((value \ "rev").extract[String] must be matching ("1-[0-9a-f]{32}")) &&
+      ((value \ "rev") must be equalTo(doc \ "_rev")) &&
+      ((doc \ "key").extract[String] must be equalTo("value"))
+    }
+
+    "not return full docs in default mode" in {
+      db.insert("docid", Map("key" -> "value")).execute
+      db.allDocs.execute.docsOption[JValue] must be equalTo(List(None))
+    }
+
+    "return full docs in include_docs mode" in {
+      db.insert("docid", Map("key" -> "value")).execute
+      db.allDocs(Map("include_docs" -> "true")).execute.docs[JValue].head \ "key" must
+        be equalTo(JString("value"))
+    }
+
+    "return full docs in include_docs mode and option" in {
+      db.insert("docid", Map("key" -> "value")).execute
+      db.allDocs(Map("include_docs" -> "true")).execute.docsOption[JValue].head.map(_ \ "key") must
+        be equalTo(Some(JString("value")))
+    }
+
   }
 
 }
