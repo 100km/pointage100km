@@ -7,7 +7,7 @@ package object helpers {
 
   import implicits._
 
-  type Solver = Seq[Map[String, JValue]] => Map[String, JValue]
+  type Solver = Seq[mapObject] => mapObject
 
   def solve(db: Database,
 	    documents: Seq[JObject])(solver: Solver): CouchRequest[JValue] = {

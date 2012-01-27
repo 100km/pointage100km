@@ -31,11 +31,11 @@ case class Database(val couch: Couch, val database: String) {
 
   def status(): CouchRequest[mapObject] = couch.makeGetRequest[mapObject](database)
 
-  def apply(id: String): CouchRequest[Map[String, JValue]] =
-    couch.makeGetRequest[Map[String, JValue]](encode(id))
+  def apply(id: String): CouchRequest[mapObject] =
+    couch.makeGetRequest[mapObject](encode(id))
 
-  def apply(id: String, rev: String): CouchRequest[Map[String, JValue]] =
-    couch.makeGetRequest[Map[String, JValue]](encode(id, Seq("rev" -> rev)))
+  def apply(id: String, rev: String): CouchRequest[mapObject] =
+    couch.makeGetRequest[mapObject](encode(id, Seq("rev" -> rev)))
 
   def apply(id: String, properties: Map[String, String]): CouchRequest[JValue] =
     apply(id, properties.toSeq)
