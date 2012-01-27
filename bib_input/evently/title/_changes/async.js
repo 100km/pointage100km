@@ -2,7 +2,7 @@ function(cb) {
   var app = $$(this).app;
 
   function title_cb (result) {
-    cb({site_id:result[0][0]["site-id"], sites:result[1][0]["sites"]});
+    cb({site_id:result[0][0]["site-id"], infos:result[1][0]});
   }
 
   fork([

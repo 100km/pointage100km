@@ -2,8 +2,9 @@ function(data) {
     // Set field in app so that everyone can access the site_id
     var app = $$(this).app;
     app.site_id = data.site_id
-    app.sites = data.sites
-    app.sites_nb = data.sites.length
+    app.sites = data.infos["sites"]
+    app.sites_nb = app.sites.length
+    app.races_names = data.infos["races_names"]
     $(this).trigger("post_changes");
 
     // Set title for the document
