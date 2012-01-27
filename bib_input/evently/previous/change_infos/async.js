@@ -17,7 +17,7 @@ function(cb) {
         lap : lap,
         success: function(data) {
           safe_infos = infos || empty_info();
-          cb({infos:safe_infos, bibs:data.bibs, warning: warning});
+          cb({infos:safe_infos, course:app.races_names[race_id], current_bib_time:data.bibs.pop(), bibs:data.bibs, warning: warning});
         }
       });
     }

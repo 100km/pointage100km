@@ -151,7 +151,7 @@ function place_arrow(obj) {
 }
 
 function empty_info() {
-        return {nom:"", prenom:""};
+  return {nom:"", prenom:"", course:""};
 }
 
 function pad2(number) {
