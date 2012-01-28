@@ -1,46 +1,60 @@
 package net.rfc1149.canape
 
+import java.util.concurrent.ArrayBlockingQueue
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
-import org.jboss.netty.handler.queue.BlockingReadHandler
 
 trait CouchRequest[T] {
 
-  def execute(): T
+  type Choice = Either[Throwable, T]
 
-}
+  def connect(): ChannelFuture
 
-class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: HttpRequest) extends CouchRequest[T] {
+  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit
 
-  private def connect(allowChunks: Boolean = false): ChannelFuture = {
-    val future = bootstrap.connect()
-    if (!allowChunks)
-      future.getChannel.getPipeline.addLast("aggregator", new ChunkAggregator(1024*1024))
-    future
-  }
-
-  override def execute(): T = {
+  def execute(): T = {
     import implicits._
-    val reader = new BlockingReadHandler[Either[Throwable, T]]
-    val future = connect(false)
-    future.await
-    if (future.isSuccess) {
-      request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE)
-      val channel = future.getChannel
-      channel.getPipeline.addLast("requestInterceptor", new RequestInterceptor)
-      channel.getPipeline.addLast("jsonDecoder", new JsonDecoder[T])
-      channel.getPipeline.addLast("reader", reader)
-      channel.write(request)
-      reader.read().fold(throw _, { t: T => t })
+    val future = connect()
+    if (future.await.isSuccess) {
+      val reader = new ArrayBlockingQueue[Either[Throwable, T]](1)
+      send(future.getChannel, true) { d => reader.add(d.asInstanceOf[Either[Throwable, T]]) }
+      reader.take().fold(throw _, { t: T => t })
     } else
       throw future.getCause
   }
 
 }
 
-class TransformerRequest[T, U](request: CouchRequest[T], transformer: T => U) extends CouchRequest[U] {
+class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: HttpRequest, allowChunks: Boolean) extends CouchRequest[T] {
 
-  override def execute(): U = transformer(request.execute)
+  import implicits._
 
+  override def connect(): ChannelFuture = {
+    val future = bootstrap.connect()
+    future
+  }
+
+  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit = {
+    if (closeAfter)
+      request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE)
+    if (!allowChunks)
+      channel.getPipeline.addLast("aggregator", new ChunkAggregator(1024*1024))
+    channel.getPipeline.addLast("requestInterceptor", new RequestInterceptor)
+    channel.getPipeline.addLast("jsonDecoder", new JsonDecoder[T])
+    channel.getPipeline.addLast("lastHandler", lastHandler)
+    channel.write(request)
+  }
+
+}
+
+class TransformerRequest[T: Manifest, U](request: CouchRequest[T], transformer: T => U) extends CouchRequest[U] {
+
+  override def connect(): ChannelFuture = request.connect()
+
+  override def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit =
+    request.send(channel, closeAfter) { d: Either[Throwable, T] =>
+      lastHandler(d.fold({ t: Throwable => Left(t) },
+	                 { t: T         => Right(transformer(t)) }))
+    }
 }

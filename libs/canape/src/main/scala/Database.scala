@@ -89,6 +89,6 @@ case class Database(val couch: Couch, val database: String) {
   }
 
   def changes(params: Map[String, String] = Map()): CouchRequest[JValue] =
-    couch.makeGetRequest[JValue](encode("_changes", params.toSeq))
+    couch.makeGetRequest[JValue](encode("_changes", params.toSeq), true)
 
 }

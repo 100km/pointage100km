@@ -29,7 +29,7 @@ abstract class Couch(val host: String,
     "Basic " + encodedAuthChannelBuffer.toString(CharsetUtil.UTF_8)
   }
 
-  private[this] def makeRequest[T: Manifest](query: String, method: HttpMethod, data: Option[AnyRef]): CouchRequest[T] = {
+  private[this] def makeRequest[T: Manifest](query: String, method: HttpMethod, data: Option[AnyRef], allowChunks: Boolean): CouchRequest[T] = {
     val request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
 					 method,
 					 "/" + query)
@@ -45,20 +45,20 @@ abstract class Couch(val host: String,
       request.setHeader(HttpHeaders.Names.CONTENT_TYPE, "application/json")
       request.setContent(cb)
     }
-    new SimpleCouchRequest[T](this, request)
+    new SimpleCouchRequest[T](this, request, allowChunks)
   }
 
-  def makeGetRequest[T: Manifest](query: String): CouchRequest[T] =
-    makeRequest[T](query, HttpMethod.GET, None)
+  def makeGetRequest[T: Manifest](query: String, allowChunks: Boolean = false): CouchRequest[T] =
+    makeRequest[T](query, HttpMethod.GET, None, allowChunks)
 
   def makePostRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
-    makeRequest[T](query, HttpMethod.POST, Some(data))
+    makeRequest[T](query, HttpMethod.POST, Some(data), false)
 
   def makePutRequest[T: Manifest](query: String, data: Option[AnyRef]): CouchRequest[T] =
-    makeRequest[T](query, HttpMethod.PUT, data orElse Some(null))
+    makeRequest[T](query, HttpMethod.PUT, data orElse Some(null), false)
 
   def makeDeleteRequest[T: Manifest](query: String): CouchRequest[T] =
-    makeRequest[T](query, HttpMethod.DELETE, None)
+    makeRequest[T](query, HttpMethod.DELETE, None, false)
 
   /** URI that refers to the database */
   private[canape] val uri = "http://" + auth.map(x => x._1 + ":" + x._2 + "@").getOrElse("") + host + ":" + port

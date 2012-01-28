@@ -1,6 +1,7 @@
 package net.rfc1149.canape
 
 import net.liftweb.json._
+import org.jboss.netty.channel._
 
 object implicits {
 
@@ -15,5 +16,15 @@ object implicits {
   }
 
   implicit def toJObject(doc: AnyRef): JObject = util.toJObject(doc)
+
+  implicit def toUpstreamHandler[T](f: T => Unit) =
+    new SimpleChannelUpstreamHandler {
+
+      override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) =
+	f(e.getMessage.asInstanceOf[T])
+
+      override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
+	ctx.sendUpstream(e)
+    }
 
 }
