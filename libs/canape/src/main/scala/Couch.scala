@@ -1,14 +1,11 @@
 package net.rfc1149.canape
 
-import java.net.{InetSocketAddress, URI}
 import net.liftweb.json._
 import net.liftweb.json.Serialization.write
 import org.jboss.netty.buffer._
-import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.handler.codec.base64.Base64
-import org.jboss.netty.handler.queue.BlockingReadHandler
+import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.util.CharsetUtil
 
 /**
@@ -25,35 +22,11 @@ abstract class Couch(val host: String,
 
   import implicits._
 
-  def connect(allowChunks: Boolean = false): ChannelFuture = {
-    val future = bootstrap.connect(new InetSocketAddress(host, port))
-    if (!allowChunks)
-      future.getChannel.getPipeline.addLast("aggregator", new Couch.ChunkAggregator(1024*1024))
-    future
-  }
-
   private lazy val authorization = {
     val authChannelBuffer = ChannelBuffers.copiedBuffer(auth.get._1 + ":" + auth.get._2,
 							CharsetUtil.UTF_8)
     val encodedAuthChannelBuffer = Base64.encode(authChannelBuffer)
     "Basic " + encodedAuthChannelBuffer.toString(CharsetUtil.UTF_8)
-  }
-
-  def execute[T: Manifest](request: HttpRequest): T = {
-    import implicits._
-    val reader = new BlockingReadHandler[Either[Throwable, T]]
-    val future = connect(false)
-    future.await
-    if (future.isSuccess) {
-      request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE)
-      val channel = future.getChannel
-      channel.getPipeline.addLast("requestInterceptor", new RequestInterceptor)
-      channel.getPipeline.addLast("jsonDecoder", new JsonDecoder[T])
-      channel.getPipeline.addLast("reader", reader)
-      channel.write(request)
-      reader.read().fold(throw _, { t: T => t })
-    } else
-      throw future.getCause
   }
 
   private[this] def makeRequest[T: Manifest](query: String, method: HttpMethod, data: Option[AnyRef]): CouchRequest[T] = {
@@ -153,12 +126,5 @@ object Couch {
 
   case class VendorInfo(name: String,
 			version: String)
-
-  private class ChunkAggregator(capacity: Int) extends HttpChunkAggregator(capacity) {
-
-    override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
-      ctx.sendUpstream(e)
-
-  }
 
 }
