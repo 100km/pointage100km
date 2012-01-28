@@ -203,12 +203,8 @@ function get_doc(app, cb, doc_name) {
 }
 
 function change_li(li, app) {
-  // return immediately if li is undefined
-  if (li == undefined)
-    return;
-
-  // return immediately if we clicked on the header
-  if (li[0] == $("#items").find("li")[0])
+  // return immediately if li has no delete element
+  if (li.find("#delete")[0] == undefined)
     return;
 
   // First clear all lines
