@@ -271,3 +271,13 @@ function call_with_messages(app, cb) {
     success: cb
   });
 }
+
+function checkBib(bib) {
+  if (bib == "") {
+    $("#message_check").html("");
+  } else if (isBib(bib)) {
+    $("#message_check").html("<img src=img/check.png></img>");
+  } else {
+    $("#message_check").html("<p>Dossard invalide</p>");
+  }
+}
