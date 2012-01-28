@@ -240,7 +240,7 @@ function deal_with_key(ev, app) {
     change_li(app.current_li.prev(), app)
   }
 
-  // return false is equivalent to ec.stopPropagation
+  // return false is equivalent to ev.stopPropagation
   return false;
 }
 
