@@ -1,0 +1,27 @@
+{{#local-messages?}}
+<h3>local messages</h3>
+  <p>
+{{#local-messages}}
+{{message}}
+{{/local-messages}}
+  </p>
+{{/local-messages?}}
+
+{{#admin-messages?}}
+<h3>admin messages</h3>
+  <p>
+{{#admin-messages}}
+{{message}}
+{{/admin-messages}}
+  </p>
+{{/admin-messages?}}
+
+{{#admin-messages-broadcast?}}
+<h3>broadcast messages</h3>
+  <p>
+{{#admin-messages-broadcast}}
+{{message}}
+{{/admin-messages-broadcast}}
+  </p>
+{{/admin-messages-broadcast?}}
+
