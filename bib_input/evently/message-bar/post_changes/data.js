@@ -11,5 +11,13 @@ function(data) {
       });
     }
   }
+
+  // TODO: see if there is other way to check for emptyness of JSON
+  if (JSON.stringify(res) == "{}") {
+    $("#message-bar").hide();
+  }
+  else
+    $("#message-bar").show();
+
   return res;
 }
