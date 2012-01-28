@@ -28,21 +28,26 @@ trait CouchRequest[T] {
 
 class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: HttpRequest, allowChunks: Boolean) extends CouchRequest[T] {
 
-  import implicits._
-
   override def connect(): ChannelFuture = {
     val future = bootstrap.connect()
+    val channel = future.getChannel
+    if (!allowChunks)
+      channel.getPipeline.addLast("aggregator", new ChunkAggregator(1024*1024))
+    channel.getPipeline.addLast("requestInterceptor", new RequestInterceptor)
+    channel.getPipeline.addLast("jsonDecoder", new JsonDecoder[T])
     future
   }
 
   def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit = {
     if (closeAfter)
       request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE)
-    if (!allowChunks)
-      channel.getPipeline.addLast("aggregator", new ChunkAggregator(1024*1024))
-    channel.getPipeline.addLast("requestInterceptor", new RequestInterceptor)
-    channel.getPipeline.addLast("jsonDecoder", new JsonDecoder[T])
-    channel.getPipeline.addLast("lastHandler", lastHandler)
+    val pipeline = channel.getPipeline
+    try {
+      pipeline.remove("lastHandler")
+    } catch {
+      case _: java.util.NoSuchElementException =>
+    }
+    pipeline.addLast("lastHandler", util.toUpstreamHandler(lastHandler))
     channel.write(request)
   }
 
