@@ -202,3 +202,48 @@ function get_doc(app, cb, doc_name) {
   });
 }
 
+function change_li(li, app) {
+  // return immediately if li is undefined
+  if (li == undefined)
+    return;
+
+  // return immediately if we clicked on the header
+  if (li[0] == $("#items").find("li")[0])
+    return;
+
+  // First clear all lines
+  li.parents("ul").children().children().css("font-weight", "");
+  li.parents("ul").children().css("background-color","white");
+  // Then set the clicked lines to bold
+  li.children().css("font-weight", "bold");
+  li.css("background-color", "#d0ffd0");
+
+  // Keep this, current bib and current lap into app
+  app.current_li = li;
+  app.current_bib = parseInt(li.find("#delete")[0]["bib"]["value"]);
+  app.current_lap = parseInt(li.find("#delete")[0]["lap"]["value"]);
+
+  place_arrow(li);
+  li.trigger("change_infos");
+}
+
+function deal_with_key(ev, app) {
+  key = ev.which?ev.which:window.event.keyCode;
+
+  if ((key >= 48) && (key <=57)) { //figures
+    // If bib_input already has focus, return
+    if ($("#bib_input").find("input")[0] == document.activeElement)
+      return false;
+
+    $("#bib_input").find("input")[0].focus();
+    // TODO find a better way to put the key here
+    $("#bib_input").find("input")[0].value += (key-48);
+  } else if (key == 40) { // down arrow
+    change_li(app.current_li.next(), app)
+  } else if (key == 38) { // up arrow
+    change_li(app.current_li.prev(), app)
+  }
+
+  // return false is equivalent to ec.stopPropagation
+  return false;
+}
