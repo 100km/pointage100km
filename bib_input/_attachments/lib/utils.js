@@ -247,3 +247,27 @@ function deal_with_key(ev, app) {
   // return false is equivalent to ec.stopPropagation
   return false;
 }
+
+function local_messages_id(site_id) {
+  return "local-messages-" + site_id;
+}
+function admin_messages_id(site_id) {
+  return "admin-messages-" + site_id;
+}
+function admin_broadcast_id() {
+  return "admin-messages-broadcast";
+}
+function normalize_message_id(str) {
+  var tmp = str.split("-")
+  if (tmp[tmp.length-1] != "broadcast")
+    tmp.pop();
+  return tmp.join("-");
+}
+function call_with_messages(app, cb) {
+  var id = app.site_id;
+  app.db.allDocs({
+    include_docs: true,
+    keys:[local_messages_id(id), admin_messages_id(id), admin_broadcast_id()],
+    success: cb
+  });
+}
