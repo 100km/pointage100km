@@ -1,5 +1,9 @@
 {
 "sites":["La Croix du Bac", "Le crampon", "La salle des sports"],
 "kms":[4.03,8.45,6.67],
-"races_names":["", "100 km du soir", "100 km matin", "", "1 tour du soir"]
+"kms_site0":[0,8.31,27.45,46.60,65.74,84.88],
+"kms_site1":[0,16.76,35.90,55.05,74.19,93.33],
+"kms_site2":[0,23.43,42.57,61.71,80.86,100],
+"races_names":["", "100 km du soir", "100 km matin", "", "1 tour du soir"],
+"start_times":[0, 1327773600000, 1327813200000, 0, 1327773600000]
 }
