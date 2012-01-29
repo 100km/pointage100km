@@ -35,7 +35,6 @@ function(data) {
     return p;
   }
 
-  // separate first element from others
   return {
     items : data.map(create_infos)
   }
