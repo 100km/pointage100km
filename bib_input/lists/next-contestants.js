@@ -6,6 +6,7 @@ function(head, req) {
   var n = req.query["n"] || 0;
   var bib_lap = req.query["lap"];
   var start_time = req.query["start_time"];
+  var kms = req.query["kms"];
 
   start({
     "headers": {
@@ -61,6 +62,11 @@ function(head, req) {
       tmp.push(pair);
     }
     res.bibs = tmp;
+
+    // calculates global average
+    // time_to_convert shall have bib_time - start_time
+    res.global_average = kms * 1000 * 3600 / time_to_convert;
+    res.global_average = res.global_average.toFixed(2);
   }
   return JSON.stringify(res);
 }
