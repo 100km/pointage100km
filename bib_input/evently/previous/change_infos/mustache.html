@@ -10,12 +10,14 @@
     <tr>
       <th>Classement</th>
       <th>Dossard</th>
+      <th>Heure</th>
       <th>Temps</th>
     </tr>
     {{#bibs}}
     <tr>
       <td>{{rank}}</td>
       <td>{{bib}}</td>
+      <td>{{hour_time}}</td>
       <td>{{time}}</td>
     </tr>
     {{/bibs}}
@@ -23,6 +25,7 @@
     <tr id="current_bib_time">
       <td>{{rank}}</td>
       <td>{{bib}}</td>
+      <td>{{hour_time}}</td>
       <td>{{time}}</td>
     </tr>
     {{/current_bib_time}}

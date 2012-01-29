@@ -155,7 +155,7 @@ function empty_info() {
 }
 
 function pad2(number) {
-  return (number < 10 ? '0' : '') + number
+  return ((number < 10) && (number >= 0) ? '0' : '') + number
 }
 
 function time_to_hour_string(t) {

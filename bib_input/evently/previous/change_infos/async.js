@@ -15,6 +15,7 @@ function(cb) {
         bib: bib,
         n: n,
         lap : lap,
+        start_time : app.start_times[race_id],
         success: function(data) {
           safe_infos = infos || empty_info();
           cb({infos:safe_infos, course:app.races_names[race_id], current_bib_time:data.bibs.pop(), bibs:data.bibs, warning: warning});
