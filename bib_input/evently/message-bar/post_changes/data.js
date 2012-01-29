@@ -1,19 +1,15 @@
 function(data) {
-  res = {};
-  for (i in data.rows) {
-    var row = data.rows[i];
-    if (row.doc) {
-    var id = normalize_message_id(row.id);
-    res[id + "?"] = (row.doc.messages.length > 0);
-    res[id] = row.doc.messages.map(
-      function(message) {
-        return { message: message };
-      });
-    }
+  res = data
+  var all_empty = true;
+  for (i in res) {
+    var empty = res[i].length == 0;
+    res[i+"?"] = !empty;
+    all_empty =  all_empty && empty;
   }
 
+
   // TODO: see if there is other way to check for emptyness of JSON
-  if (JSON.stringify(res) == "{}") {
+  if (all_empty) {
     $("#message-bar").hide();
   }
   else
