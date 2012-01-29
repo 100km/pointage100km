@@ -7,13 +7,7 @@ function(data) {
     all_empty =  all_empty && empty;
   }
 
-
-  // TODO: see if there is other way to check for emptyness of JSON
-  if (all_empty) {
-    $("#message-bar").hide();
-  }
-  else
-    $("#message-bar").show();
+  res.all_empty = all_empty
 
   return res;
 }

@@ -22,7 +22,7 @@ h1 {
 }
 
 /* message-bar CSS */
-#message-bar {
+#message-bar-core {
   text-align:left;
   font-size:1em;
   width:40%;
