@@ -99,16 +99,17 @@ function add_checkpoint(checkpoints) {
   checkpoints["times"].push(ts);
 }
 
-function submit_remove_checkpoint(bib, app, ts) {
+function submit_remove_checkpoint(bib, app, ts, cb) {
   retries(3, function(fail) {
-    submit_remove_checkpoint_once(bib, app, ts, fail);
+    submit_remove_checkpoint_once(bib, app, ts, fail, cb);
   }, "remove checkpoint");
 }
-function submit_remove_checkpoint_once(bib, app, ts, fail) {
+function submit_remove_checkpoint_once(bib, app, ts, fail, cb) {
   call_with_checkpoints(bib, app, function(checkpoints) {
     remove_checkpoint(checkpoints, ts);
     app.db.saveDoc(checkpoints, {
-      error: fail
+      error: fail,
+      success: cb
     });
   });
 }
