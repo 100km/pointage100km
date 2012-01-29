@@ -1,9 +1,12 @@
-name := "Replicate"
+resolvers += "Typesafe Repository (releases)" at "http://repo.typesafe.com/typesafe/releases/"
 
-version := "0.1"
+seq(Revolver.settings: _*)
 
-resolvers ++= Seq("RFC1149 Repository(snapshots)" at "http://maven.rfc1149.net/snapshots",
-                  "Typesafe Repository (releases)" at "http://repo.typesafe.com/typesafe/releases/")
+seq(proguardSettings: _*)
 
-libraryDependencies ++= Seq("net.rfc1149" %% "canape" % "0.0.3-SNAPSHOT" % "compile",
-                            "net.databinder" %% "dispatch-http" % "0.8.6" % "compile")
+minJarPath <<= mjp
+
+proguardOptions ++= Seq(keepMain("Replicate"),
+			"-keep class ch.qos.logback.** { *; }",
+			"-keep class org.apache.commons.logging.** { *; }",
+			"-keep public class akka.** { *; }")
