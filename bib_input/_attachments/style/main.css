@@ -174,11 +174,18 @@ h1 {
 }
 
 #previous {
-  position:fixed;
+  position:absolute;
   right:12px;
   padding:1%; /* here padding + width must be equal to width of previous_container */
   width:34%;
   z-index:2;
+}
+
+/* From http://blog.yjl.im/2010/01/stick-div-at-top-after-scrolling.html
+Will let the previous info on top of screen */
+#previous.stick {
+  position: fixed;
+  top: 0;
 }
 
 #previous table

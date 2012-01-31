@@ -151,6 +151,16 @@ function place_arrow(obj) {
   $_arrow.show();
 }
 
+// From http://blog.yjl.im/2010/01/stick-div-at-top-after-scrolling.html
+function place_previous() {
+  var window_top = $(window).scrollTop();
+  var div_top = $('#previous_container').offset().top;
+  if (window_top > div_top)
+    $('#previous').addClass('stick')
+  else
+    $('#previous').removeClass('stick');
+  }
+
 function empty_info() {
   return {nom:"", prenom:"", course:""};
 }
