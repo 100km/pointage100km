@@ -1,7 +1,8 @@
 function () {
   function is_app_current_li_valid(app) {
     var form=app.current_li.find("#delete")[0];
-    return (parseInt(form["bib"].value) == app.current_bib &&
+    return (form &&
+            parseInt(form["bib"].value) == app.current_bib &&
             parseInt(form["lap"].value) == app.current_lap);
   }
 

@@ -1,44 +1,65 @@
-import dispatch._
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.io.Source
+import scopt.OptionParser
 
-object Config extends App {
+object CouchSync extends App {
 
-  val c = new Config(new File(args(0)), new File(args(1)))
+  implicit val formats = DefaultFormats
+
+  private object Options {
+    var localDir: File = _
+    var usbDir: File = _
+    var hostName: String = _
+  }
+
+  private val parser = new OptionParser("wipe") {
+    help("h", "help", "show this help")
+    arg("local", "local database directory", { s: String => Options.localDir = new File(s) })
+    arg("usb_key", "usb key directory", { s: String => Options.usbDir = new File(s) })
+    arg("host", "local host name", { Options.hostName = _ })
+  }
+
+  if (!parser.parse(args))
+    sys.exit(1)
+
+  val c = new CouchSync(Options.localDir, Options.usbDir)
   c.runCouchDb()
   Thread.sleep(5000)
   val couch = c.couch
   val db = couch.db("steenwerck100km")
   try {
-    Http(db.create())
+    db.create.execute
   } catch {
-    case _ =>
+    case StatusCode(412, _) => // Database already exists
   }
-  val referenceDb = Couch(args(2), "admin", "admin").db("steenwerck100km")
-  Http(couch.replicate(db, referenceDb, false))
-  Http(couch.replicate(referenceDb, db, false))
+  val referenceDb = new NioCouch(Options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
+  couch.replicate(db, referenceDb, false).execute
+  couch.replicate(referenceDb, db, false).execute
 
   var activeTasksCount: Int = -2
   do {
-    activeTasksCount = Http(couch.activeTasks).size
+    activeTasksCount = couch.activeTasks.execute.size
     println("Active tasks count: " + activeTasksCount)
     Thread.sleep(100)
   } while (activeTasksCount > 0)
 
   db.startCompaction
-  while (Http(db.status).compact_running) {
+  while (db.status.execute()("compact_running").extract[Boolean]) {
     println("Compaction running")
     Thread.sleep(100)
   }
 
   c.stopCouchDb()
 
+  couch.releaseExternalResources
+  referenceDb.couch.releaseExternalResources
+
 }
 
-class Config(srcDir: File, usbBaseDir: File) {
+class CouchSync(srcDir: File, usbBaseDir: File) {
 
   val dbDir = new File(usbBaseDir, "db")
   val etcDir = new File(usbBaseDir, "etc")
@@ -82,13 +103,13 @@ class Config(srcDir: File, usbBaseDir: File) {
   def runCouchDb() = {
     fixDefaultIni()
 
-    val pb = new ProcessBuilder("/usr/bin/couchdb",
+    val pb = new ProcessBuilder("couchdb",
 				"-n", "-a", defaultFile.toString,
 				"-p", pidFile.toString)
     pb.directory(usbBaseDir)
     process = Some(pb.start())
 
-    _couch = Some(Couch("localhost", 5983, "admin", "admin"))
+    _couch = Some(new NioCouch("localhost", 5983, Some("admin", "admin")))
   }
 
   def stopCouchDb() = {

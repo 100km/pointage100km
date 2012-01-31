@@ -1,11 +1,19 @@
-JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar
+JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
+SBT = ./sbt
 
-all:: ${JARFILES}
+all:: $(JARFILES)
 
 clean::
-	./sbt clean
+	$(SBT) root/clean
+
+distclean::
+	$(MAKE) clean
+	$(RM) $(JARFILES)
+
+check::
+	$(SBT) root/test
 
 %.jar: ALWAYS
-	./sbt `basename ${@:.jar=}`/proguard
+	$(SBT) `basename ${@:.jar=}`/proguard
 
 ALWAYS::

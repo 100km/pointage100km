@@ -1,28 +1,35 @@
 {{#warning}}
-    {{#bibs}}
-<h3>Le dossard {{current_bib}} au tour {{current_lap}}, {{time}}, n'est pas connu !</h3>
-    {{/bibs}}
+<h3>Le dossard {{current_bib}} n'est pas connu ! Veuillez contacter un responsable informatique par cibee.</h3>
 {{/warning}}
 {{^warning}}
-<h3>Infos détaillées du dossard {{current_bib}} au tour {{current_lap}}</h3>
-<ul>
-  <li><i>Nom : </i>{{nom}}</li>
-  <li><i>Prénom : </i>{{prenom}}</li>
-  <li><i>Classement intermédiaire :</i></li>
-  <table style="text-align:center;">
+<center>
+  <h3>Dossard {{current_bib}} : {{nom}} {{prenom}} au tour {{current_lap}}</h3>
+  <h4>{{course}}</h4>
+  <p>{{kms}} km en{{#current_bib_time}}{{time}}{{/current_bib_time}}&nbsp;: {{global_average}} km/h !</p>
+  <table>
+    <caption>Classement intermédiaire</caption>
     <tr>
-      <th>Rang</th>
+      <th>Classement</th>
       <th>Dossard</th>
+      <th>Heure</th>
       <th>Temps</th>
     </tr>
     {{#bibs}}
     <tr>
       <td>{{rank}}</td>
       <td>{{bib}}</td>
+      <td>{{hour_time}}</td>
       <td>{{time}}</td>
     </tr>
     {{/bibs}}
+    {{#current_bib_time}}
+    <tr id="current_bib_time">
+      <td>{{rank}}</td>
+      <td>{{bib}}</td>
+      <td>{{hour_time}}</td>
+      <td>{{time}}</td>
+    </tr>
+    {{/current_bib_time}}
   </table>
-  <li><i>Adresse : </i>{{adresse}} {{cp}} {{commune}}</li>
-</ul>
+</center>
 {{/warning}}

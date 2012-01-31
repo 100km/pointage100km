@@ -1,10 +1,13 @@
 function setup_site_info(app, cb) {
   app.db.saveDoc({
     _id: "_local/site_info",
-    name: "foo",
     site_id: 0
   }, {
-    success: function(data) {
+    success: function() {
+      app.site_id=0;
+      cb();
+    },
+    error: function() {
       app.site_id=0;
       cb();
     }
@@ -16,10 +19,8 @@ function setup_bib_info(app, cb) {
     dossard: 0,
     course: 1,
   }, {
-    success: function(data) {
-      cb();
-    }
-  });
+    success: cb,
+    error: cb  });
 }
 function setup_app(app, cb) {
   fork([
@@ -44,7 +45,21 @@ function test_bib_input(app) {
             equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
             equal(checkpoints.times.length, 1, "wrong checkpoints times length");
             equal(checkpoints.race_id, 1, "wrong race_id inserted");
-            start();
+            var ts=checkpoints.times[0];
+            submit_remove_checkpoint(bib, app, ts, function() {
+              app.db.openDoc(checkpoints_id(bib, app.site_id), {
+                success: function(checkpoints) {
+                  equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
+                  equal(checkpoints.times.length, 0, "wrong checkpoints times length");
+                  equal(checkpoints.race_id, 1, "wrong race_id inserted");
+                  start();
+                },
+                error: function() {
+                  ok(false, "Error getting freshly inserted checkpoint");
+                  start();
+                }
+              });
+            });
           },
           error: function() {
             ok(false, "Error getting freshly inserted checkpoint");
@@ -61,7 +76,21 @@ function test_bib_input(app) {
             equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
             equal(checkpoints.times.length, 1, "wrong checkpoints times length");
             equal(checkpoints.race_id, 0, "wrong race_id inserted");
-            start();
+            var ts=checkpoints.times[0];
+            submit_remove_checkpoint(bib, app, ts, function() {
+              app.db.openDoc(checkpoints_id(bib, app.site_id), {
+                success: function(checkpoints) {
+                  equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
+                  equal(checkpoints.times.length, 0, "wrong checkpoints times length");
+                  equal(checkpoints.race_id, 0, "wrong race_id inserted");
+                  start();
+                },
+                error: function() {
+                  ok(false, "Error getting freshly inserted checkpoint");
+                  start();
+                }
+              });
+            });
           },
           error: function() {
             ok(false, "Error getting freshly inserted checkpoint");
