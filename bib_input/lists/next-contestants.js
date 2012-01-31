@@ -53,8 +53,9 @@ function(head, req) {
       }
       sec = parseInt(time_to_convert / 1000);
       min = parseInt(sec / 60);
-      // we need to take % 24 because start_time can be delayed for many days during tests
-      hour = pad2(parseInt(min / 60) % 24);
+      // we don't take % 24 in order to be coherent with global average
+      // The race day we MUST have the correct start-time for each race.
+      hour = pad2(parseInt(min / 60));
       sec = pad2(sec % 60);
       min = pad2(min % 60);
       pair.time = prefix + hour + ":" + min + ":" + sec;
