@@ -8,6 +8,7 @@
   <body>
     <div id="title"></div>
     <div id="arrow"></div>
+    <div id="message-bar"></div>
     <div id="bib_input"></div>
     <div id="items"></div>
     <div id="previous_container"></div>
@@ -25,11 +26,18 @@
       $("#items").evently("items", app);
       $("#title").evently("title", app);
       $("#previous").evently("previous", app);
+      $("#message-bar").evently("message-bar", app);
       $.evently.connect("#title","#items", ["post_changes"]);
+      $.evently.connect("#title","#message-bar", ["post_changes"]);
       $.evently.connect("#items","#previous", ["change_infos"]);
+
+      // javascript events
       $(window).resize(function(event_obj) {
         place_arrow(app.current_li);
       });
+      document.onkeyup = function keyPress(event_obj) {
+        return deal_with_key(event_obj, app);
+      };
     });
 
   </script>

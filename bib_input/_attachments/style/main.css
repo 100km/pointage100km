@@ -13,8 +13,26 @@ h1 {
 /* title CSS */
 #title {
   text-align:center;
-  font-size:1.5em;
+  font-size:1em;
   font-weight:bold;
+  width:50%;
+  float:left;
+  height:100px;
+  padding:8px;
+}
+
+/* message-bar CSS */
+#message-bar-core {
+  text-align:left;
+  font-size:1em;
+  width:40%;
+  float:right;
+  border:4px solid #f70;
+  background-color:#fd6;
+  padding:8px;
+  margin-bottom:8px;
+  height:100px;
+  overflow:auto;
 }
 
 /* bib_input CSS */
@@ -23,6 +41,7 @@ h1 {
   background:#fee;
   padding:8px;
   margin-bottom:8px;
+  clear:both;
 }
 
 #bib_input form {
@@ -160,6 +179,37 @@ h1 {
   padding:1%; /* here padding + width must be equal to width of previous_container */
   width:34%;
   z-index:2;
+}
+
+#previous table
+{
+  border-collapse:collapse;
+}
+
+#previous caption
+{
+  caption-side:bottom;
+  font-style:italic;
+}
+
+#previous th, td
+{
+  border:1px solid black;
+  text-align:center;
+  padding-left:5px;
+  padding-right:5px;
+}
+
+#previous th
+{
+  font-size:1em;
+  padding:5px;
+}
+
+#current_bib_time
+{
+  background-color:#a0ffa0;
+  font-weight:bold;
 }
 
 /* laps CSS */

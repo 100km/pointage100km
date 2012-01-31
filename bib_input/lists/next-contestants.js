@@ -5,6 +5,8 @@ function(head, req) {
   var searched_bib = req.query["bib"];
   var n = req.query["n"] || 0;
   var bib_lap = req.query["lap"];
+  var start_time = req.query["start_time"];
+  var kms = req.query["kms"];
 
   start({
     "headers": {
@@ -38,23 +40,33 @@ function(head, req) {
     var rank_start = Math.max(1, rank-n);
     for (var i = rank_start; i<=rank; i++) {
       var pair = {};
-      var time = 0;
+      var time_to_convert = 0;
       pair.bib = bibs[i-1].bib;
-      if (i == rank)
-        pair.time = "&nbsp; " + time_to_hour_string(bib_time);
-      else {
-        time = bib_time - bibs[i-1].time;
-        sec = parseInt(time / 1000);
-        min = parseInt(sec / 60);
-        hour = pad2(parseInt(min / 60)); // no need to take % 24 because the race lasts only for 24 hours.
-        sec = pad2(sec % 60);
-        min = pad2(min % 60);
-        pair.time = "- " + hour + ":" + min + ":" + sec;
+      pair.hour_time = time_to_hour_string(bibs[i-1].time); // this is the absolute hour
+      if (i == rank) {
+        time_to_convert = bib_time - start_time;
+        prefix = "&nbsp; ";
       }
+      else {
+        time_to_convert = bib_time - bibs[i-1].time;
+        prefix = "- ";
+      }
+      sec = parseInt(time_to_convert / 1000);
+      min = parseInt(sec / 60);
+      // we need to take % 24 because start_time can be delayed for many days during tests
+      hour = pad2(parseInt(min / 60) % 24);
+      sec = pad2(sec % 60);
+      min = pad2(min % 60);
+      pair.time = prefix + hour + ":" + min + ":" + sec;
       pair.rank = i;
       tmp.push(pair);
     }
     res.bibs = tmp;
+
+    // calculates global average
+    // time_to_convert shall have bib_time - start_time
+    res.global_average = kms * 1000 * 3600 / time_to_convert;
+    res.global_average = res.global_average.toFixed(2);
   }
   return JSON.stringify(res);
 }
