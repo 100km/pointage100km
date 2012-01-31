@@ -28,3 +28,35 @@
     </li>
   {{/items}}
 </ul>
+
+
+{{^all_empty}}
+<div id="message-bar-core">
+{{#local_status?}}
+<h3>local status</h3>
+  <p>
+{{#local_status}}
+{{message}}
+{{/local_status}}
+  </p>
+{{/local_status?}}
+
+{{#site_messages?}}
+<h3>site messages</h3>
+  <p>
+{{#site_messages}}
+{{message}}
+{{/site_messages}}
+  </p>
+{{/site_messages?}}
+
+{{#bcast_messages?}}
+<h3>broadcast messages</h3>
+  <p>
+{{#bcast_messages}}
+{{message}}
+{{/bcast_messages}}
+  </p>
+{{/bcast_messages?}}
+</div>
+{{/all_empty}}
