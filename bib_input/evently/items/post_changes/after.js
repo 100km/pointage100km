@@ -21,6 +21,4 @@ function () {
   // Then set the clicked lines to bold
   app.current_li.children().css("font-weight", "bold");
   app.current_li.css("background-color", "#d0ffd0");
-
-  place_arrow(app.current_li);
 }
