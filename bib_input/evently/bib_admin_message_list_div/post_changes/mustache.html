@@ -1,0 +1,30 @@
+<h3>Derniers passages</h3>
+<ul>
+  <li>
+      <div class="items_col_fixed_80">Sup?</div>
+      <div class="items_col_10">Dossard</div>
+      <div class="items_col_5">Tour</div>
+      <div class="items_col_20">Nom</div>
+      <div class="items_col_20">Prénom</div>
+      <div class="items_col_15">Heure de passage</div>
+      <div style="clear:both;"></div>
+  </li>
+  {{#items}}
+    <li>
+      <div class="items_col_fixed_80_delete">
+        <form id="delete">
+          <input type="image" name="delete" src="img/delete.png"/>
+          <input type="hidden" name="bib" value="{{bib}}"/>
+          <input type="hidden" name="lap" value="{{lap}}"/>
+          <input type="hidden" name="ts" value="{{ts}}"/>
+        </form>
+      </div>
+      <div class="items_col_10">{{bib}}</div>
+      <div class="items_col_5">{{lap}}</div>
+      <div class="items_col_20">{{nom}}</div>
+      <div class="items_col_20">{{prenom}}</div>
+      <div class="items_col_15">{{time_hour}}</div>
+      <div style="clear:both;"></div>
+    </li>
+  {{/items}}
+</ul>
