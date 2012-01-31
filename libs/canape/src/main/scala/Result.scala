@@ -1,33 +1,31 @@
 package net.rfc1149.canape
 
-import dispatch._
-import dispatch.liftjson.Js._
 import net.liftweb.json._
 
-final class Result[K: Manifest, V: Manifest](js: JValue,
-					     formats: Formats) {
-
-  val JInt(total_rows: BigInt) = js \ "total_rows"
-  val JInt(offset: BigInt) = js \ "offset"
-  val rows: List[Result.Row[K, V]] = (js \ "rows").children map { new Result.Row[K, V](_, formats) }
+case class Result(val total_rows: Long,
+		  val offset: Long,
+		  val rows: List[Row]) {
 
   lazy val ids = rows map (_.id)
-  lazy val keys = rows map (_.key)
-  lazy val values = rows map (_.value)
+  def keys[K](implicit formats: Formats, k: Manifest[K]) = rows map (_.key.extract[K])
+  def values[V](implicit formats: Formats, v: Manifest[V]) = rows map (_.value.extract[V])
+  def docsOption[D](implicit formats: Formats, d: Manifest[D]) = rows map (_.doc.map(_.extract[D]))
+  def docs[D](implicit formats: Formats, d: Manifest[D]) = rows map (_.doc.get.extract[D])
+  def items[K, V](implicit formats: Formats, k: Manifest[K], v: Manifest[V]) = rows map (_.extract[K, V](formats, k, v))
+  def itemsWithDocOption[K, V, D](implicit formats: Formats, k: Manifest[K], v: Manifest[V], d: Manifest[D]) = rows map (_.extractWithDocOption[K, V, D])
+  def itemsWithDoc[K, V, D](implicit formats: Formats, k: Manifest[K], v: Manifest[V], d: Manifest[D]) = rows map (_.extractWithDoc[K, V, D])
 
 }
 
-object Result {
+case class Row(val id: String, val key: JValue, val value: JValue, val doc: Option[JValue]) {
 
-  final class Row[K: Manifest, V: Manifest](js: JValue,
-					    formats: Formats) {
+  def extract[K, V](implicit formats: Formats, k: Manifest[K], v: Manifest[V]): (String, K, V) =
+    (id, key.extract[K], value.extract[V])
 
-    private[this] implicit val f = formats
+  def extractWithDocOption[K, V, D](implicit formats: Formats, k: Manifest[K], v: Manifest[V], d: Manifest[D]): (String, K, V, Option[D]) =
+    (id, key.extract[K], value.extract[V], doc.map(_.extract[D]))
 
-    val JString(id: String) = js \ "id"
-    val key: K = (js \ "key").extract[K]
-    val value: V = (js \ "value").extract[V]
-
-  }
+  def extractWithDoc[K, V, D](implicit formats: Formats, k: Manifest[K], v: Manifest[V], d: Manifest[D]): (String, K, V, D) =
+    (id, key.extract[K], value.extract[V], doc.get.extract[D])
 
 }

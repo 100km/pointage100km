@@ -99,16 +99,17 @@ function add_checkpoint(checkpoints) {
   checkpoints["times"].push(ts);
 }
 
-function submit_remove_checkpoint(bib, app, ts) {
+function submit_remove_checkpoint(bib, app, ts, cb) {
   retries(3, function(fail) {
-    submit_remove_checkpoint_once(bib, app, ts, fail);
+    submit_remove_checkpoint_once(bib, app, ts, fail, cb);
   }, "remove checkpoint");
 }
-function submit_remove_checkpoint_once(bib, app, ts, fail) {
+function submit_remove_checkpoint_once(bib, app, ts, fail, cb) {
   call_with_checkpoints(bib, app, function(checkpoints) {
     remove_checkpoint(checkpoints, ts);
     app.db.saveDoc(checkpoints, {
-      error: fail
+      error: fail,
+      success: cb
     });
   });
 }
@@ -125,37 +126,26 @@ function remove_checkpoint(checkpoints, ts) {
 
 function isBib(bib)
 {
-  var isBib_re       = /^[1-9]\d*$/;
+  var isBib_re       = /^\d+$/;
   return String(bib).search (isBib_re) != -1
 }
 
-function place_arrow(obj) {
-  if (obj == undefined)
-    return;
-
-  var $_arrow=$("#arrow");
-  var pos = obj.offset();
-
-  if (pos == null)
-    return;
-
-  var x_offset = obj.width();
-  var y_offset = (obj.height()-42)/2+4; // +4 because of the border
-  pos.top = pos.top + y_offset;
-  pos.left = pos.left + x_offset;
-
-  // Set the div to link concurrent with its infos
-  $_arrow.css({ marginLeft: 0, marginTop: 0,
-                top: pos.top, left: pos.left });
-  $_arrow.show();
-}
+// From http://blog.yjl.im/2010/01/stick-div-at-top-after-scrolling.html
+function place_previous() {
+  var window_top = $(window).scrollTop();
+  var div_top = $('#previous_container').offset().top;
+  if (window_top > div_top)
+    $('#previous').addClass('stick')
+  else
+    $('#previous').removeClass('stick');
+  }
 
 function empty_info() {
-        return {nom:"", prenom:""};
+  return {nom:"", prenom:"", course:""};
 }
 
 function pad2(number) {
-  return (number < 10 ? '0' : '') + number
+  return ((number < 10) && (number >= 0) ? '0' : '') + number
 }
 
 function time_to_hour_string(t) {
@@ -202,3 +192,111 @@ function get_doc(app, cb, doc_name) {
   });
 }
 
+function change_li(li, app) {
+  // return immediately if li has no delete element
+  if (li.find("#delete")[0] == undefined)
+    return;
+
+  // First clear all lines
+  li.parents("ul").children().children().css("font-weight", "");
+  li.parents("ul").children().css("background-color","white");
+  // Then set the clicked lines to bold
+  li.children().css("font-weight", "bold");
+  li.css("background-color", "#d0ffd0");
+
+  // Keep this, current bib and current lap into app
+  app.current_li = li;
+  app.current_bib = parseInt(li.find("#delete")[0]["bib"]["value"]);
+  app.current_lap = parseInt(li.find("#delete")[0]["lap"]["value"]);
+
+  li.trigger("change_infos");
+}
+
+function deal_with_key(ev, app) {
+  key = ev.which?ev.which:window.event.keyCode;
+
+  if ((key >= 48) && (key <=57)) { //figures
+    // If bib_input already has focus, return
+    if ($("#bib_input").find("input")[0] == document.activeElement)
+      return false;
+
+    $("#bib_input").find("input")[0].focus();
+    // TODO find a better way to put the key here
+    $("#bib_input").find("input")[0].value += (key-48);
+  } else if (key == 40) { // down arrow
+    change_li(app.current_li.next(), app)
+  } else if (key == 38) { // up arrow
+    change_li(app.current_li.prev(), app)
+  }
+
+  // return false is equivalent to ev.stopPropagation
+  return false;
+}
+
+function local_messages_id(site_id) {
+  return "local-messages-" + site_id;
+}
+function admin_messages_id(site_id) {
+  return "admin-messages-" + site_id;
+}
+function admin_broadcast_id() {
+  return "admin-messages-broadcast";
+}
+function normalize_message_id(str) {
+  var tmp = str.split("-")
+  if (tmp[tmp.length-1] != "broadcast")
+    tmp.pop();
+  return tmp.join("-");
+}
+
+function unwrap_messages(data) {
+  return data.rows.map(function(row) {
+    return row.value;
+  });
+}
+function _call_with_messages(app, startkey, endkey, cb) {
+  app.db.view("bib_input/all-messages", {
+    startkey: startkey,
+    endkey:   endkey,
+    success: function(data) {
+    cb(unwrap_messages(data));
+    }
+  });
+}
+function call_with_site_messages(app, cb) {
+  var id = app.site_id;
+  _call_with_messages(app, [id,true], [id+1], cb);
+}
+function call_with_bcast_messages(app, cb) {
+  _call_with_messages(app, [null,true], [false], cb);
+}
+function call_with_local_status(app, cb) {
+  app.db.openDoc("_local/status", {
+    success: cb,
+    error: function(a,b,c) { cb(""); }
+  });
+}
+function call_with_messages(app, cb) {
+  fork([
+    function(cb) {call_with_site_messages(app, cb)},
+    function(cb) {call_with_bcast_messages(app, cb)},
+    function(cb) {call_with_local_status(app, cb)}
+  ], function(data) {
+    var res = {};
+    res.site_messages = data[0][0];
+    res.bcast_messages = data[1][0];
+    res.local_status = data[2][0];
+    cb(res);
+  });
+}
+
+
+function checkBib(bib) {
+  if (bib == "") {
+    $("#message_check").html("");
+  } else if (isBib(bib)) {
+    $("#message_check").html("<img src=img/check.png></img>");
+  } else {
+    $("#message_check").html("<p>Dossard invalide</p>");
+  }
+}

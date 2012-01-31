@@ -1,0 +1,18 @@
+<script type="text/javascript" charset="utf-8">
+function update_clk() {
+  var current_time = new Date();
+  var h = pad2(current_time.getHours());
+  var m = pad2(current_time.getMinutes());
+  var s = pad2(current_time.getSeconds());
+  $("#bib_admin_last_db_update_time").html(h+":"+m+":"+s);
+}
+
+update_clk();
+
+</script>
+
+
+<h1>Current site "{{ site_name }}" (ID={{site_id}})</h1>
+
+last DB update
+<div id="bib_admin_last_db_update_time"></div>

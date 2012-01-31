@@ -7,10 +7,10 @@
   </head>
   <body>
     <div id="title"></div>
-    <div id="arrow"></div>
+    <div id="message-bar"></div>
     <div id="bib_input"></div>
     <div id="items"></div>
-    <div id="previous_container"></div>
+    <div id="previous_container"></div> <!-- stay here to define the position of previous -->
     <div id="previous"></div>
 
   </body>
@@ -25,11 +25,17 @@
       $("#items").evently("items", app);
       $("#title").evently("title", app);
       $("#previous").evently("previous", app);
+      $("#message-bar").evently("message-bar", app);
       $.evently.connect("#title","#items", ["post_changes"]);
+      $.evently.connect("#title","#message-bar", ["post_changes"]);
       $.evently.connect("#items","#previous", ["change_infos"]);
-      $(window).resize(function(event_obj) {
-        place_arrow(app.current_li);
-      });
+
+      // javascript events
+      $(window).scroll(place_previous);
+      place_previous();
+      document.onkeyup = function keyPress(event_obj) {
+        return deal_with_key(event_obj, app);
+      };
     });
 
   </script>

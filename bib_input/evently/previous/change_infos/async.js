@@ -3,6 +3,7 @@ function(cb) {
   var site_id = app.site_id;
   var bib = app.current_bib;
   var lap = app.current_lap;
+  var kms = app.kms_site[site_id][lap] || 0;
 
   var handle_open = function(infos) {
       var race_id = infos["course"] || 0;
@@ -15,9 +16,11 @@ function(cb) {
         bib: bib,
         n: n,
         lap : lap,
+        start_time : app.start_times[race_id],
+        kms : kms,
         success: function(data) {
           safe_infos = infos || empty_info();
-          cb({infos:safe_infos, bibs:data.bibs, warning: warning});
+          cb({infos:safe_infos, course:app.races_names[race_id], current_bib_time:data.bibs.pop(), bibs:data.bibs, warning: warning, kms:kms, global_average:data.global_average});
         }
       });
     }
