@@ -3,7 +3,7 @@ function(cb) {
   var site_id = app.site_id;
   var bib = app.current_bib;
   var lap = app.current_lap;
-  var kms = app.kms_site[site_id][lap];
+  var kms = app.kms_site[site_id][lap] || 0;
 
   var handle_open = function(infos) {
       var race_id = infos["course"] || 0;
