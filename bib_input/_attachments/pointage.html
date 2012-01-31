@@ -35,6 +35,8 @@
       $(window).resize(function(event_obj) {
         place_arrow(app.current_li);
       });
+      $(window).scroll(place_previous);
+      place_previous();
       document.onkeyup = function keyPress(event_obj) {
         return deal_with_key(event_obj, app);
       };
