@@ -165,20 +165,16 @@ h1 {
 #previous_container {
   position:relative;
   float:right;
-  border:4px solid #afa;
-  padding:8px;
   width:35%;
-  height:3000px; /* TODO find a better way to calculate this */
-  background-color:#d0ffd0;
-  z-index:0;
 }
 
 #previous {
   position:absolute;
-  right:12px;
-  padding:1%; /* here padding + width must be equal to width of previous_container */
-  width:34%;
-  z-index:2;
+  right: 12px;
+  border:4px solid #afa;
+  padding:8px;
+  background-color:#d0ffd0;
+  width:35%;
 }
 
 /* From http://blog.yjl.im/2010/01/stick-div-at-top-after-scrolling.html
@@ -223,13 +219,4 @@ Will let the previous info on top of screen */
 #laps {
   border:4px solid #dfd;
   padding:8px;
-}
-
-/* arrow CSS */
-#arrow {
-  position:absolute;
-  width:200px;
-  height:42px;
-  background-color:#d0ffd0;
-  z-index:1;
 }

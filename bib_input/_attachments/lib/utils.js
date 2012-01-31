@@ -130,27 +130,6 @@ function isBib(bib)
   return String(bib).search (isBib_re) != -1
 }
 
-function place_arrow(obj) {
-  if (obj == undefined)
-    return;
-
-  var $_arrow=$("#arrow");
-  var pos = obj.offset();
-
-  if (pos == null)
-    return;
-
-  var x_offset = obj.width();
-  var y_offset = (obj.height()-42)/2+4; // +4 because of the border
-  pos.top = pos.top + y_offset;
-  pos.left = pos.left + x_offset;
-
-  // Set the div to link concurrent with its infos
-  $_arrow.css({ marginLeft: 0, marginTop: 0,
-                top: pos.top, left: pos.left });
-  $_arrow.show();
-}
-
 // From http://blog.yjl.im/2010/01/stick-div-at-top-after-scrolling.html
 function place_previous() {
   var window_top = $(window).scrollTop();
@@ -230,7 +209,6 @@ function change_li(li, app) {
   app.current_bib = parseInt(li.find("#delete")[0]["bib"]["value"]);
   app.current_lap = parseInt(li.find("#delete")[0]["lap"]["value"]);
 
-  place_arrow(li);
   li.trigger("change_infos");
 }
 
