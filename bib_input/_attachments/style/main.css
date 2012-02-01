@@ -58,7 +58,7 @@ h1 {
   font-size:32px;
 }
 
-#message_check {
+#bib_check {
   padding-top:4px;
   padding-left:4px;
   color:#f00;
@@ -66,7 +66,7 @@ h1 {
   margin-bottom:-1px;
 }
 
-#message_check p {
+#bib_check p {
   padding-top:16px;
   font-size:12pt;
   margin:0;
