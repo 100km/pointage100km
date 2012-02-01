@@ -3,7 +3,7 @@ function() {
     var message = form["bib_admin_message"].value; 
     var message_target = form["bib_admin_message_target"].value;
 
-    $.log("message " + message + " target " + message_target);
+    $.log("1 message " + message + " target " + message_target);
 
 // we are sure it's an integer because of the regexp check.
   //if (! isBib(bib)) return false;
