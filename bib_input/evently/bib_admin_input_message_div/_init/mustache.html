@@ -14,8 +14,10 @@ setInterval( update_clk , 1000);
 
 <form>
   <!-- onSubmit and onKeyup are dealed by evently -->
-  <label>Message: <input type="text" name="message" size=128 value="" maxlength=128></label>
+  <label>Message: <input type="text" name="bib_admin_message" size=128 value="" maxlength=128> <div id="message_len"></div> </label>
+  <label>Target: <input type="text" name="bib_admin_message_target" size=2 value="" maxlength=2></label>
   <div id="message_check"></div>
+  <div id="clk"></div>
   <div style="clear:both;"></div>
 </form>
 
