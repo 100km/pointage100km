@@ -7,6 +7,7 @@
   </head>
   <body>
     <div id="bib_admin_div"></div>
+    <div id="bib_admin_input_message_div"></div>
     <div id="bib_admin_message_list_div"></div>
   </body>
   <script src="vendor/couchapp/loader.js"></script>
@@ -14,6 +15,7 @@
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
       $("#bib_admin_div").evently("bib_admin_div", app);
+      $("#bib_admin_input_message_div").evently("bib_admin_input_message_div", app);
       $("#bib_admin_message_list_div").evently("bib_admin_message_list_div", app);
       $.evently.connect("#bib_admin_div", "#bib_admin_message_list_div", ["post_changes"]);
     });
