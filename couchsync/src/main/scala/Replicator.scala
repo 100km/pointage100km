@@ -33,11 +33,7 @@ object Replicator {
       Thread.sleep(100)
     } while (activeTasksCount > 0)
 
-    db.startCompaction
-    while (db.status.execute()("compact_running").extract[Boolean]) {
-      println("Compaction running")
-      Thread.sleep(100)
-    }
+    Thread.sleep(5000)
 
     c.stopCouchDb()
 
