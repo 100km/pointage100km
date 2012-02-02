@@ -1,5 +1,6 @@
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
+import Message._
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.io.Source
@@ -21,6 +22,7 @@ object Replicator {
       case StatusCode(412, _) => // Database already exists
     }
     val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
+    message(referenceDb, "<blink>Ne pas enlever la clé USB</blink>")
     couch.replicate(db, referenceDb, false).execute
     couch.replicate(referenceDb, db, false).execute
 
@@ -38,6 +40,8 @@ object Replicator {
     }
 
     c.stopCouchDb()
+
+    message(referenceDb, "La clé USB peut être retirée")
 
     couch.releaseExternalResources
     referenceDb.couch.releaseExternalResources
