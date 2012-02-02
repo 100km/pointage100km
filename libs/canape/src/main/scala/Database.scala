@@ -49,12 +49,18 @@ case class Database(val couch: Couch, val database: String) {
   def view(design: String, name: String, properties: Seq[(String, String)] = Seq()) =
     query("_design/" + design + "/_view/" + name, properties)
 
+  def update(design: String, name: String, id: String, data: Map[String, String]) = {
+    val encoder = new QueryStringEncoder("")
+    data foreach { case (name, value) => encoder.addParam(name, value) }
+    couch.makePostRequest[JValue]("%s/_design/%s/_update/%s/%s".format(database, design, name, id), encoder.toString.tail)
+  }
+
   def allDocs(): CouchRequest[Result] = allDocs(Map())
 
   def allDocs(params: Map[String, String]): CouchRequest[Result] =
     query("_all_docs", params.toSeq)
 
-  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, None)
+  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, "")
 
   def startCompaction(): CouchRequest[JValue] =
     couch.makePostRequest[JValue](database + "/_compact", "")
