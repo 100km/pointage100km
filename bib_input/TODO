@@ -1,6 +1,0 @@
-Petit pense-bête pour le futur design:
-
-  - un tableau "items" pour les changements récents avec nom, prénom, tour, temps, dossard (ordre à définir).
-  - ce taleau est à gauche sur environ la moitié de la page
-  - une "carte d'identité" de la dernière personne passée sur la droite. Un style spécial permettra de relier cette carte d'identité à la ligne correspondant sur le tableau spécial.
-  - une touche du clavier permettra de passer sur un mode de sélection des dossards récents. Dans ce mode, on peut naviguer avec les flèches haut et bas sur les dossards récents avec la carte d'identité qui se met à jour automatiquement.
