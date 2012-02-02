@@ -9,16 +9,25 @@ function(cb) {
     startkey : [(site_id+1),0],
     endkey : [site_id,0],
     success: function(data) {
-      app.db.view("bib_input/bib_info", {
-        success: function(data_info) {
-          var map = {};
-          for (var i=0; i<data_info.rows.length; i++) {
-            map[data_info.rows[i].value.dossard] = {prenom:data_info.rows[i].value.prenom, nom:data_info.rows[i].value.nom, course:data_info.rows[i].value.course};
-          }
-          var new_data = data.rows.map(function(r) {
-            return {value:r.value, key:r.key, infos:map[r.value.bib]};
+      var allDocs_keys=_.uniq(data.rows.map(function(row) {
+        return infos_id(row.value.bib);
+      }));
+      app.db.allDocs({
+        keys: allDocs_keys,
+        include_docs: true,
+        success: function(infos) {
+          var hash = {};
+          _.each(infos.rows, function(row) {
+            hash[row.doc.dossard] = {
+              prenom: row.doc.prenom,
+              nom: row.doc.nom,
+              course: row.doc.course
+              };
           });
-          cb(new_data);
+          _.each(data.rows, function(row) {
+            row.infos = hash[row.value.bib];
+          });
+          cb(data.rows);
         }
       });
     }
