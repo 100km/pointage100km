@@ -25,6 +25,7 @@ function(cb) {
           limit : 2,
           descending : true,
           success: function(local_avg_data) {
+            var avg_present = (local_avg_data.rows[1] != undefined) && (local_avg_data.rows[1].key[0] == bib);
             cb({
               infos:safe_infos,
               course:app.races_names[race_id],
@@ -33,6 +34,7 @@ function(cb) {
               warning: warning,
               kms:kms,
               global_average:data.global_average,
+              avg_present:avg_present,
               last_site:local_avg_data.rows[1].value[0],
               last_timestamp:local_avg_data.rows[1].key[1],
               last_lap:local_avg_data.rows[1].value[1],
