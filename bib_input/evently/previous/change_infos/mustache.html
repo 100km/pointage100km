@@ -5,7 +5,7 @@
 <center>
   <h3>Dossard {{current_bib}} : {{nom}} {{prenom}} au tour {{current_lap}}</h3>
   <h4>{{course}}</h4>
-  <p>{{kms}} km en{{#current_bib_time}}{{time}}{{/current_bib_time}}&nbsp;: {{global_average}} km/h !</p>
+  <p>Moyenne globale : {{kms}} km en{{#current_bib_time}}{{time}}{{/current_bib_time}}&nbsp;: {{global_average}} km/h !</p>
   <table>
     <caption>Classement intermédiaire</caption>
     <tr>
@@ -33,6 +33,9 @@
   </table>
   {{#avg_present}}
   <p>Moyenne depuis {{last_site_name}} ({{local_kms}} kms) : {{local_average}}km/h.</p>
+  {{/avg_present}}
+  {{^avg_present}}
+  <p>Pas assez de données pour calculer une moyenne intermédiaire</p>
   {{/avg_present}}
 </center>
 {{/warning}}
