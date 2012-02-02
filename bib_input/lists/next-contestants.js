@@ -68,6 +68,8 @@ function(head, req) {
     // time_to_convert shall have bib_time - start_time
     res.global_average = kms * 1000 * 3600 / time_to_convert;
     res.global_average = res.global_average.toFixed(2);
+
+    res.bib_time = bib_time;
   }
   return JSON.stringify(res);
 }
