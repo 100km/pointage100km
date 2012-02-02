@@ -18,11 +18,13 @@ function(cb) {
         success: function(infos) {
           var hash = {};
           _.each(infos.rows, function(row) {
-            hash[row.doc.dossard] = {
-              prenom: row.doc.prenom,
-              nom: row.doc.nom,
-              course: row.doc.course
-              };
+            if (row.doc) {
+              hash[row.doc.dossard] = {
+                prenom: row.doc.prenom,
+                nom: row.doc.nom,
+                course: row.doc.course
+                };
+            }
           });
           _.each(data.rows, function(row) {
             row.infos = hash[row.value.bib];
