@@ -28,6 +28,20 @@ function retries(n, f, debug_name) {
   }
 }
 
+function handle_not_found_or_die(f) {
+  return function(stat, err, reason) {
+     if(not_found(stat, err, reason)) {
+      f();
+     }
+     else {
+       $.log("stat" + JSON.stringify(stat));
+       $.log("err" + JSON.stringify(err));
+       $.log("reason" + JSON.stringify(reason));
+       alert("Error, but not missing doc");
+     }
+    }
+
+}
 function call_with_race_id(bib, app, f) {
   var invalid_race_id = 0;
   app.db.openDoc(infos_id(bib), {
@@ -37,17 +51,7 @@ function call_with_race_id(bib, app, f) {
       var race_id = bib_info["course"] || invalid_race_id;
       f(race_id);
     },
-    error: function(stat, err, reason) {
-     if(not_found(stat, err, reason)) {
-      f(invalid_race_id);
-     }
-     else {
-       $.log("stat" + JSON.stringify(stat));
-       $.log("err" + JSON.stringify(err));
-       $.log("reason" + JSON.stringify(reason));
-       alert("Error, but not missing doc");
-     }
-    }
+    error: handle_not_found_or_die(function() { f(invalid_race_id) })
   });
 }
 
@@ -61,17 +65,7 @@ function call_with_checkpoints(bib, app, f) {
       $.log(" got " + JSON.stringify(checkpoints));
       f(checkpoints);
     },
-    error: function(stat, err, reason) {
-     if(not_found(stat, err, reason)) {
-      f({});
-     }
-     else {
-       $.log("stat" + JSON.stringify(stat));
-       $.log("err" + JSON.stringify(err));
-       $.log("reason" + JSON.stringify(reason));
-       alert("Error, but not missing doc");
-     }
-    }
+    error: handle_not_found_or_die(function() { f({}) })
   });
 }
 
