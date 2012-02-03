@@ -5,7 +5,6 @@ import net.rfc1149.canape._
 object Message {
 
   def message(db: Database, msg: String) = {
-    println("Displaying " + msg)
     db.update("bib_input", "local_status", "_local/status", Map("message" -> msg)).execute
     touchMe(db)
   }

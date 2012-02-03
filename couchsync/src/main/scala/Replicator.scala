@@ -3,6 +3,7 @@ import java.lang.{Process, ProcessBuilder}
 import Message._
 import net.liftweb.json._
 import net.rfc1149.canape._
+import net.rfc1149.canape.implicits._
 import scala.io.Source
 import scopt.OptionParser
 
@@ -10,7 +11,21 @@ object Replicator {
 
   implicit val formats = DefaultFormats
 
+  private def waitForNoTasks(couch: Couch) = {
+    var activeTasksCount: Int = 0
+    do {
+      activeTasksCount = couch.activeTasks.execute.size
+      Thread.sleep(100)
+    } while (activeTasksCount > 0)
+  }
+
   def replicate(options: Options) {
+    val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
+
+    def step(msg: String) = message(referenceDb, "Ne pas enlever la clé USB - " + msg)
+
+    step("lancement de la copie")
+
     val c = new Replicator(options.localDir, options.usbDir)
     c.runCouchDb()
     Thread.sleep(5000)
@@ -21,17 +36,21 @@ object Replicator {
     } catch {
       case StatusCode(412, _) => // Database already exists
     }
-    val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
-    message(referenceDb, "<blink>Ne pas enlever la clé USB</blink>")
+    step("synchronisation")
     couch.replicate(db, referenceDb, false).execute
     couch.replicate(referenceDb, db, false).execute
+    waitForNoTasks(couch)
 
-    var activeTasksCount: Int = -2
-    do {
-      activeTasksCount = couch.activeTasks.execute.size
-      println("Active tasks count: " + activeTasksCount)
-      Thread.sleep(100)
-    } while (activeTasksCount > 0)
+    step("compaction")
+    db.compact().execute
+    referenceDb.compact().execute
+    waitForNoTasks(couch)
+
+    step("écriture")
+    db.ensureFullCommit().execute
+
+    step("vidage du cache")
+    (new ProcessBuilder("sync")).start()
 
     Thread.sleep(5000)
 
@@ -76,7 +95,7 @@ class Replicator(srcDir: File, usbBaseDir: File) {
     ini.set("httpd", "bind_address", "127.0.0.1")
     ini.set("httpd", "port", 5983)
     ini.set("log", "file", logFile)
-    ini.set("log", "level", "debug")
+    // ini.set("log", "level", "debug")
 
     val out = new FileWriter(defaultFile)
     ini.save(out)
