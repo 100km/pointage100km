@@ -195,4 +195,16 @@ class DatabaseSpec extends DbSpecification {
 
   }
 
+  "db.compact()" should {
+    "return with success" in {
+      db.compact().execute \ "ok" must be equalTo(JBool(true))
+    }
+  }
+
+  "db.ensureFullCommit()" should {
+    "return with success" in {
+      db.ensureFullCommit().execute \ "ok" must be equalTo(JBool(true))
+    }
+  }
+
 }

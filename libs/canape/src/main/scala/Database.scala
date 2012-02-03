@@ -60,10 +60,10 @@ case class Database(val couch: Couch, val database: String) {
   def allDocs(params: Map[String, String]): CouchRequest[Result] =
     query("_all_docs", params.toSeq)
 
-  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, "")
+  def create(): CouchRequest[JValue] = couch.makePutRequest[JValue](database, None)
 
-  def startCompaction(): CouchRequest[JValue] =
-    couch.makePostRequest[JValue](database + "/_compact", "")
+  def compact(): CouchRequest[JValue] =
+    couch.makePostRequest[JValue](database + "/_compact", None)
 
   def bulkDocs(docs: Seq[Any], allOrNothing: Boolean = false): CouchRequest[JValue] = {
     val args = Map("all_or_nothing" -> allOrNothing, "docs" -> docs)
@@ -96,5 +96,8 @@ case class Database(val couch: Couch, val database: String) {
 
   def changes(params: Map[String, String] = Map()): CouchRequest[JValue] =
     couch.makeGetRequest[JValue](encode("_changes", params.toSeq), true)
+
+  def ensureFullCommit(): CouchRequest[JValue] =
+    couch.makePostRequest[JValue](database + "/_ensure_full_commit", None)
 
 }

@@ -40,7 +40,10 @@ abstract class Couch(val host: String,
       request.setHeader(HttpHeaders.Names.AUTHORIZATION, authorization)
     }
     data foreach { d =>
-      val cb = ChannelBuffers.copiedBuffer(d.fold(write(_), {s => s}), CharsetUtil.UTF_8)
+      val cb = ChannelBuffers.copiedBuffer(d.fold({
+	case None  => ""
+	case other => write(other)
+       }, {s => s}), CharsetUtil.UTF_8)
       request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, cb.readableBytes())
       request.setHeader(HttpHeaders.Names.CONTENT_TYPE,
 			d.fold({_ => "application/json"},
@@ -58,6 +61,11 @@ abstract class Couch(val host: String,
 
   def makeGetRequest[T: Manifest](query: String, allowChunks: Boolean = false): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.GET, None, allowChunks)
+
+  // POST and PUT requests accept the following data:
+  //   - String   => application/x-www-form-urlencoded, verbatim string payload
+  //   - None     => application/json, empty payload
+  //   - other    => application/json, converted json to string payload
 
   def makePostRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.POST, convert(data), false)
