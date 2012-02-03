@@ -1,7 +1,9 @@
 JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
 SBT = ./sbt
 
-all:: $(JARFILES)
+all:: proguard
+
+proguard:: $(JARFILES)
 
 clean::
 	$(SBT) root/clean
