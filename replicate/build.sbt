@@ -1,1 +1,0 @@
-seq(Revolver.settings: _*)

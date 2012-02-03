@@ -1,6 +1,7 @@
 import sbt._
 import Keys._
 import ProguardPlugin._
+import cc.spray.revolver.RevolverPlugin._
 
 object Steenwerck extends Build {
 
@@ -34,15 +35,15 @@ object Steenwerck extends Build {
     Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config)
 
   lazy val replicate =
-    Project("replicate", file("replicate")) dependsOn(canape, config, akkaHttp) settings(proguard: _*) settings(akka: _*) settings(scopt: _*)
+    Project("replicate", file("replicate")) dependsOn(canape, config, akkaHttp) settings(proguard: _*) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*)
 
   lazy val couchsync =
-    Project("couchsync", file("couchsync")) dependsOn(canape) settings(proguard: _*) settings(scopt: _*)
+    Project("couchsync", file("couchsync")) dependsOn(canape) settings(proguard: _*) settings(scopt: _*) settings(Revolver.settings: _*)
 
   lazy val loader =
-    Project("loader", file("loader")) dependsOn(canape) settings(proguard: _*) settings(jackcess: _*) settings(scopt: _*)
+    Project("loader", file("loader")) dependsOn(canape) settings(proguard: _*) settings(jackcess: _*) settings(scopt: _*) settings(Revolver.settings: _*)
 
-  lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(proguard: _*) settings(scopt: _*)
+  lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(proguard: _*) settings(scopt: _*) settings(Revolver.settings: _*)
 
   lazy val canape = Project("canape", file("libs/canape"))
 
