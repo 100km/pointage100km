@@ -272,9 +272,9 @@ function call_with_local_status(app, cb) {
 }
 function call_with_messages(app, cb) {
   fork([
-    function(cb) {call_with_site_messages(app, cb)},
-    function(cb) {call_with_bcast_messages(app, cb)},
-    function(cb) {call_with_local_status(app, cb)}
+    function(cb1) {call_with_site_messages(app, cb1)},
+    function(cb2) {call_with_bcast_messages(app, cb2)},
+    function(cb3) {call_with_local_status(app, cb3)}
   ], function(data) {
     var res = {};
     res.site_messages = data[0][0];
