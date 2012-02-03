@@ -44,9 +44,16 @@ object Loader extends App {
 
   for (row <- table) {
     val id = "contestant-" + row("dossard")
-    val newDoc = fix(row.toMap + ("_rev" -> get(id).map(_("_rev"))) + ("_id" -> id))
-    println("Inserting bib %d (%s %s)".format(newDoc("dossard"), newDoc("prenom"), newDoc("nom")))
-    db.insert(util.toJObject(newDoc)).execute
+    val doc = fix(row.toMap + ("_id" -> id))
+    val desc = "bib %d (%s %s)".format(doc("dossard"), doc("prenom"), doc("nom"))
+    try {
+      db.insert(util.toJObject(doc)).execute
+      println("Inserted " + desc)
+    } catch {
+	case StatusCode(409, _) =>
+	  println("Updating existing " + desc)
+	  db.insert(util.toJObject(doc + ("_rev" -> get(id).map(_("_rev"))))).execute
+    }
   }
 
   db.couch.releaseExternalResources
