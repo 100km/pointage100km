@@ -1,6 +1,6 @@
 JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
 BINFILES = $(JARFILES:.jar=)
-DIST = pointage100km.tar.xz
+DIST = bin.tar.xz
 SBT = ./sbt
 
 all:: proguard
@@ -10,7 +10,8 @@ proguard:: $(JARFILES)
 dist:: $(DIST)
 
 $(DIST): $(JARFILES) $(BINFILES)
-	cd .. && tar Jcvf pointage100km/$(DIST) pointage100km/$(JARFILES) pointage100km/$(BINFILES)
+	$(RM) $(DIST)
+	tar Jcvf $(DIST) $(JARFILES) $(BINFILES)
 
 clean::
 	$(SBT) root/clean
