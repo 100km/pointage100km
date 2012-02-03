@@ -10,7 +10,7 @@ proguard:: $(JARFILES)
 dist:: $(DIST)
 
 $(DIST): $(JARFILES) $(BINFILES)
-	cd .. && tar Jcvf pointage100km/$(DIST) $(DIST)/bin/$(JARFILES) $(DIST)/bin/$(BINFILES)
+	cd .. && tar Jcvf pointage100km/$(DIST) pointage100km/$(JARFILES) pointage100km/$(BINFILES)
 
 clean::
 	$(SBT) root/clean
