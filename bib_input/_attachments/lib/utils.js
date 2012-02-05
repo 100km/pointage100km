@@ -294,3 +294,7 @@ function checkBib(bib) {
     $("#bib_check").html("<p>Dossard invalide</p>");
   }
 }
+
+function site_lap_to_kms(app, site_id, lap) {
+  return app.kms_offset[site_id] + (lap - 1) * app.kms_lap;
+}
