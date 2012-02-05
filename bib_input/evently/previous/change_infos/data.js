@@ -7,9 +7,9 @@ function(data) {
   data.prenom = data.infos.prenom;
 
   if (data.avg_present) {
-    var local_kms = app.kms_site[app.site_id][app.current_lap] - app.kms_site[data.last_site][data.last_lap];
+    var local_kms = site_lap_to_kms(app, app.site_id, app.current_lap) - site_lap_to_kms(app, data.last_site, data.last_lap);
     var local_time = data.bib_time - data.last_timestamp;
-    // $.log("local_time=" + local_time + " local_kms=" + local_kms + " app.kms_site[app.site_id][app.current_lap]=" + app.kms_site[app.site_id][app.current_lap] + " app.current_lap=" + app.current_lap + " data.last_lap=" + data.last_lap + " data.last_timestamp=" + data.last_timestamp + " data.bib_time=" + data.bib_time);
+    // $.log("local_time=" + local_time + " local_kms=" + local_kms + " app.current_lap=" + app.current_lap + " data.last_lap=" + data.last_lap + " data.last_timestamp=" + data.last_timestamp + " data.bib_time=" + data.bib_time);
 
     data.last_site_name = app.sites[data.last_site]
     data.local_kms = local_kms.toFixed(2);
