@@ -249,7 +249,7 @@ function unwrap_messages(data) {
   });
 }
 function _call_with_messages(app, startkey, endkey, cb) {
-  app.db.view("bib_input/all-messages", {
+  app.db.view("bib_input/messages-sorted-per-site", {
     startkey: startkey,
     endkey:   endkey,
     success: function(data) {
