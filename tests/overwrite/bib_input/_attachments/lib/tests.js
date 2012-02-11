@@ -39,7 +39,7 @@ function test_bib_input(app) {
     });
     asyncTest("checkpoints insertion (with infos)", function() {
       var bib = 0;
-      submit_bib(bib, app, function() {
+      submit_bib(bib, app, 0, function() {
         app.db.openDoc(checkpoints_id(bib, app.site_id), {
           success: function(checkpoints) {
             equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
@@ -70,7 +70,7 @@ function test_bib_input(app) {
     });
     asyncTest("checkpoints insertion (without infos)", function() {
       var bib = 999;
-      submit_bib(bib, app, function() {
+      submit_bib(bib, app, 0, function() {
         app.db.openDoc(checkpoints_id(bib, app.site_id), {
           success: function(checkpoints) {
             equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
