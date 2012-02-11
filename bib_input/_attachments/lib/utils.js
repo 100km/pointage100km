@@ -237,6 +237,7 @@ function admin_messages_id(site_id) {
 function admin_broadcast_id() {
   return "admin-messages-broadcast";
 }
+//SEEMS UNUSED
 function normalize_message_id(str) {
   var tmp = str.split("-")
   if (tmp[tmp.length-1] != "broadcast")

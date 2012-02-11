@@ -1,27 +1,28 @@
 function(cb) {
-  var app = $$(this).app;
-  var site_id = app.site_id;
+    var app = $$(this).app;
 
-  // startkey and endkey are invrsed because descending is true
-  app.db.view("bib_input/recent-checkpoints", {
-    descending: true,
-    limit : 50,
-    startkey : [(site_id+1),0],
-    endkey : [site_id,0],
-    success: function(data) {
-      app.db.view("bib_input/bib_info", {
-        success: function(data_info) {
-          var map = {};
-          for (var i=0; i<data_info.rows.length; i++) {
-            map[data_info.rows[i].value.dossard] = {prenom:data_info.rows[i].value.prenom, nom:data_info.rows[i].value.nom, course:data_info.rows[i].value.course};
-          }
-          var new_data = data.rows.map(function(r) {
-            return {value:r.value, key:r.key, infos:map[r.value.bib]};
-          });
-          cb(new_data);
-        }
-      });
+    $.log("here!");
+
+    function _unwrap_messages(data) {
+	return data.rows.map(function(row) {
+	    //$.log("rows: " + row.value);
+	    return row.value;
+	});
     }
-  });
-};
+    function _get_messages(app, startkey, endkey, cb1) {
+	app.db.view("bib_input/all-valid-messages", {
+	    startkey: startkey,
+	    endkey:   endkey,
+	    success: function(data) {
+		cb1(unwrap_messages(data));
+	    }
+	});
+    }
+    
+    //get all valid messages
+    _get_messages(app, [true], [1], cb);
 
+
+
+  //call_with_messages(app, cb);
+}
