@@ -12,10 +12,23 @@ function(data) {
     
     var result = {};
 
-    result.all_empty = all_empty;
-    result.all_valid_messages = data;
+    function reformat_data_thru_map(current) {
+	res = {};
 
-    $.log("result " + JSON.stringify(result));
+	res.target      = current.target;
+	res.message     = current.message;
+	res.addedTS     = current.addedTS;
+	res.time_hour   = time_to_hour_string(res.addedTS);
+	res.message_id  = current._id;
+	res.message_rev = current._rev;
+	
+	return res;
+    }
+
+    result.all_empty = all_empty;
+    result.all_valid_messages = data.map(reformat_data_thru_map);
+
+    //$.log("result " + JSON.stringify(result));
     
     return result;
 }

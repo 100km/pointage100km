@@ -20,6 +20,8 @@ function() {
     if (message_target != -1)
 	message_to_store.target = message_target;
 
+    message_to_store.addedTS = new Date().getTime();
+
     $.log("storing: " + JSON.stringify(message_to_store));
 
     function callback_error(stat, err, reason) {
