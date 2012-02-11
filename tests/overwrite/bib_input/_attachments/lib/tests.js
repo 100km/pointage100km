@@ -66,6 +66,7 @@ function submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, exp
   });
 }
 
+ASSERTS_PER_SINGLE_INSERT_DELETE = 7;
 function test_single_bib_insertion(app, bib, expected_race_id, ts) {
   submit_bib_and_assert(app, bib, ts, expected_race_id, 1, function(checkpoints) {
     var ts=checkpoints.times[0];
@@ -73,6 +74,7 @@ function test_single_bib_insertion(app, bib, expected_race_id, ts) {
       start();
     });
   });
+  return ASSERTS_PER_SINGLE_INSERT_DELETE;
 }
 
 function repeat(N, i, loop, cb) {
@@ -107,6 +109,7 @@ function test_multiple_bib_insertion(app, bib, expected_race_id) {
       start();
     });
   });
+  return ASSERTS_PER_SINGLE_INSERT_DELETE*3;
 }
 
 function test_bib_input(app) {
@@ -117,16 +120,16 @@ function test_bib_input(app) {
         ok(app.site_id != undefined, "undefined site id");
     });
     asyncTest("checkpoint insertion (with infos)", function() {
-      test_single_bib_insertion(app, 0, 1);
+      expect(test_single_bib_insertion(app, 0, 1));
     });
     asyncTest("checkpoint insertion (without infos)", function() {
-      test_single_bib_insertion(app, 999, 0);
+      expect(test_single_bib_insertion(app, 999, 0));
     });
     asyncTest("checkpoint insertion (with infos), forced timestamp", function() {
-      test_single_bib_insertion(app, 0, 1, 23498123);
+      expect(test_single_bib_insertion(app, 0, 1, 23498123));
     });
     asyncTest("multiple checkpoints insertion (with infos)", function() {
-      test_multiple_bib_insertion(app, 500, 0);
+      expect(test_multiple_bib_insertion(app, 500, 0));
     });
   });
 };
