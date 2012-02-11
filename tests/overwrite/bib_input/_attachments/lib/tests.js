@@ -48,9 +48,15 @@ function bib_assert(app, bib, expected_race_id, expected_length, cb) {
   }, "Error getting freshly inserted checkpoint");
 }
 
-function submit_bib_and_assert(app, bib, expected_race_id, expected_length, cb) {
-  submit_bib(bib, app, 0, function() {
-    bib_assert(app, bib, expected_race_id, expected_length, cb);
+function submit_bib_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
+  submit_bib(bib, app, ts, function() {
+    bib_assert(app, bib, expected_race_id, expected_length, function(checkpoints) {
+      var margin_error = ts && 0 || 10000 ;
+      ts = ts || new Date().getTime()
+      var last_ts_diff = Math.abs(ts - checkpoints.times[expected_length-1]);
+      ok(last_ts_diff <= margin_error, "Wrong timestamp inserted: diff is " + last_ts_diff, "inserted should have been approximately" + ts);
+      cb(checkpoints);
+    });
   });
 }
 
@@ -60,8 +66,8 @@ function submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, exp
   });
 }
 
-function test_single_bib_insertion(app, bib, expected_race_id) {
-  submit_bib_and_assert(app, bib, expected_race_id, 1, function(checkpoints) {
+function test_single_bib_insertion(app, bib, expected_race_id, ts) {
+  submit_bib_and_assert(app, bib, ts, expected_race_id, 1, function(checkpoints) {
     var ts=checkpoints.times[0];
     submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, 0, function(checkpoints) {
       start();
@@ -81,6 +87,9 @@ function test_bib_input(app) {
     });
     asyncTest("checkpoints insertion (without infos)", function() {
       test_single_bib_insertion(app, 999, 0);
+    });
+    asyncTest("checkpoints insertion (with infos), forced timestamp", function() {
+      test_single_bib_insertion(app, 0, 1, 23498123);
     });
   });
 };
