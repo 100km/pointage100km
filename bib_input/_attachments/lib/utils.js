@@ -91,6 +91,7 @@ function new_checkpoints(bib, race_id, site_id) {
 function add_checkpoint(checkpoints, ts) {
   ts = ts || new Date().getTime();
   checkpoints["times"].push(ts);
+  checkpoints.times.sort(function(a,b) {return a-b});
 }
 
 function submit_remove_checkpoint(bib, app, ts, cb) {
