@@ -29,6 +29,45 @@ function setup_app(app, cb) {
   ], cb);
 }
 
+function open_or_fail(app, doc_id, cb, fail_msg) {
+  app.db.openDoc(doc_id, {
+    success: cb,
+    error: function(status, req, e) {
+      ok(false, fail_msg + "," + status
+                + "," +req+ "," + e);
+      start();
+    }});
+}
+
+function bib_assert(app, bib, expected_race_id, expected_length, cb) {
+  open_or_fail(app, checkpoints_id(bib, app.site_id), function(checkpoints) {
+    equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
+    equal(checkpoints.times.length, expected_length, "wrong checkpoints times length");
+    equal(checkpoints.race_id, expected_race_id, "wrong race_id inserted");
+    cb(checkpoints);
+  }, "Error getting freshly inserted checkpoint");
+}
+
+function submit_bib_and_assert(app, bib, expected_race_id, expected_length, cb) {
+  submit_bib(bib, app, 0, function() {
+    bib_assert(app, bib, expected_race_id, expected_length, cb);
+  });
+}
+
+function submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
+  submit_remove_checkpoint(bib, app, ts, function() {
+    bib_assert(app, bib, expected_race_id, expected_length, cb)
+  });
+}
+
+function test_single_bib_insertion(app, bib, expected_race_id) {
+  submit_bib_and_assert(app, bib, expected_race_id, 1, function(checkpoints) {
+    var ts=checkpoints.times[0];
+    submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, 0, function(checkpoints) {
+      start();
+    });
+  });
+}
 
 function test_bib_input(app) {
   setup_app(app, function() {
@@ -38,66 +77,10 @@ function test_bib_input(app) {
         ok(app.site_id != undefined, "undefined site id");
     });
     asyncTest("checkpoints insertion (with infos)", function() {
-      var bib = 0;
-      submit_bib(bib, app, 0, function() {
-        app.db.openDoc(checkpoints_id(bib, app.site_id), {
-          success: function(checkpoints) {
-            equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
-            equal(checkpoints.times.length, 1, "wrong checkpoints times length");
-            equal(checkpoints.race_id, 1, "wrong race_id inserted");
-            var ts=checkpoints.times[0];
-            submit_remove_checkpoint(bib, app, ts, function() {
-              app.db.openDoc(checkpoints_id(bib, app.site_id), {
-                success: function(checkpoints) {
-                  equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
-                  equal(checkpoints.times.length, 0, "wrong checkpoints times length");
-                  equal(checkpoints.race_id, 1, "wrong race_id inserted");
-                  start();
-                },
-                error: function() {
-                  ok(false, "Error getting freshly inserted checkpoint");
-                  start();
-                }
-              });
-            });
-          },
-          error: function() {
-            ok(false, "Error getting freshly inserted checkpoint");
-            start();
-          }
-        });
-      });
+      test_single_bib_insertion(app, 0, 1);
     });
     asyncTest("checkpoints insertion (without infos)", function() {
-      var bib = 999;
-      submit_bib(bib, app, 0, function() {
-        app.db.openDoc(checkpoints_id(bib, app.site_id), {
-          success: function(checkpoints) {
-            equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
-            equal(checkpoints.times.length, 1, "wrong checkpoints times length");
-            equal(checkpoints.race_id, 0, "wrong race_id inserted");
-            var ts=checkpoints.times[0];
-            submit_remove_checkpoint(bib, app, ts, function() {
-              app.db.openDoc(checkpoints_id(bib, app.site_id), {
-                success: function(checkpoints) {
-                  equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
-                  equal(checkpoints.times.length, 0, "wrong checkpoints times length");
-                  equal(checkpoints.race_id, 0, "wrong race_id inserted");
-                  start();
-                },
-                error: function() {
-                  ok(false, "Error getting freshly inserted checkpoint");
-                  start();
-                }
-              });
-            });
-          },
-          error: function() {
-            ok(false, "Error getting freshly inserted checkpoint");
-            start();
-          }
-        });
-      });
+      test_single_bib_insertion(app, 999, 0);
     });
   });
 };
