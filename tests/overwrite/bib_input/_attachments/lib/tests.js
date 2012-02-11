@@ -88,9 +88,9 @@ function repeat(N, i, loop, cb) {
   }
 }
 
-function submit_bibs_and_assert(N, app, bib, expected_race_id, cb) {
+function submit_bibs_and_assert(N, tss, app, bib, expected_race_id, cb) {
   repeat(N, 0, function(i, cb) {
-    submit_bib_and_assert(app, bib, 0, expected_race_id, i+1, cb);
+    submit_bib_and_assert(app, bib, tss[i], expected_race_id, i+1, cb);
   }, cb);
 }
 
@@ -103,13 +103,14 @@ function submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, cb)
     });
   }, cb);
 }
-function test_multiple_bib_insertion(app, bib, expected_race_id) {
-  submit_bibs_and_assert(3, app, bib, expected_race_id, function() {
-    submit_remove_checkpoints_and_assert(3, app, bib, expected_race_id, function() {
+function test_multiple_bib_insertion(app, bib, expected_race_id, tss) {
+  var N = tss.length;
+  submit_bibs_and_assert(N, tss, app, bib, expected_race_id, function() {
+    submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, function() {
       start();
     });
   });
-  return ASSERTS_PER_SINGLE_INSERT_DELETE*3;
+  return ASSERTS_PER_SINGLE_INSERT_DELETE*N;
 }
 
 function test_bib_input(app) {
@@ -129,7 +130,7 @@ function test_bib_input(app) {
       expect(test_single_bib_insertion(app, 0, 1, 23498123));
     });
     asyncTest("multiple checkpoints insertion (with infos)", function() {
-      expect(test_multiple_bib_insertion(app, 500, 0));
+      expect(test_multiple_bib_insertion(app, 500, 0, [0, 234125, 0]));
     });
   });
 };
