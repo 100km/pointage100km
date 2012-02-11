@@ -1,62 +1,33 @@
-<h3>Derniers passages</h3>
+
+
+
+<h3>Messages</h3>
 <ul>
   <li>
       <div class="items_col_fixed_80">Sup?</div>
-      <div class="items_col_10">Dossard</div>
-      <div class="items_col_5">Tour</div>
-      <div class="items_col_20">Nom</div>
-      <div class="items_col_20">Prénom</div>
+      <div class="items_col_5">Target</div>
+      <div class="items_col_20">Message</div>
       <div class="items_col_15">Heure de passage</div>
       <div style="clear:both;"></div>
   </li>
-  {{#items}}
+  {{#all_valid_messages}}
     <li>
       <div class="items_col_fixed_80_delete">
         <form id="delete">
           <input type="image" name="delete" src="img/delete.png"/>
-          <input type="hidden" name="bib" value="{{bib}}"/>
-          <input type="hidden" name="lap" value="{{lap}}"/>
+	  <input type="hidden" name="id" value="{{message-id}}"/>
+          <input type="hidden" name="target" value="{{target}}"/>
+          <input type="hidden" name="message" value="{{message}}"/>
           <input type="hidden" name="ts" value="{{ts}}"/>
         </form>
       </div>
-      <div class="items_col_10">{{bib}}</div>
-      <div class="items_col_5">{{lap}}</div>
-      <div class="items_col_20">{{nom}}</div>
-      <div class="items_col_20">{{prenom}}</div>
-      <div class="items_col_15">{{time_hour}}</div>
+      <div class="items_col_5">{{target}}</div>
+      <div class="items_col_20">{{message}}</div>
+      <div class="items_col_15">{{ts}}</div>
       <div style="clear:both;"></div>
     </li>
-  {{/items}}
+  {{/all_valid_messages}}
 </ul>
 
 
-{{^all_empty}}
-<div id="message-bar-core">
-{{#local_status?}}
-<h3>local status</h3>
-  <p>
-{{#local_status}}
-{{message}}
-{{/local_status}}
-  </p>
-{{/local_status?}}
 
-{{#site_messages?}}
-<h3>site messages</h3>
-  <p>
-{{#site_messages}}
-{{message}}
-{{/site_messages}}
-  </p>
-{{/site_messages?}}
-
-{{#bcast_messages?}}
-<h3>broadcast messages</h3>
-  <p>
-{{#bcast_messages}}
-{{message}}
-{{/bcast_messages}}
-  </p>
-{{/bcast_messages?}}
-</div>
-{{/all_empty}}
