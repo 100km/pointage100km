@@ -29,6 +29,12 @@ function setup_app(app, cb) {
   ], cb);
 }
 
+function open_or_null(app, doc_id, cb) {
+  app.db.openDoc(doc_id, {
+    success: cb,
+    error: function() { cb(); }
+  });
+}
 function open_or_fail(app, doc_id, cb, fail_msg) {
   app.db.openDoc(doc_id, {
     success: cb,
@@ -44,18 +50,26 @@ function bib_assert(app, bib, expected_race_id, expected_length, cb) {
     equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
     equal(checkpoints.times.length, expected_length, "wrong checkpoints times length");
     equal(checkpoints.race_id, expected_race_id, "wrong race_id inserted");
+    var sorted_times = checkpoints.times.slice().sort(function(a,b) {return a-b});
+    ok(_.all(_.zip(sorted_times, checkpoints.times),
+      function(a) { return a[0] == a[1];}),
+       "Timestamps are not sorted");
     cb(checkpoints);
   }, "Error getting freshly inserted checkpoint");
 }
 
 function submit_bib_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
-  submit_bib(bib, app, ts, function() {
-    bib_assert(app, bib, expected_race_id, expected_length, function(checkpoints) {
-      var margin_error = ts && 0 || 10000 ;
-      ts = ts || new Date().getTime()
-      var last_ts_diff = Math.abs(ts - checkpoints.times[expected_length-1]);
-      ok(last_ts_diff <= margin_error, "Wrong timestamp inserted: diff is " + last_ts_diff, "inserted should have been approximately" + ts);
-      cb(checkpoints);
+  open_or_null(app, checkpoints_id(bib, app.site_id), function (doc) {
+    var previous_checkpoints = (doc && doc.times) || [];
+    submit_bib(bib, app, ts, function() {
+      bib_assert(app, bib, expected_race_id, expected_length, function(checkpoints) {
+        var margin_error = ts && 0 || 10000 ;
+        ts = ts || new Date().getTime();
+        var inserted_ts = _.difference(checkpoints.times, previous_checkpoints)[0];
+        var last_ts_diff = Math.abs(ts - inserted_ts);
+        ok(last_ts_diff <= margin_error, "Wrong timestamp inserted: diff is " + last_ts_diff, "inserted should have been approximately" + ts);
+        cb(checkpoints);
+      });
     });
   });
 }
@@ -66,7 +80,7 @@ function submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, exp
   });
 }
 
-ASSERTS_PER_SINGLE_INSERT_DELETE = 7;
+ASSERTS_PER_SINGLE_INSERT_DELETE = 9;
 function test_single_bib_insertion(app, bib, expected_race_id, ts) {
   submit_bib_and_assert(app, bib, ts, expected_race_id, 1, function(checkpoints) {
     var ts=checkpoints.times[0];
