@@ -1,15 +1,15 @@
-function submit_bib(bib, app, cb) {
+function submit_bib(bib, app, ts, cb) {
   retries(3, function(fail) {
-    submit_bib_once(bib, app, cb, fail);
+    submit_bib_once(bib, app, cb, fail, ts);
   }, "submit_bib");
 }
-function submit_bib_once(bib, app, cb, fail) {
+function submit_bib_once(bib, app, cb, fail, ts) {
   call_with_race_id(bib, app, function(race_id) {
     call_with_checkpoints(bib, app, function(checkpoints) {
       if (checkpoints["bib"] == undefined) {
         checkpoints = new_checkpoints(bib, race_id, app.site_id);
       }
-      add_checkpoint(checkpoints);
+      add_checkpoint(checkpoints, ts);
       app.db.saveDoc(checkpoints, {
         success: cb,
         error: fail
@@ -88,8 +88,8 @@ function new_checkpoints(bib, race_id, site_id) {
   return checkpoints;
 }
 
-function add_checkpoint(checkpoints) {
-  var ts = new Date().getTime();
+function add_checkpoint(checkpoints, ts) {
+  ts = ts || new Date().getTime();
   checkpoints["times"].push(ts);
 }
 
