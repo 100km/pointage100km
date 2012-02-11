@@ -75,6 +75,40 @@ function test_single_bib_insertion(app, bib, expected_race_id, ts) {
   });
 }
 
+function repeat(N, i, loop, cb) {
+  if (i < N) {
+   loop(i, function() {
+    repeat(N, i+1, loop, cb)
+   });
+  }
+  else {
+    cb();
+  }
+}
+
+function submit_bibs_and_assert(N, app, bib, expected_race_id, cb) {
+  repeat(N, 0, function(i, cb) {
+    submit_bib_and_assert(app, bib, 0, expected_race_id, i+1, cb);
+  }, cb);
+}
+
+function submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, cb) {
+  repeat(N, 0, function(i, cb) {
+    open_or_fail(app, checkpoints_id(bib, app.site_id), function(checkpoints) {
+      var expected_length = N - i;
+      var ts = checkpoints.times[expected_length-1];
+      submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length-1, cb);
+    });
+  }, cb);
+}
+function test_multiple_bib_insertion(app, bib, expected_race_id) {
+  submit_bibs_and_assert(3, app, bib, expected_race_id, function() {
+    submit_remove_checkpoints_and_assert(3, app, bib, expected_race_id, function() {
+      start();
+    });
+  });
+}
+
 function test_bib_input(app) {
   setup_app(app, function() {
     module("bib_input"); 
@@ -82,14 +116,17 @@ function test_bib_input(app) {
         expect(1);
         ok(app.site_id != undefined, "undefined site id");
     });
-    asyncTest("checkpoints insertion (with infos)", function() {
+    asyncTest("checkpoint insertion (with infos)", function() {
       test_single_bib_insertion(app, 0, 1);
     });
-    asyncTest("checkpoints insertion (without infos)", function() {
+    asyncTest("checkpoint insertion (without infos)", function() {
       test_single_bib_insertion(app, 999, 0);
     });
-    asyncTest("checkpoints insertion (with infos), forced timestamp", function() {
+    asyncTest("checkpoint insertion (with infos), forced timestamp", function() {
       test_single_bib_insertion(app, 0, 1, 23498123);
+    });
+    asyncTest("multiple checkpoints insertion (with infos)", function() {
+      test_multiple_bib_insertion(app, 500, 0);
     });
   });
 };
