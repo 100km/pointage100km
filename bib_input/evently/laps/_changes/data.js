@@ -20,7 +20,6 @@ function(data) {
 
     query_twitter();
     
-    
     return {
 	races: data.rows.map(function(pair) {
 	    return {

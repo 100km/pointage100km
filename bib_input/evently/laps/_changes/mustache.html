@@ -5,6 +5,24 @@
 
 </div>
 
+<script type="text/javascript">
+
+    function query_twitter(query) {
+        var url='http://search.twitter.com/search.json?callback=?&q=';
+
+	query = escape(query);
+	
+	$.log("2 querying twitter with: '" + query + "'");
+	
+	$.getJSON(url+query, function(json) {
+	    $.each(json.results, function(i, tweet) {
+		$("#results").append('<p><img src="'+tweet.profile_image_url+'" widt="48" height="48" />'+tweet.text+'</p>');
+	    });
+	});
+    }
+
+</script>
+
 
 <h3>Classement général</h3>
 <ul>
@@ -14,6 +32,7 @@
       {{#items}}
       <li>
         <p> Dossard {{bib}} (au tour {{lap}})</p>
+	<script type="text/javascript"> query_twitter("toto-{{bib}}"); </script>
         <div style="clear:left;"></div>
       </li>
       {{/items}}
