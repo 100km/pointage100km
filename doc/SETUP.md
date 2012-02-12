@@ -63,12 +63,35 @@ http://localhost:5984/steenwerck100km/_design/bib_input/index.html
 
 #Initialise DB
 
-Initialize the site_id and concurrent names with those commands:
+Initialize the site_id with these commands:
 <pre>
-pointage100km/initialize_db/initialize_db.bash {0,1,2}
-pointage100km/initialize_db/mdb2couchdb.bash pointage100km/initialize_db/100km2012.mdb inscription
+cd pointage100km
+./sbt
 </pre>
 
+wait a bit and enter the following on the prompt
+note: {0,1,2} is the site_id you must choose one among those values
+note2: this needs a .cfg file that is not in the repository
+<pre>
+project replicate
+run {0,1,2}
+</pre>
+
+then, to initialise the participant's names with these commands:
+
+<pre>
+./sbt
+</pre>
+
+wait until the prompt, then
+
+<pre>
+project loader
+run initialize_db/100km2012.mdb
+</pre>
+
+
+IS THIS STILL REQUIRED NOW THAT WE USE LOADER?
 Note: you might need to install mdbtools to run mdb2couchdb.bash
 <pre>
 sudo apt-get install mdbtools
