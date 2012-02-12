@@ -1,5 +1,4 @@
-<!-- sample code from: http://webhole.net/2009/11/28/how-to-read-json-with-javascript/ -->
-
+<!-- based on code from: http://webhole.net/2009/11/28/how-to-read-json-with-javascript/ -->
 
 <div id="results">
 
@@ -7,18 +6,36 @@
 
 <script type="text/javascript">
 
-    function query_twitter(query) {
+    function query_twitter(query, div_to_update) {
         var url='http://search.twitter.com/search.json?callback=?&q=';
+
+	if (query == undefined) {
+	    $.log("undefined query!");
+	    return false;
+	}
 
 	query = escape(query);
 	
-	$.log("2 querying twitter with: '" + query + "'");
+	$.log("2 search twitter: '" + query + "'");
 	
-	$.getJSON(url+query, function(json) {
-	    $.each(json.results, function(i, tweet) {
-		$("#results").append('<p><img src="'+tweet.profile_image_url+'" widt="48" height="48" />'+tweet.text+'</p>');
-	    });
-	});
+	function parse_search_result(json) {
+	    
+	    for (var i = 0; i < json.results.length; i++) {
+		tweet = json.results[i];
+
+		//only process the first 3 elements of the results
+		if (i == 3) {
+		    break;
+		}
+
+		//TODO: find a replacement for "append" as I think it will not work well for db updates, maybe do horizontal scrolling?
+		$(div_to_update).append('<p><img src="' + tweet.profile_image_url + '" width="20" height="20" /> ' + tweet.text + '</p>');
+		
+		$.log("tweet[" + i + "]: " + tweet.text);	
+	    }
+	}
+
+	$.getJSON(url+query, parse_search_result);
     }
 
 </script>
@@ -32,7 +49,10 @@
       {{#items}}
       <li>
         <p> Dossard {{bib}} (au tour {{lap}})</p>
-	<script type="text/javascript"> query_twitter("toto-{{bib}}"); </script>
+	<div id="tweets_results_for_bib_{{bib}}">
+	
+	</div>
+	<script type="text/javascript"> query_twitter("#paris", "#tweets_results_for_bib_{{bib}}"); </script>
         <div style="clear:left;"></div>
       </li>
       {{/items}}
