@@ -53,8 +53,8 @@ body {
 }
 
 /* The i is used to display the date of the tweet */
-.twitter marquee a i, 
-.twitter div a i {
+.twitter marquee i, 
+.twitter div i {
     font-style: normal;
     color: #999;
 }
