@@ -1,0 +1,60 @@
+/*
+body {
+    background: #fff;
+    font: 12px/1.2 Arial, sans-serif;
+    color: #333;
+}
+*/
+
+/* The container for the module */
+.twitter {
+    background: #f1f2f8;
+    
+    width: 600px; /* Up to you but remember to change the div width below as well if you change it */
+    padding: 0 10px;
+    
+    overflow: hidden; /* clearfix */
+    
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -o-border-radius: 5px;
+    -ms-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.twitter h2 {
+    float: left; /* We'll make the heading sit on its own line next to the tweets */
+    width: 85px; /* Might wanna change this depending on the text in the heading */
+    margin: 0;
+    padding: 6px 0; /* I'll set the top and bottom padding here rather than in the container so as not to cut off any text */
+    
+    font-size: 12px;
+    color: #4b9fff;
+    line-height: 1;
+}
+
+/* The marquee plug-in turns a marquee element into a div */
+.twitter p, 
+.twitter marquee, 
+.twitter div {
+    float: left;
+    width: 505px; /* Container width - heading width - 10px (for some right padding) */
+    margin: 0;
+    padding: 6px 0; /* Again we set the padding in here so as not to cut text */
+    line-height: 1;
+}
+
+/* All the tweets will be links pointing to your page on twitter */
+.twitter marquee a, 
+.twitter div a {
+    margin: 0 10px 0 0;
+    color: #333;
+    text-decoration: none;
+}
+
+/* The i is used to display the date of the tweet */
+.twitter marquee a i, 
+.twitter div a i {
+    font-style: normal;
+    color: #999;
+}
