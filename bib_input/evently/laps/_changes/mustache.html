@@ -8,6 +8,8 @@
 
     function query_twitter(query, div_to_update) {
         var url='http://search.twitter.com/search.json?callback=?&q=';
+	var max_results_per_request = 3;
+	var query_params = '&rpp='+max_results_per_request+'&result_type=recent';
 
 	if (query == undefined) {
 	    $.log("undefined query!");
@@ -15,8 +17,8 @@
 	}
 
 	query = escape(query);
-	
-	$.log("2 search twitter: '" + query + "'");
+		
+	$.log("2 search twitter: '" + query + "', params='" + query_params + "'");
 	
 	function parse_search_result(json) {
 	    
@@ -35,7 +37,7 @@
 	    }
 	}
 
-	$.getJSON(url+query, parse_search_result);
+	$.getJSON(url+query+query_params, parse_search_result);
     }
 
 </script>
