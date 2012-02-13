@@ -1,3 +1,4 @@
+import akka.actor.Props
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
@@ -76,10 +77,11 @@ object Replicate extends App {
 				  Some(config.read[String]("master.user"),
 				       config.read[String]("master.password")))
       val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
-      createActor(new ReplicationActor(localCouch, localDatabase, hubDatabase), "replication")
+      system.actorOf(Props(new ReplicationActor(localCouch, localDatabase, hubDatabase)),
+		     "replication")
     }
-    createActor(new ConflictsSolverActor(localDatabase), "conflictsSolver")
-    createActor(new IncompleteCheckpointsActor(localDatabase), "incompleteCheckpoints")
+    system.actorOf(Props(new ConflictsSolverActor(localDatabase)), "conflictsSolver")
+    system.actorOf(Props(new IncompleteCheckpointsActor(localDatabase)), "incompleteCheckpoints")
   }
 
   private def exit(status: Int) = {

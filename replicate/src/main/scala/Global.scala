@@ -8,11 +8,8 @@ object Global {
 
   val system = ActorSystem("Replicator", ConfigFactory.load.getConfig("Replicator"))
 
-  val pinnedProps = Props().withDispatcher("pinned-dispatcher")
+  implicit val dispatcher = system.dispatcher
 
   val log = Logging(system, "Replicate")
-
-  def createActor(creator: => Actor, name: String) =
-    system.actorOf(pinnedProps.withCreator(creator), name)
 
 }

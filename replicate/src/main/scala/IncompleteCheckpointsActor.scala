@@ -1,43 +1,52 @@
+import akka.actor.Actor
+import akka.dispatch.{Future, Promise}
 import akka.event.Logging
 import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
 
-class IncompleteCheckpointsActor(db: Database) extends PeriodicActor {
+import FutureUtils._
+import Global._
+
+class IncompleteCheckpointsActor(db: Database) extends Actor {
 
   import implicits._
 
   private val log = Logging(context.system, this)
 
-  protected val period = 5 seconds
-
   private def fixIncompleteCheckpoints() =
-    for (doc <- db.view("bib_input", "incomplete-checkpoints").execute.values[JObject]) {
-      try {
+    for (r <- db.view("bib_input", "incomplete-checkpoints").futureExecute)
+      yield Future.traverse(r.values[JObject]) { doc =>
 	val JInt(bib) = doc \ "bib"
-	try {
-	  val JInt(race) = db("contestant-" + bib).execute()("course")
+	db("contestant-" + bib).futureExecute flatMap { r =>
+	  val JInt(race) = r("course")
 	  if (race != 0) {
 	    log.info("fixing incomplete race " + race + " for bib " + bib)
-	    db.insert(doc.replace("race_id" :: Nil, JInt(race))).execute
-	  }
-	} catch {
-	    case StatusCode(404, _) =>
-	      log.debug("no information available for contestant " + bib)
+	    db.insert(doc.replace("race_id" :: Nil, JInt(race))).futureExecute recover {
+	      case e: Exception =>
+		log.warning("unable to fix contestant " + bib + ": " + e)
+	        JNull
+	    }
+	  } else
+	    Promise.successful(JNull)
+	} recover {
+	  case StatusCode(404, _) =>
+	    log.debug("no information available for contestant " + bib)
+	  JNull
 	}
-      } catch {
-	  case e: Exception =>
-	    log.warning("unable to fix contestant: " + e)
       }
-    }
 
+  override def receive = {
+      case 'act =>
+	fixIncompleteCheckpoints() onFailure {
+	  case e: Exception =>
+	    log.warning("unable to get incomplete checkpoints: " + e)
+	} onComplete {
+	  case _ => context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
+	}
+  }
 
-  override def periodic() =
-    try {
-      fixIncompleteCheckpoints()
-    } catch {
-      case e: Exception =>
-	log.warning("unable to get incomplete checkpoints: " + e)
-    }
+  override def preStart() =
+    self ! 'act
 
 }

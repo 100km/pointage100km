@@ -1,3 +1,5 @@
+import akka.actor.Actor
+import akka.dispatch.Future
 import akka.event.Logging
 import akka.util.duration._
 import net.liftweb.json._
@@ -6,11 +8,12 @@ import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import net.rfc1149.canape.util._
 
-class ConflictsSolverActor(db: Database) extends PeriodicActor {
+import FutureUtils._
+import Global._
+
+class ConflictsSolverActor(db: Database) extends Actor {
 
   lazy val log = Logging(context.system, this)
-
-  protected val period = 5 seconds
 
   private implicit val formats = DefaultFormats
 
@@ -26,28 +29,29 @@ class ConflictsSolverActor(db: Database) extends PeriodicActor {
     ref + ("deleted_times" -> toJValue(deleted)) + ("times" -> toJValue(remaining))
   }
 
-  private def solveConflicts(id: String, revs: List[String]) = {
-    try {
-      val docs = getRevs(db, id, revs).execute
-      (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).execute
+  private def solveConflicts(id: String, revs: List[String]) =
+    for {
+      docs <- getRevs(db, id, revs).futureExecute
+      result <- (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).futureExecute
+    } yield {
       log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
-    } catch {
-	case StatusCode(status, _) =>
-	  log.warning("unable to fix conflicting information for " + id + ": " + status)
+      result
     }
+
+  override def receive() = {
+    case 'act =>
+      db.view("bib_input", "conflicting-checkpoints").futureExecute flatMap { r =>
+	Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
+			yield solveConflicts(id, value))
+      } onFailure {
+	case e: Exception =>
+	  log.warning("unable to get conflicting checkpoints: " + e)
+      } onComplete {
+	case _ => context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
+      }
   }
 
-  private def solveAllConflicts() = {
-    for ((id, _, value) <- db.view("bib_input", "conflicting-checkpoints").execute.items[Nothing, List[String]])
-      solveConflicts(id, value)
-  }
-
-  override def periodic() =
-    try {
-      solveAllConflicts()
-    } catch {
-      case e: Exception =>
-	log.warning("unable to fix conflicting checkpoints: " + e)
-    }
+  override def preStart() =
+    self ! 'act
 
 }

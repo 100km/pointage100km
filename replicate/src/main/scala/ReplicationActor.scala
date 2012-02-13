@@ -1,20 +1,28 @@
+import akka.actor.Actor
+import akka.dispatch.Future
 import akka.event.Logging
 import akka.util.duration._
 import net.rfc1149.canape._
 
-class ReplicationActor(couch: Couch, local: Database, remote: Database) extends PeriodicActor {
+import FutureUtils._
+import Global._
+
+class ReplicationActor(couch: Couch, local: Database, remote: Database) extends Actor {
 
   private val log = Logging(context.system, this)
 
-  val period = 5 seconds
+  override def preStart() =
+    self ! 'act
 
-  override def periodic() =
-    try {
-      couch.replicate(local, remote, true).execute
-      couch.replicate(remote, local, true).execute
-    } catch {
-      case e: Exception =>
-	log.warning("unable to replicate: " + e)
-    }
+  override def receive = {
+    case 'act =>
+      Future.sequence(List(couch.replicate(local, remote, true).futureExecute,
+			   couch.replicate(remote, local, true).futureExecute)) onFailure {
+			     case e: Exception =>
+			       log.warning("cannot start replication: " + e)
+			   } onComplete {
+			     case _ => context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
+			   }
+  }
 
 }
