@@ -31,8 +31,8 @@ class ConflictsSolverActor(db: Database) extends Actor {
 
   private def solveConflicts(id: String, revs: List[String]) =
     for {
-      docs <- getRevs(db, id, revs).futureExecute
-      result <- (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).futureExecute
+      docs <- getRevs(db, id, revs).toFuture
+      result <- (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).toFuture
     } yield {
       log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
       result
@@ -40,7 +40,7 @@ class ConflictsSolverActor(db: Database) extends Actor {
 
   override def receive() = {
     case 'act =>
-      db.view("bib_input", "conflicting-checkpoints").futureExecute flatMap { r =>
+      db.view("bib_input", "conflicting-checkpoints").toFuture flatMap { r =>
 	Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
 			yield solveConflicts(id, value))
       } onFailure {

@@ -6,7 +6,7 @@ object FutureUtils {
 
   implicit def toAkka[T](request: CouchRequest[T]) =
     new {
-      def futureExecute()(implicit context: ExecutionContext): Future[T] = {
+      def toFuture()(implicit context: ExecutionContext): Future[T] = {
 	val result = Promise[T]()
 	request.connect().addListener(new ChannelFutureListener {
 	  override def operationComplete(future: ChannelFuture) {

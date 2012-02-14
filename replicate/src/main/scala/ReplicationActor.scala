@@ -16,8 +16,8 @@ class ReplicationActor(couch: Couch, local: Database, remote: Database) extends 
 
   override def receive = {
     case 'act =>
-      Future.sequence(List(couch.replicate(local, remote, true).futureExecute,
-			   couch.replicate(remote, local, true).futureExecute)) onFailure {
+      Future.sequence(List(couch.replicate(local, remote, true).toFuture,
+			   couch.replicate(remote, local, true).toFuture)) onFailure {
 			     case e: Exception =>
 			       log.warning("cannot start replication: " + e)
 			   } onComplete {

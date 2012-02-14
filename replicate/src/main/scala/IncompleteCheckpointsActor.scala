@@ -15,14 +15,14 @@ class IncompleteCheckpointsActor(db: Database) extends Actor {
   private val log = Logging(context.system, this)
 
   private def fixIncompleteCheckpoints() =
-    for (r <- db.view("bib_input", "incomplete-checkpoints").futureExecute)
+    for (r <- db.view("bib_input", "incomplete-checkpoints").toFuture)
       yield Future.traverse(r.values[JObject]) { doc =>
 	val JInt(bib) = doc \ "bib"
-	db("contestant-" + bib).futureExecute flatMap { r =>
+	db("contestant-" + bib).toFuture flatMap { r =>
 	  val JInt(race) = r("course")
 	  if (race != 0) {
 	    log.info("fixing incomplete race " + race + " for bib " + bib)
-	    db.insert(doc.replace("race_id" :: Nil, JInt(race))).futureExecute recover {
+	    db.insert(doc.replace("race_id" :: Nil, JInt(race))).toFuture recover {
 	      case e: Exception =>
 		log.warning("unable to fix contestant " + bib + ": " + e)
 	        JNull
