@@ -8,8 +8,8 @@ object Steenwerck extends Build {
   lazy val dispatch = Seq("net.databinder" %% "dispatch-http" % "0.8.7" % "compile")
 
   lazy val akka =
-    Seq(libraryDependencies ++= Seq("com.typesafe.akka" % "akka-actor" % "2.0-M4",
-				    "com.typesafe.akka" % "akka-slf4j" % "2.0-M4",
+    Seq(libraryDependencies ++= Seq("com.typesafe.akka" % "akka-actor" % "2.0-RC1",
+				    "com.typesafe.akka" % "akka-slf4j" % "2.0-RC1",
 				    "ch.qos.logback" % "logback-classic" % "1.0.0" % "compile"),
 	resolvers += typesafeRepo)
 
