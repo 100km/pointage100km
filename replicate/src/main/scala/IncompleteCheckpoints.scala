@@ -1,6 +1,5 @@
-import akka.actor.Actor
 import akka.dispatch.{Future, Promise}
-import akka.event.Logging
+import akka.event.LoggingAdapter
 import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
@@ -8,13 +7,13 @@ import net.rfc1149.canape._
 import FutureUtils._
 import Global._
 
-class IncompleteCheckpointsActor(db: Database) extends Actor {
+trait IncompleteCheckpoints {
+
+  val log: LoggingAdapter
 
   import implicits._
 
-  private val log = Logging(context.system, this)
-
-  private def fixIncompleteCheckpoints() =
+  def fixIncompleteCheckpoints(db: Database) =
     for (r <- db.view("bib_input", "incomplete-checkpoints").toFuture)
       yield Future.traverse(r.values[JObject]) { doc =>
 	val JInt(bib) = doc \ "bib"
@@ -35,18 +34,5 @@ class IncompleteCheckpointsActor(db: Database) extends Actor {
 	  JNull
 	}
       }
-
-  override def receive = {
-      case 'act =>
-	fixIncompleteCheckpoints() onFailure {
-	  case e: Exception =>
-	    log.warning("unable to get incomplete checkpoints: " + e)
-	} onComplete {
-	  case _ => context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
-	}
-  }
-
-  override def preStart() =
-    self ! 'act
 
 }

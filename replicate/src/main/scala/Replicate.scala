@@ -38,14 +38,14 @@ object Replicate extends App {
     touchMe(db)
   }
 
-  def forceUpdate[T <% JObject](db: Database, id: String, data: T): Future[JValue] =
+  def forceUpdate[T <% JObject](db: Database, id: String, data: T): CouchRequest[JValue] =
     db.update("bib_input", "force-update", id,
-	      Map("json" -> compact(render(data)))).toFuture
+	      Map("json" -> compact(render(data))))
 
-  def touchMe(db: Database): Future[JValue] =
-    forceUpdate(db, "touch_me", Map("touched" -> "yes"))
+  private def touchMe(db: Database): Future[JValue] =
+    forceUpdate(db, "touch_me", Map("touched" -> "yes")).toFuture
 
-  def ping(db: Database): Future[JValue] =
+  def ping(db: Database): CouchRequest[JValue] =
     forceUpdate(db, "ping-site" + Options.siteId,
 		Map("time" -> System.currentTimeMillis))
 
@@ -75,17 +75,12 @@ object Replicate extends App {
   if (Options.initOnly)
     exit(0)
   else {
-    {
-      val hubCouch = new NioCouch(config.read[String]("master.host"),
-				  config.read[Int]("master.port"),
-				  Some(config.read[String]("master.user"),
-				       config.read[String]("master.password")))
-      val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
-      system.actorOf(Props(new ReplicationActor(localCouch, localDatabase, hubDatabase)),
-		     "replication")
-    }
-    system.actorOf(Props(new ConflictsSolverActor(localDatabase)), "conflictsSolver")
-    system.actorOf(Props(new IncompleteCheckpointsActor(localDatabase)), "incompleteCheckpoints")
+    val hubCouch = new NioCouch(config.read[String]("master.host"),
+				config.read[Int]("master.port"),
+				Some(config.read[String]("master.user"),
+				     config.read[String]("master.password")))
+    val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
+    system.actorOf(Props(new Tasks(localDatabase, hubDatabase)), "tasks")
   }
 
   private def exit(status: Int) = {

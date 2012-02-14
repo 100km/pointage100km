@@ -1,6 +1,5 @@
-import akka.actor.Actor
 import akka.dispatch.Future
-import akka.event.Logging
+import akka.event.LoggingAdapter
 import akka.util.duration._
 import net.liftweb.json._
 import net.liftweb.json.Serialization.write
@@ -11,9 +10,9 @@ import net.rfc1149.canape.util._
 import FutureUtils._
 import Global._
 
-class ConflictsSolverActor(db: Database) extends Actor {
+trait ConflictsSolver {
 
-  lazy val log = Logging(context.system, this)
+  val log: LoggingAdapter
 
   private implicit val formats = DefaultFormats
 
@@ -29,7 +28,7 @@ class ConflictsSolverActor(db: Database) extends Actor {
     ref + ("deleted_times" -> toJValue(deleted)) + ("times" -> toJValue(remaining))
   }
 
-  private def solveConflicts(id: String, revs: List[String]) =
+  private def solveConflicts(db: Database, id: String, revs: List[String]) =
     for {
       docs <- getRevs(db, id, revs).toFuture
       result <- (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).toFuture
@@ -38,20 +37,10 @@ class ConflictsSolverActor(db: Database) extends Actor {
       result
     }
 
-  override def receive() = {
-    case 'act =>
-      db.view("bib_input", "conflicting-checkpoints").toFuture flatMap { r =>
-	Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
-			yield solveConflicts(id, value))
-      } onFailure {
-	case e: Exception =>
-	  log.warning("unable to get conflicting checkpoints: " + e)
-      } onComplete {
-	case _ => context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
+  def fixConflictingCheckpoints(db: Database) =
+    db.view("bib_input", "conflicting-checkpoints").toFuture flatMap { r =>
+      Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
+		      yield solveConflicts(db, id, value))
       }
-  }
-
-  override def preStart() =
-    self ! 'act
 
 }
