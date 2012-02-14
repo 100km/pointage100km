@@ -46,10 +46,10 @@ case class Database(val couch: Couch, val database: String) {
     couch.makeGetRequest[Result](encode(id, properties))
   }
 
-  def view(design: String, name: String, properties: Seq[(String, String)] = Seq()) =
+  def view(design: String, name: String, properties: Seq[(String, String)] = Seq()): CouchRequest[Result] =
     query("_design/" + design + "/_view/" + name, properties)
 
-  def update(design: String, name: String, id: String, data: Map[String, String]) = {
+  def update(design: String, name: String, id: String, data: Map[String, String]): CouchRequest[JValue] = {
     val encoder = new QueryStringEncoder("")
     data foreach { case (name, value) => encoder.addParam(name, value) }
     couch.makePostRequest[JValue]("%s/_design/%s/_update/%s/%s".format(database, design, name, id), encoder.toString.tail)

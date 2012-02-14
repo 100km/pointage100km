@@ -1,9 +1,12 @@
 import akka.actor.Props
+import akka.dispatch.Future
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import scopt.OptionParser
+
+import FutureUtils._
 
 object Replicate extends App {
 
@@ -35,15 +38,16 @@ object Replicate extends App {
     touchMe(db)
   }
 
-  private def touchMe(db: Database) = {
-    try {
-      val touchMe = db("touch_me").execute
-      db.insert(touchMe).execute
-    } catch {
-	case StatusCode(404, _) =>
-	  db.insert("touch_me", JObject(Nil)).execute
-    }
-  }
+  def forceUpdate[T <% JObject](db: Database, id: String, data: T): Future[JValue] =
+    db.update("bib_input", "force-update", id,
+	      Map("json" -> compact(render(data)))).toFuture
+
+  def touchMe(db: Database): Future[JValue] =
+    forceUpdate(db, "touch_me", Map("touched" -> "yes"))
+
+  def ping(db: Database): Future[JValue] =
+    forceUpdate(db, "ping-site" + Options.siteId,
+		Map("time" -> System.currentTimeMillis))
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
@@ -89,4 +93,5 @@ object Replicate extends App {
     system.shutdown
     System.exit(status)
   }
+
 }
