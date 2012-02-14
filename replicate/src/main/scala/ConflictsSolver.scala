@@ -29,12 +29,13 @@ trait ConflictsSolver {
   }
 
   private def solveConflicts(db: Database, id: String, revs: List[String]) =
-    for {
-      docs <- getRevs(db, id, revs).toFuture
-      result <- (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).toFuture
-    } yield {
-      log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
-      result
+    getRevs(db, id, revs).toFuture flatMap { docs =>
+      (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).toFuture map { result =>
+	log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
+	result
+      } onFailure {
+        case e: Exception => log.warning("unable to solve conflicts for " + id + " (" + revs.size + " documents): " + e)
+      }
     }
 
   def fixConflictingCheckpoints(db: Database) =
