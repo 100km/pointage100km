@@ -1,5 +1,5 @@
 import akka.actor.Actor
-import akka.dispatch.Future
+import akka.dispatch.{Future, Promise}
 import akka.event.Logging
 import akka.util.duration._
 import net.rfc1149.canape._
@@ -28,6 +28,18 @@ class Tasks(local: Database, remote: Database)
   private[this] def ping =
     withError(Replicate.ping(local).toFuture, "cannot ping database")
 
+  private[this] var noCompactionSince: Int = 0
+
+  private[this] def pingWithCompaction = {
+    ping flatMap { _ =>
+      noCompactionSince = (noCompactionSince + 1) % 1000
+      if (noCompactionSince == 0)
+	local.compact.toFuture
+      else
+	Promise.successful(null)
+    }
+  }
+
   private[this] def incompleteCheckpoints =
     withError(fixIncompleteCheckpoints(local),
 	      "unable to get incomplete checkpoints")
@@ -39,7 +51,7 @@ class Tasks(local: Database, remote: Database)
   private[this] def allFutures =
     Future.sequence(List(localToRemoteReplication,
 			 remoteToLocalReplication,
-			 ping,
+			 pingWithCompaction,
 			 incompleteCheckpoints,
 			 conflictingCheckpoints))
 
