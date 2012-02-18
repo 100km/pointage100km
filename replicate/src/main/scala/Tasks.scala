@@ -19,11 +19,11 @@ class Tasks(local: Database, remote: Database)
 
   private[this] def localToRemoteReplication =
     withError(local.replicateTo(remote, true).toFuture,
-	      "cannot replicate from local to remote")
+      "cannot replicate from local to remote")
 
   private[this] def remoteToLocalReplication =
     withError(local.replicateFrom(remote, true).toFuture,
-	      "cannot replicate from remote to local")
+      "cannot replicate from remote to local")
 
   private[this] def ping =
     withError(Replicate.ping(local).toFuture, "cannot ping database")
@@ -31,29 +31,30 @@ class Tasks(local: Database, remote: Database)
   private[this] var noCompactionSince: Int = 0
 
   private[this] def pingWithCompaction = {
-    ping flatMap { _ =>
-      noCompactionSince = (noCompactionSince + 1) % 1000
-      if (noCompactionSince == 0)
-	local.compact().toFuture
-      else
-	Promise.successful(null)
+    ping flatMap {
+      _ =>
+        noCompactionSince = (noCompactionSince + 1) % 1000
+        if (noCompactionSince == 0)
+          local.compact().toFuture
+        else
+          Promise.successful(null)
     }
   }
 
   private[this] def incompleteCheckpoints =
     withError(fixIncompleteCheckpoints(local),
-	      "unable to get incomplete checkpoints")
+      "unable to get incomplete checkpoints")
 
   private[this] def conflictingCheckpoints =
     withError(fixConflictingCheckpoints(local),
-	      "unable to get conflicting checkpoints")
+      "unable to get conflicting checkpoints")
 
   private[this] def allFutures =
     Future.sequence(List(localToRemoteReplication,
-			 remoteToLocalReplication,
-			 pingWithCompaction,
-			 incompleteCheckpoints,
-			 conflictingCheckpoints))
+      remoteToLocalReplication,
+      pingWithCompaction,
+      incompleteCheckpoints,
+      conflictingCheckpoints))
 
   override def preStart() {
     self ! 'act
@@ -62,8 +63,8 @@ class Tasks(local: Database, remote: Database)
   override def receive = {
     case 'act =>
       allFutures onComplete {
-	case _ =>
-	  context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
+        case _ =>
+          context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
       }
   }
 

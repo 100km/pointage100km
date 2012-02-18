@@ -16,8 +16,12 @@ object Replicate extends App {
 
   private val parser = new OptionParser("replicate") {
     help("h", "help", "show this help")
-    opt("i", "init-only", "initialize database but do not start tasks", { Options.initOnly = true })
-    arg("site_id", "numerical id of the current site", { s: String => Options.siteId = Integer.parseInt(s) })
+    opt("i", "init-only", "initialize database but do not start tasks", {
+      Options.initOnly = true
+    })
+    arg("site_id", "numerical id of the current site", {
+      s: String => Options.siteId = Integer.parseInt(s)
+    })
   }
 
   if (!parser.parse(args))
@@ -30,7 +34,7 @@ object Replicate extends App {
     val doc: mapObject = try {
       db(name).execute()
     } catch {
-	case StatusCode(404, _) => Map()
+      case StatusCode(404, _) => Map()
     }
     val newDoc = doc + ("site-id" -> JInt(site))
     db.insert(name, newDoc).execute()
@@ -39,14 +43,14 @@ object Replicate extends App {
 
   def forceUpdate[T <% JObject](db: Database, id: String, data: T): CouchRequest[JValue] =
     db.update("bib_input", "force-update", id,
-	      Map("json" -> compact(render(data))))
+      Map("json" -> compact(render(data))))
 
   private def touchMe(db: Database): Future[JValue] =
     forceUpdate(db, "touch_me", Map("touched" -> "yes")).toFuture
 
   def ping(db: Database): CouchRequest[JValue] =
     forceUpdate(db, "ping-site" + Options.siteId,
-		Map("time" -> System.currentTimeMillis))
+      Map("time" -> System.currentTimeMillis))
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
@@ -75,9 +79,9 @@ object Replicate extends App {
     exit(0)
   else {
     val hubCouch = new NioCouch(config.read[String]("master.host"),
-				config.read[Int]("master.port"),
-				Some(config.read[String]("master.user"),
-				     config.read[String]("master.password")))
+      config.read[Int]("master.port"),
+      Some(config.read[String]("master.user"),
+        config.read[String]("master.password")))
     val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
     system.actorOf(Props(new Tasks(localDatabase, hubDatabase)), "tasks")
   }

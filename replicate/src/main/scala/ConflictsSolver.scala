@@ -27,19 +27,24 @@ trait ConflictsSolver {
   }
 
   private def solveConflicts(db: Database, id: String, revs: List[String]) =
-    getRevs(db, id, revs).toFuture flatMap { docs =>
-      (solve(db, docs) { docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _)) }).toFuture map { result =>
-	log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
-	result
-      } onFailure {
-        case e: Exception => log.warning("unable to solve conflicts for " + id + " (" + revs.size + " documents): " + e)
-      }
+    getRevs(db, id, revs).toFuture flatMap {
+      docs =>
+        (solve(db, docs) {
+          docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _))
+        }).toFuture map {
+          result =>
+            log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
+            result
+        } onFailure {
+          case e: Exception => log.warning("unable to solve conflicts for " + id + " (" + revs.size + " documents): " + e)
+        }
     }
 
   def fixConflictingCheckpoints(db: Database) =
-    db.view("bib_input", "conflicting-checkpoints").toFuture flatMap { r =>
-      Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
-		      yield solveConflicts(db, id, value))
-      }
+    db.view("bib_input", "conflicting-checkpoints").toFuture flatMap {
+      r =>
+        Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
+        yield solveConflicts(db, id, value))
+    }
 
 }
