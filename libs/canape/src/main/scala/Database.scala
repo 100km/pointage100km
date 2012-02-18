@@ -100,4 +100,28 @@ case class Database(couch: Couch, database: String) {
   def ensureFullCommit(): CouchRequest[JValue] =
     couch.makePostRequest[JValue](database + "/_ensure_full_commit", None)
 
+  /**
+   * Launch a mono-directional replication from another database.
+   *
+   * @param source the database to replicate from
+   * @param continuous true if the replication must be continuous, false otherwise
+   * @return a request
+   *
+   * @throws StatusCode if an error occurs
+   */
+  def replicateFrom(source: Database, continuous: Boolean): CouchRequest[JValue] =
+    couch.replicate(source, this, continuous)
+
+  /**
+   * Launch a mono-directional replication to another database.
+   *
+   * @param target the database to replicate to
+   * @param continuous true if the replication must be continuous, false otherwise
+   * @return a request
+   *
+   * @throws StatusCode if an error occurs
+   */
+  def replicateTo(target: Database, continuous: Boolean): CouchRequest[JValue] =
+    couch.replicate(this, target, continuous)
+
 }
