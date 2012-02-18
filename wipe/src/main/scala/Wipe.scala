@@ -7,7 +7,8 @@ object Wipe extends App {
 
   implicit val formats = DefaultFormats
 
-  implicit val dispatcher = ActorSystem().dispatcher
+  val system = ActorSystem()
+  implicit val dispatcher = system.dispatcher
 
   private object Options {
     var login: String = _
@@ -39,5 +40,6 @@ object Wipe extends App {
   }
 
   hubCouch.releaseExternalResources()
+  system.shutdown()
 
 }

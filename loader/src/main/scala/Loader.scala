@@ -12,7 +12,8 @@ object Loader extends App {
 
   implicit val formats = DefaultFormats
 
-  implicit val dispatcher = ActorSystem().dispatcher
+  val system = ActorSystem()
+  implicit val dispatcher = system.dispatcher
 
   private object Options {
     var file: File = _
@@ -59,4 +60,5 @@ object Loader extends App {
   }
 
   db.couch.releaseExternalResources()
+  system.shutdown()
 }

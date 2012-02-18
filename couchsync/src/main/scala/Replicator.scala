@@ -10,7 +10,8 @@ object Replicator {
 
   implicit val formats = DefaultFormats
 
-  implicit val dispatcher = ActorSystem().dispatcher
+  val system = ActorSystem()
+  implicit val dispatcher = system.dispatcher
 
   private def waitForNoTasks(couch: Couch) = {
     var activeTasksCount: Int = 0
@@ -61,6 +62,8 @@ object Replicator {
 
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
+
+    system.shutdown()
   }
 }
 
