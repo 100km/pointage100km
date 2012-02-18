@@ -1,6 +1,5 @@
 package net.rfc1149.canape
 
-import java.net.SocketAddress
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
 

@@ -1,6 +1,6 @@
 package net.rfc1149.canape
 
-import java.net.{InetSocketAddress, URI}
+import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
 import org.jboss.netty.bootstrap.ClientBootstrap

@@ -1,7 +1,6 @@
 package net.rfc1149.canape
 
 import net.liftweb.json._
-import org.jboss.netty.handler.codec.http._
 
 package object helpers {
 

@@ -1,7 +1,6 @@
 import com.healthmarketscience.jackcess
 import java.io.File
 import net.liftweb.json._
-import net.liftweb.json.Serialization.write
 import net.rfc1149.canape._
 import scala.collection.JavaConversions._
 import scopt.OptionParser

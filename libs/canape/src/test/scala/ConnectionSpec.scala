@@ -1,7 +1,3 @@
-import net.rfc1149.canape._
-import org.specs2.mutable._
-import org.specs2.specification._
-
 class ConnectionSpec extends DbSpecification {
 
   val dbSuffix = "connectiontest"

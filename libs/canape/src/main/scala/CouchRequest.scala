@@ -1,7 +1,6 @@
 package net.rfc1149.canape
 
 import java.util.concurrent.ArrayBlockingQueue
-import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
 
@@ -14,7 +13,6 @@ trait CouchRequest[T] {
   def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit)
 
   def execute(): T = {
-    import implicits._
     val future = connect()
     if (future.await.isSuccess) {
       val reader = new ArrayBlockingQueue[Either[Throwable, T]](1)

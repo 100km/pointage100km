@@ -3,7 +3,6 @@ import akka.dispatch.Future
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
-import net.rfc1149.canape.helpers._
 import scopt.OptionParser
 
 import FutureUtils._

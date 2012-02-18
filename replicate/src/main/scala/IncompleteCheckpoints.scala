@@ -1,6 +1,5 @@
 import akka.dispatch.{Future, Promise}
 import akka.event.LoggingAdapter
-import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
 

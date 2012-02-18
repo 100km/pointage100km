@@ -1,8 +1,6 @@
 import akka.dispatch.Future
 import akka.event.LoggingAdapter
-import akka.util.duration._
 import net.liftweb.json._
-import net.liftweb.json.Serialization.write
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import net.rfc1149.canape.util._

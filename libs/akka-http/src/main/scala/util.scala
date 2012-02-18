@@ -3,7 +3,6 @@ package akka.http
 import akka.actor.ActorRef
 import akka.dispatch.Future
 import akka.pattern.ask
-import akka.util.duration._
 import akka.util.Timeout
 import java.net.URI
 import org.jboss.netty.handler.codec.http._

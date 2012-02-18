@@ -1,5 +1,5 @@
-import akka.actor.{Actor, ActorSystem, Props}
-import akka.event.{Logging, LoggingAdapter}
+import akka.actor.ActorSystem
+import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
 object Global {

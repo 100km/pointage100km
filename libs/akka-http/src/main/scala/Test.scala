@@ -1,14 +1,11 @@
 package akka.http
 
 import akka.actor._
-import akka.event.Logging
 import akka.dispatch.Await
-import akka.pattern.ask
 import akka.util.duration._
 import akka.util.Timeout
 import java.net.URI
 import org.jboss.netty.handler.codec.http._
-import org.jboss.netty.util.CharsetUtil
 
 object Test extends App {
 

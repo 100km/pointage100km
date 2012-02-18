@@ -1,7 +1,5 @@
 import net.liftweb.json._
 import net.rfc1149.canape._
-import org.specs2.mutable._
-import org.specs2.specification._
 
 class HelpersSpec extends DbSpecification {
 

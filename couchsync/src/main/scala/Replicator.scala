@@ -3,9 +3,7 @@ import java.lang.{Process, ProcessBuilder}
 import Message._
 import net.liftweb.json._
 import net.rfc1149.canape._
-import net.rfc1149.canape.implicits._
 import scala.io.Source
-import scopt.OptionParser
 
 object Replicator {
 

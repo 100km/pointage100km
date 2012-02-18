@@ -5,7 +5,6 @@ import org.jboss.netty.handler.codec.http._
 
 case class Database(couch: Couch, database: String) {
 
-  import implicits._
 
   private[canape] val uri = couch.uri + "/" + database
 
