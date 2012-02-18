@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="org.ini4j_ini4j_0.5.2">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.ini4j/ini4j/jars/ini4j-0.5.2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.ini4j/ini4j/docs/ini4j-0.5.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.ini4j/ini4j/srcs/ini4j-0.5.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
