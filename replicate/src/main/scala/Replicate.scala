@@ -4,6 +4,7 @@ import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import scopt.OptionParser
+import steenwerck._
 
 object Replicate extends App {
 
@@ -27,22 +28,11 @@ object Replicate extends App {
 
   import Global._
 
-  private def forceUpdate[T <% JObject](db: Database, id: String, data: T): Future[JValue] =
-    db.update("bib_input", "force-update", id,
-      Map("json" -> compact(render(data)))).toFuture
-
-  private def createLocalInfo(db: Database, site: Int): Future[JValue] =
+  private def createLocalInfo(db: Database, site: Int) =
     forceUpdate(db,
-      "_local/site-info", ("type" -> "site-info") ~ ("site-id" -> Options.siteId)) flatMap {
-      _ => touchMe(db)
-    }
+      "_local/site-info", ("type" -> "site-info") ~ ("site-id" -> Options.siteId)).thenTouch(db)
 
-  private def touchMe(db: Database): Future[JValue] =
-    forceUpdate(db, "touch_me", ("type" -> "touch-me"))
-
-  def ping(db: Database): Future[JValue] =
-    forceUpdate(db, "ping-site" + Options.siteId,
-      ("type" -> "ping") ~ ("site-id" -> Options.siteId) ~ ("time" -> System.currentTimeMillis))
+  def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
@@ -59,7 +49,7 @@ object Replicate extends App {
   }
 
   try {
-    createLocalInfo(localDatabase, Options.siteId)
+    createLocalInfo(localDatabase, Options.siteId).execute()
   } catch {
     case t =>
       log.error("cannot create local information: " + t)

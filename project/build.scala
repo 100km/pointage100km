@@ -31,10 +31,10 @@ object Steenwerck extends Build {
     Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config)
 
   lazy val replicate =
-    Project("replicate", file("replicate")) dependsOn(canape, config) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
+    Project("replicate", file("replicate")) dependsOn(canape, config, steenwerck) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val couchsync =
-    Project("couchsync", file("couchsync")) dependsOn(canape) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
+    Project("couchsync", file("couchsync")) dependsOn(canape, steenwerck) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val loader =
     Project("loader", file("loader")) dependsOn(canape) settings(akka: _*) settings(jackcess: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
@@ -42,6 +42,8 @@ object Steenwerck extends Build {
   lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val canape = Project("canape", file("libs/canape"))
+
+  lazy val steenwerck = Project("steenwerck", file("libs/steenwerck")) dependsOn(canape) settings(akka: _*)
 
   lazy val config = Project(id = "config", base = file("libs/config"))
 
