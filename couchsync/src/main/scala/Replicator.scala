@@ -1,3 +1,4 @@
+import akka.actor.ActorSystem
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
 import Message._
@@ -8,6 +9,8 @@ import scala.io.Source
 object Replicator {
 
   implicit val formats = DefaultFormats
+
+  implicit val dispatcher = ActorSystem().dispatcher
 
   private def waitForNoTasks(couch: Couch) = {
     var activeTasksCount: Int = 0
@@ -62,6 +65,8 @@ object Replicator {
 }
 
 class Replicator(srcDir: File, usbBaseDir: File) {
+
+  import Replicator._
 
   val dbDir = new File(usbBaseDir, "db")
   val etcDir = new File(usbBaseDir, "etc")

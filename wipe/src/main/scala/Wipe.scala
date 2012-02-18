@@ -1,3 +1,4 @@
+import akka.actor.ActorSystem
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scopt.OptionParser
@@ -5,6 +6,8 @@ import scopt.OptionParser
 object Wipe extends App {
 
   implicit val formats = DefaultFormats
+
+  implicit val dispatcher = ActorSystem().dispatcher
 
   private object Options {
     var login: String = _
