@@ -18,11 +18,11 @@ class Tasks(local: Database, remote: Database)
     }
 
   private[this] def localToRemoteReplication =
-    withError(local.couch.replicate(local, remote, true).toFuture,
+    withError(local.replicateTo(remote, true).toFuture,
 	      "cannot replicate from local to remote")
 
   private[this] def remoteToLocalReplication =
-    withError(local.couch.replicate(remote, local, true).toFuture,
+    withError(local.replicateFrom(remote, true).toFuture,
 	      "cannot replicate from remote to local")
 
   private[this] def ping =

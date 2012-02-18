@@ -37,8 +37,8 @@ object Replicator {
       case StatusCode(412, _) => // Database already exists
     }
     step("synchronisation")
-    couch.replicate(db, referenceDb, false).execute()
-    couch.replicate(referenceDb, db, false).execute()
+    db.replicateTo(referenceDb, false).execute()
+    db.replicateFrom(referenceDb, false).execute()
     waitForNoTasks(couch)
 
     step("compaction")
