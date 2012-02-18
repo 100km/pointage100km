@@ -45,4 +45,9 @@ class JsonDecoder[T: Manifest] extends SimpleChannelUpstreamHandler {
     sendUpstream(ctx, Left(e.getCause), null)
   }
 
+  override def channelClosed(ctx: ChannelHandlerContext,  e: ChannelStateEvent) {
+    sendUpstream(ctx, Left(new java.io.IOException("channel closed")), null);
+    ctx.sendUpstream(e)
+  }
+
 }
