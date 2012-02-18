@@ -42,7 +42,7 @@ object Replicate extends App {
 
   def ping(db: Database): Future[JValue] =
     forceUpdate(db, "ping-site" + Options.siteId,
-     ("type" -> "ping") ~ ("site-id" -> Options.siteId) ~ ("time" -> System.currentTimeMillis))
+      ("type" -> "ping") ~ ("site-id" -> Options.siteId) ~ ("time" -> System.currentTimeMillis))
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
