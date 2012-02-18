@@ -24,25 +24,20 @@ package object helpers {
 
   def getRevs(db: Database, id: String, revs: Seq[String] = Seq()): CouchRequest[Seq[JObject]] = {
     val revsList = if (revs.isEmpty) "all" else "[" + revs.map("\"" + _ + "\"").mkString(",") + "]"
-    val request = db(id, Map("open_revs" -> revsList))
-    new TransformerRequest(request, {
-      js: JValue =>
-        js.childrenAs[JObject] map (_ \ "ok") map (_.asInstanceOf[JObject])
-    })
+    db(id, Map("open_revs" -> revsList)) map {
+      _.childrenAs[JObject] map (_ \ "ok") map (_.asInstanceOf[JObject])
+    }
   }
 
   def getConflicting(db: Database, doc: JObject): CouchRequest[Seq[JObject]] = {
     val JString(id) = doc \ "_id"
     val revs = doc.subSeq[String]("_conflicts")
-    new TransformerRequest(getRevs(db, id, revs), {
-      docs: Seq[JObject] => doc +: docs
-    })
+    getRevs(db, id, revs) map { doc +: _ }
   }
 
   def getConflictingRevs(db: Database, id: String): CouchRequest[Seq[String]] =
-    new TransformerRequest(db(id, Map("conflicts" -> "true")), {
-      js: JValue =>
-        (js \ "_rev").extract[String] +: (js \ "_conflicts").extract[List[String]]
-    })
+    db(id, Map("conflicts" -> "true")) map { js: JValue =>
+      (js \ "_rev").extract[String] +: (js \ "_conflicts").extract[List[String]]
+    }
 
 }

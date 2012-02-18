@@ -52,6 +52,9 @@ trait CouchRequest[T] {
     result
   }
 
+  def map[U <: AnyRef : Manifest](transformer: (T) => U): CouchRequest[U] =
+    new TransformerRequest[T, U](this, transformer)
+
 }
 
 object CouchRequest {
@@ -117,7 +120,7 @@ class SimpleCouchRequest[T](bootstrap: HTTPBootstrap,
 
 }
 
-class TransformerRequest[T, U <: AnyRef](request: CouchRequest[T],
+private class TransformerRequest[T, U <: AnyRef](request: CouchRequest[T],
                                          transformer: T => U)(implicit val m: Manifest[U])
   extends CouchRequest[U] {
 
