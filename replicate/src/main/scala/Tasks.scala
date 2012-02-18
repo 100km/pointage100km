@@ -1,6 +1,6 @@
-import akka.actor.Actor
-import akka.dispatch.{Future, Promise}
+import akka.dispatch.{Await, Future, Promise}
 import akka.event.Logging
+import akka.util.Duration
 import akka.util.duration._
 import net.rfc1149.canape._
 
@@ -8,9 +8,9 @@ import FutureUtils._
 import Global._
 
 class Tasks(local: Database, remote: Database)
-  extends Actor with IncompleteCheckpoints with ConflictsSolver {
+    extends PeriodicActor(5 seconds) with IncompleteCheckpoints with ConflictsSolver {
 
-  val log = Logging(context.system, this)
+  override val log = Logging(context.system, this)
 
   private[this] def withError[T](future: Future[T], message: String): Future[Any] =
     future onFailure {
@@ -56,16 +56,8 @@ class Tasks(local: Database, remote: Database)
       incompleteCheckpoints,
       conflictingCheckpoints))
 
-  override def preStart() {
-    self ! 'act
-  }
-
-  override def receive = {
-    case 'act =>
-      allFutures onComplete {
-        case _ =>
-          context.system.scheduler.scheduleOnce(5 seconds, self, 'act)
-      }
+  override def act() {
+    Await.ready(allFutures, Duration.Inf)
   }
 
 }
