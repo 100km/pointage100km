@@ -37,7 +37,7 @@ object Steenwerck extends Build {
     Project("couchsync", file("couchsync")) dependsOn(canape) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val loader =
-    Project("loader", file("loader")) dependsOn(canape) settings(jackcess: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
+    Project("loader", file("loader")) dependsOn(canape) settings(akka: _*) settings(jackcess: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 

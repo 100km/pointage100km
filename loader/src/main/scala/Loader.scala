@@ -1,3 +1,4 @@
+import akka.actor.ActorSystem
 import com.healthmarketscience.jackcess
 import java.io.File
 import net.liftweb.json._
@@ -10,6 +11,8 @@ import scopt.OptionParser
 object Loader extends App {
 
   implicit val formats = DefaultFormats
+
+  implicit val dispatcher = ActorSystem().dispatcher
 
   private object Options {
     var file: File = _
