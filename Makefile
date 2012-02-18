@@ -3,9 +3,9 @@ BINFILES = $(JARFILES:.jar=)
 DIST = bin.tar.xz
 SBT = ./sbt
 
-all:: proguard
+all:: assembly
 
-proguard:: $(JARFILES)
+assembly:: $(JARFILES)
 
 dist:: $(DIST)
 
@@ -24,6 +24,6 @@ check::
 	$(SBT) root/test
 
 %.jar: ALWAYS
-	$(SBT) `basename ${@:.jar=}`/proguard
+	$(SBT) `basename ${@:.jar=}`/assembly
 
 ALWAYS::
