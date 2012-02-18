@@ -17,8 +17,8 @@ import org.jboss.netty.util.CharsetUtil
  */
 
 abstract class Couch(val host: String,
-		     val port: Int,
-		     private val auth: Option[(String, String)]) extends HTTPBootstrap {
+                     val port: Int,
+                     private val auth: Option[(String, String)]) extends HTTPBootstrap {
 
   import implicits._
 
@@ -59,6 +59,15 @@ abstract class Couch(val host: String,
       case _         => Left(data)
     })
 
+  /**
+   * Build a GET HTTP request.
+   *
+   * @param query The query string, including the already-encoded optional parameters.
+   * @param allowChunks True if the handler is ready to handle HTTP chunks, false otherwise.
+   * @tparam T The type of the chunks (if allowChunks is true) or of the result.
+   * @return A request.
+   */
+
   def makeGetRequest[T: Manifest](query: String, allowChunks: Boolean = false): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.GET, None, allowChunks)
 
@@ -67,12 +76,50 @@ abstract class Couch(val host: String,
   //   - None     => application/json, empty payload
   //   - other    => application/json, converted json to string payload
 
+  /**
+   * Build a POST HTTP request.
+   *
+   * The data parameter can be one of the following:
+   * <ul>
+   *   <li>a String: it will be passed as-is, with type application/x-www-form-urlencoded;</li>
+   *   <li>None: it will be passed as an empty payload with type application/json;</li>
+   *   <li>other: after being converted to Json, it will be passed with type application/json.</li>
+   * </ul>
+   *
+   * @param query the query string, including the already-encoded optional parameters
+   * @param data the data to post
+   * @tparam T the type of the result
+   * @return a request.
+   *
+   * @throws StatusCode if an error occurs
+   */
   def makePostRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.POST, convert(data), false)
 
+  /**
+   * Build a PUT HTTP request.
+   *
+   * @see makePostRequest for more information on the data format.
+   *
+   * @param query the query string, including the already-encoded optional parameters
+   * @param data the data to post
+   * @tparam T the type of the result
+   * @return a request
+   *
+   * @throws StatusCode if an error occurs
+   */
   def makePutRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.PUT, convert(data), false)
 
+  /**
+   * Build a DELETE HTTP request.
+   *
+   * @param query the query string, including the already-encoded optional parameters
+   * @tparam T the type of the result
+   * @return a request
+   *
+   * @throws StatusCode if an error occurs
+   */
   def makeDeleteRequest[T: Manifest](query: String): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.DELETE, None, false)
 
@@ -97,6 +144,7 @@ abstract class Couch(val host: String,
    * @param source the database to replicate from
    * @param target the database to replicate into
    * @param continuous true if the replication must be continuous, false otherwise
+   * @return a request
    *
    * @throws StatusCode if an error occurs
    */
@@ -110,7 +158,9 @@ abstract class Couch(val host: String,
   /**
    * CouchDB installation status.
    *
-   * @return the status as a Handler
+   * @return a request
+   *
+   * @throws StatusCode if an error occurs
    */
   def status(): CouchRequest[Couch.Status] = makeGetRequest[Couch.Status]("")
 
@@ -118,7 +168,8 @@ abstract class Couch(val host: String,
   /**
    * CouchDB active tasks.
    *
-   * @return the list of active tasks as a JSON objects list in a Handler
+   * @return a request
+   *
    * @throws StatusCode if an error occurs
    */
   def activeTasks(): CouchRequest[List[JValue]] = makeGetRequest[List[JValue]]("_active_tasks")
@@ -127,7 +178,7 @@ abstract class Couch(val host: String,
    * Get a named database. This does not attempt to connect to the database or check
    * its existence.
    *
-   * @return an object representing this database.
+   * @return an object representing this database
    */
   def db(databaseName: String) = Database(this, databaseName)
 
