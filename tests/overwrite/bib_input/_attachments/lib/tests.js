@@ -101,13 +101,47 @@ function test_multiple_bib_insertion(app, bib, expected_race_id, tss) {
   return ASSERTS_PER_SINGLE_INSERT_DELETE*N;
 }
 
+function foreach_unwrapped_checkpoints(app, checkpoints, f, cb) {
+  async_foreach(checkpoints, function(checkpoint, i, checkpoints, cb) {
+    f(checkpoint.bib, app, checkpoint.ts, cb, checkpoint.site_id);
+  }, cb);
+}
+function insert_checkpoints(app, checkpoints, cb) {
+  foreach_unwrapped_checkpoints(app, checkpoints, submit_bib, cb);
+}
+function delete_checkpoints(app, checkpoints, cb) {
+  foreach_unwrapped_checkpoints(app, checkpoints, submit_remove_checkpoint, cb);
+}
+
+function with_temp_checkpoints(app, checkpoints, f, cb) {
+  insert_checkpoints(app, checkpoints, function() {
+    f(function() {
+      delete_checkpoints(app, checkpoints, cb);
+    });
+  });
+}
+function test_previous(app, bib, lap, checkpoints, expected) {
+  expect(1);
+  with_temp_checkpoints(app, checkpoints, function(cb) {
+    var kms = site_lap_to_kms(app, app.site_id, lap);
+    call_with_previous(app, app.site_id, bib, lap, kms, function(data) {
+      var pairs = _.zip(expected, data.bibs.map(function(bib) { return bib.bib }));
+      ok(_.all(pairs,
+                function(pair) { return pair[0] == pair[1] }), "local ranking is false");
+      cb();
+    });
+  }, function() {
+    start();
+  });
+}
 function test_bib_input(app) {
   call_with_app_data(app, function() {
-    module("bib_input"); 
+    module("setup");
     test("setup ok", function() {
         expect(1);
         ok(app.site_id != undefined, "undefined site id");
     });
+    module("bib insertion");
     asyncTest("checkpoint insertion (with infos)", function() {
       expect(test_single_bib_insertion(app, 0, 1));
     });
@@ -119,6 +153,42 @@ function test_bib_input(app) {
     });
     asyncTest("multiple checkpoints insertion (with infos)", function() {
       expect(test_multiple_bib_insertion(app, 500, 0, [0, 234125, 0]));
+    });
+    module("previous");
+    asyncTest("1 lap", function() {
+      test_previous(app, 2, 1, [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 2, ts: 1200, site_id:0 }
+      ], [ 0, 1]);
+    });
+    asyncTest("1 lap, cornercase first bib", function() {
+      test_previous(app, 0, 1, [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 2, ts: 1200, site_id:0 }
+      ], []);
+    });
+    asyncTest("1 lap, 2 sites", function() {
+      test_previous(app, 2, 1, [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:1 },
+        { bib: 2, ts: 1200, site_id:0 }
+      ], [0]);
+    });
+    var tmp = [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 0, ts: 2100, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 1, ts: 2000, site_id:0 },
+        { bib: 2, ts: 1200, site_id:0 },
+        { bib: 2, ts: 2200, site_id:0 },
+    ] ;
+    asyncTest("2 laps, lap1", function() {
+      test_previous(app, 2, 1, tmp, [0, 1]);
+    });
+    asyncTest("2 laps, lap2", function() {
+      test_previous(app, 2, 2, tmp, [1, 0]);
     });
   });
 };
