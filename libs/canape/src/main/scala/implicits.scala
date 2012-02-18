@@ -10,7 +10,9 @@ object implicits {
 
   class RichJValue(js: JValue) {
     def childrenAs[T: Manifest]: Seq[T] = js.children.map(_.asInstanceOf[T])
+
     lazy val toMap: mapObject = js.extract[mapObject]
+
     def subSeq[T: Manifest](field: String): Seq[T] = (js \ field).children.map(_.extract[T])
   }
 

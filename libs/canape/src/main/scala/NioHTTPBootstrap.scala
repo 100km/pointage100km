@@ -15,7 +15,7 @@ trait NioHTTPBootstrap extends HTTPBootstrap {
 
   protected[this] val bootstrap: ClientBootstrap =
     new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool,
-							  Executors.newCachedThreadPool))
+      Executors.newCachedThreadPool))
 
   bootstrap.setPipelineFactory(new ChannelPipelineFactory {
     override def getPipeline = {

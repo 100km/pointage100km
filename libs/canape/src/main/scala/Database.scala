@@ -15,15 +15,17 @@ case class Database(couch: Couch, database: String) {
   override def canEqual(that: Any) = that.isInstanceOf[Database]
 
   override def equals(that: Any): Boolean = that match {
-      case other: Database if other.canEqual(this) => uri == other.uri
-      case _                                       => false
+    case other: Database if other.canEqual(this) => uri == other.uri
+    case _ => false
   }
 
   private[canape] def uriFrom(other: Couch) = if (couch == other) database else uri
 
   private def encode(extra: String, properties: Seq[(String, String)] = Seq()) = {
     val encoder = new QueryStringEncoder(database + "/" + extra)
-    properties foreach { case (name, value) => encoder.addParam(name, value) }
+    properties foreach {
+      case (name, value) => encoder.addParam(name, value)
+    }
     encoder.toString
   }
 
@@ -50,7 +52,9 @@ case class Database(couch: Couch, database: String) {
 
   def update(design: String, name: String, id: String, data: Map[String, String]): CouchRequest[JValue] = {
     val encoder = new QueryStringEncoder("")
-    data foreach { case (key, value) => encoder.addParam(key, value) }
+    data foreach {
+      case (key, value) => encoder.addParam(key, value)
+    }
     couch.makePostRequest[JValue]("%s/_design/%s/_update/%s/%s".format(database, design, name, id), encoder.toString.tail)
   }
 
@@ -72,10 +76,10 @@ case class Database(couch: Couch, database: String) {
   def insert[T <% JObject](doc: T, id: Option[String] = None): CouchRequest[JValue] = {
     id orElse (doc \ "_id" match {
       case JString(docId) => Some(docId)
-      case _              => None
+      case _ => None
     }) match {
       case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, Some(doc))
-      case None                => couch.makePostRequest[JValue](database, Some(doc))
+      case None => couch.makePostRequest[JValue](database, Some(doc))
     }
   }
 

@@ -16,8 +16,12 @@ trait CouchRequest[T] {
     val future = connect()
     if (future.await.isSuccess) {
       val reader = new ArrayBlockingQueue[Either[Throwable, T]](1)
-      send(future.getChannel, true) { d => reader.add(d.asInstanceOf[Either[Throwable, T]]) }
-      reader.take().fold(throw _, { t: T => t })
+      send(future.getChannel, true) {
+        d => reader.add(d.asInstanceOf[Either[Throwable, T]])
+      }
+      reader.take().fold(throw _, {
+        t: T => t
+      })
     } else
       throw future.getCause
   }
@@ -30,7 +34,7 @@ class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: Htt
     val future = bootstrap.connect()
     val channel = future.getChannel
     if (!allowChunks)
-      channel.getPipeline.addLast("aggregator", new ChunkAggregator(1024*1024))
+      channel.getPipeline.addLast("aggregator", new ChunkAggregator(1024 * 1024))
     channel.getPipeline.addLast("requestInterceptor", new RequestInterceptor)
     channel.getPipeline.addLast("jsonDecoder", new JsonDecoder[T])
     future

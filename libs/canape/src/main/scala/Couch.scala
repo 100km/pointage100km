@@ -23,31 +23,38 @@ abstract class Couch(val host: String,
 
   private lazy val authorization = {
     val authChannelBuffer = ChannelBuffers.copiedBuffer(auth.get._1 + ":" + auth.get._2,
-							CharsetUtil.UTF_8)
+      CharsetUtil.UTF_8)
     val encodedAuthChannelBuffer = Base64.encode(authChannelBuffer)
     "Basic " + encodedAuthChannelBuffer.toString(CharsetUtil.UTF_8)
   }
 
   private[this] def makeRequest[T: Manifest](query: String, method: HttpMethod, data: Option[Either[AnyRef, String]], allowChunks: Boolean): CouchRequest[T] = {
     val request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
-					 method,
-					 "/" + query)
+      method,
+      "/" + query)
     request.setHeader(HttpHeaders.Names.HOST, host)
     request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP)
     request.setHeader(HttpHeaders.Names.ACCEPT, "application/json")
-    auth foreach { case (login, password) =>
-      request.setHeader(HttpHeaders.Names.AUTHORIZATION, authorization)
+    auth foreach {
+      case (login, password) =>
+        request.setHeader(HttpHeaders.Names.AUTHORIZATION, authorization)
     }
-    data foreach { d =>
-      val cb = ChannelBuffers.copiedBuffer(d.fold({
-	case None  => ""
-	case other => write(other)
-       }, {s => s}), CharsetUtil.UTF_8)
-      request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, cb.readableBytes())
-      request.setHeader(HttpHeaders.Names.CONTENT_TYPE,
-			d.fold({_ => "application/json"},
-			       {_ => "application/x-www-form-urlencoded" }))
-      request.setContent(cb)
+    data foreach {
+      d =>
+        val cb = ChannelBuffers.copiedBuffer(d.fold({
+          case None => ""
+          case other => write(other)
+        }, {
+          s => s
+        }), CharsetUtil.UTF_8)
+        request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, cb.readableBytes())
+        request.setHeader(HttpHeaders.Names.CONTENT_TYPE,
+          d.fold({
+            _ => "application/json"
+          }, {
+            _ => "application/x-www-form-urlencoded"
+          }))
+        request.setContent(cb)
     }
     new SimpleCouchRequest[T](this, request, allowChunks)
   }
@@ -55,7 +62,7 @@ abstract class Couch(val host: String,
   private def convert(data: AnyRef): Some[Either[AnyRef, String]] =
     Some(data match {
       case s: String => Right(s)
-      case _         => Left(data)
+      case _ => Left(data)
     })
 
   /**
@@ -122,14 +129,14 @@ abstract class Couch(val host: String,
   def makeDeleteRequest[T: Manifest](query: String): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.DELETE, None, false)
 
-  /** URI that refers to the database */
+  /**URI that refers to the database */
   private[canape] val uri = "http://" + auth.map(x => x._1 + ":" + x._2 + "@").getOrElse("") + host + ":" + port
 
   protected def canEqual(that: Any) = that.isInstanceOf[Couch]
 
   override def equals(that: Any) = that match {
-      case other: Couch if other.canEqual(this) => uri == other.uri
-      case _                                    => false
+    case other: Couch if other.canEqual(this) => uri == other.uri
+    case _ => false
   }
 
   override def hashCode() = toString.hashCode()
@@ -149,9 +156,9 @@ abstract class Couch(val host: String,
    */
   def replicate(source: Database, target: Database, continuous: Boolean): CouchRequest[JValue] = {
     makePostRequest[JValue]("_replicate",
-			    Map("source" -> source.uriFrom(this),
-				"target" -> target.uriFrom(this),
-				"continuous" -> continuous))
+      Map("source" -> source.uriFrom(this),
+        "target" -> target.uriFrom(this),
+        "continuous" -> continuous))
   }
 
   /**
@@ -185,12 +192,12 @@ abstract class Couch(val host: String,
 
 object Couch {
 
-  /** The Couch instance current status. */
+  /**The Couch instance current status. */
   case class Status(couchdb: String,
-		    version: String,
-		    vendor: Option[VendorInfo])
+                    version: String,
+                    vendor: Option[VendorInfo])
 
   case class VendorInfo(name: String,
-			version: String)
+                        version: String)
 
 }

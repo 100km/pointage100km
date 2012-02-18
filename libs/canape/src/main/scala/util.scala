@@ -10,15 +10,15 @@ object util {
     implicit val formats = DefaultFormats
     doc match {
       case js: JValue => js.asInstanceOf[JObject]
-      case _          => decompose(doc).asInstanceOf[JObject]
+      case _ => decompose(doc).asInstanceOf[JObject]
     }
   }
 
   def toJValue(something: Any): JValue = {
     implicit val formats = DefaultFormats
     something match {
-	case js: JValue => js
-	case _          => decompose(something)
+      case js: JValue => js
+      case _ => decompose(something)
     }
   }
 
