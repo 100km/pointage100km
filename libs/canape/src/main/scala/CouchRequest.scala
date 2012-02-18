@@ -72,7 +72,7 @@ object CouchRequest {
 
   }
 
-  private class PromiseChannelUpstreamHandler[T: Manifest](promise: Promise[T]) extends SimpleChannelUpstreamHandler {
+  class PromiseChannelUpstreamHandler[T: Manifest](promise: Promise[T]) extends SimpleChannelUpstreamHandler {
 
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
       promise success (e.getMessage.asInstanceOf[T])
