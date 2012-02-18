@@ -5,8 +5,6 @@ import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import scopt.OptionParser
 
-import FutureUtils._
-
 object Replicate extends App {
 
   private object Options {
@@ -48,9 +46,6 @@ object Replicate extends App {
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
-
-  // TODO Remove me, this is a test
-  system.actorOf(Props(new ChangesActor(system.deadLetters, localDatabase)), "changes")
 
   try {
     localDatabase.create().execute()

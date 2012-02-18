@@ -5,7 +5,6 @@ import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import net.rfc1149.canape.util._
 
-import FutureUtils._
 import Global._
 
 trait ConflictsSolver {

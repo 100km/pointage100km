@@ -33,7 +33,7 @@ class DatabaseSpec extends DbSpecification {
 
     "be able to update a document with an embedded id" in {
       insertedId(db.insert(Map("_id" -> "docid")).execute()) must be equalTo("docid")
-      val updatedDoc = db("docid").execute + ("foo" -> "bar")
+      val updatedDoc = db("docid").execute() + ("foo" -> "bar")
       insertedId(db.insert(updatedDoc).execute()) must be equalTo("docid")
     }
 
@@ -62,14 +62,14 @@ class DatabaseSpec extends DbSpecification {
       val (id, rev) = inserted(db.insert(Map("key" -> "value")).execute())
       val doc = db(id).execute()
       db.insert(doc + ("key" -> "newValue")).execute()
-      (db(id, Map("rev" -> rev)).execute \ "key").extract[String] must be equalTo("value")
+      (db(id, Map("rev" -> rev)).execute() \ "key").extract[String] must be equalTo("value")
     }
 
     "be able to retrieve an older revision of a document with a params sequence" in {
       val (id, rev) = inserted(db.insert(Map("key" -> "value")).execute())
       val doc = db(id).execute()
       db.insert(doc + ("key" -> "newValue")).execute()
-      (db(id, Seq("rev" -> rev)).execute \ "key").extract[String] must be equalTo("value")
+      (db(id, Seq("rev" -> rev)).execute() \ "key").extract[String] must be equalTo("value")
     }
 
   }
@@ -79,24 +79,24 @@ class DatabaseSpec extends DbSpecification {
     "be able to delete a document" in {
       val (id, rev) = inserted(db.insert(JObject(Nil)).execute())
       db.delete(id, rev).execute()
-      db(id).execute must throwA[Exception]
+      db(id).execute() must throwA[Exception]
     }
 
     "fail when trying to delete a non-existing document" in {
-      db.delete("foo", "bar").execute must throwA[Exception]
+      db.delete("foo", "bar").execute() must throwA[Exception]
     }
 
     "fail when trying to delete a deleted document" in {
       val (id, rev) = inserted(db.insert(JObject(Nil)).execute())
       db.delete(id, rev).execute()
-      db.delete(id, rev).execute must throwA[Exception]
+      db.delete(id, rev).execute() must throwA[Exception]
     }
 
     "fail when trying to delete an older revision of a document" in {
       val (id, rev) = inserted(db.insert(Map("key" -> "value")).execute())
       val doc = db(id).execute()
       db.insert(doc + ("key" -> "newValue")).execute()
-      db.delete(id, rev).execute must throwA[Exception]
+      db.delete(id, rev).execute() must throwA[Exception]
     }
   }
 
@@ -127,7 +127,7 @@ class DatabaseSpec extends DbSpecification {
         Map("_id" -> "docid", "extra" -> "other"),
         Map("_id" -> "docid", "extra" -> "yetAnother")),
         true).execute()
-      (db("docid", Map("conflicts" -> "true")).execute \ "_conflicts").children must have size(2)
+      (db("docid", Map("conflicts" -> "true")).execute() \ "_conflicts").children must have size(2)
     }
 
   }
@@ -195,13 +195,13 @@ class DatabaseSpec extends DbSpecification {
 
   "db.compact()" should {
     "return with success" in {
-      db.compact().execute \ "ok" must be equalTo(JBool(true))
+      db.compact().execute() \ "ok" must be equalTo(JBool(true))
     }
   }
 
   "db.ensureFullCommit()" should {
     "return with success" in {
-      db.ensureFullCommit().execute \ "ok" must be equalTo(JBool(true))
+      db.ensureFullCommit().execute() \ "ok" must be equalTo(JBool(true))
     }
   }
 

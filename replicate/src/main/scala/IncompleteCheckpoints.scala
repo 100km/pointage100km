@@ -3,7 +3,6 @@ import akka.event.LoggingAdapter
 import net.liftweb.json._
 import net.rfc1149.canape._
 
-import FutureUtils._
 import Global._
 
 trait IncompleteCheckpoints {

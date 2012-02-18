@@ -13,13 +13,9 @@ class JsonDecoder[T: Manifest] extends SimpleChannelUpstreamHandler {
 
   private var readingChunks: Boolean = false
 
-  private def sendUpstream(ctx: ChannelHandlerContext, data: Either[Throwable, T], remoteAddress: SocketAddress) {
-    ctx.sendUpstream(new UpstreamMessageEvent(ctx.getChannel, data, remoteAddress))
-  }
-
   private def sendUpstream(ctx: ChannelHandlerContext, data: ChannelBuffer, remoteAddress: SocketAddress) {
-    val strData = data.toString(CharsetUtil.UTF_8)
-    sendUpstream(ctx, Right(parse(strData).extract[T]), remoteAddress)
+    val obj = parse(data.toString(CharsetUtil.UTF_8)).extract[T]
+    ctx.sendUpstream(new UpstreamMessageEvent(ctx.getChannel, obj, remoteAddress))
   }
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
@@ -42,11 +38,6 @@ class JsonDecoder[T: Manifest] extends SimpleChannelUpstreamHandler {
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    sendUpstream(ctx, Left(e.getCause), null)
-  }
-
-  override def channelClosed(ctx: ChannelHandlerContext,  e: ChannelStateEvent) {
-    sendUpstream(ctx, Left(new java.io.IOException("channel closed")), null);
     ctx.sendUpstream(e)
   }
 

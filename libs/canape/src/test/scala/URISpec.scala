@@ -1,11 +1,14 @@
 package net.rfc1149.canape
 
+import akka.actor.ActorSystem
 import net.liftweb.json._
 import org.specs2.mutable._
 
 class URISpec extends Specification {
 
   import implicits._
+
+  implicit val dispatcher = ActorSystem().dispatcher
 
   val cunauth = new NioCouch("db.example.com", 5984)
   val cauth = new NioCouch("db.example.com", 5984, Some(("admin", "xyzzy")))

@@ -28,7 +28,7 @@ class ConnectionSpec extends DbSpecification {
 
     "fail when we trying to delete a non-existing database" in {
       db.delete().execute()
-      db.delete().execute must throwA[Exception]
+      db.delete().execute() must throwA[Exception]
     }
 
   }
@@ -42,7 +42,7 @@ class ConnectionSpec extends DbSpecification {
     }
 
     "fail when trying to create an existing database" in {
-      db.create().execute must throwA[Exception]
+      db.create().execute() must throwA[Exception]
     }
 
   }

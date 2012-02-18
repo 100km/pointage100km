@@ -18,13 +18,13 @@ class HelpersSpec extends DbSpecification {
 
     "return all the revisions" in {
       makeConflicts()
-      getRevs(db, "docid").execute must have size(3)
+      getRevs(db, "docid").execute() must have size(3)
     }
 
     "return the selected revisions" in {
       makeConflicts()
       val revs = db("docid", Map("conflicts" -> "true")).execute().subSeq[String]("_conflicts")
-      getRevs(db, "docid", revs).execute must have size(2)
+      getRevs(db, "docid", revs).execute() must have size(2)
     }
 
   }
@@ -34,7 +34,7 @@ class HelpersSpec extends DbSpecification {
     "return the list of conflicting documents by id" in {
       makeConflicts()
       val doc = db("docid", Map("conflicts" -> "true")).execute().asInstanceOf[JObject]
-      getConflicting(db, doc).execute must have size(3)
+      getConflicting(db, doc).execute() must have size(3)
     }
 
   }
@@ -48,7 +48,7 @@ class HelpersSpec extends DbSpecification {
       (solve(db, docs) {
         docs => docs.head
       }).execute()
-      getConflictingRevs(db, "docid").execute must have size(1)
+      getConflictingRevs(db, "docid").execute() must have size(1)
     }
 
     "be able to merge documents" in {

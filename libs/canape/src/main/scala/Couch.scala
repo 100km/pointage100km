@@ -1,5 +1,6 @@
 package net.rfc1149.canape
 
+import akka.dispatch.ExecutionContext
 import net.liftweb.json._
 import net.liftweb.json.Serialization.write
 import org.jboss.netty.buffer._
@@ -17,9 +18,12 @@ import org.jboss.netty.util.CharsetUtil
 
 abstract class Couch(val host: String,
                      val port: Int,
-                     private val auth: Option[(String, String)]) extends HTTPBootstrap {
+                     private val auth: Option[(String, String)])
+  extends HTTPBootstrap {
 
   import implicits._
+
+  implicit val context: ExecutionContext
 
   private lazy val authorization = {
     val authChannelBuffer = ChannelBuffers.copiedBuffer(auth.get._1 + ":" + auth.get._2,

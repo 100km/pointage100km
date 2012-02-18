@@ -4,7 +4,6 @@ import akka.util.Duration
 import akka.util.duration._
 import net.rfc1149.canape._
 
-import FutureUtils._
 import Global._
 
 class Tasks(local: Database, remote: Database)

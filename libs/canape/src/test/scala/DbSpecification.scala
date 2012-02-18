@@ -1,3 +1,4 @@
+import akka.actor.ActorSystem
 import net.rfc1149.canape._
 import org.specs2.mutable._
 import org.specs2.specification._
@@ -7,6 +8,8 @@ import org.specs2.specification._
 // account.
 
 trait DbSpecification extends Specification with BeforeAfterExample {
+
+  implicit val dispatcher = ActorSystem().dispatcher
 
   val dbSuffix: String
 
