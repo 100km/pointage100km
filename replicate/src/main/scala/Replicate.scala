@@ -1,4 +1,4 @@
-import akka.actor.Props
+import akka.actor.{DeadLetterActorRef, Props}
 import akka.dispatch.Future
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
@@ -29,31 +29,28 @@ object Replicate extends App {
 
   import Global._
 
-  private def createLocalInfo(db: Database, site: Int) = {
-    val name = "_local/site-info"
-    val doc: mapObject = try {
-      db(name).execute()
-    } catch {
-      case StatusCode(404, _) => Map()
-    }
-    val newDoc = doc + ("site-id" -> JInt(site))
-    db.insert(name, newDoc).execute()
-    touchMe(db)
-  }
-
-  def forceUpdate[T <% JObject](db: Database, id: String, data: T): CouchRequest[JValue] =
+  private def forceUpdate[T <% JObject](db: Database, id: String, data: T): Future[JValue] =
     db.update("bib_input", "force-update", id,
-      Map("json" -> compact(render(data))))
+      Map("json" -> compact(render(data)))).toFuture
+
+  private def createLocalInfo(db: Database, site: Int): Future[JValue] =
+    forceUpdate(db,
+      "_local/site-info", ("type" -> "site-info") ~ ("site-id" -> Options.siteId)) flatMap {
+      _ => touchMe(db)
+    }
 
   private def touchMe(db: Database): Future[JValue] =
-    forceUpdate(db, "touch_me", Map("touched" -> "yes")).toFuture
+    forceUpdate(db, "touch_me", ("type" -> "touch-me"))
 
-  def ping(db: Database): CouchRequest[JValue] =
+  def ping(db: Database): Future[JValue] =
     forceUpdate(db, "ping-site" + Options.siteId,
-      Map("time" -> System.currentTimeMillis))
+     ("type" -> "ping") ~ ("site-id" -> Options.siteId) ~ ("time" -> System.currentTimeMillis))
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
+
+  // TODO Remove me, this is a test
+  system.actorOf(Props(new ChangesActor(system.deadLetters, localDatabase)), "changes")
 
   try {
     localDatabase.create().execute()

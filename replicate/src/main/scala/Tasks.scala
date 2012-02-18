@@ -26,7 +26,7 @@ class Tasks(local: Database, remote: Database)
       "cannot replicate from remote to local")
 
   private[this] def ping =
-    withError(Replicate.ping(local).toFuture, "cannot ping database")
+    withError(Replicate.ping(local), "cannot ping database")
 
   private[this] var noCompactionSince: Int = 0
 
