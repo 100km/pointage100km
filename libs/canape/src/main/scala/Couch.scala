@@ -32,7 +32,7 @@ abstract class Couch(val host: String,
     "Basic " + encodedAuthChannelBuffer.toString(CharsetUtil.UTF_8)
   }
 
-  private[this] def makeRequest[T: Manifest](query: String, method: HttpMethod, data: Option[Either[AnyRef, String]], allowChunks: Boolean): CouchRequest[T] = {
+  private[this] def makeRequest[T <: AnyRef : Manifest](query: String, method: HttpMethod, data: Option[Either[AnyRef, String]], allowChunks: Boolean): CouchRequest[T] = {
     val request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
       method,
       "/" + query)
@@ -78,7 +78,7 @@ abstract class Couch(val host: String,
    * @return A request.
    */
 
-  def makeGetRequest[T: Manifest](query: String, allowChunks: Boolean = false): CouchRequest[T] =
+  def makeGetRequest[T <: AnyRef : Manifest](query: String, allowChunks: Boolean = false): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.GET, None, allowChunks)
 
   // POST and PUT requests accept the following data:
@@ -103,7 +103,7 @@ abstract class Couch(val host: String,
    *
    * @throws StatusCode if an error occurs
    */
-  def makePostRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
+  def makePostRequest[T <: AnyRef : Manifest](query: String, data: AnyRef): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.POST, convert(data), false)
 
   /**
@@ -118,7 +118,7 @@ abstract class Couch(val host: String,
    *
    * @throws StatusCode if an error occurs
    */
-  def makePutRequest[T: Manifest](query: String, data: AnyRef): CouchRequest[T] =
+  def makePutRequest[T <: AnyRef : Manifest](query: String, data: AnyRef): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.PUT, convert(data), false)
 
   /**
@@ -130,7 +130,7 @@ abstract class Couch(val host: String,
    *
    * @throws StatusCode if an error occurs
    */
-  def makeDeleteRequest[T: Manifest](query: String): CouchRequest[T] =
+  def makeDeleteRequest[T <: AnyRef : Manifest](query: String): CouchRequest[T] =
     makeRequest[T](query, HttpMethod.DELETE, None, false)
 
   /**URI that refers to the database */

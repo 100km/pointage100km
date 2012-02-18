@@ -5,7 +5,6 @@ import org.jboss.netty.handler.codec.http._
 
 case class Database(couch: Couch, database: String) {
 
-
   private[canape] val uri = couch.uri + "/" + database
 
   override def toString = couch.toString + "/" + database

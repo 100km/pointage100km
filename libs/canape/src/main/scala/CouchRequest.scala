@@ -6,7 +6,7 @@ import akka.util.Duration
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
 
-trait CouchRequest[T] {
+trait CouchRequest[T <: AnyRef] {
 
   implicit val context: ExecutionContext
 
@@ -89,10 +89,10 @@ object CouchRequest {
 
 }
 
-class SimpleCouchRequest[T](bootstrap: HTTPBootstrap,
-                            val request: HttpRequest,
-                            allowChunks: Boolean)(implicit val m: Manifest[T],
-                                                  val context: ExecutionContext)
+class SimpleCouchRequest[T <: AnyRef](bootstrap: HTTPBootstrap,
+				      val request: HttpRequest,
+				      allowChunks: Boolean)(implicit val m: Manifest[T],
+							    val context: ExecutionContext)
   extends CouchRequest[T] {
 
   override def connect(): ChannelFuture = {
@@ -120,8 +120,8 @@ class SimpleCouchRequest[T](bootstrap: HTTPBootstrap,
 
 }
 
-private class TransformerRequest[T, U <: AnyRef](request: CouchRequest[T],
-                                         transformer: T => U)(implicit val m: Manifest[U])
+private class TransformerRequest[T <: AnyRef, U <: AnyRef](request: CouchRequest[T],
+							   transformer: T => U)(implicit val m: Manifest[U])
   extends CouchRequest[U] {
 
   override implicit val context = request.context
