@@ -32,7 +32,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   when(InitialSequence) {
     case Event(Status.Failure(e), _) =>
-      goto(ChangesError) using (-1) forMax (5 seconds)
+      goto(ChangesError) using (-1)
     case Event(latestSeq: Long, _) =>
       requestChanges(latestSeq) using (latestSeq)
   }
@@ -40,13 +40,13 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   when(Connecting) {
     case Event(Status.Failure(e), _) =>
       log.warning("cannot connect to the database: " + e)
-      goto(ChangesError) forMax (5 seconds)
+      goto(ChangesError)
     case Event((), _) =>
       log.info("connected to the changes stream")
       goto(Processing)
   }
 
-  when(ChangesError) {
+  when(ChangesError, stateTimeout = 5 seconds) {
     case Event(StateTimeout, latestSeq) =>
       if (latestSeq == -1)
         getInitialSequence()
@@ -57,15 +57,20 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   when(Processing) {
     case Event(Status.Failure(e), _) =>
       log.warning("error while running change request: " + e)
-      goto(ChangesError) forMax (5 seconds)
+      goto(ChangesError)
     case Event('closed, _) =>
       log.warning("stream closed while running change request")
-      goto(ChangesError) forMax (5 seconds)
-    case Event(m: JObject, _) => {
-      val latestSeq = (m \ "seq").extract[Long]
-      sendTo ! m
-      stay() using (latestSeq)
-    }
+      goto(ChangesError)
+    case Event(m: JObject, _) =>
+      try {
+	val latestSeq = (m \ "seq").extract[Long]
+	sendTo ! m
+	stay() using (latestSeq)
+      } catch {
+	case _: Exception =>
+	  log.warning("unable to extract sequence from " + m)
+	  goto(ChangesError)
+      }
   }
 
   initialize
