@@ -3,6 +3,7 @@ package net.rfc1149.canape
 import java.util.concurrent.ArrayBlockingQueue
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
+import java.net.SocketAddress
 
 trait CouchRequest[T] {
 
@@ -10,7 +11,11 @@ trait CouchRequest[T] {
 
   def connect(): ChannelFuture
 
-  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit)
+  def send(channel: Channel, closeAfter: Boolean, lastHandler: ChannelUpstreamHandler)
+
+  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit) {
+    send(channel, closeAfter, util.toUpstreamHandler(lastHandler))
+  }
 
   def execute(): T = {
     val future = connect()
@@ -40,7 +45,7 @@ class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: Htt
     future
   }
 
-  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit) {
+  override def send(channel: Channel, closeAfter: Boolean, lastHandler: ChannelUpstreamHandler) {
     if (closeAfter)
       request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE)
     val pipeline = channel.getPipeline
@@ -49,24 +54,18 @@ class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: Htt
     } catch {
       case _: java.util.NoSuchElementException =>
     }
-    pipeline.addLast("lastHandler", util.toUpstreamHandler(lastHandler))
+    pipeline.addLast("lastHandler", lastHandler)
     channel.write(request)
   }
 
 }
 
-class TransformerRequest[T: Manifest, U](request: CouchRequest[T], transformer: T => U) extends CouchRequest[U] {
+class TransformerRequest[T: Manifest, U <: AnyRef](request: CouchRequest[T], transformer: T => U) extends CouchRequest[U] {
 
   override def connect(): ChannelFuture = request.connect()
 
-  override def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit) {
-    request.send(channel, closeAfter) {
-      d: Either[Throwable, T] =>
-        lastHandler(d.fold({
-          t: Throwable => Left(t)
-        }, {
-          t: T => Right(transformer(t))
-        }))
-    }
+  override def send(channel: Channel, closeAfter: Boolean, lastHandler: ChannelUpstreamHandler) {
+    send(channel, closeAfter, new HandlerTransformer(lastHandler, transformer))
   }
+
 }
