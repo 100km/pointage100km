@@ -17,8 +17,9 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   private[this] val log = Logging(context.system, this)
 
   private[this] def requestChanges(since: Long) = {
-    database.changes(Map("feed" -> "continuous", "since" -> since.toString) ++
-      (if (filter.isDefined) Map("filter" -> filter.get) else Map())).toStreamingFuture(self) pipeTo (self)
+    val changes = database.changes(Map("feed" -> "continuous", "since" -> since.toString) ++
+				   (if (filter.isDefined) Map("filter" -> filter.get) else Map()))
+    changes.map(js => ((js \ "seq").extract[Long], js)).toStreamingFuture(self) pipeTo (self)
     goto(Connecting)
   }
 
@@ -61,16 +62,9 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
     case Event('closed, _) =>
       log.warning("stream closed while running change request")
       goto(ChangesError)
-    case Event(m: JObject, _) =>
-      try {
-	val latestSeq = (m \ "seq").extract[Long]
-	sendTo ! m
-	stay() using (latestSeq)
-      } catch {
-	case _: Exception =>
-	  log.warning("unable to extract sequence from " + m)
-	  goto(ChangesError)
-      }
+    case Event((latestSeq: Long, m: JObject), _) =>
+      sendTo ! m
+      stay() using (latestSeq)
   }
 
   initialize
