@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="com.healthmarketscience.jackcess_jackcess_1.1.18">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.healthmarketscience.jackcess/jackcess/jars/jackcess-1.1.18.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.healthmarketscience.jackcess/jackcess/docs/jackcess-1.1.18-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/com.healthmarketscience.jackcess/jackcess/srcs/jackcess-1.1.18-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
