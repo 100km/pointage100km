@@ -8,8 +8,7 @@ import net.rfc1149.canape._
 
 import Global._
 
-class Tasks(local: Database, remote: Database)
-  extends PeriodicActor(5 seconds) with IncompleteCheckpoints with ConflictsSolver {
+class Systematic(local: Database, remote: Database) extends PeriodicActor(5 seconds) {
 
   override val log = Logging(context.system, this)
 
@@ -32,8 +31,8 @@ class Tasks(local: Database, remote: Database)
   private[this] var noCompactionSince: Int = 0
 
   private[this] def pingWithCompaction = {
-    ping flatMap {
-      _ =>
+    ping onSuccess {
+      case _ =>
         noCompactionSince = (noCompactionSince + 1) % 1000
         if (noCompactionSince == 0)
           local.compact().toFuture
@@ -42,35 +41,11 @@ class Tasks(local: Database, remote: Database)
     }
   }
 
-  private[this] def incompleteCheckpoints =
-    withError(fixIncompleteCheckpoints(local),
-      "unable to get incomplete checkpoints")
-
-  private[this] def conflictingCheckpoints =
-    withError(fixConflictingCheckpoints(local),
-      "unable to get conflicting checkpoints")
-
-  private[this] def systematicFutures =
+  private[this] def futures =
     Future.sequence(List(localToRemoteReplication, remoteToLocalReplication, pingWithCompaction))
 
-  private[this] def dataFutures =
-    Future.sequence(List(incompleteCheckpoints, conflictingCheckpoints))
-
-  var changesOccurred: Boolean = false
-
-  def handleMessage(m: Any) {
-    changesOccurred = true
-  }
-
-  context.actorOf(Props(new ChangesActor(self, local, Some("bib_input/race-related"))),
-    "changes")
-
   override def act() {
-    Await.ready(systematicFutures, Duration.Inf)
-    if (changesOccurred) {
-      changesOccurred = false
-      Await.ready(dataFutures, Duration.Inf)
-    }
+    Await.ready(futures, Duration.Inf)
   }
 
 }

@@ -75,7 +75,8 @@ object Replicate extends App {
       Some(config.read[String]("master.user"),
         config.read[String]("master.password")))
     val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
-    system.actorOf(Props(new Tasks(localDatabase, hubDatabase)), "tasks")
+    system.actorOf(Props(new Systematic(localDatabase, hubDatabase)), "systematic")
+    system.actorOf(Props(new OnChanges(localDatabase)), "onChanges")
   }
 
   private def exit(status: Int) {

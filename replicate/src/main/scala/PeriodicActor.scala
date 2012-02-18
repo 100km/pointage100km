@@ -8,7 +8,7 @@ abstract class PeriodicActor(period: Duration) extends Actor with FSM[PeriodicAc
 
   def act()
 
-  def handleMessage(message: Any)
+  def handleMessage(message: Any) {}
 
   when(Idle, stateTimeout = period) {
     case Event(StateTimeout, _) =>
