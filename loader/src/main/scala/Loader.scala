@@ -47,7 +47,7 @@ object Loader extends App {
 
   for (row <- table) {
     val id = "contestant-" + row("dossard")
-    val doc = fix(row.toMap + ("_id" -> id))
+    val doc = fix(row.toMap + ("_id" -> id) + ("type" -> "contestant"))
     val desc = "bib %d (%s %s)".format(doc("dossard"), doc("prenom"), doc("nom"))
     try {
       db.insert(util.toJObject(doc)).execute()
