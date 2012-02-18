@@ -12,15 +12,9 @@ trait CouchRequest[T <: AnyRef] {
 
   implicit val m: Manifest[T]
 
-  type Choice = Either[Throwable, T]
-
   def connect(): ChannelFuture
 
   def send(channel: Channel, closeAfter: Boolean, lastHandler: ChannelUpstreamHandler)
-
-  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit) {
-    send(channel, closeAfter, util.toUpstreamHandler(lastHandler))
-  }
 
   def toFuture(): Future[T] = {
     val result = Promise[T]()
@@ -59,7 +53,8 @@ trait CouchRequest[T <: AnyRef] {
 
 object CouchRequest {
 
-  private class ForwardChannelUpstreamHandler(actor: ActorRef) extends SimpleChannelUpstreamHandler {
+  private class ForwardChannelUpstreamHandler(actor: ActorRef)
+    extends SimpleChannelUpstreamHandler {
 
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
       actor ! e.getMessage
@@ -75,7 +70,8 @@ object CouchRequest {
 
   }
 
-  class PromiseChannelUpstreamHandler[T: Manifest](promise: Promise[T]) extends SimpleChannelUpstreamHandler {
+  class PromiseChannelUpstreamHandler[T: Manifest](promise: Promise[T])
+    extends SimpleChannelUpstreamHandler {
 
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
       promise success (e.getMessage.asInstanceOf[T])
