@@ -3,7 +3,7 @@ package net.rfc1149.canape
 import net.liftweb.json._
 import org.jboss.netty.handler.codec.http._
 
-case class Database(val couch: Couch, val database: String) {
+case class Database(couch: Couch, database: String) {
 
   import implicits._
 
@@ -51,7 +51,7 @@ case class Database(val couch: Couch, val database: String) {
 
   def update(design: String, name: String, id: String, data: Map[String, String]): CouchRequest[JValue] = {
     val encoder = new QueryStringEncoder("")
-    data foreach { case (name, value) => encoder.addParam(name, value) }
+    data foreach { case (key, value) => encoder.addParam(key, value) }
     couch.makePostRequest[JValue]("%s/_design/%s/_update/%s/%s".format(database, design, name, id), encoder.toString.tail)
   }
 

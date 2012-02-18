@@ -9,6 +9,6 @@ trait HTTPBootstrap {
 
   def connect(): ChannelFuture
 
-  def releaseExternalResources(): Unit
+  def releaseExternalResources()
 
 }

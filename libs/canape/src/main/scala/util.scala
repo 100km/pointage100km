@@ -26,11 +26,13 @@ object util {
   def toUpstreamHandler[T](f: T => Unit) =
     new SimpleChannelUpstreamHandler {
 
-      override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) =
-	f(e.getMessage.asInstanceOf[T])
+      override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+        f(e.getMessage.asInstanceOf[T])
+      }
 
-      override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
-	ctx.sendUpstream(e)
+      override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
+        ctx.sendUpstream(e)
+      }
     }
 
 }

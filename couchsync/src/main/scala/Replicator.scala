@@ -14,7 +14,7 @@ object Replicator {
   private def waitForNoTasks(couch: Couch) = {
     var activeTasksCount: Int = 0
     do {
-      activeTasksCount = couch.activeTasks.execute.size
+      activeTasksCount = couch.activeTasks().execute().size
       Thread.sleep(100)
     } while (activeTasksCount > 0)
   }
@@ -32,22 +32,22 @@ object Replicator {
     val couch = c.couch
     val db = couch.db("steenwerck100km")
     try {
-      db.create.execute
+      db.create().execute()
     } catch {
       case StatusCode(412, _) => // Database already exists
     }
     step("synchronisation")
-    couch.replicate(db, referenceDb, false).execute
-    couch.replicate(referenceDb, db, false).execute
+    couch.replicate(db, referenceDb, false).execute()
+    couch.replicate(referenceDb, db, false).execute()
     waitForNoTasks(couch)
 
     step("compaction")
-    db.compact().execute
-    referenceDb.compact().execute
+    db.compact().execute()
+    referenceDb.compact().execute()
     waitForNoTasks(couch)
 
     step("écriture")
-    db.ensureFullCommit().execute
+    db.ensureFullCommit().execute()
 
     step("vidage du cache")
     (new ProcessBuilder("sync")).start()
@@ -58,8 +58,8 @@ object Replicator {
 
     message(referenceDb, "La clé USB peut être retirée")
 
-    couch.releaseExternalResources
-    referenceDb.couch.releaseExternalResources
+    couch.releaseExternalResources()
+    referenceDb.couch.releaseExternalResources()
   }
 }
 
@@ -82,7 +82,7 @@ class Replicator(srcDir: File, usbBaseDir: File) {
   etcDir.mkdirs()
   runDir.mkdirs()
 
-  def fixDefaultIni() = {
+  def fixDefaultIni() {
     val ini = new Ini
 
     ini.load(Source.fromFile(new File(srcDir, "default.ini")))
@@ -104,7 +104,7 @@ class Replicator(srcDir: File, usbBaseDir: File) {
 
   def couch = _couch.get
 
-  def runCouchDb() = {
+  def runCouchDb() {
     fixDefaultIni()
 
     val pb = new ProcessBuilder("couchdb",
@@ -116,7 +116,7 @@ class Replicator(srcDir: File, usbBaseDir: File) {
     _couch = Some(new NioCouch("localhost", 5983, Some("admin", "admin")))
   }
 
-  def stopCouchDb() = {
+  def stopCouchDb() {
     process foreach (_.destroy())
     process = None
     _couch = None

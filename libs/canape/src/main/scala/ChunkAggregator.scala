@@ -5,8 +5,9 @@ import org.jboss.netty.handler.codec.http._
 
 class ChunkAggregator(capacity: Int) extends HttpChunkAggregator(capacity) {
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
+  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
     ctx.sendUpstream(e)
+  }
 
 }
 

@@ -6,21 +6,23 @@ import org.jboss.netty.handler.codec.http._
 
 class RequestInterceptor extends SimpleChannelUpstreamHandler {
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) =
+  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     e.getMessage match {
-	case response: HttpResponse => {
-	  val status = response.getStatus
-	  val code = status.getCode
-	  if (code < 200 || code > 204)
-	    throw new StatusCode(code, status.getReasonPhrase)
-	  else
-	    ctx.sendUpstream(e)
-	}
-	case _ =>
-	  ctx.sendUpstream(e)
+      case response: HttpResponse => {
+        val status = response.getStatus
+        val code = status.getCode
+        if (code < 200 || code > 204)
+          throw new StatusCode(code, status.getReasonPhrase)
+        else
+          ctx.sendUpstream(e)
+      }
+      case _ =>
+        ctx.sendUpstream(e)
     }
+  }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
+  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
     ctx.sendUpstream(e)
+  }
 
 }

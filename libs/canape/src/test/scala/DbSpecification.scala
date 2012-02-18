@@ -13,16 +13,16 @@ trait DbSpecification extends Specification with BeforeAfterExample {
   lazy val couch = new NioCouch(auth = Some("admin", "admin"))
   lazy val db = couch.db("canape-test-" + dbSuffix)
 
-  override def before() =
+  override def before =
     try {
-      db.create.execute
+      db.create().execute()
     } catch {
 	case _ =>
     }
 
-  override def after() =
+  override def after =
     try {
-      db.delete.execute
+      db.delete().execute()
     } catch {
 	case _ =>
     }

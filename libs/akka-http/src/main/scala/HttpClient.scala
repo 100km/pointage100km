@@ -29,7 +29,9 @@ class HttpClient extends Actor {
       }
   }
 
-  override def postStop() = bootstrap.releaseExternalResources()
+  override def postStop() {
+    bootstrap.releaseExternalResources()
+  }
 
 }
 
@@ -37,12 +39,13 @@ object HttpClient {
 
   private class ConnectListener(actor: ActorRef, context: ActorContext) extends ChannelFutureListener {
 
-    override def operationComplete(future: ChannelFuture) =
+    override def operationComplete(future: ChannelFuture) {
       actor ! (if (future.isSuccess)
-		 new HttpConnection(future.getChannel, context)
-               else
-		 Status.Failure(future.getCause)
-	       )
+        new HttpConnection(future.getChannel, context)
+      else
+        Status.Failure(future.getCause)
+        )
+    }
 
   }
 

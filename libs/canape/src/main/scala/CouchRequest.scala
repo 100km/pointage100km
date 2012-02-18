@@ -11,7 +11,7 @@ trait CouchRequest[T] {
 
   def connect(): ChannelFuture
 
-  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit
+  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit)
 
   def execute(): T = {
     import implicits._
@@ -38,7 +38,7 @@ class SimpleCouchRequest[T: Manifest](bootstrap: HTTPBootstrap, val request: Htt
     future
   }
 
-  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit = {
+  def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit) {
     if (closeAfter)
       request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE)
     val pipeline = channel.getPipeline
@@ -57,9 +57,14 @@ class TransformerRequest[T: Manifest, U](request: CouchRequest[T], transformer: 
 
   override def connect(): ChannelFuture = request.connect()
 
-  override def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit): Unit =
-    request.send(channel, closeAfter) { d: Either[Throwable, T] =>
-      lastHandler(d.fold({ t: Throwable => Left(t) },
-	                 { t: T         => Right(transformer(t)) }))
+  override def send(channel: Channel, closeAfter: Boolean)(lastHandler: Choice => Unit) {
+    request.send(channel, closeAfter) {
+      d: Either[Throwable, T] =>
+        lastHandler(d.fold({
+          t: Throwable => Left(t)
+        }, {
+          t: T => Right(transformer(t))
+        }))
     }
+  }
 }

@@ -29,6 +29,8 @@ trait NioHTTPBootstrap extends HTTPBootstrap {
   override def connect(): ChannelFuture =
     bootstrap.connect(new InetSocketAddress(host, port))
 
-  override def releaseExternalResources(): Unit = bootstrap.releaseExternalResources()
+  override def releaseExternalResources() {
+    bootstrap.releaseExternalResources()
+  }
 
 }

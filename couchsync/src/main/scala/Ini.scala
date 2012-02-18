@@ -6,10 +6,10 @@ class Ini {
   private[this] var values: Map[(String, String), String] = Map()
 
   def load(in: Source) {
-    val secHeader = """\[\s*(\S+)\s*\]"""r
-    val value = """(\S+)\s*=\s*(.*\S)"""r
+    val secHeader = """\[\s*(\S+)\s*\]""".r
+    val value = """(\S+)\s*=\s*(.*\S)""".r
     var currentSection: String = "default"
-    for (line <- in.getLines) {
+    for (line <- in.getLines()) {
       line.split(";", 2).head.trim match {
 	case secHeader(section) => currentSection = section
 	case value(k, v) => set(currentSection, k, v)
@@ -29,6 +29,8 @@ class Ini {
 
   def get(section: String, key: String) = values.get((section, key))
 
-  def set(section: String, key: String, value: Any) = values += ((section, key) -> value.toString)
+  def set(section: String, key: String, value: Any) {
+    values += ((section, key) -> value.toString)
+  }
 
 }

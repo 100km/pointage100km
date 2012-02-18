@@ -26,8 +26,8 @@ object Wipe extends App {
 			      Some(Options.login, Options.password))
   val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
   try {
-    for ((id, _, value) <- hubDatabase.allDocs.execute.items[String, JObject])
-      hubDatabase.delete(id, (value \ "rev").extract[String]).execute
+    for ((id, _, value) <- hubDatabase.allDocs().execute().items[String, JObject])
+      hubDatabase.delete(id, (value \ "rev").extract[String]).execute()
   } catch {
       case StatusCode(401, _) =>
 	println("You are not authorized to perform this operation")
@@ -35,6 +35,6 @@ object Wipe extends App {
 	println("Exception caught: " + t)
   }
 
-  hubCouch.releaseExternalResources
+  hubCouch.releaseExternalResources()
 
 }

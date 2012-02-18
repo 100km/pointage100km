@@ -12,7 +12,9 @@ class HttpConnection(channel: Channel, context: ActorContext) {
   private[this] val pipeline = channel.getPipeline
   pipeline.addLast("inflater", new HttpContentDecompressor)
 
-  def close(): Unit = channel.close()
+  def close() {
+    channel.close()
+  }
 
   def send(request: HttpRequest)(implicit timeout: akka.util.Timeout): Future[HttpResponse] = {
     val receiver = context.actorOf(Props[DefaultReceiverActor])
@@ -21,7 +23,7 @@ class HttpConnection(channel: Channel, context: ActorContext) {
     future
   }
 
-  def sendAndReceive(request: HttpRequest, receiver: ActorRef): Unit = {
+  def sendAndReceive(request: HttpRequest, receiver: ActorRef) {
     try {
       pipeline.remove("redirector")
     } catch {

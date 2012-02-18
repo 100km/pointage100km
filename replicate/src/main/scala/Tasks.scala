@@ -34,7 +34,7 @@ class Tasks(local: Database, remote: Database)
     ping flatMap { _ =>
       noCompactionSince = (noCompactionSince + 1) % 1000
       if (noCompactionSince == 0)
-	local.compact.toFuture
+	local.compact().toFuture
       else
 	Promise.successful(null)
     }
@@ -55,7 +55,9 @@ class Tasks(local: Database, remote: Database)
 			 incompleteCheckpoints,
 			 conflictingCheckpoints))
 
-  override def preStart() = self ! 'act
+  override def preStart() {
+    self ! 'act
+  }
 
   override def receive = {
     case 'act =>

@@ -5,10 +5,12 @@ import org.jboss.netty.channel._
 
 class Redirector(receiver: ActorRef) extends SimpleChannelUpstreamHandler {
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) =
+  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     receiver ! e.getMessage
+  }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
+  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
     receiver ! e.getCause
+  }
 
 }

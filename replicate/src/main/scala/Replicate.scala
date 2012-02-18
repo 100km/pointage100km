@@ -29,12 +29,12 @@ object Replicate extends App {
   private def createLocalInfo(db: Database, site: Int) = {
     val name = "_local/site-info"
     val doc: mapObject = try {
-      db(name).execute
+      db(name).execute()
     } catch {
 	case StatusCode(404, _) => Map()
     }
     val newDoc = doc + ("site-id" -> JInt(site))
-    db.insert(name, newDoc).execute
+    db.insert(name, newDoc).execute()
     touchMe(db)
   }
 
@@ -53,13 +53,13 @@ object Replicate extends App {
   private val localDatabase = localCouch.db("steenwerck100km")
 
   try {
-    localDatabase.create.execute
+    localDatabase.create().execute()
   } catch {
     case StatusCode(412, _) =>
       log.info("database already exists")
     case t =>
       log.error("cannot create database: " + t)
-      localCouch.releaseExternalResources
+      localCouch.releaseExternalResources()
       exit(1)
   }
 
@@ -68,7 +68,7 @@ object Replicate extends App {
   } catch {
     case t =>
       log.error("cannot create local information: " + t)
-      localCouch.releaseExternalResources
+      localCouch.releaseExternalResources()
       exit(1)
   }
 
@@ -83,9 +83,9 @@ object Replicate extends App {
     system.actorOf(Props(new Tasks(localDatabase, hubDatabase)), "tasks")
   }
 
-  private def exit(status: Int) = {
-    localCouch.releaseExternalResources
-    system.shutdown
+  private def exit(status: Int) {
+    localCouch.releaseExternalResources()
+    system.shutdown()
     System.exit(status)
   }
 

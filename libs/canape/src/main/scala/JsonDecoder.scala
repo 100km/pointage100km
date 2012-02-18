@@ -13,33 +13,36 @@ class JsonDecoder[T: Manifest] extends SimpleChannelUpstreamHandler {
 
   private var readingChunks: Boolean = false
 
-  private def sendUpstream(ctx: ChannelHandlerContext, data: Either[Throwable, T], remoteAddress: SocketAddress): Unit =
+  private def sendUpstream(ctx: ChannelHandlerContext, data: Either[Throwable, T], remoteAddress: SocketAddress) {
     ctx.sendUpstream(new UpstreamMessageEvent(ctx.getChannel, data, remoteAddress))
+  }
 
-  private def sendUpstream(ctx: ChannelHandlerContext, data: ChannelBuffer, remoteAddress: SocketAddress): Unit = {
+  private def sendUpstream(ctx: ChannelHandlerContext, data: ChannelBuffer, remoteAddress: SocketAddress) {
     val strData = data.toString(CharsetUtil.UTF_8)
     sendUpstream(ctx, Right(parse(strData).extract[T]), remoteAddress)
   }
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) =
+  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     if (readingChunks) {
       val chunk = e.getMessage.asInstanceOf[HttpChunk]
       if (chunk.isLast)
-	readingChunks = false
+        readingChunks = false
       else {
-	val content = chunk.getContent
-	if (content.readableBytes > 2)
-	  sendUpstream(ctx, content, e.getRemoteAddress)
+        val content = chunk.getContent
+        if (content.readableBytes > 2)
+          sendUpstream(ctx, content, e.getRemoteAddress)
       }
     } else {
       val response = e.getMessage.asInstanceOf[HttpResponse]
       if (response.isChunked)
-	readingChunks = true
+        readingChunks = true
       else
-	sendUpstream(ctx, response.getContent, e.getRemoteAddress)
+        sendUpstream(ctx, response.getContent, e.getRemoteAddress)
     }
+  }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
+  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
     sendUpstream(ctx, Left(e.getCause), null)
+  }
 
 }

@@ -2,9 +2,9 @@ package net.rfc1149.canape
 
 import net.liftweb.json._
 
-case class Result(val total_rows: Long,
-		  val offset: Long,
-		  val rows: List[Row]) {
+case class Result(total_rows: Long,
+                  offset: Long,
+      rows: List[Row]) {
 
   lazy val ids = rows map (_.id)
   def keys[K](implicit formats: Formats, k: Manifest[K]) = rows map (_.key.extract[K])
@@ -17,7 +17,7 @@ case class Result(val total_rows: Long,
 
 }
 
-case class Row(val id: String, val key: JValue, val value: JValue, val doc: Option[JValue]) {
+case class Row(id: String, key: JValue, value: JValue, doc: Option[JValue]) {
 
   def extract[K, V](implicit formats: Formats, k: Manifest[K], v: Manifest[V]): (String, K, V) =
     (id, key.extract[K], value.extract[V])

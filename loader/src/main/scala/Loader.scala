@@ -28,7 +28,7 @@ object Loader extends App {
 
   val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
 
-  def get(id: String) = try { Some(db(id).execute) } catch { case StatusCode(404, _) => None }
+  def get(id: String) = try { Some(db(id).execute()) } catch { case StatusCode(404, _) => None }
 
   def capitalize(name: String) = {
     val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
@@ -47,14 +47,14 @@ object Loader extends App {
     val doc = fix(row.toMap + ("_id" -> id))
     val desc = "bib %d (%s %s)".format(doc("dossard"), doc("prenom"), doc("nom"))
     try {
-      db.insert(util.toJObject(doc)).execute
+      db.insert(util.toJObject(doc)).execute()
       println("Inserted " + desc)
     } catch {
 	case StatusCode(409, _) =>
 	  println("Updating existing " + desc)
-	  db.insert(util.toJObject(doc + ("_rev" -> get(id).map(_("_rev"))))).execute
+	  db.insert(util.toJObject(doc + ("_rev" -> get(id).map(_("_rev"))))).execute()
     }
   }
 
-  db.couch.releaseExternalResources
+  db.couch.releaseExternalResources()
 }
