@@ -122,17 +122,40 @@ function with_temp_checkpoints(app, checkpoints, f, cb) {
     });
   });
 }
+
+function with_temp_checkpoints_and_start(app, checkpoints, cb) {
+  with_temp_checkpoints(app, checkpoints, cb, function() {
+    start();
+  });
+}
 function test_previous(app, bib, lap, checkpoints, expected) {
   expect(1);
-  with_temp_checkpoints(app, checkpoints, function(cb) {
+  with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var kms = site_lap_to_kms(app, app.site_id, lap);
     call_with_previous(app, app.site_id, bib, lap, kms, function(data) {
       var bibs = data.bibs.map(function(bib) { return bib.bib });
       ok(integer_array_equal(bibs, expected), "local ranking is false");
       cb();
     });
-  }, function() {
-    start();
+  });
+}
+function test_global(app, checkpoints, expected) {
+  expect(expected.length);
+  with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
+    call_with_global_ranking(app, function(data) {
+      var race_ids = data.rows.map(function(el) { return el.race_id });
+      _.each(expected, function(el) {
+        var idx = _.indexOf(race_ids, el.race_id);
+        if (idx == -1) {
+          ok(false, "Looking for race " + el.race_id + " not found !")
+        } else {
+          var row = data.rows[idx];
+          var bibs = row.contestants.map(function(contestant) { return contestant.value.bib; });
+          ok(integer_array_equal(bibs,  el.bibs), "Check bibs order for race " + el.race_id);
+        }
+      });
+      cb();
+    });
   });
 }
 function test_bib_input(app) {
@@ -190,6 +213,50 @@ function test_bib_input(app) {
     });
     asyncTest("2 laps, lap2", function() {
       test_previous(app, 2, 2, tmp, [1, 0]);
+    });
+    module("global");
+    asyncTest("very simple", function() {
+      test_global(app, [
+        { bib: 2, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+      ], [
+        { race_id:1, bibs:[2, 1]}
+      ]);
+    });
+    asyncTest("very simple with bib zero", function() {
+      test_global(app, [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+      ], [
+        { race_id:1, bibs:[0, 1]}
+      ]);
+    });
+    asyncTest("2 races, different laps", function() {
+      test_global(app, [
+        { bib: 2, ts: 800, site_id:0 },
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 0, ts: 2000, site_id:1 },
+        { bib: 1, ts: 2100, site_id:1 },
+        { bib: 0, ts: 3000, site_id:2 },
+        { bib: 3, ts: 12100, site_id:0 },
+        { bib: 4, ts: 13000, site_id:0 },
+        { bib: 4, ts: 13000, site_id:1 },
+      ], [
+        { race_id:1, bibs:[0, 1, 2]},
+        { race_id:2, bibs:[4, 3]},
+      ]);
+    });
+    asyncTest("missing checkpoints", function() {
+      test_global(app, [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 0, ts: 3000, site_id:2 },
+        { bib: 1, ts: 4100, site_id:0 },
+        { bib: 0, ts: 5000, site_id:0 },
+      ], [
+        { race_id:1, bibs:[1, 0]}
+      ]);
     });
   });
 };
