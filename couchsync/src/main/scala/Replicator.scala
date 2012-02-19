@@ -1,4 +1,6 @@
 import akka.actor.ActorSystem
+import akka.dispatch.{Await, Future}
+import akka.util.duration._
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
 import Message._
@@ -19,6 +21,12 @@ object Replicator {
       activeTasksCount = couch.activeTasks().execute().size
       Thread.sleep(100)
     } while (activeTasksCount > 0)
+  }
+
+  private def docCount(db1: Database, db2: Database) = {
+    Await.result(Future.sequence(List(db1, db2).map(_.allDocs.toFuture)), 10 seconds).map {
+      _.total_rows
+    }
   }
 
   def replicate(options: Options) {
@@ -53,6 +61,13 @@ object Replicator {
 
     step("vidage du cache")
     (new ProcessBuilder("sync")).start()
+
+    step("vérification des documents…")
+    val List(count, refCount) = docCount(db, referenceDb)
+    if (count == refCount)
+      step("vérification des documents ok")
+    else
+      step("vérifier la synchronisation (clé " + count +", base " + refCount + ")")
 
     Thread.sleep(5000)
 
