@@ -28,9 +28,17 @@ object Replicate extends App {
 
   import Global._
 
-  private def createLocalInfo(db: Database, site: Int) =
-    forceUpdate(db,
-      "_local/site-info", ("type" -> "site-info") ~ ("site-id" -> Options.siteId)).thenTouch(db)
+  private val localInfo = ("type" -> "site-info") ~ ("site-id" -> Options.siteId)
+
+  private def createLocalInfo(db: Database, site: Int) {
+    val name = "_local/site-info"
+    try {
+      db.insert(name, localInfo).thenTouch(db).execute()
+    } catch {
+      case StatusCode(409, _) =>
+	forceUpdate(db, name, localInfo).thenTouch(db).execute()
+    }
+  }
 
   def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
 
@@ -49,11 +57,10 @@ object Replicate extends App {
   }
 
   try {
-    createLocalInfo(localDatabase, Options.siteId).execute()
+    createLocalInfo(localDatabase, Options.siteId)
   } catch {
     case t =>
       log.error("cannot create local information: " + t)
-      localCouch.releaseExternalResources()
       exit(1)
   }
 

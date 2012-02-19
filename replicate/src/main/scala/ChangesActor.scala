@@ -55,6 +55,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
         requestChanges(latestSeq)
     case Event('closed, _) =>
       // This can happen after a 404 failure
+      stay()
   }
 
   when(Processing) {
