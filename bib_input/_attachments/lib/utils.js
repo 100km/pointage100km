@@ -339,7 +339,7 @@ function call_with_previous(app, site_id, bib, lap, kms, cb) {
       start_time : app.start_times[race_id],
       kms : kms,
       success: function(data) {
-        safe_infos = infos || empty_info();
+        var safe_infos = infos || empty_info();
         app.db.view("bib_input/times-per-bib", {
           startkey : [bib,data.bib_time],
           limit : 5,
