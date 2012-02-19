@@ -1,20 +1,21 @@
-function submit_bib(bib, app, ts, cb) {
+function submit_bib(bib, app, ts, cb, site_id) {
+  site_id = site_id || app.site_id;
   retries(3, function(fail) {
-    submit_bib_once(bib, app, cb, fail, ts);
+    submit_bib_once(bib, app, cb, fail, ts, site_id);
   }, "submit_bib");
 }
-function submit_bib_once(bib, app, cb, fail, ts) {
+function submit_bib_once(bib, app, cb, fail, ts, site_id) {
   call_with_race_id(bib, app, function(race_id) {
     call_with_checkpoints(bib, app, function(checkpoints) {
       if (checkpoints["bib"] == undefined) {
-        checkpoints = new_checkpoints(bib, race_id, app.site_id);
+        checkpoints = new_checkpoints(bib, race_id, site_id);
       }
       add_checkpoint(checkpoints, ts);
       app.db.saveDoc(checkpoints, {
         success: cb,
         error: fail
       });
-    });
+    }, site_id);
   });
 }
 
@@ -59,8 +60,8 @@ function not_found(stat, err, reason) {
   return (stat==404 && err == "not_found" && (reason == "missing" || reason=="deleted"));
 }
 
-function call_with_checkpoints(bib, app, f) {
-  app.db.openDoc(checkpoints_id(bib, app.site_id), {
+function call_with_checkpoints(bib, app, f, site_id) {
+  app.db.openDoc(checkpoints_id(bib, site_id), {
     success: function(checkpoints) {
       $.log(" got " + JSON.stringify(checkpoints));
       f(checkpoints);
@@ -94,19 +95,20 @@ function add_checkpoint(checkpoints, ts) {
   checkpoints.times.sort(function(a,b) {return a-b});
 }
 
-function submit_remove_checkpoint(bib, app, ts, cb) {
+function submit_remove_checkpoint(bib, app, ts, cb, site_id) {
+  site_id = site_id || app.site_id;
   retries(3, function(fail) {
-    submit_remove_checkpoint_once(bib, app, ts, fail, cb);
+    submit_remove_checkpoint_once(bib, app, ts, fail, cb, site_id);
   }, "remove checkpoint");
 }
-function submit_remove_checkpoint_once(bib, app, ts, fail, cb) {
+function submit_remove_checkpoint_once(bib, app, ts, fail, cb, site_id) {
   call_with_checkpoints(bib, app, function(checkpoints) {
     remove_checkpoint(checkpoints, ts);
     app.db.saveDoc(checkpoints, {
       error: fail,
       success: cb
     });
-  });
+  }, site_id);
 }
 function remove_checkpoint(checkpoints, ts) {
   $.log("removing " + ts + " in " + checkpoints["times"]);
