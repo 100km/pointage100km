@@ -60,25 +60,30 @@ function test_single_bib_insertion(app, bib, expected_race_id, ts) {
   return ASSERTS_PER_SINGLE_INSERT_DELETE;
 }
 
-function repeat(N, i, loop, cb) {
+function async_for(N, i, loop, cb) {
   if (i < N) {
    loop(i, function() {
-    repeat(N, i+1, loop, cb)
+    async_for(N, i+1, loop, cb)
    });
   }
   else {
     cb();
   }
 }
+function async_foreach(seq, loop, cb) {
+  async_for(seq.length, 0, function(i, cb) {
+    loop(seq[i], i, seq, cb);
+  }, cb);
+}
 
-function submit_bibs_and_assert(N, tss, app, bib, expected_race_id, cb) {
-  repeat(N, 0, function(i, cb) {
-    submit_bib_and_assert(app, bib, tss[i], expected_race_id, i+1, cb);
+function submit_bibs_and_assert(tss, app, bib, expected_race_id, cb) {
+  async_foreach(tss, function(ts, i, tss, cb) {
+    submit_bib_and_assert(app, bib, ts, expected_race_id, i+1, cb);
   }, cb);
 }
 
 function submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, cb) {
-  repeat(N, 0, function(i, cb) {
+  async_for(N, 0, function(i, cb) {
     open_or_fail(app, checkpoints_id(bib, app.site_id), function(checkpoints) {
       var expected_length = N - i;
       var ts = checkpoints.times[expected_length-1];
@@ -88,7 +93,7 @@ function submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, cb)
 }
 function test_multiple_bib_insertion(app, bib, expected_race_id, tss) {
   var N = tss.length;
-  submit_bibs_and_assert(N, tss, app, bib, expected_race_id, function() {
+  submit_bibs_and_assert(tss, app, bib, expected_race_id, function() {
     submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, function() {
       start();
     });
