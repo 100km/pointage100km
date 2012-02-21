@@ -39,7 +39,7 @@ object Steenwerck extends Build {
   lazy val loader =
     Project("loader", file("loader")) dependsOn(canape) settings(akka: _*) settings(jackcess: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
-  lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
+  lazy val wipe = Project("wipe", file("wipe")) dependsOn(canape, config) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val canape = Project("canape", file("libs/canape"))
 
