@@ -14,14 +14,16 @@ function open_or_fail(app, doc_id, cb, fail_msg) {
     }});
 }
 
+function integer_array_equal(arr1, arr2) {
+  return _.all(_.zip(arr1, arr2), function(a) { return a[0] == a[1];});
+}
 function bib_assert(app, bib, expected_race_id, expected_length, cb) {
   open_or_fail(app, checkpoints_id(bib, app.site_id), function(checkpoints) {
     equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
     equal(checkpoints.times.length, expected_length, "wrong checkpoints times length");
     equal(checkpoints.race_id, expected_race_id, "wrong race_id inserted");
     var sorted_times = checkpoints.times.slice().sort(function(a,b) {return a-b});
-    ok(_.all(_.zip(sorted_times, checkpoints.times),
-      function(a) { return a[0] == a[1];}),
+    ok(integer_array_equal(sorted_times, checkpoints.times),
        "Timestamps are not sorted");
     cb(checkpoints);
   }, "Error getting freshly inserted checkpoint");
@@ -125,9 +127,8 @@ function test_previous(app, bib, lap, checkpoints, expected) {
   with_temp_checkpoints(app, checkpoints, function(cb) {
     var kms = site_lap_to_kms(app, app.site_id, lap);
     call_with_previous(app, app.site_id, bib, lap, kms, function(data) {
-      var pairs = _.zip(expected, data.bibs.map(function(bib) { return bib.bib }));
-      ok(_.all(pairs,
-                function(pair) { return pair[0] == pair[1] }), "local ranking is false");
+      var bibs = data.bibs.map(function(bib) { return bib.bib });
+      ok(integer_array_equal(bibs, expected), "local ranking is false");
       cb();
     });
   }, function() {
