@@ -40,6 +40,35 @@ $ sudo /usr/local/etc/init.d/couchdb status
 $ sudo /usr/local/etc/init.d/couchdb start
 </pre>
 
+
+Here are the commands used to install couchDB on Ubuntu 10.04:
+<pre>
+sudo apt-get install g++ libssl-dev libcurses-dev libicu-dev libcurl4-gnutls-dev
+# Install Spider Monkey (javascript engine)
+wget http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
+tar -xzvf js185-1.0.0.tar.gz
+cd js-1.8.5/js/src
+./configure
+make
+sudo make install
+# Install Erlang
+wget http://www.erlang.org/download/otp_src_R15B.tar.gz
+tar -xzvf otp_src_R15B.tar.gz
+cd otp_src_R15B/
+./configure
+make
+sudo make install
+# Then follow instructions for Ubuntu 11.10:
+sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang
+wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
+tar -xzvf apache-couchdb-1.1.1.tar.gz
+cd apache-couchdb-1.1.1
+./configure
+make
+sudo make install
+</pre>
+
+
 #couchapp installation
 
 For now, there is no recommended version of couchapp. Versions 0.7 and 1.0.1 have been tested.
