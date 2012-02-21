@@ -303,7 +303,6 @@ function site_lap_to_kms(app, site_id, lap) {
   return app.kms_offset[site_id] + (lap - 1) * app.kms_lap;
 }
 
-
 function copy_app_data(app, data) {
     app.site_id = data.site_id
     app.sites = data.infos["sites"]
@@ -400,4 +399,25 @@ function call_with_global_ranking(app, cb) {
       cb(data);
     }
   });
+}
+
+function check_times(times, ping0, ping1, ping2) {
+  var j = 0;
+  var res = {};
+
+  $.log("In check_times " + JSON.stringify(times) + "ping0 " + ping0 + " ping1 " + ping1 + " ping2 " + ping2);
+  while (times[j%3][parseInt(j/3)]) {
+    if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
+      res = {};
+      res.site_id = j%3;
+      res.type = "Manque un passage";
+      res.lap = parseInt(j/3);
+      res.times_site0 = JSON.stringify(times[0]);
+      res.times_site1 = JSON.stringify(times[1]);
+      res.times_site2 = JSON.stringify(times[2]);
+    }
+    j++;
+  }
+
+  return res;
 }

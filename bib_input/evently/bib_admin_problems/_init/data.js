@@ -5,39 +5,23 @@ function(data) {
   var res = {};
   res.pbs = [];
   var pb_nb = 0;
-  $.log("In data.js for bib_problems");
-  $.log(JSON.stringify(data));
+  var ping0 = data[0][0]["time"];
+  var ping1 = data[1][0]["time"];
+  var ping2 = data[2][0]["time"];
 
-  function check_times(times) {
-    var j = 0;
-
-    $.log("In check_times " + JSON.stringify(times));
-    while (times[j%3][parseInt(j/3)]) {
-      if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
-        res.pbs[pb_nb] = {};
-        res.pbs[pb_nb].site_id = j%3;
-        res.pbs[pb_nb].type = "Manque un passage";
-        res.pbs[pb_nb].lap = parseInt(j/3);
-        res.pbs[pb_nb].bib = current_bib;
-        res.pbs[pb_nb].times_site0 = JSON.stringify(times[0]);
-        res.pbs[pb_nb].times_site1 = JSON.stringify(times[1]);
-        res.pbs[pb_nb].times_site2 = JSON.stringify(times[2]);
-
-        pb_nb ++;
-      }
-      j++;
-    }
-  }
-
-  while (data.rows[i]) {
-    var row = data.rows[i];
+  while (data[3][0].rows[i]) {
+    var row = data[3][0].rows[i];
     var bib = row.key[0];
 
     if (bib != current_bib) {
       $.log("Processing bib " + current_bib);
 
       // we can now check for previous bib
-      check_times(times);
+      res.pbs[pb_nb] = check_times(times, ping0, ping1, ping2);
+      if (res.pbs[pb_nb].site_id != undefined) { // there was a problem
+        res.pbs[pb_nb].bib = current_bib;
+        pb_nb ++;
+      }
 
       // and we empty times
       times[0] = [];
@@ -55,7 +39,14 @@ function(data) {
 
   // Check the last bib
   $.log("Processing bib " + current_bib);
-  check_times(times);
+  res.pbs[pb_nb] = check_times(times, ping0, ping1, ping2);
+  if (res.pbs[pb_nb].site_id != undefined) { // there was a problem
+    res.pbs[pb_nb].bib = current_bib;
+    pb_nb ++;
+  }
+
+  // Remove the last element (which is empty)
+  res.pbs.pop();
 
   return res;
 };
