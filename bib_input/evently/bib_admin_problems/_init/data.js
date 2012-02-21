@@ -15,9 +15,9 @@ function(data) {
     while (times[j%3][parseInt(j/3)]) {
       if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
         res.pbs[pb_nb] = {};
-        res.pbs[pb_nb].site_id = 0;
+        res.pbs[pb_nb].site_id = j%3;
         res.pbs[pb_nb].type = "Manque un passage";
-        res.pbs[pb_nb].lap = j;
+        res.pbs[pb_nb].lap = parseInt(j/3);
         res.pbs[pb_nb].bib = current_bib;
         res.pbs[pb_nb].times_site0 = JSON.stringify(times[0]);
         res.pbs[pb_nb].times_site1 = JSON.stringify(times[1]);
