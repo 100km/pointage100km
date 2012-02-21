@@ -1,34 +1,3 @@
-function setup_site_info(app, cb) {
-  app.db.saveDoc({
-    _id: "_local/site_info",
-    site_id: 0
-  }, {
-    success: function() {
-      app.site_id=0;
-      cb();
-    },
-    error: function() {
-      app.site_id=0;
-      cb();
-    }
-  });
-}
-function setup_bib_info(app, cb) {
-  app.db.saveDoc({
-    _id: infos_id(0),
-    dossard: 0,
-    course: 1,
-  }, {
-    success: cb,
-    error: cb  });
-}
-function setup_app(app, cb) {
-  fork([
-      function(cb) { setup_site_info(app, cb) },
-      function(cb) { setup_bib_info(app, cb) }
-  ], cb);
-}
-
 function open_or_null(app, doc_id, cb) {
   app.db.openDoc(doc_id, {
     success: cb,
@@ -128,7 +97,7 @@ function test_multiple_bib_insertion(app, bib, expected_race_id, tss) {
 }
 
 function test_bib_input(app) {
-  setup_app(app, function() {
+  call_with_app_data(app, function() {
     module("bib_input"); 
     test("setup ok", function() {
         expect(1);
