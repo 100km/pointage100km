@@ -31,8 +31,8 @@
     <orderEntry type="library" name="org.scala-lang_scalap_2.9.1" level="project" />
     <orderEntry type="library" name="org.scala-lang_scala-compiler_2.9.1" level="project" />
     <orderEntry type="library" name="org.ini4j_ini4j_0.5.2" level="project" />
-    <orderEntry type="library" name="com.typesafe.akka_akka-actor_2.0-RC1" level="project" />
-    <orderEntry type="library" name="com.typesafe.akka_akka-slf4j_2.0-RC1" level="project" />
+    <orderEntry type="library" name="com.typesafe.akka_akka-actor_2.0-RC2" level="project" />
+    <orderEntry type="library" name="com.typesafe.akka_akka-slf4j_2.0-RC2" level="project" />
     <orderEntry type="library" name="org.slf4j_slf4j-api_1.6.4" level="project" />
     <orderEntry type="library" name="ch.qos.logback_logback-classic_1.0.0" level="project" />
     <orderEntry type="library" name="ch.qos.logback_logback-core_1.0.0" level="project" />
