@@ -8,7 +8,7 @@ function submit_bib_once(bib, app, cb, fail, ts, site_id) {
   call_with_race_id(bib, app, function(race_id) {
     call_with_checkpoints(bib, app, function(checkpoints) {
       if (checkpoints["bib"] == undefined) {
-        checkpoints = new_checkpoints(bib, race_id, site_id);
+        checkpoints = new_checkpoints(bib, site_id);
       }
       add_checkpoint(checkpoints, ts);
       app.db.saveDoc(checkpoints, {
@@ -78,11 +78,10 @@ function infos_id(bib) {
   return "contestant-" + bib;
 }
 
-function new_checkpoints(bib, race_id, site_id) {
+function new_checkpoints(bib, site_id) {
   var checkpoints = {};
   checkpoints._id = checkpoints_id(bib, site_id);
   checkpoints.bib = bib;
-  checkpoints.race_id = race_id;
   checkpoints.site_id = site_id;
   checkpoints.times = [];
   checkpoints.deleted_times = [];
@@ -395,7 +394,7 @@ function call_with_previous(app, site_id, bib, lap, kms, cb) {
 
 function call_with_global_ranking(app, cb) {
   app.db.list("bib_input/global-ranking","global-ranking", {
-    limit : 50,
+    include_docs: true,
     success: function(data) {
       cb(data);
     }

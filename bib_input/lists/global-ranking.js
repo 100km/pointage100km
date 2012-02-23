@@ -6,33 +6,35 @@ function(head, req) {
     }
   });
 
-  var res = {};
-  var races = [];
-  var arr = [];
+  function getBibRow() {
+    var res;
+    var first = getRow();
+    if (first) {
+      var second = getRow();
+      res = { checkpoint: first.doc, info: second.doc };
+    }
+    return res;
+  }
+
+  var races_hash = {};
   var set = {};
   var current_race_id;
-  var row = getRow();
-  while (row) {
-    current_race_id = row["value"]["race_id"];
-    do {
-      var tmp_bib = row["value"]["bib"];
-      var tmp_race_id = row["value"]["race_id"];
-      if (tmp_race_id!=current_race_id) {
-        break;
+  var row;
+  while (row=getBibRow()) {
+    var bib = row.checkpoint.bib;
+    var race_id = row.info.course;
+    if (!set[bib]) {
+      set[bib] = true;
+      if (!races_hash[race_id]) {
+        races_hash[race_id] = [];
       }
-      if (!set[tmp_bib]) {
-        set[tmp_bib] = true;
-        arr.push(row);
-      }
-    } while (row = getRow())
-
-    pair = {};
-    pair.race_id = current_race_id;
-    pair.contestants = arr;
-    races.push(pair);
-    arr = [];
+      races_hash[race_id].push(row);
+    }
   }
-  res.rows = races;
-  res.total_rows = races.length;
-  return JSON.stringify(res);
+
+  var races = [];
+  for (var race_id in races_hash) {
+     races.push({race_id: Number(race_id), contestants: races_hash[race_id]});
+  }
+  return JSON.stringify({rows: races, total_rows: races.length});
 }
