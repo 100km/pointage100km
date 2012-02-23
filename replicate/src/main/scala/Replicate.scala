@@ -40,7 +40,7 @@ object Replicate extends App {
     }
   }
 
-  def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
+  def ping(db: Database): Future[JValue] = steenwerck.pingResolve(db, Options.siteId)
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
