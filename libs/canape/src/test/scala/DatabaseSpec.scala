@@ -19,10 +19,6 @@ class DatabaseSpec extends DbSpecification {
       insertedId(db.insert("docid", JObject(Nil)).execute()) must be equalTo("docid")
     }
 
-    "be able to insert a new document with an explicit id in option" in {
-      insertedId(db.insert(JObject(Nil), Some("docid")).execute()) must be equalTo("docid")
-    }
-
     "be able to insert a new document with an implicit id" in {
       insertedId(db.insert(JObject(Nil)).execute()) must be matching("[0-9a-f]{32}")
     }

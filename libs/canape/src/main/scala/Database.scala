@@ -72,18 +72,11 @@ case class Database(couch: Couch, database: String) {
     couch.makePostRequest[JValue](database + "/_bulk_docs", args)
   }
 
-  def insert[T <% JObject](doc: T, id: Option[String] = None): CouchRequest[JValue] = {
-    id orElse (doc \ "_id" match {
-      case JString(docId) => Some(docId)
-      case _ => None
-    }) match {
-      case Some(docId: String) => couch.makePutRequest[JValue](database + "/" + docId, Some(doc))
-      case None => couch.makePostRequest[JValue](database, Some(doc))
-    }
-  }
+  def insert[T <% JObject](doc: T): CouchRequest[JValue] =
+    couch.makePostRequest[JValue](database, Some(doc))
 
   def insert[T <% JObject](id: String, doc: T): CouchRequest[JValue] =
-    insert(doc, Some(id))
+    couch.makePutRequest[JValue](database + "/" + id, Some(doc))
 
   def delete(id: String, rev: String): CouchRequest[JValue] =
     couch.makeDeleteRequest[JValue](database + "/" + id + "?rev=" + rev)
