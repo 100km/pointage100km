@@ -16,15 +16,27 @@ class DatabaseSpec extends DbSpecification {
   "db.insert()" should {
 
     "be able to insert a new document with an explicit id" in {
-      insertedId(db.insert("docid", JObject(Nil)).execute()) must be equalTo("docid")
+      insertedId(db.insert(JObject(Nil), "docid").execute()) must be equalTo("docid")
+    }
+
+    "be able to insert a new document with an explicit id in batch mode" in {
+      insertedId(db.insert(JObject(Nil), "docid", true).execute()) must be equalTo("docid")
     }
 
     "be able to insert a new document with an implicit id" in {
       insertedId(db.insert(JObject(Nil)).execute()) must be matching("[0-9a-f]{32}")
     }
 
+    "be able to insert a new document with an implicit id in batch mode" in {
+      insertedId(db.insert(JObject(Nil), batch = true).execute()) must be matching("[0-9a-f]{32}")
+    }
+
     "be able to insert a new document with an embedded id" in {
       insertedId(db.insert(Map("_id" -> "docid")).execute()) must be equalTo("docid")
+    }
+
+    "be able to insert a new document with an embedded id in batch mode" in {
+      insertedId(db.insert(Map("_id" -> "docid"), batch = true).execute()) must be equalTo("docid")
     }
 
     "be able to update a document with an embedded id" in {
@@ -33,8 +45,14 @@ class DatabaseSpec extends DbSpecification {
       insertedId(db.insert(updatedDoc).execute()) must be equalTo("docid")
     }
 
+    "be able to update a document with an embedded id in batch mode" in {
+      insertedId(db.insert(Map("_id" -> "docid")).execute()) must be equalTo("docid")
+      val updatedDoc = db("docid").execute() + ("foo" -> "bar")
+      insertedId(db.insert(updatedDoc, batch = true).execute()) must be equalTo("docid")
+    }
+
     "return a consistent rev" in {
-      insertedRev(db.insert("docid", JObject(Nil)).execute()) must be matching("1-[0-9a-f]{32}")
+      insertedRev(db.insert(JObject(Nil), "docid").execute()) must be matching("1-[0-9a-f]{32}")
     }
 
   }
@@ -135,34 +153,34 @@ class DatabaseSpec extends DbSpecification {
     }
 
     "return a correct count when an element has been inserted" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       db.allDocs().execute().total_rows must be equalTo(1)
     }
 
     "return a correct id enumeration when an element has been inserted" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       db.allDocs().execute().ids must be equalTo (List("docid"))
     }
 
     "return a correct key enumeration when an element has been inserted" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       db.allDocs().execute().keys[String] must be equalTo (List("docid"))
     }
 
     "return a correct values enumeration when an element has been inserted" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       val JString(rev) = db.allDocs().execute().values[JValue].head \ "rev"
       rev must be matching ("1-[0-9a-f]{32}")
     }
 
     "be convertible to an items triple" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       val (id: String, key: String, value: JValue) = db.allDocs().execute().items[String, JValue].head
       (value \ "rev").extract[String] must be matching ("1-[0-9a-f]{32}")
     }
 
     "be convertible to an items quartuple in include_docs mode" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       val (id: String, key: String, value: JValue, doc: JValue) =
 	db.allDocs(Map("include_docs" -> "true")).execute().itemsWithDoc[String, JValue, JValue].head
       ((value \ "rev").extract[String] must be matching ("1-[0-9a-f]{32}")) &&
@@ -171,18 +189,18 @@ class DatabaseSpec extends DbSpecification {
     }
 
     "not return full docs in default mode" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       db.allDocs().execute().docsOption[JValue] must be equalTo(List(None))
     }
 
     "return full docs in include_docs mode" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value")).execute()
       db.allDocs(Map("include_docs" -> "true")).execute().docs[JValue].head \ "key" must
         be equalTo(JString("value"))
     }
 
     "return full docs in include_docs mode and option" in {
-      db.insert("docid", Map("key" -> "value")).execute()
+      db.insert(Map("key" -> "value"), "docid").execute()
       db.allDocs(Map("include_docs" -> "true")).execute().docsOption[JValue].head.map(_ \ "key") must
         be equalTo(Some(JString("value")))
     }

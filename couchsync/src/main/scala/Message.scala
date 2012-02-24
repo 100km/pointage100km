@@ -15,7 +15,7 @@ object Message {
       db.insert(touchMe).execute()
     } catch {
         case StatusCode(404, _) =>
-          db.insert("touch_me", JObject(Nil)).execute()
+          db.insert(JObject(Nil), "touch_me").execute()
     }
   }
 

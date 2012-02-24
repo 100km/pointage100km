@@ -33,7 +33,7 @@ object Replicate extends App {
   private def createLocalInfo(db: Database, site: Int) {
     val name = "_local/site-info"
     try {
-      db.insert(name, localInfo).thenTouch(db).execute()
+      db.insert(localInfo, name).thenTouch(db).execute()
     } catch {
       case StatusCode(409, _) =>
 	forceUpdate(db, name, localInfo).thenTouch(db).execute()

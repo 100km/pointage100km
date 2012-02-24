@@ -72,11 +72,14 @@ case class Database(couch: Couch, database: String) {
     couch.makePostRequest[JValue](database + "/_bulk_docs", args)
   }
 
-  def insert[T <% JObject](doc: T): CouchRequest[JValue] =
-    couch.makePostRequest[JValue](database, Some(doc))
+  private def batchMode(query: String, batch: Boolean) =
+    if (batch) query + "?batch=ok" else query
 
-  def insert[T <% JObject](id: String, doc: T): CouchRequest[JValue] =
-    couch.makePutRequest[JValue](database + "/" + id, Some(doc))
+  def insert[T <% JObject](doc: T, id: String = null, batch: Boolean = false): CouchRequest[JValue] =
+    if (id == null)
+      couch.makePostRequest[JValue](batchMode(database, batch), Some(doc))
+    else
+      couch.makePutRequest[JValue](batchMode(database + "/" + id, batch), Some(doc))
 
   def delete(id: String, rev: String): CouchRequest[JValue] =
     couch.makeDeleteRequest[JValue](database + "/" + id + "?rev=" + rev)
