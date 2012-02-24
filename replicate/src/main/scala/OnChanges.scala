@@ -14,6 +14,8 @@ class OnChanges(local: Database)
 
   val log = Logging(context.system, this)
 
+  private[this] val watchdog = context.actorOf(Props(new Watchdog(local)), "watchdog")
+
   private[this] def withError[T](future: Future[T], message: String): Future[Any] =
     future onFailure {
       case e: Exception => log.warning(message + ": " + e)
@@ -60,6 +62,11 @@ class OnChanges(local: Database)
 	timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
 							   self,
 							   'trigger))
+      js \ "id" match {
+	  case JString(s) if s.startsWith("checkpoints-" + Replicate.siteId + "-") =>
+	    watchdog ! js
+	  case _ =>
+      }
     case 'trigger =>
       trigger()
       timer = None
