@@ -3,10 +3,10 @@ import akka.dispatch.{Await, Future}
 import akka.util.duration._
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
-import Message._
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.io.Source
+import steenwerck._
 
 object Replicator {
 
@@ -32,7 +32,7 @@ object Replicator {
   def replicate(options: Options) {
     val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
 
-    def step(msg: String) = message(referenceDb, "Ne pas enlever la clé USB - " + msg)
+    def step(msg: String) = message(referenceDb, "Ne pas enlever la clé USB - " + msg).execute()
 
     step("lancement de la copie")
 
@@ -73,7 +73,7 @@ object Replicator {
 
     c.stopCouchDb()
 
-    message(referenceDb, "La clé USB peut être retirée")
+    message(referenceDb, "La clé USB peut être retirée").execute()
 
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
