@@ -68,6 +68,14 @@ make
 sudo make install
 </pre>
 
+Here are the commands used to install couchDB on Mac OS X
+<pre>
+sudo port install couchdb
+sudo mkdir /opt/local/var/run/couchdb
+sudo chown -R couchdb:couchdb /opt/local/var/lib/couchdb/ /opt/local/var/log/couchdb/ /opt/local/etc/couchdb/ /opt/local/var/run/couchdb/
+# Then to start couchDB
+sudo -u couchdb couchdb
+</pre>
 
 #couchapp installation
 
