@@ -89,6 +89,20 @@ sudo pip install git+http://github.com/couchapp/couchapp.git@1.0.1#egg=Couchapp
 // When asked for bitbucket username and password just hit enter
 </pre>
 
+Here are the commands to install couchapp version 1.0.1 on Mac OS X
+<pre>
+sudo port install python26
+sudo port install py26-pip
+# Check the version of python installed on your computer by running
+python -V
+which python
+# if needed delete /usr/local/bin/python to leave only /opt/local/bin/python
+# check the version of pip (the executable in /opt/local/bin is suffixed by the version number)
+sudo pip-26 install git+http://github.com/couchapp/couchapp.git@1.0.1#egg=Couchapp
+# Create a symbolic link
+sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin/couchapp /opt/local/bin/couchapp
+</pre>
+
 #try the couchapp
 
 In order to try the couchapp, please launch couchDB and configure it to have local administrative user to be "admin" with password "admin".
