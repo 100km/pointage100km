@@ -13,6 +13,7 @@ function() {
     app.current_li = null;
     app.current_bib = 0;
     app.current_lap = 0;
+    app.current_ts = 0;
   }
 
   $(this).parents("li").hide('fast', function() {
