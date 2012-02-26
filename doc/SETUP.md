@@ -105,12 +105,20 @@ sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin/couch
 
 #try the couchapp
 
-In order to try the couchapp, please launch couchDB and configure it to have local administrative user to be "admin" with password "admin".
-See http://localhost:5984/_utils/
+In order to try the couchapp, please configure couchdb to have local administrative user to be "admin" with password "admin".  
+Stop couchdb  
+Edit the `local.ini` file of couchdb
+<pre>
+[admins]
+admin=admin
+</pre>
+Restart couchdb: `sudo -u couchdb couchdb` (for those who run it on a command line)
 
-Then, just go to bib_input directory and run "couchapp push". You should see a message like this:
-// date info // [INFO] Visit your CouchApp here:
+Then, just go to `bib_input` directory and run `couchapp push`. You should see a message like this:  
+// date info // [INFO] Visit your CouchApp here:  
 http://localhost:5984/steenwerck100km/_design/bib_input/index.html
+
+You can also visit http://localhost:5984/_utils/ and see that it created a database `steenwerck100km`
 
 #Initialise DB
 
@@ -120,8 +128,8 @@ cd pointage100km
 ./sbt
 </pre>
 
-wait a bit and enter the following on the prompt
-note: {0,1,2} is the site_id you must choose one among those values
+wait a bit and enter the following on the prompt  
+note: {0,1,2} is the site_id you must choose one among those values  
 note2: this needs a .cfg file that is not in the repository
 <pre>
 project replicate
@@ -142,7 +150,7 @@ run initialize_db/100km2012.mdb
 </pre>
 
 
-IS THIS STILL REQUIRED NOW THAT WE USE LOADER?
+IS THIS STILL REQUIRED NOW THAT WE USE LOADER?  
 Note: you might need to install mdbtools to run mdb2couchdb.bash
 <pre>
 sudo apt-get install mdbtools
