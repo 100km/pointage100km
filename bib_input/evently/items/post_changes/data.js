@@ -10,11 +10,12 @@ function(data) {
   $.log("In post_changes for items");
   // If no current_bib / current_lap, take the first one
   if (! (app.current_bib && app.current_lap)) {
-    if (data[0].value && (data[0].value.bib != app.current_bib || data[0].value.lap != app.current_lap) ) {
+    if (data[0].value && data[0].r && data[0].r.key && (data[0].value.bib != app.current_bib || data[0].value.lap != app.current_lap || data[0].r.key[1] != app.current_ts ) ) {
       $.log("In after of items change values");
       // current_li will be dealed after rendering mustache in after.js
       app.current_bib = data[0].value.bib
       app.current_lap = data[0].value.lap
+      app.current_ts = data[0].r.key[1]
     }
   }
 
