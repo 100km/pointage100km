@@ -355,7 +355,7 @@ function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
     function get_predecessors(cb) {
       app.db.view("bib_input/local-predecessors", {
         startkey : [-site_id,race_id,-lap,ts],
-        endkey : [-site_id,race_id,-lap-1,0],
+        endkey : [-site_id,race_id,-lap-1,{}],
         descending : true,
         limit : n,
         success : cb
