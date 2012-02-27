@@ -382,7 +382,6 @@ function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
             result.last_site = local_avg_data.rows[i].value[0];
             result.last_timestamp = local_avg_data.rows[i].key[1];
             result.last_lap = local_avg_data.rows[i].value[1];
-            result.bib_time = data.bib_time;
           }
           cb(result);
         }
