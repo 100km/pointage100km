@@ -5,17 +5,38 @@ function submit_bib(bib, app, ts, cb, site_id) {
   }, "submit_bib");
 }
 function submit_bib_once(bib, app, cb, fail, ts, site_id) {
+  ts = ts || new Date().getTime();
+  $.ajax({
+      type: 'POST',
+      url: app.db.uri + "_design/bib_input/_update/add-checkpoint/" + checkpoints_id(bib, site_id),
+      data: "ts=" + ts,
+      success: function(data) {
+        if (data) {
+          retries(3, function(fail) {
+            call_with_checkpoints(bib, app, function(checkpoints) {
+              initialize_checkpoints_once(checkpoints, bib, app, site_id, cb, fail);
+            }, site_id);
+          });
+        } else {
+          cb && cb();
+        }
+      },
+      error: fail
+  });
+}
+
+function initialize_checkpoints_once(checkpoints, bib, app, site_id, success, fail) {
   call_with_race_id(bib, app, function(race_id) {
-    call_with_checkpoints(bib, app, function(checkpoints) {
-      if (checkpoints["bib"] == undefined) {
-        checkpoints = new_checkpoints(bib, race_id, site_id);
-      }
-      add_checkpoint(checkpoints, ts);
-      app.db.saveDoc(checkpoints, {
-        success: cb,
-        error: fail
-      });
-    }, site_id);
+    need_write = (checkpoints.bib != bib) ||
+                 (checkpoints.site_id != site_id) ||
+                 (checkpoints.race_id != race_id);
+    checkpoints.bib = bib;
+    checkpoints.site_id = site_id;
+    checkpoints.race_id = race_id;
+    if (need_write)
+      app.db.saveDoc(checkpoints, {success: success, error: fail});
+    else
+      success && success();
   });
 }
 
@@ -24,7 +45,7 @@ function retries(n, f, debug_name) {
     alert("Too many retries for " + debug_name);
   } else {
     f(function () {
-      retries(n-1, f);
+      retries(n-1, f, debug_name);
     });
   }
 }
@@ -102,23 +123,13 @@ function submit_remove_checkpoint(bib, app, ts, cb, site_id) {
   }, "remove checkpoint");
 }
 function submit_remove_checkpoint_once(bib, app, ts, fail, cb, site_id) {
-  call_with_checkpoints(bib, app, function(checkpoints) {
-    remove_checkpoint(checkpoints, ts);
-    app.db.saveDoc(checkpoints, {
+  $.ajax({
+      type: 'POST',
+      url: app.db.uri + "_design/bib_input/_update/remove-checkpoint/" + checkpoints_id(bib, site_id),
+      data: "ts=" + ts,
+      success: cb,
       error: fail,
-      success: cb
-    });
-  }, site_id);
-}
-function remove_checkpoint(checkpoints, ts) {
-  $.log("removing " + ts + " in " + checkpoints["times"]);
-  //Why doesn't indexOf work ?!?
-  for (var i = checkpoints["times"].length-1; i>=0; i--) {
-    if (ts == checkpoints["times"][i]) {
-      checkpoints["deleted_times"].push(checkpoints["times"].splice(i, 1)[0]);
-      return;
-    }
-  }
+  });
 }
 
 function isBib(bib)
