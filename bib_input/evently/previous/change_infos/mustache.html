@@ -31,11 +31,13 @@
     </tr>
     {{/current_bib_time}}
   </table>
+  {{#average}}
   {{#avg_present}}
   <p>Moyenne depuis {{last_site_name}} ({{local_kms}} kms) : {{local_average}}km/h.</p>
   {{/avg_present}}
   {{^avg_present}}
   <p>Pas assez de données pour calculer une moyenne intermédiaire</p>
   {{/avg_present}}
+  {{/average}}
 </center>
 {{/warning}}
