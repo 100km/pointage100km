@@ -2,6 +2,11 @@ function(data) {
   var app = $$(this).app;
 
   data.current_bib = app.current_bib;
+
+  // If there is warning, we only need current_bib
+  if (data.warning)
+    return data;
+
   data.current_lap = app.current_lap;
   data.nom = data.infos.nom;
   data.prenom = data.infos.prenom;
