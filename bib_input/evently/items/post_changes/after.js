@@ -1,19 +1,9 @@
 function () {
-  function is_app_current_li_valid(app) {
-    var form=app.current_li.find("#delete")[0];
-    return (form &&
-            parseInt(form["bib"].value) == app.current_bib &&
-            parseInt(form["lap"].value) == app.current_lap);
-  }
-
+  // Get the correct li for the dom.
   var app = $$(this).app;
-
-  // Here we ensure the arrow is still at the right place
-  for (var i=1; i<=50; i++) { // starting at 1 because 0 is the table's title
-    app.current_li = $($("#items").find("li")[i]);
-    if (is_app_current_li_valid(app))
-      break;
-  }
+  var selector_bib = 'li:has(form#delete input[name="bib"][value="' + app.current_bib + '"])';
+  var selector_lap = 'li:has(input[name="lap"][value="' + app.current_lap + '"])';
+  app.current_li = $(selector_bib).filter(selector_lap);
 
   // First clear all lines
   app.current_li.parents("ul").children().children().css("font-weight", "");

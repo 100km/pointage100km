@@ -186,12 +186,9 @@ function fork (async_calls, shared_callback) {
   }
 }
 
-// TODO : remove console.log
 function get_doc(app, cb, doc_name) {
-  $.log("in get_doc " + doc_name);
   app.db.openDoc(doc_name, {
     success: function(data) {
-      console.log(data);
       cb(data);
     },
     error: function(status) {
