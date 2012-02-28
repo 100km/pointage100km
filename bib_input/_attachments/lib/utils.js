@@ -342,7 +342,7 @@ function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
     var warning = race_id == 0;
 
     if (warning)
-      cb({});
+      cb({warning:warning});
 
     function get_rank(cb) {
       app.db.view("bib_input/local-rank", {
