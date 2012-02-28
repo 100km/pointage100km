@@ -216,6 +216,7 @@ function change_li(li, app) {
   app.current_li = li;
   app.current_bib = parseInt(li.find("#delete")[0]["bib"]["value"]);
   app.current_lap = parseInt(li.find("#delete")[0]["lap"]["value"]);
+  app.current_ts = parseInt(li.find("#delete")[0]["ts"]["value"]);
 
   li.trigger("change_infos");
 }
@@ -334,56 +335,77 @@ function call_with_app_data(app, cb) {
   });
 }
 
-function call_with_previous(app, site_id, bib, lap, kms, cb) {
+function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
   var handle_open = function(infos) {
     var race_id = infos["course"] || 0;
     var n = race_id == 0 ? 0 : 3;
     var warning = race_id == 0;
 
-    app.db.list("bib_input/next-contestants", "local-ranking", {
-      startkey : [-site_id,race_id,-lap,null],
-      endkey : [-site_id,race_id,-lap+1,null],
-      bib: bib,
-      n: n,
-      lap : lap,
-      start_time : app.start_times[race_id],
-      kms : kms,
-      success: function(data) {
-        var safe_infos = infos || empty_info();
-        app.db.view("bib_input/times-per-bib", {
-          startkey : [bib,data.bib_time],
-          limit : 5,
-          descending : true,
-          success: function(local_avg_data) {
-            var avg_present = false;
-            var i = 0;
-            while ((! avg_present) && (i<5)) {
-              i++;
-              // Check that it's the same bib and that it is a lower combination [lap,site_id]
-              var avg_present = local_avg_data.rows[i] &&
-                (local_avg_data.rows[i].key[0] == bib) &&
-                ([local_avg_data.rows[i].value[1],local_avg_data.rows[i].value[0]] < [app.current_lap, app.current_site_id]);
-            }
-            var result = {
-              infos:safe_infos,
-              course:app.races_names[race_id],
-              current_bib_time:data.bibs.pop(),
-              bibs:data.bibs,
-              warning:warning,
-              kms:kms,
-              global_average:data.global_average,
-              avg_present:avg_present
-            };
-            if (avg_present) {
-              result.last_site = local_avg_data.rows[i].value[0];
-              result.last_timestamp = local_avg_data.rows[i].key[1];
-              result.last_lap = local_avg_data.rows[i].value[1];
-              result.bib_time = data.bib_time;
-            }
-            cb(result);
+    if (warning)
+      cb({warning:warning});
+
+    function get_rank(cb) {
+      app.db.view("bib_input/local-rank", {
+        startkey : [-site_id,race_id,-lap,0],
+        endkey : [-site_id,race_id,-lap,ts],
+        success : cb
+      });
+    }
+
+    function get_predecessors(cb) {
+      app.db.view("bib_input/local-predecessors", {
+        startkey : [-site_id,race_id,-lap,ts],
+        endkey : [-site_id,race_id,-lap-1,{}],
+        descending : true,
+        limit : n,
+        success : cb
+      });
+    }
+
+    function get_average(cb) {
+      app.db.view("bib_input/times-per-bib", {
+        startkey : [bib,app.current_ts],
+        limit : 5,
+        descending : true,
+        success: function(local_avg_data) {
+          var avg_present = false;
+          var i = 0;
+          while ((! avg_present) && (i<5)) {
+            i++;
+            // Check that it's the same bib and that it is a lower combination [lap,site_id]
+            var avg_present = local_avg_data.rows[i] &&
+              (local_avg_data.rows[i].key[0] == bib) &&
+              ([local_avg_data.rows[i].value[1],local_avg_data.rows[i].value[0]] < [app.current_lap, app.current_site_id]);
           }
-        });
-      }
+          var result = {avg_present:avg_present};
+          if (avg_present) {
+            result.last_site = local_avg_data.rows[i].value[0];
+            result.last_timestamp = local_avg_data.rows[i].key[1];
+            result.last_lap = local_avg_data.rows[i].value[1];
+          }
+          cb(result);
+        }
+      });
+    }
+
+
+    fork([
+      get_rank,
+      get_predecessors,
+      get_average,
+    ], function(data) {
+      var res = {};
+      res.rank = data[0][0].rows[0].value;
+      res.predecessors = data[1][0].rows;
+      res.average = data[2][0];
+      res.infos = infos || empty_info();
+      res.course = app.races_names[race_id];
+      res.current_bib_time = app.current_ts;
+      res.warning = warning;
+      res.kms = kms;
+      res.limit = n;
+
+      cb(res);
     });
   }
 
