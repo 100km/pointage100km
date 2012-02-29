@@ -134,7 +134,10 @@ function test_previous(app, bib, lap, checkpoints, expected) {
     var kms = site_lap_to_kms(app, app.site_id, lap);
     call_with_previous(app, app.site_id, bib, lap, kms, function(data) {
       var bibs = data.bibs.map(function(bib) { return bib.bib });
-      ok(integer_array_equal(bibs, expected), "local ranking is false");
+      ok(integer_array_equal(bibs, expected),
+        "local ranking is false:\n" +
+        "expected " +JSON.stringify(expected) + "\n" +
+        "Got " + JSON.stringify(bibs) );
       cb();
     });
   });
