@@ -221,6 +221,16 @@ function test_bib_input(app) {
     asyncTest("2 laps, lap2", function() {
       test_previous(app, 2, 2, tmp, [2, 0, 1]);
     });
+    asyncTest("more than 4 bibs", function() {
+      test_previous(app, 12, 1, [
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 2, ts: 1200, site_id:0 },
+        { bib: 10, ts: 1300, site_id:0 },
+        { bib: 11, ts: 1400, site_id:0 },
+        { bib: 12, ts: 1500, site_id:0 },
+      ], [12, 11, 10]);
+    });
     module("global");
     asyncTest("very simple", function() {
       test_global(app, [
