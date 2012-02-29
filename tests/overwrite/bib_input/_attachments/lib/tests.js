@@ -128,11 +128,15 @@ function with_temp_checkpoints_and_start(app, checkpoints, cb) {
     start();
   });
 }
+function timestamp_at_lap(checkpoints, bib, lap) {
+  return _.filter(checkpoints, function(checkpoint) { return checkpoint.bib == bib })[lap-1].ts;
+}
 function test_previous(app, bib, lap, checkpoints, expected) {
   expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var kms = site_lap_to_kms(app, app.site_id, lap);
-    call_with_previous(app, app.site_id, bib, lap, kms, function(data) {
+    var ts = timestamp_at_lap(checkpoints, bib, lap);
+    call_with_previous(app, app.site_id, bib, lap, ts, kms, function(data) {
       var bibs = data.bibs.map(function(bib) { return bib.bib });
       ok(integer_array_equal(bibs, expected),
         "local ranking is false:\n" +
