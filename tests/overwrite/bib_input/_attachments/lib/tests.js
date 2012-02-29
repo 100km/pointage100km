@@ -14,17 +14,14 @@ function open_or_fail(app, doc_id, cb, fail_msg) {
     }});
 }
 
-function integer_array_equal(arr1, arr2) {
-  return _.all(_.zip(arr1, arr2), function(a) { return a[0] == a[1];});
-}
 function bib_assert(app, bib, expected_race_id, expected_length, cb) {
   open_or_fail(app, checkpoints_id(bib, app.site_id), function(checkpoints) {
     equal(checkpoints.site_id, app.site_id, "wrong site_id inserted");
     equal(checkpoints.times.length, expected_length, "wrong checkpoints times length");
     equal(checkpoints.race_id, expected_race_id, "wrong race_id inserted");
     var sorted_times = checkpoints.times.slice().sort(function(a,b) {return a-b});
-    ok(integer_array_equal(sorted_times, checkpoints.times),
-       "Timestamps are not sorted");
+    deepEqual(sorted_times, checkpoints.times,
+       "Timestamps should be sorted");
     cb(checkpoints);
   }, "Error getting freshly inserted checkpoint");
 }
@@ -132,17 +129,16 @@ function timestamp_at_lap(checkpoints, bib, lap) {
   return _.filter(checkpoints, function(checkpoint) { return checkpoint.bib == bib })[lap-1].ts;
 }
 function test_previous(app, bib, lap, checkpoints, expected) {
-  expect(2);
+  expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var kms = site_lap_to_kms(app, app.site_id, lap);
     var ts = timestamp_at_lap(checkpoints, bib, lap);
     call_with_previous(app, app.site_id, bib, lap, ts, kms, function(data) {
-      var bibs = data.predecessors.map(function(predecessor) { return predecessor.value.bib });
-      ok(integer_array_equal(bibs, expected.predecessors),
-        "predecessors are false:\n" +
-        "expected " +JSON.stringify(expected.predecessors) + "\n" +
-        "Got " + JSON.stringify(bibs) );
-      equal(data.rank, expected.rank, "Rank");
+      var bibs = {
+        predecessors: data.predecessors.map(function(predecessor) { return predecessor.value.bib }),
+        rank: data.rank
+      };
+      deepEqual(bibs, expected, "Compare the data given to the callback given to call_with_previous");
       cb();
     });
   });
@@ -159,7 +155,7 @@ function test_global(app, checkpoints, expected) {
         } else {
           var row = data.rows[idx];
           var bibs = row.contestants.map(function(contestant) { return contestant.value.bib; });
-          ok(integer_array_equal(bibs,  el.bibs), "Check bibs order for race " + el.race_id);
+          deepEqual(bibs, el.bibs, "Check bibs order for race " + el.race_id);
         }
       });
       cb();
