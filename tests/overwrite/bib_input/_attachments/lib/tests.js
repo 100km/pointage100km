@@ -191,21 +191,21 @@ function test_bib_input(app) {
         { bib: 0, ts: 1000, site_id:0 },
         { bib: 1, ts: 1100, site_id:0 },
         { bib: 2, ts: 1200, site_id:0 }
-      ], [ 0, 1]);
+      ], [ 2, 1, 0]);
     });
     asyncTest("1 lap, cornercase first bib", function() {
       test_previous(app, 0, 1, [
         { bib: 0, ts: 1000, site_id:0 },
         { bib: 1, ts: 1100, site_id:0 },
         { bib: 2, ts: 1200, site_id:0 }
-      ], []);
+      ], [0]);
     });
     asyncTest("1 lap, 2 sites", function() {
       test_previous(app, 2, 1, [
         { bib: 0, ts: 1000, site_id:0 },
         { bib: 1, ts: 1100, site_id:1 },
         { bib: 2, ts: 1200, site_id:0 }
-      ], [0]);
+      ], [2, 0]);
     });
     var tmp = [
         { bib: 0, ts: 1000, site_id:0 },
@@ -216,10 +216,10 @@ function test_bib_input(app) {
         { bib: 2, ts: 2200, site_id:0 },
     ] ;
     asyncTest("2 laps, lap1", function() {
-      test_previous(app, 2, 1, tmp, [0, 1]);
+      test_previous(app, 2, 1, tmp, [2, 1, 0]);
     });
     asyncTest("2 laps, lap2", function() {
-      test_previous(app, 2, 2, tmp, [1, 0]);
+      test_previous(app, 2, 2, tmp, [2, 0, 1]);
     });
     module("global");
     asyncTest("very simple", function() {
