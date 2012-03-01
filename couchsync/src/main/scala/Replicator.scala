@@ -32,7 +32,9 @@ object Replicator {
   def replicate(options: Options) {
     val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
 
-    def step(msg: String) = message(referenceDb, "Ne pas enlever la clé USB - " + msg).execute()
+    val siteId = referenceDb("_local/site-info").execute()("site-id").extract[Int]
+
+    def step(msg: String) = message(referenceDb, siteId, "Ne pas enlever la clé USB - " + msg).execute()
 
     step("lancement de la copie")
 
@@ -73,7 +75,7 @@ object Replicator {
 
     c.stopCouchDb()
 
-    message(referenceDb, "La clé USB peut être retirée").execute()
+    message(referenceDb, siteId, "La clé USB peut être retirée").execute()
 
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()

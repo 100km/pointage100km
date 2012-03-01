@@ -33,14 +33,14 @@ object Replicate extends App {
   private def createLocalInfo(db: Database, site: Int) {
     val name = "_local/site-info"
     try {
-      db.insert(localInfo, name).thenTouch(db).execute()
+      db.insert(localInfo, name).thenTouch(db, site).execute()
     } catch {
       case StatusCode(409, _) =>
-	forceUpdate(db, name, localInfo).thenTouch(db).execute()
+	forceUpdate(db, name, localInfo).thenTouch(db, site).execute()
     }
   }
 
-  def ping(db: Database): Future[JValue] = steenwerck.pingResolve(db, Options.siteId)
+  def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
 
   def siteId = Options.siteId
 
