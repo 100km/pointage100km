@@ -1,5 +1,6 @@
 import akka.actor.ActorSystem
 import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import scopt.OptionParser
 
@@ -30,8 +31,18 @@ object Wipe extends App {
 			      Some(Options.login, Options.password))
   val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
   try {
-    for ((id, _, value) <- hubDatabase.allDocs().execute().items[String, JObject])
-      hubDatabase.delete(id, (value \ "rev").extract[String]).execute()
+    println("Deleting database")
+    hubDatabase.delete().execute()
+    println("Creating database")
+    hubDatabase.create().execute()
+    println("Inserting security document")
+    hubDatabase.insert(("admins" ->
+			Map("names" -> List("sam"),
+			    "roles" -> List("steenwerckadm"))) ~
+		       ("readers" ->
+			Map("names" -> List(),
+			    "roles" -> List("steenwerckrw", "steenwerckr")))).execute()
+    println("All things done")
   } catch {
       case StatusCode(401, _) =>
 	println("You are not authorized to perform this operation")
