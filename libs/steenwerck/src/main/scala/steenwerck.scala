@@ -23,7 +23,7 @@ package object steenwerck {
   }
 
   private def makePing(siteId: Int, time: Long) =
-    Map("type" -> JString("ping"), ("site-id" -> JInt(siteId)), ("time" -> JInt(time)))
+    Map("type" -> JString("ping"), ("site_id" -> JInt(siteId)), ("time" -> JInt(time)))
 
   private def pingConflictSolver(documents: Seq[mapObject]): mapObject = {
     val first = documents.head
