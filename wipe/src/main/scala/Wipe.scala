@@ -41,7 +41,8 @@ object Wipe extends App {
 			    "roles" -> List("steenwerckadm"))) ~
 		       ("readers" ->
 			Map("names" -> List(),
-			    "roles" -> List("steenwerckrw", "steenwerckr")))).execute()
+			    "roles" -> List("steenwerckrw", "steenwerckr"))),
+		     "_security").execute()
     println("All things done")
   } catch {
       case StatusCode(401, _) =>
