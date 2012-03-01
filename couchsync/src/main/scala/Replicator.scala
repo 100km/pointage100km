@@ -77,6 +77,8 @@ object Replicator {
 
     message(referenceDb, siteId, "La clé USB peut être retirée").execute()
 
+    // FIXME: Since we created the ping document ourselves, we could also remove it safely.
+
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
 
