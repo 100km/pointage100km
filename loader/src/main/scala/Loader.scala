@@ -27,7 +27,7 @@ object Loader extends App {
   if (!parser.parse(args))
     sys.exit(1)
 
-  val table = jackcess.Database.open(Options.file).getTable("inscription")
+  val table = jackcess.Database.open(Options.file, true).getTable("inscription")
 
   val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
 
