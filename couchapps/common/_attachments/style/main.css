@@ -1,4 +1,6 @@
-/* add styles here */
+/***************************
+ * General HTML tag styles. *
+ ***************************/
 
 body {
   font:1em Helvetica, sans-serif;
@@ -10,7 +12,10 @@ h1 {
 }
 
 
-/* title CSS */
+/************************
+ * Styles for the title. *
+ ************************/
+
 #title {
   text-align:center;
   font-size:1em;
@@ -21,7 +26,10 @@ h1 {
   padding:8px;
 }
 
-/* message-bar CSS */
+/*******************************
+ * Styles for the message bar. *
+ *******************************/
+
 #message-bar-core {
   text-align:left;
   font-size:1em;
@@ -35,7 +43,10 @@ h1 {
   overflow:auto;
 }
 
-/* bib_input CSS */
+/*****************************
+ * Styles for the bib input. *
+ *****************************/
+
 #bib_input {
   border:4px solid #edd;
   background:#fee;
@@ -76,7 +87,10 @@ h1 {
   float:right;
 }
 
-/* items CSS */
+/****************************************************
+ * Style for the list of recent checkpoints (items) *
+ ****************************************************/
+
 #items {
   border:4px solid #dde;
   background:#eef;
@@ -89,6 +103,14 @@ h1 {
   border:4px solid #f5f5ff;
   background:#fff;
   margin:4px 0;
+}
+
+#items li.selected {
+  background-color: rgb(208, 255, 208);
+}
+
+#items li.selected div {
+  font-weight: bold;
 }
 
 #items form {
@@ -161,7 +183,11 @@ h1 {
   margin:0px;
 }
 
-/* previous CSS */
+/***************************************************************************
+ * Styles for the panel that  display info about the last input bib or the *
+ * selected bib. This panel is called #previous (legacy).                  *
+ ***************************************************************************/
+
 #previous_container {
   position:relative;
   float:right;
@@ -215,7 +241,10 @@ Will let the previous info on top of screen */
   font-weight:bold;
 }
 
-/* laps CSS */
+/***********************
+ * Styles for the laps *
+ ***********************/
+
 #laps {
   border:4px solid #dfd;
   padding:8px;

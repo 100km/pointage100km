@@ -199,15 +199,14 @@ function get_doc(app, cb, doc_name) {
 
 function change_li(li, app) {
   // return immediately if li has no delete element
-  if (li.find("#delete")[0] == undefined)
+  if (li.find("#delete")[0] == undefined) {
     return;
+  }
 
   // First clear all lines
-  li.parents("ul").children().children().css("font-weight", "");
-  li.parents("ul").children().css("background-color","white");
+  li.parents("ul").children().removeClass('selected');
   // Then set the clicked lines to bold
-  li.children().css("font-weight", "bold");
-  li.css("background-color", "#d0ffd0");
+  li.addClass('selected');
 
   // Keep this, current bib and current lap into app
   app.current_li = li;
