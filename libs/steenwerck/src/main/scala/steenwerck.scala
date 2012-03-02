@@ -17,7 +17,7 @@ package object steenwerck {
   val touchId = "touch-" + uuid
 
   def touch(db: Database): CouchRequest[JValue] =
-    forceUpdate(db, touchId, Map("type" -> JString("touch")))
+    forceUpdate(db, touchId, Map("type" -> JString("touch"), "time" -> JInt(System.currentTimeMillis)))
 
   implicit def touchIt[T <: AnyRef : Manifest](request: CouchRequest[T]) = new {
     def thenTouch(db: Database) = request.map { result =>
