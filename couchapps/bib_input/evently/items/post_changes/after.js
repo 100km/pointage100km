@@ -3,7 +3,6 @@ function () {
   // This is set by the call make of the bib_input submit because we don't
   // a direct callback chain from the input to here, because this is the data base that trigger this event.
   var selected_item = $(this).data('selected_item');
-  $.log(selected_item);
 
   // There is not selected item in the data of the widget, select the first one.
   if (!selected_item) {
