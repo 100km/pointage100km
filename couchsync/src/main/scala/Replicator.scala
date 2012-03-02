@@ -24,7 +24,7 @@ object Replicator {
   }
 
   private def docCount(db1: Database, db2: Database) = {
-    Await.result(Future.sequence(List(db1, db2).map(_.allDocs.toFuture)), 10 seconds).map {
+    Await.result(Future.sequence(List(db1, db2).map(_.allDocs.toFuture)), 20 seconds).map {
       _.total_rows
     }
   }
@@ -34,7 +34,8 @@ object Replicator {
 
     val siteId = referenceDb("_local/site-info").execute()("site-id").extract[Int]
 
-    def step(msg: String) = message(referenceDb, siteId, "Ne pas enlever la clé USB - " + msg).execute()
+    def step(msg: String, warning: Boolean = true) =
+      message(referenceDb, siteId, (if (warning) "Ne pas enlever la clé USB - " else "") + msg).toFuture
 
     step("lancement de la copie")
 
@@ -75,9 +76,12 @@ object Replicator {
 
     c.stopCouchDb()
 
-    message(referenceDb, siteId, "La clé USB peut être retirée").execute()
-
-    // FIXME: Since we created the ping document ourselves, we could also remove it safely.
+    val end = step("La clé USB peut être retirée", false) flatMap {
+      _ => referenceDb(pingId(siteId)).toFuture
+    } flatMap {
+      referenceDb.delete(_).toFuture
+    }
+    Await.ready(end, 5 seconds)
 
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
