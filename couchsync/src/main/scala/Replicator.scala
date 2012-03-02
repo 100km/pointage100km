@@ -37,11 +37,17 @@ object Replicator {
     def step(msg: String, warning: Boolean = true) =
       message(referenceDb, (if (warning) "Ne pas enlever la clé USB - " else "") + msg).toFuture
 
-    step("lancement de la copie")
+    def wait(msg: String, seconds: Int) =
+      for (i <- 1 to seconds) {
+        step(msg + " (" + i + "/" + seconds + ")")
+        Thread.sleep(1000)
+      }
+
+    step("construction de la configuration")
 
     val c = new Replicator(options.localDir, options.usbDir)
     c.runCouchDb()
-    Thread.sleep(5000)
+    wait("lancement de la base sur clé USB", 5)
     val couch = c.couch
     val db = couch.db("steenwerck100km")
     try {
@@ -67,12 +73,12 @@ object Replicator {
 
     step("vérification des documents…")
     val List(count, refCount) = docCount(db, referenceDb)
-    if (count == refCount)
-      step("vérification des documents ok")
+    val synchro = if (count == refCount)
+      "vérification ok"
     else
-      step("vérifier la synchronisation (clé " + count +", base " + refCount + ")")
+      ("vérifier la synchronisation (clé " + count +", base " + refCount + ")")
 
-    Thread.sleep(5000)
+    wait(synchro + " - écriture finale sur clé", 5)
 
     c.stopCouchDb()
 
