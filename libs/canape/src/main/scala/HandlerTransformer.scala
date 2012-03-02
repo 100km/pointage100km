@@ -3,7 +3,7 @@ package net.rfc1149.canape
 import java.net.SocketAddress
 import org.jboss.netty.channel._
 
-class HandlerTransformer[T: Manifest, U <% AnyRef](handler: ChannelUpstreamHandler,
+class HandlerTransformer[T: Manifest, U <: AnyRef](handler: ChannelUpstreamHandler,
                                                    transformer: (T) => U)
   extends ChannelUpstreamHandler {
 
