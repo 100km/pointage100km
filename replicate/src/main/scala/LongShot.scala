@@ -14,7 +14,7 @@ class LongShot(db: Database) extends PeriodicActor(300 seconds) with LoggingErro
   override val log = Logging(context.system, this)
 
   private[this] def checkForObsolete() = {
-    val deadline = System.currentTimeMillis - 60000   // 1 minute ago is old already
+    val deadline = System.currentTimeMillis - 3600000   // 1 hour ago is old
     val docs = db.view("admin", "transient-docs").toFuture map {
       _.values[JObject] filter { _ \ "time" match {
         case JInt(time) if time < deadline => true
