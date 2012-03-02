@@ -30,4 +30,6 @@ trait DbSpecification extends Specification with BeforeAfterExample {
 	case _ =>
     }
 
+  sequential
+
 }
