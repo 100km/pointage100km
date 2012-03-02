@@ -1,6 +1,7 @@
 function() {
-  var app = $$(this).app;
-  var $_this=$(this);
+  var bib = $(this).find('input[name="bib"]').val();
+  var lap = $(this).find('input[name="lap"]').val();
+  var ts = $(this).find('input[name="ts"]').val();
 
-  change_li($_this, app);
+  $(this).trigger('select_item', { bib: bib, lap: lap, ts: ts });
 }
