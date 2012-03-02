@@ -216,6 +216,20 @@ case class Database(couch: Couch, database: String) {
   }
 
   /**
+   * Delete a document from the database.
+   *
+   * @param doc the document which must contains an `_id` and a `_rev` field
+   * @return a request
+   *
+   * @throws StatusCode if an error occurs
+   */
+  def delete(doc: mapObject): CouchRequest[JValue] = {
+    val JString(id) = doc("_id")
+    val JString(rev) = doc("_rev")
+    delete(id, rev)
+  }
+
+  /**
    * Delete the database.
    *
    * @return a request

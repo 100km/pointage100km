@@ -14,9 +14,14 @@ package object steenwerck {
     db.update("bib_input", "force-update", id,
 	      Map("json" -> compact(render(data))))
 
+  val touchId = "touch-" + uuid
+
+  def touch(db: Database): CouchRequest[JValue] =
+    forceUpdate(db, touchId, Map("type" -> JString("touch")))
+
   implicit def touchIt[T <: AnyRef : Manifest](request: CouchRequest[T]) = new {
-    def thenTouch(db: Database, siteId: Int) = request.map { result =>
-      ping(db, siteId).toFuture
+    def thenTouch(db: Database) = request.map { result =>
+      touch(db).toFuture
       result
     }
   }
@@ -29,7 +34,7 @@ package object steenwerck {
   def ping(db: Database, siteId: Int): CouchRequest[JValue] =
     forceUpdate(db, pingId(siteId), makePing(siteId, System.currentTimeMillis))
 
-  def message(db: Database, siteId: Int, msg: String): CouchRequest[JValue] =
-    forceUpdate(db, "_local/status", ("type" -> "message") ~ ("message" -> msg)).thenTouch(db, siteId)
+  def message(db: Database, msg: String): CouchRequest[JValue] =
+    forceUpdate(db, "_local/status", ("type" -> "message") ~ ("message" -> msg)).thenTouch(db)
 
 }

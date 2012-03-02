@@ -30,13 +30,13 @@ object Replicate extends App {
 
   private val localInfo = ("type" -> "site-info") ~ ("site-id" -> Options.siteId)
 
-  private def createLocalInfo(db: Database, site: Int) {
+  private def createLocalInfo(db: Database) {
     val name = "_local/site-info"
     try {
-      db.insert(localInfo, name).thenTouch(db, site).execute()
+      db.insert(localInfo, name).thenTouch(db).execute()
     } catch {
       case StatusCode(409, _) =>
-	forceUpdate(db, name, localInfo).thenTouch(db, site).execute()
+	forceUpdate(db, name, localInfo).thenTouch(db).execute()
     }
   }
 
@@ -59,7 +59,7 @@ object Replicate extends App {
   }
 
   try {
-    createLocalInfo(localDatabase, Options.siteId)
+    createLocalInfo(localDatabase)
   } catch {
     case t =>
       log.error("cannot create local information: " + t)

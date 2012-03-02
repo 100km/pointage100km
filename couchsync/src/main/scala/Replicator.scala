@@ -24,7 +24,7 @@ object Replicator {
   }
 
   private def docCount(db1: Database, db2: Database) = {
-    Await.result(Future.sequence(List(db1, db2).map(_.allDocs.toFuture)), 10 seconds).map {
+    Await.result(Future.sequence(List(db1, db2).map(_.allDocs.toFuture)), 20 seconds).map {
       _.total_rows
     }
   }
@@ -34,14 +34,25 @@ object Replicator {
 
     val siteId = referenceDb("_local/site-info").execute()("site-id").extract[Int]
 
-    def step(msg: String) = message(referenceDb, siteId, "Ne pas enlever la clé USB - " + msg).execute()
+    def step(msg: String, warning: Boolean = true) =
+      message(referenceDb, (if (warning) "Ne pas enlever la clé USB - " else "") + msg).toFuture
 
-    step("lancement de la copie")
+    def wait(msg: String, seconds: Int)(interruptIf: => Boolean) =
+      for (i <- 1 to seconds) {
+        if (!interruptIf) {
+          step(msg + " (" + i + "/" + seconds + ")")
+          Thread.sleep(1000)
+        }
+      }
+
+    step("construction de la configuration")
 
     val c = new Replicator(options.localDir, options.usbDir)
     c.runCouchDb()
-    Thread.sleep(5000)
     val couch = c.couch
+    wait("lancement de la base sur clé USB", 30) {
+      Await.result(couch.status().toFuture map { _ => true } recover { case _ => false }, 100 milliseconds)
+    }
     val db = couch.db("steenwerck100km")
     try {
       db.create().execute()
@@ -66,18 +77,21 @@ object Replicator {
 
     step("vérification des documents…")
     val List(count, refCount) = docCount(db, referenceDb)
-    if (count == refCount)
-      step("vérification des documents ok")
+    val synchro = if (count == refCount)
+      "vérification ok"
     else
-      step("vérifier la synchronisation (clé " + count +", base " + refCount + ")")
+      ("vérifier la synchronisation (clé " + count +", base " + refCount + ")")
 
-    Thread.sleep(5000)
+    wait(synchro + " - écriture finale sur clé", 5) { false }
 
     c.stopCouchDb()
 
-    message(referenceDb, siteId, "La clé USB peut être retirée").execute()
-
-    // FIXME: Since we created the ping document ourselves, we could also remove it safely.
+    val end = step("La clé USB peut être retirée", false) flatMap {
+      _ => referenceDb(touchId).toFuture
+    } flatMap {
+      referenceDb.delete(_).toFuture
+    }
+    Await.ready(end, 5 seconds)
 
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
