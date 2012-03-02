@@ -11,14 +11,14 @@ function submit_bib_once(bib, app, cb, fail, ts, site_id) {
       url: app.db.uri + "_design/bib_input/_update/add-checkpoint/" + checkpoints_id(bib, site_id),
       data: "ts=" + ts,
       success: function(data) {
-        if (data) {
+        if (data.need_more) {
           retries(3, function(fail) {
             call_with_checkpoints(bib, app, function(checkpoints) {
               initialize_checkpoints_once(checkpoints, bib, app, site_id, cb, fail);
             }, site_id);
           });
         } else {
-          cb && cb();
+          cb && cb(data.lap);
         }
       },
       error: fail
@@ -33,10 +33,11 @@ function initialize_checkpoints_once(checkpoints, bib, app, site_id, success, fa
     checkpoints.bib = bib;
     checkpoints.site_id = site_id;
     checkpoints.race_id = race_id;
-    if (need_write)
-      app.db.saveDoc(checkpoints, {success: success, error: fail});
-    else
-      success && success();
+    if (need_write) {
+      app.db.saveDoc(checkpoints, { success: function() { success(checkpoints.times.length); }, error: fail });
+    } else {
+      success && success(checkpoints.times.length);
+    }
   });
 }
 
@@ -198,23 +199,10 @@ function get_doc(app, cb, doc_name) {
 }
 
 function change_li(li, app) {
-  // return immediately if li has no delete element
-  if (li.find("#delete")[0] == undefined) {
-    return;
-  }
-
-  // First clear all lines
-  li.parents("ul").children().removeClass('selected');
-  // Then set the clicked lines to bold
-  li.addClass('selected');
-
-  // Keep this, current bib and current lap into app
-  app.current_li = li;
-  app.current_bib = parseInt(li.find("#delete")[0]["bib"]["value"]);
-  app.current_lap = parseInt(li.find("#delete")[0]["lap"]["value"]);
-  app.current_ts = parseInt(li.find("#delete")[0]["ts"]["value"]);
-
-  li.trigger("change_infos");
+  // Select the new li element by trigering the 'select_item' event with the corresponding data.
+  var bib = li.find('input[name="bib"]').val();
+  var lap = li.find('input[name="lap"]').val();
+  li.trigger('select_item', { bib: bib, lap: lap });
 }
 
 function deal_with_key(ev, app) {
@@ -229,9 +217,9 @@ function deal_with_key(ev, app) {
     // TODO find a better way to put the key here
     $("#bib_input").find("input")[0].value += (key-48);
   } else if (key == 40) { // down arrow
-    change_li(app.current_li.next(), app)
+    change_li($('#items li.selected').next(), app)
   } else if (key == 38) { // up arrow
-    change_li(app.current_li.prev(), app)
+    change_li($('#items li.selected').prev(), app)
   }
 
   // return false is equivalent to ev.stopPropagation
@@ -360,7 +348,7 @@ function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
 
     function get_average(cb) {
       app.db.view("bib_input/times-per-bib", {
-        startkey : [bib,app.current_ts],
+        startkey : [bib, ts],
         limit : 5,
         descending : true,
         success: function(local_avg_data) {
