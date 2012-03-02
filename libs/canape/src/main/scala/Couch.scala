@@ -23,9 +23,9 @@ abstract class Couch(val host: String,
 
   import implicits._
 
-  implicit val context: ExecutionContext
+  protected[this] implicit val context: ExecutionContext
 
-  private lazy val authorization = {
+  private[this] lazy val authorization = {
     val authChannelBuffer = ChannelBuffers.copiedBuffer(auth.get._1 + ":" + auth.get._2,
       CharsetUtil.UTF_8)
     val encodedAuthChannelBuffer = Base64.encode(authChannelBuffer)
@@ -63,7 +63,7 @@ abstract class Couch(val host: String,
     new SimpleCouchRequest[T](this, request, allowChunks)
   }
 
-  private def convert(data: AnyRef): Some[Either[AnyRef, String]] =
+  private[this] def convert(data: AnyRef): Some[Either[AnyRef, String]] =
     Some(data match {
       case s: String => Right(s)
       case _ => Left(data)
@@ -158,8 +158,8 @@ abstract class Couch(val host: String,
    *
    * @throws StatusCode if an error occurs
    */
-  def replicate(source: Database, target: Database, continuous: Boolean): CouchRequest[JValue] = {
-    makePostRequest[JValue]("_replicate",
+  def replicate(source: Database, target: Database, continuous: Boolean): CouchRequest[JObject] = {
+    makePostRequest[JObject]("_replicate",
       Map("source" -> source.uriFrom(this),
         "target" -> target.uriFrom(this),
         "continuous" -> continuous))
@@ -182,12 +182,13 @@ abstract class Couch(val host: String,
    *
    * @throws StatusCode if an error occurs
    */
-  def activeTasks(): CouchRequest[List[JValue]] = makeGetRequest[List[JValue]]("_active_tasks")
+  def activeTasks(): CouchRequest[List[JObject]] = makeGetRequest[List[JObject]]("_active_tasks")
 
   /**
    * Get a named database. This does not attempt to connect to the database or check
    * its existence.
    *
+   * @param databaseName the database name
    * @return an object representing this database
    */
   def db(databaseName: String) = Database(this, databaseName)
