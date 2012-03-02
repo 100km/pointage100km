@@ -6,9 +6,7 @@ function () {
   app.current_li = $(selector_bib).filter(selector_lap);
 
   // First clear all lines
-  app.current_li.parents("ul").children().children().css("font-weight", "");
-  app.current_li.parents("ul").children().css("background-color","white");
+  app.current_li.parents("ul").children().removeClass('selected');
   // Then set the clicked lines to bold
-  app.current_li.children().css("font-weight", "bold");
-  app.current_li.css("background-color", "#d0ffd0");
+  app.current_li.addClass('selected');
 }
