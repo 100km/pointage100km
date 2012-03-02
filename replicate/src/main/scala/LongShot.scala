@@ -23,7 +23,7 @@ class LongShot(db: Database) extends PeriodicActor(300 seconds) with LoggingErro
     }
     docs flatMap { toDelete =>
       Future.sequence(toDelete map { db.delete(_).toFuture }) onSuccess {
-        case _ => log.info("succesfully deleted obsolete transient documents (" + toDelete.size + ")")
+        case _ => if (!toDelete.isEmpty) log.info("succesfully deleted obsolete transient documents (" + toDelete.size + ")")
       }
     }
   }
