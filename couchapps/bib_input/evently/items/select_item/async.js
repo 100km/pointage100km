@@ -4,6 +4,9 @@ function(callback, e, data) {
   var selector_lap = 'li:has(input[name="lap"][value="' + data.lap + '"])';
   var li = $(selector_bib).filter(selector_lap);
 
+  // Update the data of the selected_item to be up to date.
+  $('#items').data('selected_item', data);
+
   // Unselect everybody and select the one we one.
   li.parents("ul").children().removeClass('selected');
   li.addClass('selected');
