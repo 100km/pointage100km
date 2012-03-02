@@ -38,7 +38,7 @@ trait CouchRequest[T <: AnyRef] {
       override def operationComplete(future: ChannelFuture) {
         if (future.isSuccess) {
           result.success(())
-          send(future.getChannel, true, new CouchRequest.ForwardChannelUpstreamHandler(actor))
+          send(future.getChannel, true, new CouchRequest.StreamingUpstreamHandler(actor))
         } else
           result.failure(future.getCause)
       }
@@ -53,7 +53,7 @@ trait CouchRequest[T <: AnyRef] {
 
 object CouchRequest {
 
-  private class ForwardChannelUpstreamHandler(actor: ActorRef)
+  private class StreamingUpstreamHandler(actor: ActorRef)
     extends SimpleChannelUpstreamHandler {
 
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
