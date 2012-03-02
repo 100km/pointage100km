@@ -1,4 +1,6 @@
-function() {
+function(e) {
+  e.preventDefault();
+
   var form = this;
   var bib = form.bib.value;
   var lap = form.bib.value;

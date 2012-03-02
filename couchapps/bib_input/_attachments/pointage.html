@@ -30,6 +30,7 @@
       $.evently.connect("#title","#items", ["post_changes"]);
       $.evently.connect("#title","#message-bar", ["post_changes"]);
       $.evently.connect("#items","#previous", ["change_infos"]);
+      $.evently.connect("#bib_input","#items", ["set_selected_item"]);
       $.evently.changesOpts.filter = "bib_input/no-ping";
 
       // javascript events
