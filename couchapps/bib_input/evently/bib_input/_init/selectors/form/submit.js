@@ -6,9 +6,9 @@ function() {
   form.reset();
 
   var app = $$(this).app;
-  app.current_bib = 0;
-  app.current_lap = 0;
+  submit_bib(bib, app, null, function(lap) {
+    $('#items').data('selected_item', { bib: bib, lap: lap });
+  });
 
-  submit_bib(bib, app);
   return false;
 };
