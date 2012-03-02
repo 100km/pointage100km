@@ -12,15 +12,24 @@ function(e) {
   bib = parseInt(bib);
   lap = parseInt(lap);
 
-  // Hide the line and then delete with async query.
-  var app = $$(this).app;
-  $(this).parents('li').hide('fast', function() {
-    if ($(this).hasClass('selected')) {
-      $(this).trigger('set_selected_item', null);
-      $(this).trigger('clear_infos');
+  // Start loading the image that will replace the delete input.
+  var img = $('<img/>');
+  img.unbind('load').load(function() {
+    // Remove the delete button of the form.
+    $(form).find('input[type="image"]').remove()
+
+    // Add the image to the form.
+    $(form).prepend(img);
+
+    // If it was the select line, clear the infos and the selected_item.
+    if ($(form).parents('li').hasClass('selected')) {
+      $(form).trigger('set_selected_item', null);
+      $(form).trigger('clear_infos');
     }
-    submit_remove_checkpoint(bib, app, ts);
-  });
+
+    // Send the request to delete the bib.
+    submit_remove_checkpoint(bib, $$(form).app, ts);
+  }).get(0).src = 'img/loading.gif';
 
   return false;
 };
