@@ -1,13 +1,11 @@
 function(data) {
   var app = $$(this).app;
 
-  data.current_bib = app.current_bib;
-
-  // If there is warning, we only need current_bib
-  if (data.warning)
+  // If there is warning, nothing to do, display the widget.
+  if (data.warning) {
     return data;
+  }
 
-  data.current_lap = app.current_lap;
   data.nom = data.infos.nom;
   data.prenom = data.infos.prenom;
 
@@ -20,17 +18,17 @@ function(data) {
     var cur_pred = data.predecessors[i];
     if (cur_pred == undefined)
       break;
-    var cur_time = cur_pred.value.times[data.current_lap - 1];
+    var cur_time = cur_pred.value.times[data.lap - 1];
     pair.bib = cur_pred.value.bib;
     pair.hour_time = time_to_hour_string(cur_time); // this is the absolute hour
     if (i == 0) {
-      time_to_convert = app.current_ts - start_time;
+      time_to_convert = data.ts - start_time;
       prefix = "&nbsp; ";
       data.global_average = data.kms * 1000 * 3600 / time_to_convert;
       data.global_average = data.global_average.toFixed(2);
     }
     else {
-      time_to_convert = app.current_ts - cur_time;
+      time_to_convert = data.ts - cur_time;
       prefix = "- ";
     }
     sec = parseInt(time_to_convert / 1000);
@@ -45,14 +43,13 @@ function(data) {
     tmp[data.limit - 1 - i] = pair;
   }
 
-  data.current_bib_time = tmp.pop();
+  data.bib_time = tmp.pop();
   data.bibs = tmp;
 
 
   if (data.average.avg_present) {
-    var local_kms = site_lap_to_kms(app, app.site_id, app.current_lap) - site_lap_to_kms(app, data.average.last_site, data.average.last_lap);
-    var local_time = app.current_ts - data.average.last_timestamp;
-    // $.log("local_time=" + local_time + " local_kms=" + local_kms + " app.current_lap=" + app.current_lap + " data.average.last_lap=" + data.average.last_lap + " data.average.last_timestamp=" + data.average.last_timestamp + " app.current_ts=" + app.current_ts);
+    var local_kms = site_lap_to_kms(app, app.site_id, data.lap) - site_lap_to_kms(app, data.average.last_site, data.average.last_lap);
+    var local_time = data.ts - data.average.last_timestamp;
 
     data.last_site_name = app.sites[data.average.last_site]
     data.local_kms = local_kms.toFixed(2);

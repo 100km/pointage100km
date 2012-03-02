@@ -371,7 +371,7 @@ function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
             // Check that it's the same bib and that it is a lower combination [lap,site_id]
             var avg_present = local_avg_data.rows[i] &&
               (local_avg_data.rows[i].key[0] == bib) &&
-              ([local_avg_data.rows[i].value[1],local_avg_data.rows[i].value[0]] < [app.current_lap, app.current_site_id]);
+              ([local_avg_data.rows[i].value[1],local_avg_data.rows[i].value[0]] < [lap, site_id]);
           }
           var result = {avg_present:avg_present};
           if (avg_present) {
@@ -396,10 +396,13 @@ function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
       res.average = data[2][0];
       res.infos = infos || empty_info();
       res.course = app.races_names[race_id];
-      res.current_bib_time = app.current_ts;
+      res.bib_time = ts;
       res.warning = warning;
       res.kms = kms;
       res.limit = n;
+      res.bib = bib;
+      res.lap = lap;
+      res.ts = ts;
 
       cb(res);
     });

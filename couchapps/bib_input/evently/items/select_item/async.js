@@ -12,11 +12,6 @@ function(callback, e, data) {
   // Then set the clicked lines to bold
   li.addClass('selected');
 
-  // Keep this, current bib and current lap into app
-  $$(this).app.current_li = li;
-  $$(this).app.current_bib = data.bib;
-  $$(this).app.current_lap = data.lap;
-  $$(this).app.current_ts = data.ts;
-
-  li.trigger("change_infos");
+  // Trigger the change_infos event to update the previous panel
+  li.trigger("change_infos", data);
 }
