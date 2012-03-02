@@ -35,7 +35,7 @@ object Replicator {
     val siteId = referenceDb("_local/site-info").execute()("site-id").extract[Int]
 
     def step(msg: String, warning: Boolean = true) =
-      message(referenceDb, siteId, (if (warning) "Ne pas enlever la clé USB - " else "") + msg).toFuture
+      message(referenceDb, (if (warning) "Ne pas enlever la clé USB - " else "") + msg).toFuture
 
     step("lancement de la copie")
 
@@ -77,7 +77,7 @@ object Replicator {
     c.stopCouchDb()
 
     val end = step("La clé USB peut être retirée", false) flatMap {
-      _ => referenceDb(pingId(siteId)).toFuture
+      _ => referenceDb(touchId).toFuture
     } flatMap {
       referenceDb.delete(_).toFuture
     }
