@@ -24,7 +24,7 @@ package object steenwerck {
   private def makePing(siteId: Int, time: Long) =
     Map("type" -> JString("ping"), ("site_id" -> JInt(siteId)), ("time" -> JInt(time)))
 
-  private def pingId(siteId: Int) = "ping-site" + siteId + "-" + uuid
+  def pingId(siteId: Int) = "ping-site" + siteId + "-" + uuid
 
   def ping(db: Database, siteId: Int): CouchRequest[JValue] =
     forceUpdate(db, pingId(siteId), makePing(siteId, System.currentTimeMillis))
