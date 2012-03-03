@@ -7,8 +7,8 @@ function(callback, e, data) {
   // If we don't find the item, take the first one
   if (li.length == 0) {
     li = $(this).find('li:eq(1)');
-    var bib = li.find('input[name="bib"]').val();
-    var lap = li.find('input[name="lap"]').val();
+    var bib = parseInt(li.find('input[name="bib"]').val());
+    var lap = parseInt(li.find('input[name="lap"]').val());
     data = { bib : bib, lap: lap };
   }
 
@@ -20,7 +20,7 @@ function(callback, e, data) {
   li.addClass('selected');
 
   // Update the ts of the data with the ts of the line (comes from DB).
-  data.ts = li.find('input[name="ts"]').val();
+  data.ts = parseInt(li.find('input[name="ts"]').val());
 
   // Trigger the change_infos event to update the #previous widget.
   li.trigger("change_infos", data);
