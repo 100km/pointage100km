@@ -131,9 +131,8 @@ function timestamp_at_lap(checkpoints, bib, lap) {
 function test_previous(app, bib, lap, checkpoints, expected) {
   expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
-    var kms = site_lap_to_kms(app, app.site_id, lap);
     var ts = timestamp_at_lap(checkpoints, bib, lap);
-    call_with_previous(app, app.site_id, bib, lap, ts, kms, function(data) {
+    call_with_previous(app, app.site_id, bib, lap, ts, function(data) {
       var bibs = {
         predecessors: data.predecessors.map(function(predecessor) { return predecessor.value.bib }),
         rank: data.rank
