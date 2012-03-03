@@ -6,7 +6,7 @@ function(cb) {
     function(cb) { get_doc(app, cb, "ping-site1") },
     function(cb) { get_doc(app, cb, "ping-site2") },
     function(cb) {
-      app.db.view("bib_input/bib-problems", {
+      app.db.view("admin/bib-problems", {
         success: cb
       });
     }
