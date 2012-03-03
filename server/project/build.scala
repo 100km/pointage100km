@@ -46,5 +46,5 @@ object Steenwerck extends Build {
   lazy val config = Project(id = "config", base = file("libs/config"))
 
   // Used by subprojects to set the assembly JAR file
-  lazy val jn = name { n => ("../../bin/" + n + ".jar").toString }
+  lazy val jn = name { n => ("../../../bin/" + n + ".jar").toString }
 }

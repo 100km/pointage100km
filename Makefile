@@ -1,7 +1,8 @@
 JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
 BINFILES = $(JARFILES:.jar=)
 DIST = bin.tar.xz
-SBT = ./sbt
+ROOTDIR = server
+SBT = sbt
 
 all:: assembly
 
@@ -14,16 +15,16 @@ $(DIST): $(JARFILES) $(BINFILES)
 	tar Jcvf $(DIST) $(JARFILES) $(BINFILES)
 
 clean::
-	$(SBT) root/clean
+	cd $(ROOTDIR) && $(SBT) root/clean
 
 distclean::
 	$(MAKE) clean
 	$(RM) $(JARFILES)
 
 check::
-	$(SBT) root/test
+	cd $(ROOTDIR) && $(SBT) root/test
 
 %.jar: ALWAYS
-	$(SBT) `basename ${@:.jar=}`/assembly
+	cd $(ROOTDIR) && $(SBT) `basename ${@:.jar=}`/assembly
 
 ALWAYS::
