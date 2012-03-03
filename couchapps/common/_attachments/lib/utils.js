@@ -319,11 +319,12 @@ function call_with_app_data(app, cb) {
   });
 }
 
-function call_with_previous(app, site_id, bib, lap, ts, kms, cb) {
+function call_with_previous(app, site_id, bib, lap, ts, cb) {
   var handle_open = function(infos) {
     var race_id = infos["course"] || 0;
     var n = race_id == 0 ? 0 : 3;
     var warning = race_id == 0;
+    var kms = site_lap_to_kms(app, site_id, lap).toFixed(2);
 
     if (warning)
       cb({warning:warning});
