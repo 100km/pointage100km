@@ -1,0 +1,13 @@
+/***************************
+ * General HTML tag styles. *
+ ***************************/
+
+body {
+  font:1em Helvetica, sans-serif;
+  padding:4px;
+}
+
+h1 {
+  margin-top:0;
+}
+
