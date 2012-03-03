@@ -1,21 +1,17 @@
 function(callback, e, data) {
   // Get the matching <li> element according to the data.
-  var selector_bib = 'li:has(form#delete input[name="bib"][value="' + data.bib + '"])';
-  var selector_lap = 'li:has(input[name="lap"][value="' + data.lap + '"])';
-  var li = $(selector_bib).filter(selector_lap);
+  var li = $('#js_checkpoint_' + data.bib + '_' + data.lap);
 
   // If we don't find the item, take the first one
   if (li.length == 0) {
     li = $(this).find('li:eq(1)');
-    var bib = parseInt(li.find('input[name="bib"]').val());
-    var lap = parseInt(li.find('input[name="lap"]').val());
-    data = { bib : bib, lap: lap };
+    data = li.data('checkpoint');
   }
 
   // Update the data of the selected_item to be up to date.
   $('#items').data('selected_item', data);
 
-  // Unselect everybody and select the one we one.
+  // Unselect everybody and select the one we find.
   li.parents("ul").children().removeClass('selected');
   li.addClass('selected');
 
