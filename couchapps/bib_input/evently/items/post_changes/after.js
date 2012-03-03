@@ -8,8 +8,8 @@ function () {
   // There is not selected item in the data of the widget, select the first one.
   if (!selected_item) {
     var first_line = $(this).find('li:eq(1)');
-    var bib = first_line.find('input[name="bib"]').val();
-    var lap = first_line.find('input[name="lap"]').val();
+    var bib = parseInt(first_line.find('input[name="bib"]').val());
+    var lap = parseInt(first_line.find('input[name="lap"]').val());
     selected_item = { bib : bib, lap: lap };
   }
 
