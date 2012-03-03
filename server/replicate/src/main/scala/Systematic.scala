@@ -1,4 +1,3 @@
-import akka.actor.Props
 import akka.dispatch.{Await, Future, Promise}
 import akka.event.Logging
 import akka.util.Duration
@@ -8,9 +7,9 @@ import net.rfc1149.canape._
 
 import Global._
 
-class Systematic(local: Database, remote: Database) extends PeriodicActor(30 seconds) with LoggingError {
+class Systematic(local: Database, remote: Database) extends PeriodicTask(30 seconds) with LoggingError {
 
-  override val log = Logging(context.system, this)
+  override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =
     withError(local.replicateTo(remote, true).toFuture,
