@@ -10,7 +10,7 @@ function(cb) {
 	});
     }
     function _get_messages(app, startkey, endkey, cb1) {
-	app.db.view("bib_input/all-valid-messages", {
+	app.db.view("admin/all-valid-messages", {
 	    startkey: startkey,
 	    endkey:   endkey,
 	    success: function(data) {
