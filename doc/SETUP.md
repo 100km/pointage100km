@@ -106,6 +106,8 @@ sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin/couch
 #try the couchapp
 
 In order to try the couchapp, please configure couchdb to have local administrative user to be "admin" with password "admin".  
+
+#####Method 1:
 Stop couchdb  
 Edit the `local.ini` file of couchdb
 <pre>
@@ -114,9 +116,14 @@ admin=admin
 </pre>
 Restart couchdb: `sudo -u couchdb couchdb` (for those who run it on a command line)
 
-Then, just go to `bib_input` directory and run `couchapp push`. You should see a message like this:  
+#####Method 2:
+Go to http://localhost:5984/_utils/ and look at the **bottom right corner** to create a admin account 
+
+Then, just go to `couchapps` directory and run `./pushapps.bash`. You should see a message like this:  
+<pre>
 // date info // [INFO] Visit your CouchApp here:  
 http://localhost:5984/steenwerck100km/_design/bib_input/index.html
+</pre>
 
 You can also visit http://localhost:5984/_utils/ and see that it created a database `steenwerck100km`
 
