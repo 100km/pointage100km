@@ -2,7 +2,7 @@ JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
 BINFILES = $(JARFILES:.jar=)
 DIST = bin.tar.xz
 ROOTDIR = server
-SBT = sbt
+SBT = ./sbt
 
 all:: assembly
 
