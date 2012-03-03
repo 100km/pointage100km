@@ -3,14 +3,13 @@ function(e) {
 
   var form = this;
   var bib = form.bib.value;
-  var lap = form.bib.value;
   var ts = form.ts.value;
-  if (bib == '' || ts == '' || lap == '') {
+  if (bib == '' || ts == '') {
     return false;
   }
 
   bib = parseInt(bib);
-  lap = parseInt(lap);
+  ts = parseInt(ts);
 
   // Start loading the image that will replace the delete input.
   var img = $('<img/>');
