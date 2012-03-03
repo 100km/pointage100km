@@ -25,7 +25,7 @@ object Wipe extends App {
   if (!parser.parse(args))
     sys.exit(1)
 
-  val config = Config("steenwerck.cfg")
+  val config = Config("steenwerck.cfg", "../steenwerck.cfg")
   val hubCouch = new NioCouch(config.read[String]("master.host"),
 			      config.read[Int]("master.port"),
 			      Some(Options.login, Options.password))

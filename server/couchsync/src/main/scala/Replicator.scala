@@ -51,13 +51,20 @@ object Replicator {
     c.runCouchDb()
     val couch = c.couch
     wait("lancement de la base sur clé USB", 30) {
-      Await.result(couch.status().toFuture map { _ => true } recover { case _ => false }, 100 milliseconds)
+      try {
+        Await.result(couch.status().toFuture map { _ => true } recover { case _ => false }, 100 milliseconds)
+      } catch {
+        case _ => false
+      }
     }
     val db = couch.db("steenwerck100km")
     try {
       db.create().execute()
     } catch {
       case StatusCode(412, _) => // Database already exists
+      case e: java.net.ConnectException =>
+        step("impossible de démarrer la base sur clé USB", false)
+        throw e
     }
     step("synchronisation")
     db.replicateTo(referenceDb, false).execute()
