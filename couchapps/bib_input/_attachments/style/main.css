@@ -241,11 +241,3 @@ Will let the previous info on top of screen */
   font-weight:bold;
 }
 
-/***********************
- * Styles for the laps *
- ***********************/
-
-#laps {
-  border:4px solid #dfd;
-  padding:8px;
-}
