@@ -132,7 +132,8 @@ function test_previous(app, bib, lap, checkpoints, expected) {
   expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var ts = timestamp_at_lap(checkpoints, bib, lap);
-    call_with_previous(app, app.site_id, bib, lap, ts, function(data) {
+    var data = {bib: bib, lap: lap, ts: ts, course: 1};
+    call_with_previous(app, app.site_id, data, function(data) {
       var bibs = {
         predecessors: data.predecessors.map(function(predecessor) { return predecessor.value.bib }),
         rank: data.rank
@@ -145,9 +146,9 @@ function test_previous(app, bib, lap, checkpoints, expected) {
 function test_average(app, bib, lap, checkpoints, expected) {
   expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
-    var kms = site_lap_to_kms(app, app.site_id, lap);
     var ts = timestamp_at_lap(checkpoints, bib, lap);
-    call_with_previous(app, app.site_id, bib, lap, ts, kms, function(data) {
+    var data = {bib: bib, lap: lap, ts: ts, course: 1};
+    call_with_previous(app, app.site_id, data, function(data) {
       var average = data.average;
       deepEqual(average, expected, "Compare the data given to the callback given to call_with_previous");
       cb();
@@ -259,10 +260,11 @@ function test_bib_input(app) {
     });
     module("average");
     asyncTest("average same site", function() {
-      test_average(app, 1, 2, [
-        { bib: 1, ts: 1000, site_id:0 },
-        { bib: 1, ts: 2000, site_id:0 }
+      test_average(app, 10, 2, [
+        { bib: 20, ts: 1000, site_id:0 },
+        { bib: 20, ts: 2000, site_id:0 }
       ], {
+        avg_present: true,
         last_site:0,
         last_timestamp:2000,
         last_lap:2
