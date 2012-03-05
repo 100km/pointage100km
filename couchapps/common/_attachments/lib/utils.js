@@ -300,7 +300,6 @@ function site_lap_to_kms(app, site_id, lap) {
 }
 
 function copy_app_data(app, data) {
-    app.site_id = data.site_id
     app.sites = data.infos["sites"]
     app.sites_nb = app.sites.length
     app.races_names = data.infos["races_names"]
@@ -326,6 +325,7 @@ function call_with_app_data(app, cb) {
     function(cb) { get_doc(app, cb, "infos") }
   ], function(result) {
     var data = {site_id:result[0][0]["site-id"], infos:result[1][0]};
+    app.site_id = data.site_id;
     copy_app_data(app, data);
     cb(data);
   });
