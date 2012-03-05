@@ -308,6 +308,18 @@ function copy_app_data(app, data) {
     app.kms_lap = data.infos["kms_lap"]
     app.start_times = data.infos["start_times"]
 }
+
+function appinfo_initialized(app) {
+  return _.all([
+    "site_id", "sites",
+    "sites_nb", "races_names",
+    "kms_offset", "app.kms_lap",
+    "app.start_times"
+  ], function(key) {
+      return app[key] != undefined;
+  });
+}
+
 function call_with_app_data(app, cb) {
   fork([
     function(cb) { get_doc(app, cb, "_local/site-info") },

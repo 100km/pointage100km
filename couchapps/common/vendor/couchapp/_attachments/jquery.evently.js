@@ -140,10 +140,17 @@ function $$(node) {
     }
     
     if (app && events._changes) {
-      $("body").bind("evently-changes-"+app.db.name, function() {
-        elem.trigger("_changes");        
+      var filter = "",
+          filter_event_suffix = "";
+      if (events._changes.filter) {
+        filter = events._changes.filter;
+        filter.ddoc = filter.ddoc || app.design.doc_id.split("/")[1];
+        filter_event_suffix = "-" + filter.ddoc + "/" + filter.name;
+      }
+      $("body").bind("evently-changes-"+app.db.name+filter_event_suffix, function() {
+        elem.trigger("_changes");
       });
-      followChanges(app);
+      followChanges(app, filter, filter_event_suffix);
       elem.trigger("_changes");
     }
   };
@@ -351,20 +358,28 @@ function $$(node) {
     }
   };
   
-  // only start one changes listener per db
-  function followChanges(app) {
+  // only start one changes listener per db per filter
+  function followChanges(app, filter, filter_event_suffix) {
     var dbName = app.db.name, changeEvent = function(resp) {
-      $("body").trigger("evently-changes-"+dbName, [resp]);
+      $("body").trigger("evently-changes-"+dbName+filter_event_suffix, [resp]);
     };
-    if (!$.evently.changesDBs[dbName]) {
+    $.evently.changesDBs[dbName] = $.evently.changesDBs[dbName] || {};
+    if (!$.evently.changesDBs[dbName][filter_event_suffix]) {
       if (app.db.changes) {
         // new api in jquery.couch.js 1.0
-        app.db.changes(null, $.evently.changesOpts).onChange(changeEvent);
+        var opts;
+        if (filter) {
+          opts = $.extend({},$.evently.changesOpts);
+          opts.filter = filter_event_suffix.substr(1);
+        } else {
+          opts = $.evently.changesOpts;
+        }
+        app.db.changes(null, opts).onChange(changeEvent);
       } else {
         // in case you are still on CouchDB 0.11 ;) deprecated.
         connectToChanges(app, changeEvent);
       }
-      $.evently.changesDBs[dbName] = true;
+      $.evently.changesDBs[dbName][filter_event_suffix] = true;
     }
   }
   $.evently.followChanges = followChanges;
