@@ -1,6 +1,8 @@
 function(cb) {
   var app = $$(this).app;
   var site_id = app.site_id;
+  if (!appinfo_initialized)
+    cb([]);
 
   // startkey and endkey are inversed because descending is true
   app.db.view("bib_input/recent-checkpoints", {
