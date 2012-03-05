@@ -23,6 +23,9 @@ package object steenwerck {
     forceUpdate(db, pingId(siteId), makePing(siteId, System.currentTimeMillis))
 
   def message(db: Database, msg: String): CouchRequest[JValue] =
-    forceUpdate(db, "_local/status", ("type" -> "message") ~ ("message" -> msg))
+    forceUpdate(db, "status",
+		("type" -> "status") ~
+		("scope" -> "local") ~
+		("message" -> msg))
 
 }

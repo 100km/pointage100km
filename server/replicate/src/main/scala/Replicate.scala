@@ -14,10 +14,12 @@ object Replicate extends App {
 
   import Global._
 
-  private val localInfo = ("type" -> "site-info") ~ ("site-id" -> options.siteId)
+  private val localInfo = ("type" -> "site-info") ~
+			  ("scope" -> "local") ~
+			  ("site-id" -> options.siteId)
 
   private def createLocalInfo(db: Database) {
-    val name = "_local/site-info"
+    val name = "site-info"
     try {
       db.insert(localInfo, name).execute()
     } catch {

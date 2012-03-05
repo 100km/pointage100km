@@ -24,7 +24,7 @@ function db_bcast_messages(app, cb) {
 }
 
 function db_local_status(app, cb) {
-  app.db.openDoc("_local/status", {
+  app.db.openDoc("status", {
     success: cb,
     error: function(a,b,c) { cb(""); }
   });

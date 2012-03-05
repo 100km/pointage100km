@@ -2,6 +2,7 @@ package net.rfc1149.canape
 
 import akka.dispatch.ExecutionContext
 import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 import net.liftweb.json.Serialization.write
 import org.jboss.netty.buffer._
 import org.jboss.netty.handler.codec.base64.Base64
@@ -153,16 +154,16 @@ abstract class Couch(val host: String,
    *
    * @param source the database to replicate from
    * @param target the database to replicate into
-   * @param continuous true if the replication must be continuous, false otherwise
+   * @param params extra parameters to the request
    * @return a request
    *
    * @throws StatusCode if an error occurs
    */
-  def replicate(source: Database, target: Database, continuous: Boolean): CouchRequest[JObject] = {
+  def replicate[T <% JObject](source: Database, target: Database, params: T): CouchRequest[JObject] = {
     makePostRequest[JObject]("_replicate",
-      Map("source" -> source.uriFrom(this),
-        "target" -> target.uriFrom(this),
-        "continuous" -> continuous))
+      ("source" -> source.uriFrom(this)) ~
+      ("target" -> target.uriFrom(this)) ~
+      params)
   }
 
   /**
