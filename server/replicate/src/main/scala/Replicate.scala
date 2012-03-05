@@ -28,18 +28,18 @@ object Replicate extends App {
 
   import Global._
 
-  private val localInfo = ("type" -> "site-info") ~ ("site-id" -> Options.siteId)
+  private val localInfo = ("type" -> "site-info") ~
+			  ("scope" -> "local") ~
+			  ("site-id" -> Options.siteId)
 
   private def createLocalInfo(db: Database) {
-    val name = "_local/site-info"
+    val name = "site-info"
     try {
       db.insert(localInfo, name).execute()
     } catch {
       case StatusCode(409, _) =>
 	forceUpdate(db, name, localInfo).execute()
     }
-    // Force change to be visible immediately and synchronously in case we are exiting
-    touch(db).execute()
   }
 
   def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
