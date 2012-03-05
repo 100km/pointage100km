@@ -9,6 +9,6 @@ function(data) {
 
     return {
         site_name : app.sites[app.site_id],
-        site_id : data.site_id
+        site_id : app.site_id
     }
 };

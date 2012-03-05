@@ -162,6 +162,14 @@ function time_to_hour_string(t) {
   return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + ":" + pad2(date.getSeconds());
 }
 
+function update_clock_on_div(div) {
+  var current_time = new Date();
+  var h = pad2(current_time.getHours());
+  var m = pad2(current_time.getMinutes());
+  var s = pad2(current_time.getSeconds());
+  $(div).html(h+":"+m+":"+s);
+}
+
 //From http://stackoverflow.com/questions/4631774/coordinating-parallel-execution-in-node-js
 function fork (async_calls, shared_callback) {
   var counter = async_calls.length;
@@ -299,13 +307,13 @@ function site_lap_to_kms(app, site_id, lap) {
   return app.kms_offset[site_id] + (lap - 1) * app.kms_lap;
 }
 
-function copy_app_data(app, data) {
-    app.sites = data.infos["sites"]
+function copy_app_data(app, infos) {
+    app.sites = infos["sites"]
     app.sites_nb = app.sites.length
-    app.races_names = data.infos["races_names"]
-    app.kms_offset = [data.infos["kms_offset_site0"], data.infos["kms_offset_site1"], data.infos["kms_offset_site2"]]
-    app.kms_lap = data.infos["kms_lap"]
-    app.start_times = data.infos["start_times"]
+    app.races_names = infos["races_names"]
+    app.kms_offset = [infos["kms_offset_site0"], infos["kms_offset_site1"], infos["kms_offset_site2"]]
+    app.kms_lap = infos["kms_lap"]
+    app.start_times = infos["start_times"]
 }
 
 function appinfo_initialized(app) {
@@ -324,10 +332,9 @@ function call_with_app_data(app, cb) {
     function(cb) { get_doc(app, cb, "_local/site-info") },
     function(cb) { get_doc(app, cb, "infos") }
   ], function(result) {
-    var data = {site_id:result[0][0]["site-id"], infos:result[1][0]};
-    app.site_id = data.site_id;
-    copy_app_data(app, data);
-    cb(data);
+    app.site_id = result[0][0]["site-id"];
+    copy_app_data(app, result[1][0]);
+    cb();
   });
 }
 
