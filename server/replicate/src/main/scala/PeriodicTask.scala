@@ -11,10 +11,8 @@ abstract class PeriodicTask(period: Duration) {
   def act(): Unit
 
   private[this] def nextIteration() {
-    Global.system.scheduler.scheduleOnce(period) {
-      try act() catch { case e => log.warning("error in PeriodicActor: " + e) }
-      nextIteration()
-    }
+    try act() catch { case e => log.warning("error in PeriodicActor: " + e) }
+    Global.system.scheduler.scheduleOnce(period)(nextIteration _)
   }
 
   nextIteration()
