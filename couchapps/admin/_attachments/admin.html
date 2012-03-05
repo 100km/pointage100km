@@ -6,9 +6,10 @@
     <link rel="stylesheet" href="style/main.css" type="text/css">
   </head>
   <body>
+    <div id="bib_admin_current_time">Il est :<div id="the_current_time"></div></div>
     <div id="bib_admin_title"></div>
-    Il est :<div id="bib_admin_current_time"></div>
-    Dernière mise à jour :<div id="bib_admin_last_refresh_time"></div>
+    <div id="bib_admin_last_refresh_time">Dernière mise à jour :<div id="the_last_refresh_time"></div></div>
+    <div style="clear:both;"></div>
     <div id="bib_admin_input_message_div"></div>
     <div id="bib_admin_message_list_div"></div>
     <div id="bib_admin_problems"></div>
@@ -28,11 +29,11 @@
 
   <script type="text/javascript" charset="utf-8">
     // Print the last refreshed time
-    update_clock_on_div("#bib_admin_last_refresh_time");
+    update_clock_on_div("#the_last_refresh_time");
 
     // Print the clock
     function update_wall_clock() {
-      update_clock_on_div("#bib_admin_current_time");
+      update_clock_on_div("#the_current_time");
     }
     setInterval( update_wall_clock , 1000);
   </script>
