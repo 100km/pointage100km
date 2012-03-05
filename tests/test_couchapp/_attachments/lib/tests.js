@@ -126,7 +126,10 @@ function with_temp_checkpoints_and_start(app, checkpoints, cb) {
   });
 }
 function timestamp_at_lap(checkpoints, bib, lap) {
-  return _.filter(checkpoints, function(checkpoint) { return checkpoint.bib == bib })[lap-1].ts;
+  //$.log("TIMESTAMP : lap " + lap + " bib " + bib + "(checkpoints = " + JSON.stringify(checkpoints) + ")");
+  var result = _.filter(checkpoints, function(checkpoint) { return checkpoint.bib == bib })[lap-1].ts;
+  //$.log("result " + result);
+  return result;
 }
 function test_previous(app, bib, lap, checkpoints, expected) {
   expect(1);
@@ -261,13 +264,13 @@ function test_bib_input(app) {
     module("average");
     asyncTest("average same site", function() {
       test_average(app, 10, 2, [
-        { bib: 20, ts: 1000, site_id:0 },
-        { bib: 20, ts: 2000, site_id:0 }
+        { bib: 10, ts: 1000, site_id:0 },
+        { bib: 10, ts: 2000, site_id:0 }
       ], {
         avg_present: true,
         last_site:0,
-        last_timestamp:2000,
-        last_lap:2
+        last_timestamp:1000,
+        last_lap:1
       });
     });
 
