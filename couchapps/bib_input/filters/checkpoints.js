@@ -1,3 +1,3 @@
 function(doc, req) {
-  return doc.times && doc.times.length > 0;
+  return doc.times;
 }
