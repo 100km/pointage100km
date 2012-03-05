@@ -6,7 +6,12 @@ function (datas) {
 
   $.each(datas, function(index, info) {
     // Build the data object for the checkpoint.
-    var data = info.doc;
+    var data;
+    if (info.doc) {
+      data = info.doc;
+    } else {
+      data = { warning: true };
+    }
     data.bib = info.value.bib;
     data.lap = info.value.lap;
     // Store information of each contestant, to avoid to retrieve them again from DB when you click on the element.
