@@ -1,14 +1,9 @@
 <script type="text/javascript" charset="utf-8">
-function update_clk() {
-  var current_time = new Date();
-  var h = pad2(current_time.getHours());
-  var m = pad2(current_time.getMinutes());
-  var s = pad2(current_time.getSeconds());
-  $("#clk").html(h+":"+m+":"+s);
-}
-
-update_clk();
-setInterval( update_clk , 1000);
+  function update_clk() {
+    update_clock_on_div("#clk");
+  }
+  update_clk();
+  setInterval(update_clk, 1000);
 </script>
 
 
