@@ -265,7 +265,7 @@ function call_with_bcast_messages(app, cb) {
   _call_with_messages(app, [null,true], [false], cb);
 }
 function call_with_local_status(app, cb) {
-  app.db.openDoc("_local/status", {
+  app.db.openDoc("status", {
     success: cb,
     error: function(a,b,c) { cb(""); }
   });
@@ -322,7 +322,7 @@ function appinfo_initialized(app) {
 
 function call_with_app_data(app, cb) {
   fork([
-    function(cb) { get_doc(app, cb, "_local/site-info") },
+    function(cb) { get_doc(app, cb, "site-info") },
     function(cb) { get_doc(app, cb, "infos") }
   ], function(result) {
     var data = {site_id:result[0][0]["site-id"], infos:result[1][0]};

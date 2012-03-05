@@ -266,24 +266,24 @@ case class Database(couch: Couch, database: String) {
    * Launch a mono-directional replication from another database.
    *
    * @param source the database to replicate from
-   * @param continuous true if the replication must be continuous, false otherwise
+   * @param params extra parameters to the request
    * @return a request
    *
    * @throws StatusCode if an error occurs
    */
-  def replicateFrom(source: Database, continuous: Boolean): CouchRequest[JObject] =
-    couch.replicate(source, this, continuous)
+  def replicateFrom[T <% JObject](source: Database, params: T = Map()): CouchRequest[JObject] =
+    couch.replicate(source, this, params)
 
   /**
    * Launch a mono-directional replication to another database.
    *
    * @param target the database to replicate to
-   * @param continuous true if the replication must be continuous, false otherwise
+   * @param params extra parameters to the request
    * @return a request
    *
    * @throws StatusCode if an error occurs
    */
-  def replicateTo(target: Database, continuous: Boolean): CouchRequest[JObject] =
-    couch.replicate(this, target, continuous)
+  def replicateTo[T <% JObject](target: Database, params: T = Map()): CouchRequest[JObject] =
+    couch.replicate(this, target, params)
 
 }
