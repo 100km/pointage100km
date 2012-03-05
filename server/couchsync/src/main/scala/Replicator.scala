@@ -94,8 +94,6 @@ object Replicator {
     c.stopCouchDb()
 
     val end = step("La clé USB peut être retirée", false) flatMap {
-      _ => referenceDb(touchId).toFuture
-    } flatMap {
       referenceDb.delete(_).toFuture
     }
     Await.ready(end, 5 seconds)

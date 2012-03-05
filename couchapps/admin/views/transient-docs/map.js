@@ -1,4 +1,4 @@
 function(doc) {
-  if (doc.type == 'ping' || doc.type == 'touch')
+  if (doc.type == 'ping')
     emit(null, doc);
 }
