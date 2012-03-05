@@ -38,8 +38,6 @@ object Replicate extends App {
       case StatusCode(409, _) =>
 	forceUpdate(db, name, localInfo).execute()
     }
-    // Force change to be visible immediately and synchronously in case we are exiting
-    touch(db).execute()
   }
 
   def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
