@@ -26,7 +26,10 @@ object Steenwerck extends Build {
     Seq(libraryDependencies += "com.healthmarketscience.jackcess" % "jackcess" % "1.2.6")
 
   lazy val root =
-    Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config)
+    Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config, stats)
+
+  lazy val stats =
+    Project("stats", file("stats")) dependsOn(canape) settings(akka: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val replicate =
     Project("replicate", file("replicate")) dependsOn(canape, config, steenwerck) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)

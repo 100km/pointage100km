@@ -7,11 +7,11 @@ import net.rfc1149.canape._
 
 import Global._
 
-class LongShot(db: Database) extends PeriodicActor(300 seconds) with LoggingError {
+class LongShot(db: Database) extends PeriodicTask(300 seconds) with LoggingError {
 
   private[this] implicit val formats = DefaultFormats
 
-  override val log = Logging(context.system, this)
+  override val log = Logging(system, "longShot")
 
   private[this] def checkForObsolete() = {
     val deadline = System.currentTimeMillis - 3600000   // 1 hour ago is old
