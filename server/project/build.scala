@@ -7,8 +7,8 @@ import AssemblyKeys._
 object Steenwerck extends Build {
 
   lazy val akka =
-    Seq(libraryDependencies ++= Seq("com.typesafe.akka" % "akka-actor" % "2.0-RC4",
-				    "com.typesafe.akka" % "akka-slf4j" % "2.0-RC4",
+    Seq(libraryDependencies ++= Seq("com.typesafe.akka" % "akka-actor" % "2.0",
+				    "com.typesafe.akka" % "akka-slf4j" % "2.0",
 				    "ch.qos.logback" % "logback-classic" % "1.0.0" % "compile"),
 	resolvers += typesafeRepo)
 
