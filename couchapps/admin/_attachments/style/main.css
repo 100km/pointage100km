@@ -12,6 +12,11 @@ h1 {
   margin-bottom:0;
 }
 
+h3 {
+  margin:0;
+}
+
+
 /************************************************************************************************
  * Style for the title (bib_admin_title + bib_admin_current_time + bib_admin_last_refresh_time) *
  ************************************************************************************************/
@@ -42,6 +47,7 @@ h1 {
   width:20%;
   padding:8px;
 }
+
 
 /**********************************************************************
  * Style for the form to input messages (bib_admin_input_message_div) *
@@ -83,10 +89,6 @@ h1 {
   padding:8px;
   float:left;
   width:100%;
-}
-
-#bib_admin_message_list_div h3 {
-  margin:0;
 }
 
 #bib_admin_message_list_div li {
