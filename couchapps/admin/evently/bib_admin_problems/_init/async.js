@@ -2,14 +2,23 @@ function(cb) {
   var app = $$(this).app;
 
   fork([
-    function(cb) { get_doc(app, cb, "ping-site0") },
-    function(cb) { get_doc(app, cb, "ping-site1") },
-    function(cb) { get_doc(app, cb, "ping-site2") },
+    function(cb) { get_ping(app, 0, cb) },
+    function(cb) { get_ping(app, 1, cb) },
+    function(cb) { get_ping(app, 2, cb) },
     function(cb) {
-      app.db.view("admin/bib-problems", {
+      app.db.view('admin/bib-problems', {
         success: cb
       });
     }
-  ], cb);
+  ],
+  cb);
 };
 
+function get_ping(app, ping, callback) {
+  app.db.view('admin/alive', {
+    key: ping,
+    reduce: true,
+    success: callback,
+    error: function() { callback(); }
+  });
+};
