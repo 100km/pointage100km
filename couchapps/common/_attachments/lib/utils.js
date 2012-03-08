@@ -429,6 +429,12 @@ function call_with_global_ranking(app, cb) {
   });
 }
 
+
+// This function take the table "times" containing all the times for a given bib.
+// times[0] = [time_site0_lap1, time_site0_lap2, time_site0_lap3, ...]
+// times[1] = [time_site1_lap1, time_site1_lap2, time_site1_lap3, ...]
+// times[2] = [time_site2_lap1, time_site2_lap2, time_site2_lap3, ...]
+// It takes also the last pings for each site in order to know if a site may have a problem.
 function check_times(times, ping0, ping1, ping2) {
   var j = 0;
   var res = {};
