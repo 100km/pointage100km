@@ -1,8 +1,8 @@
 function(doc) {
-    if (doc.site_id != undefined) {
-	if (doc.time)
-	    emit(doc.site_id, doc.time);
-	else if (doc.times && doc.times.length > 0)
-	    emit(doc.site_id, doc.times[doc.times.length - 1]);
-    }
+  if (doc.site_id != undefined) {
+    if (doc.time)
+      emit(doc.site_id, doc.time);
+    else if (doc.times && doc.times.length > 0)
+      emit(doc.site_id, doc.times[doc.times.length - 1]);
+  }
 }
