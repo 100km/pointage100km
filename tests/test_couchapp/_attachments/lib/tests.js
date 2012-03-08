@@ -321,3 +321,27 @@ function test_bib_input(app) {
     });
   });
 };
+
+function test_admin(app) {
+  module("check_time");
+  test("missing first checkpoint", function() {
+    expect(1);
+
+    var times = [];
+    times[0] = [];
+    times[1] = [10];
+    times[2] = [];
+    result = check_times(times, 50, 50, 50);
+
+    expected = {
+      site_id : 0,
+      type : "Manque un passage",
+      lap : 0,
+      times_site0 : JSON.stringify(times[0]),
+      times_site1 : JSON.stringify(times[1]),
+      times_site2 : JSON.stringify(times[2])
+    };
+
+    deepEqual(result, expected, "Should return missing first statement.");
+  });
+}
