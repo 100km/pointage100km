@@ -1,4 +1,4 @@
-function(callback, e, data) {
+function(e, data) {
   $(this).data('selected_item', data);
 }
 
