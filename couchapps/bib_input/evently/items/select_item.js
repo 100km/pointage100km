@@ -1,4 +1,4 @@
-function(callback, e, data) {
+function(e, data) {
   // Get the matching <li> element according to the data.
   var li = $('#js_checkpoint_' + data.bib + '_' + data.lap);
 
