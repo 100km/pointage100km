@@ -26,10 +26,10 @@ function bib_assert(app, bib, expected_race_id, expected_length, cb) {
   }, "Error getting freshly inserted checkpoint");
 }
 
-function submit_bib_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
+function add_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
   open_or_null(app, checkpoints_id(bib, app.site_id), function (doc) {
     var previous_checkpoints = (doc && doc.times) || [];
-    submit_bib(bib, app, ts, function() {
+    add_checkpoint(bib, app, ts, function() {
       bib_assert(app, bib, expected_race_id, expected_length, function(checkpoints) {
         var margin_error = ts && 0 || 10000 ;
         ts = ts || new Date().getTime();
@@ -42,17 +42,17 @@ function submit_bib_and_assert(app, bib, ts, expected_race_id, expected_length, 
   });
 }
 
-function submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
-  submit_remove_checkpoint(bib, app, ts, function() {
+function remove_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length, cb) {
+  remove_checkpoint(bib, app, ts, function() {
     bib_assert(app, bib, expected_race_id, expected_length, cb)
   });
 }
 
 ASSERTS_PER_SINGLE_INSERT_DELETE = 9;
 function test_single_bib_insertion(app, bib, expected_race_id, ts) {
-  submit_bib_and_assert(app, bib, ts, expected_race_id, 1, function(checkpoints) {
+  add_checkpoint_and_assert(app, bib, ts, expected_race_id, 1, function(checkpoints) {
     var ts=checkpoints.times[0];
-    submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, 0, function(checkpoints) {
+    remove_checkpoint_and_assert(app, bib, ts, expected_race_id, 0, function(checkpoints) {
       start();
     });
   });
@@ -75,25 +75,25 @@ function async_foreach(seq, loop, cb) {
   }, cb);
 }
 
-function submit_bibs_and_assert(tss, app, bib, expected_race_id, cb) {
+function add_checkpoints_and_assert(tss, app, bib, expected_race_id, cb) {
   async_foreach(tss, function(ts, i, tss, cb) {
-    submit_bib_and_assert(app, bib, ts, expected_race_id, i+1, cb);
+    add_checkpoint_and_assert(app, bib, ts, expected_race_id, i+1, cb);
   }, cb);
 }
 
-function submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, cb) {
+function remove_checkpoints_and_assert(N, app, bib, expected_race_id, cb) {
   async_for(N, 0, function(i, cb) {
     open_or_fail(app, checkpoints_id(bib, app.site_id), function(checkpoints) {
       var expected_length = N - i;
       var ts = checkpoints.times[expected_length-1];
-      submit_remove_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length-1, cb);
+      remove_checkpoint_and_assert(app, bib, ts, expected_race_id, expected_length-1, cb);
     });
   }, cb);
 }
 function test_multiple_bib_insertion(app, bib, expected_race_id, tss) {
   var N = tss.length;
-  submit_bibs_and_assert(tss, app, bib, expected_race_id, function() {
-    submit_remove_checkpoints_and_assert(N, app, bib, expected_race_id, function() {
+  add_checkpoints_and_assert(tss, app, bib, expected_race_id, function() {
+    remove_checkpoints_and_assert(N, app, bib, expected_race_id, function() {
       start();
     });
   });
@@ -106,10 +106,10 @@ function foreach_unwrapped_checkpoints(app, checkpoints, f, cb) {
   }, cb);
 }
 function insert_checkpoints(app, checkpoints, cb) {
-  foreach_unwrapped_checkpoints(app, checkpoints, submit_bib, cb);
+  foreach_unwrapped_checkpoints(app, checkpoints, add_checkpoint, cb);
 }
 function delete_checkpoints(app, checkpoints, cb) {
-  foreach_unwrapped_checkpoints(app, checkpoints, submit_remove_checkpoint, cb);
+  foreach_unwrapped_checkpoints(app, checkpoints, remove_checkpoint, cb);
 }
 
 function with_temp_checkpoints(app, checkpoints, f, cb) {
@@ -136,12 +136,12 @@ function test_previous(app, bib, lap, checkpoints, expected) {
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var ts = timestamp_at_lap(checkpoints, bib, lap);
     var data = {bib: bib, lap: lap, ts: ts, course: 1};
-    call_with_previous(app, app.site_id, data, function(data) {
+    db_previous(app, app.site_id, data, function(data) {
       var bibs = {
         predecessors: data.predecessors.map(function(predecessor) { return predecessor.value.bib }),
         rank: data.rank
       };
-      deepEqual(bibs, expected, "Compare the data given to the callback given to call_with_previous");
+      deepEqual(bibs, expected, "Compare the data given to the callback given to db_previous");
       cb();
     });
   });
@@ -151,9 +151,9 @@ function test_average(app, bib, lap, checkpoints, expected) {
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var ts = timestamp_at_lap(checkpoints, bib, lap);
     var data = {bib: bib, lap: lap, ts: ts, course: 1};
-    call_with_previous(app, app.site_id, data, function(data) {
+    db_previous(app, app.site_id, data, function(data) {
       var average = data.average;
-      deepEqual(average, expected, "Compare the data given to the callback given to call_with_previous");
+      deepEqual(average, expected, "Compare the data given to the callback given to db_previous");
       cb();
     });
   });
@@ -161,7 +161,7 @@ function test_average(app, bib, lap, checkpoints, expected) {
 function test_global(app, checkpoints, expected) {
   expect(expected.length);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
-    call_with_global_ranking(app, function(data) {
+    db_global_ranking(app, function(data) {
       var race_ids = data.rows.map(function(el) { return el.race_id });
       _.each(expected, function(el) {
         var idx = _.indexOf(race_ids, el.race_id);
@@ -178,7 +178,7 @@ function test_global(app, checkpoints, expected) {
   });
 }
 function test_bib_input(app) {
-  call_with_app_data(app, function() {
+  db_app_data(app, function() {
     module("setup");
     test("setup ok", function() {
         expect(1);

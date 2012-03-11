@@ -10,7 +10,7 @@ function() {
 
   // Send the data to the server and tell the items widget what we want to be the next selected item.
   bib = parseInt(bib, 10);
-  submit_bib(bib, $$(this).app, null, function(lap) {
+  add_checkpoint(bib, $$(this).app, null, function(lap) {
     $(form).trigger('set_selected_item', { bib: bib, lap: lap });
   });
 
