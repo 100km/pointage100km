@@ -27,7 +27,7 @@ function(e) {
     }
 
     // Send the request to delete the bib.
-    submit_remove_checkpoint(bib, $$(form).app, ts);
+    remove_checkpoint(bib, $$(form).app, ts);
   }).get(0).src = 'img/loading.gif';
 
   return false;

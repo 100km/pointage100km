@@ -1,10 +1,10 @@
-function submit_bib(bib, app, ts, cb, site_id) {
+function add_checkpoint(bib, app, ts, cb, site_id) {
   site_id = site_id || app.site_id;
   retries(3, function(fail) {
-    submit_bib_once(bib, app, cb, fail, ts, site_id);
-  }, "submit_bib");
+    add_checkpoint_once(bib, app, cb, fail, ts, site_id);
+  }, "add_checkpoint");
 }
-function submit_bib_once(bib, app, cb, fail, ts, site_id) {
+function add_checkpoint_once(bib, app, cb, fail, ts, site_id) {
   ts = ts || new Date().getTime();
   $.ajax({
       type: 'POST',
@@ -13,7 +13,7 @@ function submit_bib_once(bib, app, cb, fail, ts, site_id) {
       success: function(data) {
         if (data.need_more) {
           retries(3, function(fail) {
-            call_with_checkpoints(bib, app, function(checkpoints) {
+            db_checkpoints(bib, app, function(checkpoints) {
               initialize_checkpoints_once(checkpoints, bib, app, site_id, cb, fail);
             }, site_id);
           });
@@ -26,7 +26,7 @@ function submit_bib_once(bib, app, cb, fail, ts, site_id) {
 }
 
 function initialize_checkpoints_once(checkpoints, bib, app, site_id, success, fail) {
-  call_with_race_id(bib, app, function(race_id) {
+  db_race_id(bib, app, function(race_id) {
     need_write = (checkpoints.bib != bib) ||
                  (checkpoints.site_id != site_id) ||
                  (checkpoints.race_id != race_id);
@@ -41,7 +41,7 @@ function initialize_checkpoints_once(checkpoints, bib, app, site_id, success, fa
   });
 }
 
-function call_with_checkpoints(bib, app, f, site_id) {
+function db_checkpoints(bib, app, f, site_id) {
   app.db.openDoc(checkpoints_id(bib, site_id), {
     success: function(checkpoints) {
       $.log(" got " + JSON.stringify(checkpoints));
@@ -52,13 +52,13 @@ function call_with_checkpoints(bib, app, f, site_id) {
 }
 
 
-function submit_remove_checkpoint(bib, app, ts, cb, site_id) {
+function remove_checkpoint(bib, app, ts, cb, site_id) {
   site_id = site_id || app.site_id;
   retries(3, function(fail) {
-    submit_remove_checkpoint_once(bib, app, ts, fail, cb, site_id);
+    remove_checkpoint_once(bib, app, ts, fail, cb, site_id);
   }, "remove checkpoint");
 }
-function submit_remove_checkpoint_once(bib, app, ts, fail, cb, site_id) {
+function remove_checkpoint_once(bib, app, ts, fail, cb, site_id) {
   $.ajax({
       type: 'POST',
       url: app.db.uri + "_design/bib_input/_update/remove-checkpoint/" + checkpoints_id(bib, site_id),
@@ -68,7 +68,7 @@ function submit_remove_checkpoint_once(bib, app, ts, fail, cb, site_id) {
   });
 }
 
-function call_with_race_id(bib, app, f) {
+function db_race_id(bib, app, f) {
   var invalid_race_id = 0;
   app.db.openDoc(infos_id(bib), {
     success: function(bib_info) {

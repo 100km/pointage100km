@@ -1,4 +1,4 @@
-function call_with_previous(app, site_id, data, cb) {
+function db_previous(app, site_id, data, cb) {
   var bib = data.bib;
   var lap = data.lap;
   var ts = data.ts;

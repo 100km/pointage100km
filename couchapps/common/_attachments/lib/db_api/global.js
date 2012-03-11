@@ -1,5 +1,5 @@
 
-function call_with_global_ranking(app, cb) {
+function db_global_ranking(app, cb) {
   app.db.list("bib_input/global-ranking","global-ranking", {
     limit : 50,
     success: function(data) {

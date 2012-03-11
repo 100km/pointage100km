@@ -18,7 +18,7 @@ function appinfo_initialized(app) {
   });
 }
 
-function call_with_app_data(app, cb) {
+function db_app_data(app, cb) {
   fork([
     function(cb) { get_doc(app, cb, "_local/site-info") },
     function(cb) { get_doc(app, cb, "infos") }
