@@ -344,4 +344,76 @@ function test_admin(app) {
 
     deepEqual(result, expected, "Should return missing first statement.");
   });
+
+
+  test("Ok one time", function() {
+    expect(1);
+
+    var times = [];
+    times[0] = [10];
+    times[1] = [];
+    times[2] = [];
+    result = check_times(times, 50, 50, 50);
+
+    expected = {};
+
+    deepEqual(result, expected, "Should return nothing.");
+  });
+
+  test("Ok 5 times", function() {
+    expect(1);
+
+    var times = [];
+    times[0] = [10, 13];
+    times[1] = [11, 14];
+    times[2] = [12];
+    result = check_times(times, 50, 50, 50);
+
+    expected = {};
+
+    deepEqual(result, expected, "Should return nothing.");
+  });
+
+  test("Ok all times", function() {
+    expect(1);
+
+    var times = [];
+    times[0] = [10, 13, 16, 19, 22];
+    times[1] = [11, 14, 17, 20, 23];
+    times[2] = [12, 15, 18, 21, 24];
+    result = check_times(times, 50, 50, 50);
+
+    expected = {};
+
+    deepEqual(result, expected, "Should return nothing.");
+  });
+
+  test("Ok all times but 1 site", function() {
+    expect(1);
+
+    var times = [];
+    times[0] = [10, 13, 16, 19, 22];
+    times[1] = [11];
+    times[2] = [12, 15, 18, 21, 24];
+    result = check_times(times, 50, 12, 50);
+
+    expected = {};
+
+    deepEqual(result, expected, "Should return nothing.");
+  });
+
+  test("Ok all times but 2 sites", function() {
+    expect(1);
+
+    var times = [];
+    times[0] = [10, 13];
+    times[1] = [11, 14, 17, 20, 23];
+    times[2] = [12, 15, 18];
+    result = check_times(times, 15, 50, 50);
+
+    expected = {};
+
+    deepEqual(result, expected, "Should return nothing.");
+  });
+
 }
