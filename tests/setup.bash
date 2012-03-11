@@ -19,11 +19,7 @@ echo "Deleting previous test database..."
 curl -s -X DELETE "$test_db" -H "Content-Type: application/json" 2>&1 | pad_head 2
 
 couchapps_dir="../couchapps"
-needed_couchapps="common bib_input"
-for couchapp in $needed_couchapps; do
-  echo "Pushing needed couchapp $couchapp"
-  (cd $couchapps_dir/$couchapp && couchapp push $test_db) 2>&1 | pad_head 2
-done
+(cd $couchapps_dir && ./pushapps.bash $test_db) 2>&1 | pad_head 2
 
 echo "Pushing test couchapp. Launch the tests at the following URL"
-(cd "./test_couchapp" && couchapp push) | 2>&1 pad_head 2
+(cd "./test_couchapp" && couchapp push) 2>&1 | pad_head 2
