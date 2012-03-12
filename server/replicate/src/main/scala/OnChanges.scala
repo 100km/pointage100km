@@ -1,5 +1,5 @@
 import akka.actor.{Actor, Cancellable, Props}
-import akka.dispatch.{Await, Future}
+import akka.dispatch.{Await, Future, Promise}
 import akka.event.Logging
 import akka.util.Deadline._
 import akka.util.Duration
@@ -29,8 +29,13 @@ class OnChanges(local: Database)
     withError(fixConflictingCheckpoints(local),
       "unable to get conflicting checkpoints")
 
-  private[this] def futures =
-    Future.sequence(List(incompleteCheckpoints, conflictingCheckpoints))
+  private[this] def futures = {
+    val fc = if (Replicate.options.fixConflicts) conflictingCheckpoints
+	     else Promise.successful(true)
+    val fi = if (Replicate.options.fixIncomplete) incompleteCheckpoints
+	     else Promise.successful(true)
+    Future.sequence(List(fc, fi))
+  }
 
   private[this] var changesOccurred = false
 
@@ -63,7 +68,7 @@ class OnChanges(local: Database)
 							   self,
 							   'trigger))
       js \ "id" match {
-	  case JString(s) if s.startsWith("checkpoints-" + Replicate.siteId + "-") =>
+	  case JString(s) if s.startsWith("checkpoints-" + Replicate.options.siteId + "-") =>
 	    watchdog ! js
 	  case _ =>
       }

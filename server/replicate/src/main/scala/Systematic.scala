@@ -23,7 +23,7 @@ class Systematic(local: Database, remote: Database) extends PeriodicTask(30 seco
 
   private[this] def compaction = {
     noCompactionSince = (noCompactionSince + 1) % 4
-    if (noCompactionSince == 0)
+    if (noCompactionSince == 0 && Replicate.options.compact)
       local.compact().toFuture
     else
       Promise.successful(null)

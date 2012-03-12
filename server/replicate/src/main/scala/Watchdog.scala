@@ -13,7 +13,8 @@ class Watchdog(db: Database) extends Actor with FSM[Int, Unit] with LoggingError
   when(0, stateTimeout = 30 seconds) {
 
     case Event(StateTimeout, _) =>
-      withError(Replicate.ping(db), "cannot ping database")
+      if (Replicate.options.watchdog)
+	withError(Replicate.ping(db), "cannot ping database")
       stay()
 
     case Event(js: JObject, _) =>

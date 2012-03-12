@@ -8,18 +8,58 @@ import steenwerck._
 
 object Replicate extends App {
 
-  private object Options {
-    var initOnly: Boolean = false
+  trait Options {
+    def compact: Boolean
+    def fixConflicts: Boolean
+    def fixIncomplete: Boolean
+    def obsolete: Boolean
+    def replicate: Boolean
+    def siteId: Int
+    def watchdog: Boolean
+
+    def onChanges = fixConflicts || fixIncomplete || watchdog
+    def systematic = compact || replicate
+    def initOnly = !onChanges && !systematic
+  }
+
+  private object _options extends Options {
+    var compact: Boolean = true
+    var fixConflicts: Boolean = false
+    var fixIncomplete: Boolean = false
+    var obsolete: Boolean = true
+    var replicate: Boolean = false
+    var watchdog: Boolean = true
     var siteId: Int = _
   }
 
+  val options: Options = _options
+
   private val parser = new OptionParser("replicate") {
-    help("h", "help", "show this help")
-    opt("i", "init-only", "initialize database but do not start tasks", {
-      Options.initOnly = true
+    opt("c", "conflicts", "fix conflicts as they appear", { _options.fixConflicts = true })
+    opt("f", "full", "turn on every service", {
+      _options.compact = true
+      _options.fixConflicts = true
+      _options.fixIncomplete = true
+      _options.obsolete = true
+      _options.replicate = true
+      _options.watchdog = true
     })
+    help("h", "help", "show this help")
+    opt("i", "init-only", "turn off every service", {
+      _options.compact = false
+      _options.fixConflicts = false
+      _options.fixIncomplete = false
+      _options.obsolete = false
+      _options.replicate = false
+      _options.watchdog = false
+    })
+    opt("I", "incomplete", "fix incomplete checkpoints", { _options.fixIncomplete = true })
+    opt("nc", "no-compact", "compact database regularly", { _options.compact = false })
+    opt("no", "no-obsolete", "do not remove obsolete documents", { _options.obsolete = false })
+    opt("nw", "no-watchdog", "do not start the watchdog", { _options.watchdog = false })
+    opt("r", "replicate", "start replication", { _options.replicate = true })
     arg("site_id", "numerical id of the current site", {
-      s: String => Options.siteId = Integer.parseInt(s)
+      s: String => _options.siteId = Integer.parseInt(s)
     })
   }
 
@@ -28,7 +68,7 @@ object Replicate extends App {
 
   import Global._
 
-  private val localInfo = ("type" -> "site-info") ~ ("site-id" -> Options.siteId)
+  private val localInfo = ("type" -> "site-info") ~ ("site-id" -> options.siteId)
 
   private def createLocalInfo(db: Database) {
     val name = "_local/site-info"
@@ -48,9 +88,7 @@ object Replicate extends App {
     }
   }
 
-  def ping(db: Database): Future[JValue] = steenwerck.ping(db, Options.siteId).toFuture
-
-  def siteId = Options.siteId
+  def ping(db: Database): Future[JValue] = steenwerck.ping(db, options.siteId).toFuture
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
@@ -74,7 +112,7 @@ object Replicate extends App {
       exit(1)
   }
 
-  if (Options.initOnly)
+  if (options.initOnly)
     exit(0)
   else {
     val hubCouch = new NioCouch(config.read[String]("master.host"),
@@ -82,9 +120,12 @@ object Replicate extends App {
       Some(config.read[String]("master.user"),
         config.read[String]("master.password")))
     val hubDatabase = hubCouch.db(config.read[String]("master.dbname"))
-    new Systematic(localDatabase, hubDatabase)
-    new LongShot(localDatabase)
-    system.actorOf(Props(new OnChanges(localDatabase)), "onChanges")
+    if (options.systematic)
+      new Systematic(localDatabase, hubDatabase)
+    if (options.obsolete)
+      new LongShot(localDatabase)
+    if (options.onChanges)
+      system.actorOf(Props(new OnChanges(localDatabase)), "onChanges")
   }
 
   private def exit(status: Int) {
