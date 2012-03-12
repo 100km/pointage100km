@@ -13,9 +13,9 @@ trait ConflictsSolver {
 
   private implicit val formats = DefaultFormats
 
-  private def getTimes(from: mapObject, name: String) = from(name) match {
-      case JNull => Nil
-      case l     => l.extract[List[BigInt]]
+  private def getTimes(from: mapObject, name: String) = from.get(name) match {
+      case None | Some(JNull) => Nil
+      case Some(l)            => l.extract[List[BigInt]]
   }
 
   private def times(from: mapObject): List[BigInt] = getTimes(from, "times")
