@@ -1,10 +1,10 @@
 function copy_app_data(app, infos) {
-    app.sites = infos["sites"]
-    app.sites_nb = app.sites.length
-    app.races_names = infos["races_names"]
-    app.kms_offset = [infos["kms_offset_site0"], infos["kms_offset_site1"], infos["kms_offset_site2"]]
-    app.kms_lap = infos["kms_lap"]
-    app.start_times = infos["start_times"]
+  app.sites = infos["sites"]
+  app.sites_nb = app.sites.length
+  app.races_names = infos["races_names"]
+  app.kms_offset = [infos["kms_offset_site0"], infos["kms_offset_site1"], infos["kms_offset_site2"]]
+  app.kms_lap = infos["kms_lap"]
+  app.start_times = infos["start_times"]
 }
 
 function appinfo_initialized(app) {
@@ -14,7 +14,7 @@ function appinfo_initialized(app) {
     "kms_offset", "app.kms_lap",
     "app.start_times"
   ], function(key) {
-      return app[key] != undefined;
+    return app[key] != undefined;
   });
 }
 
