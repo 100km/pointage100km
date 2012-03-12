@@ -4,32 +4,33 @@ function add_checkpoint(bib, app, ts, cb, site_id) {
     add_checkpoint_once(bib, app, cb, fail, ts, site_id);
   }, "add_checkpoint");
 }
+
 function add_checkpoint_once(bib, app, cb, fail, ts, site_id) {
   ts = ts || new Date().getTime();
   $.ajax({
-      type: 'POST',
-      url: app.db.uri + "_design/bib_input/_update/add-checkpoint/" + checkpoints_id(bib, site_id),
-      data: "ts=" + ts,
-      success: function(data) {
-        if (data.need_more) {
-          retries(3, function(fail) {
-            db_checkpoints(bib, app, function(checkpoints) {
-              initialize_checkpoints_once(checkpoints, bib, app, site_id, cb, fail);
-            }, site_id);
-          });
-        } else {
-          cb && cb(data.lap);
-        }
-      },
-      error: fail
+    type: 'POST',
+    url: app.db.uri + "_design/bib_input/_update/add-checkpoint/" + checkpoints_id(bib, site_id),
+    data: "ts=" + ts,
+    success: function(data) {
+      if (data.need_more) {
+        retries(3, function(fail) {
+          db_checkpoints(bib, app, function(checkpoints) {
+            initialize_checkpoints_once(checkpoints, bib, app, site_id, cb, fail);
+          }, site_id);
+        });
+      } else {
+        cb && cb(data.lap);
+      }
+    },
+    error: fail
   });
 }
 
 function initialize_checkpoints_once(checkpoints, bib, app, site_id, success, fail) {
   db_race_id(bib, app, function(race_id) {
     need_write = (checkpoints.bib != bib) ||
-                 (checkpoints.site_id != site_id) ||
-                 (checkpoints.race_id != race_id);
+      (checkpoints.site_id != site_id) ||
+      (checkpoints.race_id != race_id);
     checkpoints.bib = bib;
     checkpoints.site_id = site_id;
     checkpoints.race_id = race_id;
@@ -51,20 +52,20 @@ function db_checkpoints(bib, app, f, site_id) {
   });
 }
 
-
 function remove_checkpoint(bib, app, ts, cb, site_id) {
   site_id = site_id || app.site_id;
   retries(3, function(fail) {
     remove_checkpoint_once(bib, app, ts, fail, cb, site_id);
   }, "remove checkpoint");
 }
+
 function remove_checkpoint_once(bib, app, ts, fail, cb, site_id) {
   $.ajax({
-      type: 'POST',
-      url: app.db.uri + "_design/bib_input/_update/remove-checkpoint/" + checkpoints_id(bib, site_id),
-      data: "ts=" + ts,
-      success: cb,
-      error: fail,
+    type: 'POST',
+    url: app.db.uri + "_design/bib_input/_update/remove-checkpoint/" + checkpoints_id(bib, site_id),
+    data: "ts=" + ts,
+    success: cb,
+    error: fail,
   });
 }
 

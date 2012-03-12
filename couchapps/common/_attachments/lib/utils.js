@@ -1,4 +1,3 @@
-
 function retries(n, f, debug_name) {
   if (n<=0) {
     alert("Too many retries for " + debug_name);
@@ -11,25 +10,23 @@ function retries(n, f, debug_name) {
 
 function handle_not_found_or_die(f) {
   return function(stat, err, reason) {
-     if(not_found(stat, err, reason)) {
+    if(not_found(stat, err, reason)) {
       f();
-     }
-     else {
-       $.log("stat" + JSON.stringify(stat));
-       $.log("err" + JSON.stringify(err));
-       $.log("reason" + JSON.stringify(reason));
-       alert("Error, but not missing doc");
-     }
     }
-
+    else {
+      $.log("stat" + JSON.stringify(stat));
+      $.log("err" + JSON.stringify(err));
+      $.log("reason" + JSON.stringify(reason));
+      alert("Error, but not missing doc");
+    }
+  }
 }
 
 function not_found(stat, err, reason) {
   return (stat==404 && err == "not_found" && (reason == "missing" || reason=="deleted"));
 }
 
-function isBib(bib)
-{
+function isBib(bib) {
   var isBib_re       = /^\d+$/;
   return String(bib).search (isBib_re) != -1
 }
@@ -42,7 +39,7 @@ function place_previous() {
     $('#previous').addClass('stick')
   else
     $('#previous').removeClass('stick');
-  }
+}
 
 function empty_info() {
   return {nom:"", prenom:"", course:""};
@@ -128,7 +125,6 @@ function deal_with_key(ev, app) {
   // return false is equivalent to ev.stopPropagation
   return false;
 }
-
 
 function checkBib(bib) {
   if (bib == "") {

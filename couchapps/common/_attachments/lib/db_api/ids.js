@@ -9,9 +9,11 @@ function infos_id(bib) {
 function local_messages_id(site_id) {
   return "local-messages-" + site_id;
 }
+
 function admin_messages_id(site_id) {
   return "admin-messages-" + site_id;
 }
+
 function admin_broadcast_id() {
   return "admin-messages-broadcast";
 }

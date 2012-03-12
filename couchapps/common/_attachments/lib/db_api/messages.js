@@ -3,28 +3,33 @@ function unwrap_messages(data) {
     return row.value;
   });
 }
+
 function _db_messages(app, startkey, endkey, cb) {
   app.db.view("common/messages-sorted-per-site", {
     startkey: startkey,
     endkey:   endkey,
-    success: function(data) {
-    cb(unwrap_messages(data));
+    success:  function(data) {
+      cb(unwrap_messages(data));
     }
   });
 }
+
 function db_site_messages(app, cb) {
   var id = app.site_id;
   _db_messages(app, [id,true], [id+1], cb);
 }
+
 function db_bcast_messages(app, cb) {
   _db_messages(app, [null,true], [false], cb);
 }
+
 function db_local_status(app, cb) {
   app.db.openDoc("_local/status", {
     success: cb,
     error: function(a,b,c) { cb(""); }
   });
 }
+
 function db_messages(app, cb) {
   fork([
     function(cb1) {db_site_messages(app, cb1)},
