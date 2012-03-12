@@ -12,7 +12,7 @@ trait IncompleteCheckpoints {
   import implicits._
 
   def fixIncompleteCheckpoints(db: Database) =
-    for (r <- db.view("bib_input", "incomplete-checkpoints").toFuture)
+    for (r <- db.view("common", "incomplete-checkpoints").toFuture)
     yield Future.traverse(r.values[JObject]) {
       doc =>
         val JInt(bib) = doc \ "bib"

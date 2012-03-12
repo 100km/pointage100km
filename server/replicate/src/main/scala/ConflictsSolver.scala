@@ -43,7 +43,7 @@ trait ConflictsSolver {
     }
 
   def fixConflictingCheckpoints(db: Database) =
-    db.view("bib_input", "conflicting-checkpoints").toFuture flatMap {
+    db.view("common", "conflicting-checkpoints").toFuture flatMap {
       r =>
         Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
         yield solveConflicts(db, id, value))

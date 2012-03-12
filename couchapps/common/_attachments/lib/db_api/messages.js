@@ -4,7 +4,7 @@ function unwrap_messages(data) {
   });
 }
 function _db_messages(app, startkey, endkey, cb) {
-  app.db.view("bib_input/messages-sorted-per-site", {
+  app.db.view("common/messages-sorted-per-site", {
     startkey: startkey,
     endkey:   endkey,
     success: function(data) {
