@@ -29,6 +29,18 @@ object Stats extends App {
   }
 
   try {
+    for (bib <- 0 to 1000) {
+      val bibStr = Integer.toString(bib)
+      try {
+        val id = "contestant-" + bibStr
+        val doc = Map("_id" -> id, "course" -> (1<< nextInt(3)), "nom" -> ("Bob_" + bibStr), "prenom" -> ("bobbie" + bibStr))
+        db.insert(util.toJObject(doc)).execute()
+        println("Inserted " + bibStr)
+      } catch {
+        case StatusCode(409, _) =>
+          println("Bib info already exist for bib " + bibStr )
+      }
+    }
     for (i <- 1 to args(0).toInt) {
       val checkpoint = nextInt(3)
       val bib = nextInt(1000)
