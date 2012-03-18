@@ -8,7 +8,7 @@ function(cb) {
   app.db.view("bib_input/recent-checkpoints", {
     descending: true,
     include_docs: true,
-    limit : 30,
+    limit : 10,
     startkey : [(site_id+1),0],
     endkey : [site_id,0],
     success: function(data) {
