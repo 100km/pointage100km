@@ -16,6 +16,7 @@ couchapp_load([
   "../common/lib/db_api/ids.js",
   "../common/lib/db_api/messages.js",
   "../common/lib/db_api/previous.js",
+  "../common/lib/db_api/recent.js",
   "../common/lib/utils.js",
   "../common/lib/underscore-min.js",
   "../common/vendor/couchapp/jquery.couch.app.js",
