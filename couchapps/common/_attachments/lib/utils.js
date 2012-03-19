@@ -141,7 +141,7 @@ function site_lap_to_kms(app, site_id, lap) {
 }
 
 
-// This function take the table "times" containing all the times for a given bib.
+// This function take the matrix "times" containing all the times for a given bib.
 // times[0] = [time_site0_lap1, time_site0_lap2, time_site0_lap3, ...]
 // times[1] = [time_site1_lap1, time_site1_lap2, time_site1_lap3, ...]
 // times[2] = [time_site2_lap1, time_site2_lap2, time_site2_lap3, ...]
@@ -150,19 +150,44 @@ function check_times(times, ping0, ping1, ping2) {
   var j = 0;
   var res = {};
 
-  $.log("In check_times " + JSON.stringify(times) + "ping0 " + ping0 + " ping1 " + ping1 + " ping2 " + ping2);
-  while (times[j%3][parseInt(j/3)]) {
-    if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
-      res = {};
-      res.site_id = j%3;
-      res.type = "Manque un passage";
-      res.lap = parseInt(j/3);
-      res.times_site0 = JSON.stringify(times[0]);
-      res.times_site1 = JSON.stringify(times[1]);
-      res.times_site2 = JSON.stringify(times[2]);
-    }
+  //$.log("In check_times " + JSON.stringify(times) + "ping0 " + ping0 + " ping1 " + ping1 + " ping2 " + ping2);
+  var sites = [];
+  while (times[j % 3][parseInt(j / 3)]) {
+    sites.push({ 
+      time: times[j % 3][parseInt(j / 3)],
+      site: j % 3,
+      lap: parseInt(j / 3)
+    }); 
     j++;
   }
+
+  sites.sort(function(s1, s2) { return s2.time <= s1.time; });
+  var input = '';
+  var reference = '';
+  for(var i = 0; i < sites.length; i++) {
+    input += sites[i].site;
+    reference += i % 3;
+  }
+ 
+  var compare = lcs.compare(reference, input);
+  lcs.run(compare, 0, 0, function(i, j) {
+    if (compare[i][j].status == lcs.DELETION) {
+      res.site_id = reference[j];
+      res.type = "Manque un passage";
+      res.lap = sites[i].lap;
+    }
+  });
+//    if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
+//      res = {};
+//      res.site_id = j%3;
+//      res.type = "Manque un passage";
+//      res.lap = parseInt(j/3);
+//      res.times_site0 = JSON.stringify(times[0]);
+//      res.times_site1 = JSON.stringify(times[1]);
+//      res.times_site2 = JSON.stringify(times[2]);
+//    }
+//    j++;
+//  }
 
   return res;
 }
