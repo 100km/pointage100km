@@ -1,5 +1,5 @@
 function(data) {
-    // Set field in app so that everyone can access the site_id
+    // At this point, data (like site_id) has been copied in app
     var app = $$(this).app;
 
     $(this).trigger("app_info_changed");
