@@ -24,7 +24,7 @@ object Stats extends App {
 
   def recentCheckpointsMillis() = {
     val before = System.currentTimeMillis
-    db.view("bib_input", "recent-checkpoints").execute()
+    db.view("bib_input", "recent-checkpoints", List(("limit","10"))).execute()
     System.currentTimeMillis - before
   }
 
