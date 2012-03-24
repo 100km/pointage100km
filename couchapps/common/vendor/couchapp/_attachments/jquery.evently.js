@@ -140,17 +140,12 @@ function $$(node) {
     }
     
     if (app && events._changes) {
-      var opts_id = "";
-      var opts;
-      if (events._changes.opts) {
-        opts = events._changes.opts;
-        opts_id = opts.id;
-        opts.id = undefined;
-      }
+      var opts_id;
+      opts_id = (events._changes.opts && events._changes.opts.id) || "";
       $("body").bind("evently-changes-"+app.db.name+"-"+opts_id, function() {
         elem.trigger("_changes");
       });
-      followChanges(app, opts, opts_id);
+      followChanges(app, events._changes.opts, opts_id);
       elem.trigger("_changes");
     }
   };
@@ -368,6 +363,7 @@ function $$(node) {
       if (app.db.changes) {
         // new api in jquery.couch.js 1.0
         opts = $.extend({},$.evently.changesOpts, opts);
+        opts.id = undefined;
         var promise = app.db.changes(null, opts).onChange(changeEvent);
         $.evently.changesDBs[dbName][opts_id] = {
           promise: promise,
