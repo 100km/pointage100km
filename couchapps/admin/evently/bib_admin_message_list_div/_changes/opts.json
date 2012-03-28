@@ -1,4 +1,4 @@
 {
   "id":"messages",
-  "filter":"bib_input/messages"
+  "filter":"common/messages"
 }
