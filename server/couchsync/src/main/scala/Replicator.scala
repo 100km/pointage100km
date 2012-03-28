@@ -68,8 +68,8 @@ object Replicator {
         throw e
     }
     step("synchronisation")
-    db.replicateTo(referenceDb, ("filter" -> "bib_input/to-replicate")).execute()
-    db.replicateFrom(referenceDb, ("filter" -> "bib_input/to-replicate")).execute()
+    db.replicateTo(referenceDb, ("filter" -> "common/to-replicate")).execute()
+    db.replicateFrom(referenceDb, ("filter" -> "common/to-replicate")).execute()
     waitForNoTasks(couch)
 
     step("compaction")

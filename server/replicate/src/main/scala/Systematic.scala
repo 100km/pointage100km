@@ -15,13 +15,13 @@ class Systematic(local: Database, remote: Database) extends PeriodicTask(30 seco
   private[this] def localToRemoteReplication =
     withError(local.replicateTo(remote,
 				("continuous" -> true) ~
-				("filter" -> "bib_input/to-replicate")).toFuture,
+				("filter" -> "common/to-replicate")).toFuture,
       "cannot replicate from local to remote")
 
   private[this] def remoteToLocalReplication =
     withError(local.replicateFrom(remote,
 				  ("continuous" -> true) ~
-				  ("filter" -> "bib_input/to-replicate")).toFuture,
+				  ("filter" -> "common/to-replicate")).toFuture,
       "cannot replicate from remote to local")
 
   private[this] var noCompactionSince: Int = 0
