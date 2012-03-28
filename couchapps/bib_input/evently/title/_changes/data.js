@@ -3,6 +3,7 @@ function(data) {
     var app = $$(this).app;
 
     $.evently.changesDBs[app.db.name]["checkpoints"].opts.site_id = app.site_id;
+    $.evently.changesDBs[app.db.name]["messages"].opts.site_id = app.site_id;
     $(this).trigger("app_info_changed");
 
     // Set title for the document
