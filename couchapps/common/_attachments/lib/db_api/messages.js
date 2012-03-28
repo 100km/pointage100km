@@ -16,7 +16,10 @@ function _db_messages(app, startkey, endkey, cb) {
 
 function db_site_messages(app, cb) {
   var id = app.site_id;
-  _db_messages(app, [id,true], [id+1], cb);
+  if (id != undefined)
+    _db_messages(app, [id,true], [id+1], cb);
+  else
+    cb([]);
 }
 
 function db_bcast_messages(app, cb) {
