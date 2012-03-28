@@ -14,10 +14,9 @@ function _db_messages(app, startkey, endkey, cb) {
   });
 }
 
-function db_site_messages(app, cb) {
-  var id = app.site_id;
-  if (id != undefined)
-    _db_messages(app, [id,true], [id+1], cb);
+function db_site_messages(app, cb, site_id) {
+  if (site_id != undefined)
+    _db_messages(app, [site_id,true], [site_id+1], cb);
   else
     cb([]);
 }
@@ -33,9 +32,9 @@ function db_local_status(app, cb) {
   });
 }
 
-function db_messages(app, cb) {
+function db_messages(app, cb, site_id) {
   fork([
-    function(cb1) {db_site_messages(app, cb1)},
+    function(cb1) {db_site_messages(app, cb1, site_id)},
     function(cb2) {db_bcast_messages(app, cb2)},
     function(cb3) {db_local_status(app, cb3)}
   ], function(data) {
