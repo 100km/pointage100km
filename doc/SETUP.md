@@ -119,13 +119,11 @@ Restart couchdb: `sudo -u couchdb couchdb` (for those who run it on a command li
 #####Method 2:
 Go to http://localhost:5984/_utils/ and look at the **bottom right corner** to create a admin account 
 
-Then, just go to `couchapps` directory and run `./pushapps.bash`. You should see a message like this:  
-<pre>
-// date info // [INFO] Visit your CouchApp here:  
-http://localhost:5984/steenwerck100km/_design/bib_input/index.html
-</pre>
+Then, just go to `couchapps` directory and run `./pushapps.bash`. The different couchapps are available at http://localhost:5984/steenwerck100km/_design/`couchapp_name`/`page_name`.html
 
-You can also visit http://localhost:5984/_utils/ and see that it created a database `steenwerck100km`
+For example, bib_input is located at http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html
+
+You can visit http://localhost:5984/_utils/ and see that it created a database `steenwerck100km`
 
 #Initialise DB
 
