@@ -146,12 +146,10 @@ function site_lap_to_kms(app, site_id, lap) {
 // times[1] = [time_site1_lap1, time_site1_lap2, time_site1_lap3, ...]
 // times[2] = [time_site2_lap1, time_site2_lap2, time_site2_lap3, ...]
 // It takes also the last pings for each site in order to know if a site may have a problem.
-function check_times(times, ping0, ping1, ping2) {
-  var j = 0;
-  var res = {};
-
-  //$.log("In check_times " + JSON.stringify(times) + "ping0 " + ping0 + " ping1 " + ping1 + " ping2 " + ping2);
+function check_times(times, pings) {
+  // Build the site vector. It is a vector of each step of the bib.
   var sites = [];
+  var j = 0;
   while (times[j % 3][parseInt(j / 3)]) {
     sites.push({ 
       time: times[j % 3][parseInt(j / 3)],
@@ -161,33 +159,39 @@ function check_times(times, ping0, ping1, ping2) {
     j++;
   }
 
+  // Sort the site vector according to time and do a projection to the site index.
   sites.sort(function(s1, s2) { return s2.time <= s1.time; });
   var input = '';
   var reference = '';
-  for(var i = 0; i < sites.length; i++) {
+  var expected_site = 0;
+  for (var i = 0; i < sites.length; i++) {
     input += sites[i].site;
-    reference += i % 3;
+    // Be sure that the current time is ok with the last ping of the expected site.
+    while (sites[i].time > pings[expected_site]) {
+      expected_site = (expected_site + 1) % 3;
+    }
+
+    reference += expected_site;
+    expected_site = (expected_site + 1) % 3;
   }
- 
+
+  // Compare the site vector with the reference. 
+  var pb;
   var compare = lcs.compare(reference, input);
   lcs.run(compare, 0, 0, function(i, j) {
+    // Already identified a pb, just return.
+    if (pb) {
+      return;
+    }
+
     if (compare[i][j].status == lcs.DELETION) {
-      res.site_id = reference[j];
-      res.type = "Manque un passage";
-      res.lap = sites[i].lap;
+      pb = {
+        site_id: reference[j],
+        type: "Manque un passage",
+        lap: sites[i].lap + 1,
+      }
     }
   });
-//    if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
-//      res = {};
-//      res.site_id = j%3;
-//      res.type = "Manque un passage";
-//      res.lap = parseInt(j/3);
-//      res.times_site0 = JSON.stringify(times[0]);
-//      res.times_site1 = JSON.stringify(times[1]);
-//      res.times_site2 = JSON.stringify(times[2]);
-//    }
-//    j++;
-//  }
 
-  return res;
+  return pb;
 }

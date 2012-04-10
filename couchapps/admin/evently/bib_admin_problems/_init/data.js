@@ -2,32 +2,19 @@ function(data) {
   var i = 0;
   var current_bib = 0;
   var times = [[], [], []];
-  var res = {};
-  res.pbs = [];
-  var pb_nb = 0;
-  var ping0 = data[0][0]['max'];
-  var ping1 = data[1][0]['max'];
-  var ping2 = data[2][0]['max'];
+  var res = { pbs: [], times_site0: '', times_site1: '', times_site2: ''};
+  var pings = [data[0][0]['max'], data[1][0]['max'], data[2][0]['max']];
 
   while (data[3][0].rows[i]) {
     var row = data[3][0].rows[i];
     var bib = row.key[0];
 
+    // we can now check for previous bib
     if (bib != current_bib) {
-
-      // we can now check for previous bib
-      res.pbs[pb_nb] = check_times(times, ping0, ping1, ping2);
-      // there was a problem
-      if (res.pbs[pb_nb].site_id != undefined) {
-        res.pbs[pb_nb].bib = current_bib;
-        pb_nb ++;
-      }
-
-      // and we empty times
-      times[0] = [];
-      times[1] = [];
-      times[2] = [];
-
+      // Do the check.
+      do_check_times(res, current_bib, times, pings);
+      
+      // Update current bib for the next check.
       current_bib = bib;
     }
 
@@ -37,16 +24,39 @@ function(data) {
     i++;
   }
 
-  // Check the last bib
-  res.pbs[pb_nb] = check_times(times, ping0, ping1, ping2);
-  // there was a problem
-  if (res.pbs[pb_nb].site_id != undefined) {
-    res.pbs[pb_nb].bib = current_bib;
-    pb_nb ++;
-  }
+  // Do the check for the last bib.
+  do_check_times(res, current_bib, times, pings);
 
-  // Remove the last element (which is empty)
-  res.pbs.pop();
 
+  // Return the data.
   return res;
 };
+
+/**
+ * Do the check for the given matrix of times.
+ * @param res: store the result of the action.
+ * @param bib: the bib that we check.
+ * @param times: matrix of times for each site.
+ * @param pings: the pings for each site.
+ */
+function do_check_times(res, bib, times, pings) {
+  // Check the times. 
+  var check = check_times(times, pings);
+
+  // There was a problem.
+  if (check) {
+    check.bib = bib;
+    res.pbs.push(check)
+  }
+
+  // Display the times for each site.
+  for (var i = 0; i < times.length; i++) {
+    if (check) {
+      check['times_site' + i] = (times[i] || []).map(function(t) { return { val: new Date(t).toLocaleTimeString() }; });
+    }
+
+    // And we empty times[i] for next bib check
+    times[i] = [];
+  }
+}
+

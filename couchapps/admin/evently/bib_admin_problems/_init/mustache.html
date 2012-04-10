@@ -1,11 +1,23 @@
 <h3>Classement général</h3>
 <ul>
   {{#pbs}}
-  <li> Dossard {{bib}} : {{type}} au tour {{lap}} au site_id {{site_id}} </li>
+  <li> Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}} </li>
   <ul>
-    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-0-{{bib}}">Site 0</a> : {{times_site0}}</li>
-    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-1-{{bib}}">Site 1</a> : {{times_site1}}</li>
-    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-2-{{bib}}">Site 2</a> : {{times_site2}}</li>
+    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-0-{{bib}}">Site 0</a>:
+      <ul>
+        {{#times_site0}}<li>{{val}}</li>{{/times_site0}}
+      </ul>
+    </li>
+    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-1-{{bib}}">Site 1</a>:
+      <ul>
+        {{#times_site1}}<li>{{val}}</li>{{/times_site1}}
+      </ul>
+    </li>
+    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-2-{{bib}}">Site 2</a>:
+      <ul>
+        {{#times_site2}}<li>{{val}}</li>{{/times_site2}}
+      </ul>
+    </li>
   </ul>
   {{/pbs}}
 </ul>
