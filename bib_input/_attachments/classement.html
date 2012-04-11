@@ -5,17 +5,46 @@
     <title>Classement général</title>
     <link rel="stylesheet" href="style/main.css" type="text/css"/>
     <link rel="stylesheet" href="lib/twitter_scroller_using_marquee.css" type="text/css"/>
+    <link rel="stylesheet" href="style/classement_general.css" type="text/css"/>
   </head>
   <body>
+    <script type="text/javascript">
+	window.resizeTo(800,600);
+    </script>
+
     <div id="laps"></div>
+
+    <div id="left_pane_info" class="left_pane">left pane text</div>
+    <div id="right_pane_info" class="right_pane">right pane text</div>
+    <div id="bottom_pane_info" class="bottom_pane">bottom pane text</div>
+
   </body>
   <script src="vendor/couchapp/loader.js"></script>
   <script src="lib/utils.js"></script>
   <script src="http://remysharp.com/downloads/jquery.marquee.js"></script>
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
-      $("#laps").evently("laps", app);
+      $("#left_pane_info").evently("classement_left_pane_div", app);
+      $("#right_pane_info").evently("classement_right_pane_div", app);
+      $("#bottom_pane_info").evently("classement_bottom_pane_div", app);
     });
 
   </script>
 </html>
+
+<!-- 
+     1 course du soir 
+     2 course du matin
+     4 course 1 tour le soir
+     8 course des jeunes
+
+a | b
+  c
+
+a= course 1 (scrolling?)
+b= course 4, puis a partir de 6h du matin, course 2
+c= N dernier concurrents qui sont passes par la salle de sports (site_id=2)
+
+afficher: classement, nom, prenom, categorie, temps (dernier pointage)
+
+-->
