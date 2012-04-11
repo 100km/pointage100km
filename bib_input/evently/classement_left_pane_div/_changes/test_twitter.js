@@ -1,19 +1,9 @@
-<!-- based on code from: 
-     http://webhole.net/2009/11/28/how-to-read-json-with-javascript/ 
-     http://exscale.se/__files/uploads/scrolling-twitter-feed.htm
--->
-
-
-<script type="text/javascript">
 
 function query_twitter(query, div_to_update, bib) {
     var url='http://search.twitter.com/search.json?callback=?&q=';
     var max_results_per_request = 3;
     var query_params = '&rpp='+max_results_per_request+'&result_type=recent';
     
-if (bib & 0x1)
-return false;
-
     if (query == undefined) {
 	$.log("undefined query!");
 	return false;
@@ -44,7 +34,9 @@ return false;
 	}
 	
 	marquee_tag += marquee_end_tag;
-		
+	
+	$.log("done parsing search results for bib=" + bib);
+	
 	$(div_to_update + ' p').replaceWith(marquee_tag);
 	
 	function betterMarquee(marquee_to_update) {
@@ -70,47 +62,7 @@ return false;
 	}
 	
 	betterMarquee(div_to_update);
-
-	$.log("done parsing search results for bib=" + bib);
     }
     
     $.getJSON(url+query+query_params, parse_search_result);
 }
-
-
-</script>
-
-
-<h3>Classement général</h3>
-<ul>
-  {{#races}}
-  <li> course {{race_id}} </li>
-    <ul>
-      {{#items}}
-      <li>
-        <p> Dossard {{bib}} (au tour {{lap}})</p>
-	<div id="tweets_results_for_bib_{{bib}}" class="twitter">	  
-	  <p></p>
-	</div>
-	<script type="text/javascript"> query_twitter("#paris", "#tweets_results_for_bib_{{bib}}", {{bib}}); </script>
-	<div style="clear:left;"></div>
-      </li>
-      {{/items}}
-    </ul>
-  {{/races}}
-</ul>
-
-<!--
-
-il faudrait creer "race_${i}" dans data.js a partir de ce que async.js recupere de la view de la base de donnees
-ensuite, deux possibilites:
-- utiliser setInterval pour appeler _changes et recharger la vue: il faut garder un etat pour se souvenir d'ou on est, chaque affichage serait a jour car il sereait genere par une requete separee
-- charger tous les participants et les traiter avec javascript locale
-
--->
-
-<!--
-<div id="left_pane_info" class="left_pane">left pane</div>
-<div id="right_pane_info" class="right_pane">right pane</div>
-<div id="bottom_pane_info" class="bottom_pane">bottom pane</div>
--->
