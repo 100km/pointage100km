@@ -1,0 +1,19 @@
+#! /bin/sh
+
+user="$1"
+password="$2"
+dbname=`curl -s http://$user:$password@steenwerck.rfc1149.net/steenwerck-config/configuration |
+  sed -e 's/^.*dbname":"//' -e 's/".*//'`
+for i in . admin bib_input common main_display; do
+    cat > $i/.couchapprc <<EOF
+{
+  "env": {
+    "default": {
+      "db": "http://$user:$password@steenwerck.rfc1149.net/$dbname"
+    }
+  }
+}
+EOF
+done
+couchapp pushapps . default
+couchapp pushdocs _docs default
