@@ -68,19 +68,22 @@ function do_check_times(res, bib, times, pings) {
 
           // Check if the error detection has flag the current lap postion as missing.
           if (check.type == 'Manque un passage' && check.lap == (lap + 1) && check.site_id == i) {
-            site_bib_times.push({ add: true });
+            site_bib_times.push({ add: true, lap: lap, bib: bib, site_id: i });
           }
 
           // Get the time value and add a line (also check if this time was detected as wrongly inserted).
           var t = times[i][lap];
           site_bib_times.push({
             val: format_date(new Date(t)),
+            lap: lap,
+            bib: bib,
+            site_id: i,
             remove: check.type == 'Passage supplémentaire' && check.lap == (lap + 1) && check.site_id == i,
           });
         }
       } else if (check.type == 'Manque un passage' && check.lap == 1 && check.site_id == i) {
         // There is no data for this site and the error detection say it misses the first lap.
-        site_bib_times.push({ add: true });
+        site_bib_times.push({ add: true, lap: 0, bib: bib, site_id: i });
       }
 
       // Push the site object definition.
