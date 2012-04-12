@@ -17,3 +17,4 @@ EOF
 done
 couchapp pushapps . default
 couchapp pushdocs _docs default
+find . -name .couchapprc -exec rm {} \;
