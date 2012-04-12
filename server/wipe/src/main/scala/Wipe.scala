@@ -6,7 +6,7 @@ import scopt.OptionParser
 
 object Wipe extends App {
 
-  implicit val formats = DefaultFormats
+  import implicits._
 
   val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
@@ -25,24 +25,40 @@ object Wipe extends App {
   if (!parser.parse(args))
     sys.exit(1)
 
-  val config = Config("steenwerck.cfg", "../steenwerck.cfg")
+  val config = Config("steenwerck.cfg", "../steenwerck.cfg", "../../steenwerck.cfg")
   val hubCouch = new NioCouch(config.read[String]("master.host"),
 			      config.read[Int]("master.port"),
 			      Some(Options.login, Options.password))
-  val hubDatabase = Database(hubCouch, config.read[String]("master.dbname"))
+
+  val cfgDatabase = hubCouch.db("steenwerck-config")
+
+  val newName = try {
+    val oldNameDoc = cfgDatabase("configuration").execute()
+    val oldName = oldNameDoc("dbname").extract[String]
+    val newCount = oldName.substring(11).toInt
+    val newName = "steenwerck-" + (newCount + 1)
+    cfgDatabase.insert(oldNameDoc + ("dbname" -> newName)).execute()
+    newName
+  } catch {
+    case t =>
+      try {
+	cfgDatabase.create()
+      } catch {
+	case e =>
+	  println("Cannot create configuration database: " + e)
+      }
+      cfgDatabase.insert(Map("dbname" -> "steenwerck-0"), "configuration").execute()
+      "steenwerck-0"
+  }
+
+  val hubDatabase = hubCouch.db(newName)
   try {
-    println("Deleting database")
-    hubDatabase.delete().execute()
-    println("Creating database")
+    println("Creating database " + newName)
     hubDatabase.create().execute()
-    println("Inserting security document")
-    hubDatabase.insert(("admins" ->
-			Map("names" -> List("sam"),
-			    "roles" -> List("steenwerckadm"))) ~
-		       ("readers" ->
-			Map("names" -> List(),
-			    "roles" -> List("steenwerckrw", "steenwerckr"))),
-		     "_security").execute()
+    println("Copying security document")
+    hubDatabase.insert(cfgDatabase("_security").execute(), "_security").execute()
+    println("Inserting configuration document")
+    hubDatabase.insert(Map("dbname" -> newName), "configuration").execute()
     println("All things done")
   } catch {
       case StatusCode(401, _) =>
