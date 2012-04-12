@@ -102,7 +102,7 @@ function change_li(li, app) {
   // Select the new li element by trigering the 'select_item' event with the corresponding data.
   var bib = li.find('input[name="bib"]').val();
   var lap = li.find('input[name="lap"]').val();
-  li.trigger('select_item', { bib: bib, lap: lap });
+  li.trigger('select_item', li.data('checkpoint'));
 }
 
 function deal_with_key(ev, app) {
@@ -141,28 +141,70 @@ function site_lap_to_kms(app, site_id, lap) {
 }
 
 
-// This function take the table "times" containing all the times for a given bib.
+// This function take the matrix "times" containing all the times for a given bib.
 // times[0] = [time_site0_lap1, time_site0_lap2, time_site0_lap3, ...]
 // times[1] = [time_site1_lap1, time_site1_lap2, time_site1_lap3, ...]
 // times[2] = [time_site2_lap1, time_site2_lap2, time_site2_lap3, ...]
 // It takes also the last pings for each site in order to know if a site may have a problem.
-function check_times(times, ping0, ping1, ping2) {
-  var j = 0;
-  var res = {};
+function check_times(times, pings) {
+  var site_number = Math.min(times.length, pings.length);
 
-  $.log("In check_times " + JSON.stringify(times) + "ping0 " + ping0 + " ping1 " + ping1 + " ping2 " + ping2);
-  while (times[j%3][parseInt(j/3)]) {
-    if (times[(j+1)%3][parseInt((j+1)/3)] < times[j%3][parseInt(j/3)]) {
-      res = {};
-      res.site_id = j%3;
-      res.type = "Manque un passage";
-      res.lap = parseInt(j/3);
-      res.times_site0 = JSON.stringify(times[0]);
-      res.times_site1 = JSON.stringify(times[1]);
-      res.times_site2 = JSON.stringify(times[2]);
+  // Build the site vector. It is a vector of each step of the bib.
+  var sites = [];
+  for (var i = 0; i < site_number; i++) {
+    for (var j = 0; times[i] && j < times[i].length; j++) {
+      sites.push({
+        time: times[i][j],
+        site: i,
+        lap: j
+      });
     }
-    j++;
   }
 
-  return res;
+  // Sort the site vector according to time and do a projection to the site index.
+  sites.sort(function(s1, s2) { return s2.time < s1.time ? 1 : (s1.time < s2.time ? -1 : 0); });
+  var input = '';
+  var reference = '';
+  var expected_site = 0;
+
+  // Be sure that we start on the same expected site (they will be consider as missing).
+  while (sites.length && sites[0].site != expected_site) {
+    reference += expected_site;
+    expected_site = (expected_site + 1) % site_number;
+  }
+
+  for (var i = 0; i < sites.length; i++) {
+    // Build the input string.
+    input += sites[i].site;
+
+    // Be sure that the current time is ok with the last ping of the expected site.
+    while (sites[i].time > pings[expected_site]) {
+      expected_site = (expected_site + 1) % site_number;
+    }
+
+    // Build the reference string.
+    reference += expected_site;
+    expected_site = (expected_site + 1) % site_number;
+  }
+
+  // Compare the site vector with the reference.
+  var pb;
+  var compare = lcs.compare(reference, input);
+  lcs.run(compare, 0, 0, function(i, j) {
+    // Already identified a pb, just return.
+    if (pb) {
+      return;
+    }
+
+    var status = compare[i][j].status;
+    if (status) {
+      pb = {
+        site_id: parseInt(status == lcs.DELETION ? reference[j] : input[i]),
+        type: status == lcs.DELETION ? "Manque un passage" : "Passage supplémentaire",
+        lap: sites[i].lap + 1,
+      }
+    }
+  });
+
+  return pb;
 }

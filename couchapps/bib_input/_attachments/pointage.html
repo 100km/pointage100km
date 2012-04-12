@@ -26,8 +26,8 @@
       $("#title").evently("title", app);
       $("#previous").evently("previous", app);
       $("#message-bar").evently("message-bar", app);
-      $.evently.connect("#title", "#items", ["post_changes"]);
-      $.evently.connect("#title", "#message-bar", ["post_changes"]);
+      $.evently.connect("#title", "#items", ["app_info_changed"]);
+      $.evently.connect("#title", "#message-bar", ["app_info_changed"]);
       $.evently.connect("#items", "#previous", ["change_infos", "clear_infos"]);
       $.evently.connect("#bib_input", "#items", ["set_selected_item"]);
 
