@@ -331,15 +331,12 @@ function test_admin(app) {
     times[0] = [];
     times[1] = [10];
     times[2] = [];
-    result = check_times(times, 50, 50, 50);
+    result = check_times(times, [50, 50, 50]);
 
     expected = {
       site_id : 0,
       type : "Manque un passage",
-      lap : 0,
-      times_site0 : JSON.stringify(times[0]),
-      times_site1 : JSON.stringify(times[1]),
-      times_site2 : JSON.stringify(times[2])
+      lap : 1,
     };
 
     deepEqual(result, expected, "Should return missing first statement.");
@@ -353,9 +350,9 @@ function test_admin(app) {
     times[0] = [10];
     times[1] = [];
     times[2] = [];
-    result = check_times(times, 50, 50, 50);
+    result = check_times(times, [50, 50, 50]);
 
-    expected = {};
+    expected = undefined;
 
     deepEqual(result, expected, "Should return nothing.");
   });
@@ -367,23 +364,23 @@ function test_admin(app) {
     times[0] = [10, 13];
     times[1] = [11, 14];
     times[2] = [12];
-    result = check_times(times, 50, 50, 50);
+    result = check_times(times, [50, 50, 50]);
 
-    expected = {};
+    expected = undefined;
 
     deepEqual(result, expected, "Should return nothing.");
   });
 
   test("Ok all times", function() {
     expect(1);
-
     var times = [];
+
     times[0] = [10, 13, 16, 19, 22];
     times[1] = [11, 14, 17, 20, 23];
     times[2] = [12, 15, 18, 21, 24];
-    result = check_times(times, 50, 50, 50);
+    result = check_times(times, [50, 50, 50]);
 
-    expected = {};
+    expected = undefined;
 
     deepEqual(result, expected, "Should return nothing.");
   });
@@ -395,9 +392,9 @@ function test_admin(app) {
     times[0] = [10, 13, 16, 19, 22];
     times[1] = [11];
     times[2] = [12, 15, 18, 21, 24];
-    result = check_times(times, 50, 12, 50);
+    result = check_times(times, [50, 12, 50]);
 
-    expected = {};
+    expected = undefined;
 
     deepEqual(result, expected, "Should return nothing.");
   });
@@ -409,9 +406,9 @@ function test_admin(app) {
     times[0] = [10, 13];
     times[1] = [11, 14, 17, 20, 23];
     times[2] = [12, 15, 18];
-    result = check_times(times, 15, 50, 50);
+    result = check_times(times, [15, 50, 20]);
 
-    expected = {};
+    expected = undefined;
 
     deepEqual(result, expected, "Should return nothing.");
   });
