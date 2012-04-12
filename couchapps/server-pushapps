@@ -1,20 +1,33 @@
 #! /bin/sh
 
-user="$1"
-password="$2"
-dbname=`curl -s http://$user:$password@steenwerck.rfc1149.net/steenwerck-config/configuration |
-  sed -e 's/^.*dbname":"//' -e 's/".*//'`
-for i in . admin bib_input common main_display; do
-    cat > $i/.couchapprc <<EOF
-{
-  "env": {
-    "default": {
-      "db": "http://$user:$password@steenwerck.rfc1149.net/$dbname"
-    }
-  }
-}
+usage() {
+  cat <<"EOF"
+    usage: server-pushapps local|server [user passwd dbname]
+    user and passwd default to admin:admin
+    dbname defaults to steenwerck100km in local, and to the currently used database on server
 EOF
-done
-couchapp pushapps . default
-couchapp pushdocs _docs default
-find . -name .couchapprc -exec rm {} \;
+}
+if [ "$1" = "local" ]; then
+  host="localhost:5984"
+elif [ "$1" = "server" ]; then
+  host="steenwerck.rfc1149.net"
+else
+  usage
+  exit 1
+fi
+user=${2:-"admin"}
+password=${3:-"admin"}
+if [ -z "$4" ]; then
+  if [ "$1" = "$server" ]; then
+    dbname=`curl -s http://$user:$password@steenwerck.rfc1149.net/steenwerck-config/configuration |
+      sed -e 's/^.*dbname":"//' -e 's/".*//'`
+  else
+    dbname="steenwerck100km"
+  fi
+else
+  dbname="$4"
+fi
+
+full_name="http://$user:$password@$host/$dbname"
+couchapp pushapps . $full_name
+couchapp pushdocs _docs $full_name
