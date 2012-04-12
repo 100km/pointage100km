@@ -23,14 +23,24 @@ h1 {
 .left_pane {
     width: 50%;
     float: left;
+  /*border:4px solid #dfd;
+  padding:8px;
+*/
+
 }
 
 .right_pane {
     width: 50%;
     float: right;
+  /*border:4px solid #dfd;
+  padding:8px;
+*/
 }
 
 .bottom_pane {
     width: 100%;
+  /*border:4px solid #dfd;
+  padding:8px;
+*/
 }
 
