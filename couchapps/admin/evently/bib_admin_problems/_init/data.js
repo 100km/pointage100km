@@ -1,9 +1,9 @@
 function(data) {
   var i = 0;
   var current_bib = 0;
-  var times = [[], [], []];
-  var res = { pbs: [], times_site0: '', times_site1: '', times_site2: ''};
-  var pings = [data[0][0]['max'], data[1][0]['max'], data[2][0]['max']];
+  var times = [];
+  var res = { pbs: [] };
+  var pings = [data[0][0], data[1][0], data[2][0]];
 
   while (data[3][0].rows[i]) {
     var row = data[3][0].rows[i];
@@ -13,6 +13,9 @@ function(data) {
     if (bib != current_bib) {
       // Do the check.
       do_check_times(res, current_bib, times, pings);
+
+      // Empty the times table for next bib check.
+      times = [];
 
       // Update current bib for the next check.
       current_bib = bib;
@@ -26,7 +29,6 @@ function(data) {
 
   // Do the check for the last bib.
   do_check_times(res, current_bib, times, pings);
-
 
   // Return the data.
   return res;
@@ -45,14 +47,16 @@ function do_check_times(res, bib, times, pings) {
 
   // There was a problem.
   if (check) {
-    check.bib = bib;
-    check.sites = [];
+    // Push the check object into the list of problems.
     res.pbs.push(check)
-  }
 
-  // Display the times for each site.
-  for (var i = 0; i < times.length; i++) {
-    if (check) {
+    // Set the bib for this check.
+    check.bib = bib;
+
+    // Display the times for each site.
+    check.sites = [];
+
+    for (var i = 0; i < Math.min(times.length, pings.length); i++) {
       check.sites.push({
         id: i,
         bib: bib,
@@ -64,9 +68,6 @@ function do_check_times(res, bib, times, pings) {
          })
       });
     }
-
-    // And we empty times[i] for next bib check
-    times[i] = [];
   }
 }
 

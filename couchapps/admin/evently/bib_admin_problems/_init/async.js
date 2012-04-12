@@ -18,7 +18,7 @@ function get_ping(app, ping, callback) {
   app.db.view('admin/alive', {
     key: ping,
     reduce: true,
-    success: callback,
+    success: function(view) { callback(view.rows[0].value.max); },
     error: function() { callback(); }
   });
 };
