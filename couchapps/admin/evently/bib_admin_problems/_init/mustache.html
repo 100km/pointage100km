@@ -3,21 +3,16 @@
   {{#pbs}}
   <li> Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}} </li>
   <ul>
-    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-0-{{bib}}">Site 0</a>:
+    {{#sites}}
+    <li>
+      <a href="/_utils/document.html?steenwerck100km/checkpoints-{{id}}-{{bib}}">Site {{id}}</a>
       <ul>
-        {{#times_site0}}<li>{{val}}</li>{{/times_site0}}
+        {{#times}}
+        <li>{{val}}{{#remove}}<input type="button" value="remove"/>{{/remove}}</li>
+        {{/times}}
       </ul>
     </li>
-    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-1-{{bib}}">Site 1</a>:
-      <ul>
-        {{#times_site1}}<li>{{val}}</li>{{/times_site1}}
-      </ul>
-    </li>
-    <li><a href="/_utils/document.html?steenwerck100km/checkpoints-2-{{bib}}">Site 2</a>:
-      <ul>
-        {{#times_site2}}<li>{{val}}</li>{{/times_site2}}
-      </ul>
-    </li>
+    {{/sites}}
   </ul>
   {{/pbs}}
 </ul>

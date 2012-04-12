@@ -46,13 +46,23 @@ function do_check_times(res, bib, times, pings) {
   // There was a problem.
   if (check) {
     check.bib = bib;
+    check.sites = [];
     res.pbs.push(check)
   }
 
   // Display the times for each site.
   for (var i = 0; i < times.length; i++) {
     if (check) {
-      check['times_site' + i] = (times[i] || []).map(function(t) { return { val: format_date(new Date(t)) }; });
+      check.sites.push({
+        id: i,
+        bib: bib,
+        times: (times[i] || []).map(function(t, lap) {
+          return {
+            val: format_date(new Date(t)),
+            remove: check.type == 'Passage supplémentaire' && check.lap == (lap + 1) && check.site_id == i,
+          };
+         })
+      });
     }
 
     // And we empty times[i] for next bib check
