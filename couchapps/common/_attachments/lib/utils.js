@@ -162,17 +162,27 @@ function check_times(times, pings) {
   }
 
   // Sort the site vector according to time and do a projection to the site index.
-  sites.sort(function(s1, s2) { return s2.time <= s1.time; });
+  sites.sort(function(s1, s2) { return s2.time < s1.time ? 1 : (s1.time < s2.time ? -1 : 0); });
   var input = '';
   var reference = '';
   var expected_site = 0;
+
+  // Be sure that we start on the same expected site (they will be consider as missing).
+  while (sites.length && sites[0].site != expected_site) {
+    reference += expected_site;
+    expected_site = (expected_site + 1) % site_number;
+  }
+
   for (var i = 0; i < sites.length; i++) {
+    // Build the input string.
     input += sites[i].site;
+
     // Be sure that the current time is ok with the last ping of the expected site.
     while (sites[i].time > pings[expected_site]) {
       expected_site = (expected_site + 1) % site_number;
     }
 
+    // Build the reference string.
     reference += expected_site;
     expected_site = (expected_site + 1) % site_number;
   }
@@ -189,7 +199,7 @@ function check_times(times, pings) {
     var status = compare[i][j].status;
     if (status) {
       pb = {
-        site_id: status == lcs.DELETION ? reference[j] : input[i],
+        site_id: parseInt(status == lcs.DELETION ? reference[j] : input[i]),
         type: status == lcs.DELETION ? "Manque un passage" : "Passage supplémentaire",
         lap: sites[i].lap + 1,
       }
