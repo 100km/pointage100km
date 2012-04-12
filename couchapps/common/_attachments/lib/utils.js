@@ -147,10 +147,12 @@ function site_lap_to_kms(app, site_id, lap) {
 // times[2] = [time_site2_lap1, time_site2_lap2, time_site2_lap3, ...]
 // It takes also the last pings for each site in order to know if a site may have a problem.
 function check_times(times, pings) {
+  var site_number = Math.min(times.length, pings.length);
+
   // Build the site vector. It is a vector of each step of the bib.
   var sites = [];
-  for (var i = 0; i < 3; i++) {
-    for (var j = 0; j < times[i].length; j++) {
+  for (var i = 0; i < site_number; i++) {
+    for (var j = 0; times[i] && j < times[i].length; j++) {
       sites.push({
         time: times[i][j],
         site: i,
@@ -168,11 +170,11 @@ function check_times(times, pings) {
     input += sites[i].site;
     // Be sure that the current time is ok with the last ping of the expected site.
     while (sites[i].time > pings[expected_site]) {
-      expected_site = (expected_site + 1) % 3;
+      expected_site = (expected_site + 1) % site_number;
     }
 
     reference += expected_site;
-    expected_site = (expected_site + 1) % 3;
+    expected_site = (expected_site + 1) % site_number;
   }
 
   // Compare the site vector with the reference.
