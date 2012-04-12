@@ -102,7 +102,7 @@ function change_li(li, app) {
   // Select the new li element by trigering the 'select_item' event with the corresponding data.
   var bib = li.find('input[name="bib"]').val();
   var lap = li.find('input[name="lap"]').val();
-  li.trigger('select_item', { bib: bib, lap: lap });
+  li.trigger('select_item', li.data('checkpoint'));
 }
 
 function deal_with_key(ev, app) {
