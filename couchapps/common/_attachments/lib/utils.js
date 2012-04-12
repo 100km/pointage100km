@@ -149,14 +149,14 @@ function site_lap_to_kms(app, site_id, lap) {
 function check_times(times, pings) {
   // Build the site vector. It is a vector of each step of the bib.
   var sites = [];
-  var j = 0;
-  while (times[j % 3][parseInt(j / 3)]) {
-    sites.push({ 
-      time: times[j % 3][parseInt(j / 3)],
-      site: j % 3,
-      lap: parseInt(j / 3)
-    }); 
-    j++;
+  for (var i = 0; i < 3; i++) {
+    for (var j = 0; j < times[i].length; j++) {
+      sites.push({
+        time: times[i][j],
+        site: i,
+        lap: j
+      });
+    }
   }
 
   // Sort the site vector according to time and do a projection to the site index.
@@ -175,7 +175,7 @@ function check_times(times, pings) {
     expected_site = (expected_site + 1) % 3;
   }
 
-  // Compare the site vector with the reference. 
+  // Compare the site vector with the reference.
   var pb;
   var compare = lcs.compare(reference, input);
   lcs.run(compare, 0, 0, function(i, j) {
@@ -184,10 +184,11 @@ function check_times(times, pings) {
       return;
     }
 
-    if (compare[i][j].status == lcs.DELETION) {
+    var status = compare[i][j].status;
+    if (status) {
       pb = {
-        site_id: reference[j],
-        type: "Manque un passage",
+        site_id: status == lcs.DELETION ? reference[j] : input[i],
+        type: status == lcs.DELETION ? "Manque un passage" : "Passage supplémentaire",
         lap: sites[i].lap + 1,
       }
     }

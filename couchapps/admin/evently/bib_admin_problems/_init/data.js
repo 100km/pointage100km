@@ -13,7 +13,7 @@ function(data) {
     if (bib != current_bib) {
       // Do the check.
       do_check_times(res, current_bib, times, pings);
-      
+
       // Update current bib for the next check.
       current_bib = bib;
     }
@@ -40,7 +40,7 @@ function(data) {
  * @param pings: the pings for each site.
  */
 function do_check_times(res, bib, times, pings) {
-  // Check the times. 
+  // Check the times.
   var check = check_times(times, pings);
 
   // There was a problem.
@@ -52,11 +52,15 @@ function do_check_times(res, bib, times, pings) {
   // Display the times for each site.
   for (var i = 0; i < times.length; i++) {
     if (check) {
-      check['times_site' + i] = (times[i] || []).map(function(t) { return { val: new Date(t).toLocaleTimeString() }; });
+      check['times_site' + i] = (times[i] || []).map(function(t) { return { val: format_date(new Date(t)) }; });
     }
 
     // And we empty times[i] for next bib check
     times[i] = [];
   }
+}
+
+function format_date(date) {
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 }
 
