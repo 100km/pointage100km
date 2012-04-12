@@ -8,7 +8,11 @@
       <a href="/_utils/document.html?steenwerck100km/checkpoints-{{id}}-{{bib}}">Site {{id}}</a>
       <ul>
         {{#times}}
-        <li>{{val}}{{#remove}}<input type="button" value="remove"/>{{/remove}}</li>
+        <li>
+          {{val}}
+          {{#remove}}<input type="button" value="remove"/>{{/remove}}
+          {{#add}}<input type="button" value="add"/>{{/add}}
+        </li>
         {{/times}}
       </ul>
     </li>

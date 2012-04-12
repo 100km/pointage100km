@@ -57,15 +57,37 @@ function do_check_times(res, bib, times, pings) {
     check.sites = [];
 
     for (var i = 0; i < Math.min(times.length, pings.length); i++) {
+      // Build the list of times of this site and bib.
+      var site_bib_times = [];
+
+      // Check if there is a times list for this site (other wise it means there is no info from this site).
+      if (times[i]) {
+
+        // Enumerate for each lap on the current site times.
+        for (var lap = 0; lap < times[i].length; lap++) {
+
+          // Check if the error detection has flag the current lap postion as missing.
+          if (check.type == 'Manque un passage' && check.lap == (lap + 1) && check.site_id == i) {
+            site_bib_times.push({ add: true });
+          }
+
+          // Get the time value and add a line (also check if this time was detected as wrongly inserted).
+          var t = times[i][lap];
+          site_bib_times.push({
+            val: format_date(new Date(t)),
+            remove: check.type == 'Passage supplémentaire' && check.lap == (lap + 1) && check.site_id == i,
+          });
+        }
+      } else if (check.type == 'Manque un passage' && check.lap == 1 && check.site_id == i) {
+        // There is no data for this site and the error detection say it misses the first lap.
+        site_bib_times.push({ add: true });
+      }
+
+      // Push the site object definition.
       check.sites.push({
         id: i,
         bib: bib,
-        times: (times[i] || []).map(function(t, lap) {
-          return {
-            val: format_date(new Date(t)),
-            remove: check.type == 'Passage supplémentaire' && check.lap == (lap + 1) && check.site_id == i,
-          };
-         })
+        times: site_bib_times,
       });
     }
   }
