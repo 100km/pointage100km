@@ -14,7 +14,7 @@ function(doc, req) {
     },
     //Tell the client we need more initialization
     body: JSON.stringify({
-      need_more: doc.race_id == undefined && doc.bib == undefined && doc.site_id  == undefined,
+      need_more: !doc.race_id || doc.bib == undefined || doc.site_id  == undefined,
       lap: doc.times.length
     })
   }];
