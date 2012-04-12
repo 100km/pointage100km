@@ -1,13 +1,13 @@
 #CouchDB installation
 
-As stated in DATABASE.mb, please install couchDB version 1.1.1
+As stated in DATABASE.mb, please install couchDB version 1.2.0
 
 Here are the commands used to install couchDB on Ubuntu 11.10:
 <pre>
 sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang 
-wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
-tar -xzvf apache-couchdb-1.1.1.tar.gz
-cd apache-couchdb-1.1.1
+wget http://wwwftp.ciril.fr/pub/apache/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
+tar -xzvf apache-couchdb-1.2.0.tar.gz
+cd apache-couchdb-1.2.0
 ./configure
 make
 sudo make install
@@ -18,7 +18,7 @@ Here are the commands used to install couchDB on Debian 6.0.3:
 <pre>
 $ sudo apt-get install libmozjs-dev libicu-dev libcurl4-gnutls-dev
 $ sudo apt-get install erlang
-$ wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
+$ wget http://wwwftp.ciril.fr/pub/apache/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
 ... (same as ubuntu instructions)...
 </pre>
 
@@ -60,9 +60,9 @@ make
 sudo make install
 # Then follow instructions for Ubuntu 11.10:
 sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang
-wget http://mirror.speednetwork.de/apache//couchdb/1.1.1/apache-couchdb-1.1.1.tar.gz
-tar -xzvf apache-couchdb-1.1.1.tar.gz
-cd apache-couchdb-1.1.1
+wget http://wwwftp.ciril.fr/pub/apache/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
+tar -xzvf apache-couchdb-1.2.0.tar.gz
+cd apache-couchdb-1.2.0
 ./configure
 make
 sudo make install
