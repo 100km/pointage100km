@@ -6,7 +6,7 @@ class Options(name: String) extends OptionParser(name) {
   private var _fixConflicts: Boolean = false
   private var _fixIncomplete: Boolean = false
   private var _obsolete: Boolean = true
-  private var _replicate: Boolean = false
+  private var _replicate: Boolean = true
   private var _siteId: Int = _
   private var _watchdog: Boolean = true
 
@@ -43,8 +43,8 @@ class Options(name: String) extends OptionParser(name) {
   opt("I", "incomplete", "fix incomplete checkpoints", { _fixIncomplete = true })
   opt("nc", "no-compact", "compact database regularly", { _compact = false })
   opt("no", "no-obsolete", "do not remove obsolete documents", { _obsolete = false })
+  opt("nr", "no-replicate", "start replication", { _replicate = false })
   opt("nw", "no-watchdog", "do not start the watchdog", { _watchdog = false })
-  opt("r", "replicate", "start replication", { _replicate = true })
   arg("site_id", "numerical id of the current site", {
     s: String => _siteId = Integer.parseInt(s)
   })

@@ -4,6 +4,7 @@ import akka.util.duration._
 import java.io.{File, FileWriter}
 import java.lang.{Process, ProcessBuilder}
 import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 import scala.io.Source
 import steenwerck._
@@ -32,7 +33,7 @@ object Replicator {
   def replicate(options: Options) {
     val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
 
-    val siteId = referenceDb("_local/site-info").execute()("site-id").extract[Int]
+    val siteId = referenceDb("site-info").execute()("site-id").extract[Int]
 
     def step(msg: String, warning: Boolean = true) =
       message(referenceDb, (if (warning) "Ne pas enlever la clé USB - " else "") + msg).toFuture
@@ -67,8 +68,8 @@ object Replicator {
         throw e
     }
     step("synchronisation")
-    db.replicateTo(referenceDb, false).execute()
-    db.replicateFrom(referenceDb, false).execute()
+    db.replicateTo(referenceDb, ("filter" -> "common/to-replicate")).execute()
+    db.replicateFrom(referenceDb, ("filter" -> "common/to-replicate")).execute()
     waitForNoTasks(couch)
 
     step("compaction")
@@ -93,11 +94,7 @@ object Replicator {
 
     c.stopCouchDb()
 
-    val end = step("La clé USB peut être retirée", false) flatMap {
-      _ => referenceDb(touchId).toFuture
-    } flatMap {
-      referenceDb.delete(_).toFuture
-    }
+    val end = step("La clé USB peut être retirée", false)
     Await.ready(end, 5 seconds)
 
     couch.releaseExternalResources()

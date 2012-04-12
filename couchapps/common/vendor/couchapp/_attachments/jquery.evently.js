@@ -140,17 +140,12 @@ function $$(node) {
     }
     
     if (app && events._changes) {
-      var filter = "",
-          filter_event_suffix = "";
-      if (events._changes.filter) {
-        filter = events._changes.filter;
-        filter.ddoc = filter.ddoc || app.design.doc_id.split("/")[1];
-        filter_event_suffix = "-" + filter.ddoc + "/" + filter.name;
-      }
-      $("body").bind("evently-changes-"+app.db.name+filter_event_suffix, function() {
+      var opts_id;
+      opts_id = (events._changes.opts && events._changes.opts.id) || "";
+      $("body").bind("evently-changes-"+app.db.name+"-"+opts_id, function() {
         elem.trigger("_changes");
       });
-      followChanges(app, filter, filter_event_suffix);
+      followChanges(app, events._changes.opts, opts_id);
       elem.trigger("_changes");
     }
   };
@@ -358,28 +353,27 @@ function $$(node) {
     }
   };
   
-  // only start one changes listener per db per filter
-  function followChanges(app, filter, filter_event_suffix) {
+  // only start one changes listener per db per opts_id
+  function followChanges(app, opts, opts_id) {
     var dbName = app.db.name, changeEvent = function(resp) {
-      $("body").trigger("evently-changes-"+dbName+filter_event_suffix, [resp]);
+      $("body").trigger("evently-changes-"+dbName+"-"+opts_id, [resp]);
     };
     $.evently.changesDBs[dbName] = $.evently.changesDBs[dbName] || {};
-    if (!$.evently.changesDBs[dbName][filter_event_suffix]) {
+    if (!$.evently.changesDBs[dbName][opts_id]) {
       if (app.db.changes) {
         // new api in jquery.couch.js 1.0
-        var opts;
-        if (filter) {
-          opts = $.extend({},$.evently.changesOpts);
-          opts.filter = filter_event_suffix.substr(1);
-        } else {
-          opts = $.evently.changesOpts;
-        }
-        app.db.changes(null, opts).onChange(changeEvent);
+        opts = $.extend({},$.evently.changesOpts, opts);
+        opts.id = undefined;
+        var promise = app.db.changes(null, opts).onChange(changeEvent);
+        $.evently.changesDBs[dbName][opts_id] = {
+          promise: promise,
+          opts: opts
+         };
       } else {
         // in case you are still on CouchDB 0.11 ;) deprecated.
         connectToChanges(app, changeEvent);
+        $.evently.changesDBs[dbName][opts_id] = true;
       }
-      $.evently.changesDBs[dbName][filter_event_suffix] = true;
     }
   }
   $.evently.followChanges = followChanges;

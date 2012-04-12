@@ -6,6 +6,11 @@ import scala.util.Random.nextInt
 
 object Stats extends App {
 
+  val options = new Options("stats")
+
+  if (!options.parse(args))
+    sys.exit(1)
+
   private implicit val system = ActorSystem()
 
   private implicit val formats = DefaultFormats
@@ -24,7 +29,7 @@ object Stats extends App {
 
   def recentCheckpointsMillis() = {
     val before = System.currentTimeMillis
-    db.view("bib_input", "recent-checkpoints").execute()
+    db.view("bib_input", "recent-checkpoints", List(("limit","10"))).execute()
     System.currentTimeMillis - before
   }
 
@@ -41,11 +46,12 @@ object Stats extends App {
           println("Bib info already exist for bib " + bibStr )
       }
     }
-    for (i <- 1 to args(0).toInt) {
-      val checkpoint = nextInt(3)
+    for (i <- 1 to options.count) {
+      val checkpoint = if (options.siteId != -1) options.siteId else nextInt(3)
       val bib = nextInt(1000)
       val race = nextInt(5)
       update(checkpoint, bib, race)
+      Thread sleep options.delay
       println(i + " " + recentCheckpointsMillis)
     }
   } finally {

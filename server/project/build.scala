@@ -29,7 +29,7 @@ object Steenwerck extends Build {
     Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config, stats)
 
   lazy val stats =
-    Project("stats", file("stats")) dependsOn(canape) settings(akka: _*) settings(Revolver.settings: _*) settings(assemble: _*)
+    Project("stats", file("stats")) dependsOn(canape) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)
 
   lazy val replicate =
     Project("replicate", file("replicate")) dependsOn(canape, config, steenwerck) settings(akka: _*) settings(scopt: _*) settings(Revolver.settings: _*) settings(assemble: _*)

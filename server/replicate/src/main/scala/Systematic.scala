@@ -3,6 +3,7 @@ import akka.event.Logging
 import akka.util.Duration
 import akka.util.duration._
 import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
 
 import Global._
@@ -12,12 +13,18 @@ class Systematic(local: Database, remote: Database) extends PeriodicTask(30 seco
   override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =
-    withError(local.replicateTo(remote, true).toFuture,
-      "cannot replicate from local to remote")
+    if (Replicate.options.replicate)
+      withError(local.replicateTo(remote, Systematic.replicateOptions).toFuture,
+		"cannot replicate from local to remote")
+    else
+      Promise.successful(null)
 
   private[this] def remoteToLocalReplication =
-    withError(local.replicateFrom(remote, true).toFuture,
-      "cannot replicate from remote to local")
+    if (Replicate.options.replicate)
+      withError(local.replicateFrom(remote, Systematic.replicateOptions).toFuture,
+		"cannot replicate from remote to local")
+    else
+      Promise.successful(null)
 
   private[this] var noCompactionSince: Int = 0
 
@@ -35,5 +42,11 @@ class Systematic(local: Database, remote: Database) extends PeriodicTask(30 seco
   override def act() {
     Await.ready(futures, Duration.Inf)
   }
+
+}
+
+object Systematic {
+
+  private val replicateOptions = ("continuous" -> true) ~ ("filter" -> "common/to-replicate")
 
 }
