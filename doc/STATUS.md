@@ -28,7 +28,7 @@ La base données des temps de passages sera très simple : `Site ID | Transactio
 
 Voici un schéma de l'architecture du projet :
 
-![Architecture](Architecture_pointage.png)
+![Architecture](https://github.com/100km/pointage100km/raw/master/doc/Architecture_pointage.png)
 
 Sur le serveur, il y aura un [broker](http://en.wikipedia.org/wiki/Message_broker) chargé de récupérer les messages AMQP provenant des différents sites. Le serveur maintient une base de données globale. Le serveur va offrir une interface de type publish/subscribe pour le site web de l'association et pour d'éventuelles applications mobiles.
 

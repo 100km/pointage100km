@@ -1,5 +1,7 @@
 *~
 target/
-tests/bib_input
 steenwerck.cfg
 bin/*.jar
+.idea/workspace.xml
+bin.tar.xz
+*.swp

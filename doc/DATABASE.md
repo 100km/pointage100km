@@ -4,7 +4,7 @@ We will use CouchDB as our main database, in order to benefit from its
 replication capabilities.
 
 To limit the risk of incompatibilities, all databases should be running
-the same version of CouchDB. For the moment, we have settled on 1.1.1.
+the same version of CouchDB. For the moment, we have settled on 1.2.0.
 
 ## Database Setup
 
@@ -23,8 +23,3 @@ database onto an USB key, and reload the data from every other database
 into the current one. This should not conflict with the built-in replication
 mechanism in CouchDB, and will hopefully not need to be used.
 
-## Database version
-
-To avoid a bug in CouchDB 1.1.1 with basic authentication and replication
-of design documents containing attachments, we need to use certificates or
-to use a more recent version.
