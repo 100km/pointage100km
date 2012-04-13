@@ -1,0 +1,16 @@
+<h3>Envoyer un message</h3>
+<form>
+  <!-- onSubmit and onKeyup are dealed by evently -->
+  <label>Message : <input type="text" name="bib_admin_message" size=128 value="" maxlength=128></label>
+  <div id="message_len"></div>
+  <div style="clear:both;"></div>
+  <!-- TODO: Use data in infos JSON -->
+  <label>Destination : <input type="text" name="bib_admin_message_target" size=2 value="-1" maxlength=2> (-1 = tous les sites; 0 = La Croix du Bac; 1 = Le Crampon; 2 = La Salle des Sports)</label>
+  <div style="clear:both;"></div>
+  <button id="bib_admin_message_send_button" style="font: 14px Arial" value="send_message">Envoyer</button>
+  <div id="message_check"></div>
+  <div id="clk"></div>
+  <div style="clear:both;"></div>
+</form>
+
+<div style="clear:left;"></div>

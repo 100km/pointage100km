@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Administration Pointage</title>
+    <link rel="stylesheet" href="style/main.css" type="text/css">
+  </head>
+  <body>
+    <div id="bib_admin_current_time">Il est :<div id="the_current_time"></div></div>
+    <div id="bib_admin_title"></div>
+    <div id="bib_admin_last_refresh_time">Dernière mise à jour :<div id="the_last_refresh_time"></div></div>
+    <div style="clear:both;"></div>
+    <div id="bib_admin_input_message_div"></div>
+    <div id="bib_admin_message_list_div"></div>
+    <div id="bib_admin_problems"></div>
+  </body>
+  <script src="../common/vendor/couchapp/loader.js"></script>
+  <script src="../common/vendor/sp4ce/lcs.js"></script>
+  <script src="../common/lib/utils.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $.couch.app(function(app) {
+      $("#bib_admin_title").evently("bib_admin_title", app);
+      $("#bib_admin_input_message_div").evently("bib_admin_input_message_div", app);
+      $("#bib_admin_message_list_div").evently("bib_admin_message_list_div", app);
+      $("#bib_admin_problems").evently("bib_admin_problems", app);
+      $.evently.connect("#bib_admin_div", "#bib_admin_message_list_div", ["post_changes"]);
+    });
+
+  </script>
+
+  <script type="text/javascript" charset="utf-8">
+    // Print the last refreshed time
+    update_clock_on_div("#the_last_refresh_time");
+
+    // Print the clock
+    function update_wall_clock() {
+      update_clock_on_div("#the_current_time");
+    }
+    setInterval( update_wall_clock , 1000);
+  </script>
+</html>

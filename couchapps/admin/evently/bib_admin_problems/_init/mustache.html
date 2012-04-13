@@ -1,0 +1,42 @@
+<h3>Classement général</h3>
+<ul>
+  {{#pbs}}
+  <li> Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}} </li>
+  <ul>
+    {{#sites}}
+    <li>
+      <a href="/_utils/document.html?steenwerck100km/checkpoints-{{id}}-{{bib}}">Site {{id}}</a>
+      <ul>
+        <li>
+          times:
+          <ul>
+            {{#times}}
+            <li>
+              {{#val}}
+                {{#remove}}<span style="color: red">{{/remove}}
+                {{val}}
+                {{#remove}}</span>{{/remove}}
+                <input class="remove" type="button" value="remove" data-bib="{{bib}}" data-site_id="{{site_id}}" data-lap="{{lap}}"/>
+              {{/val}}
+              {{#add}}<input class="add" type="button" value="add" data-bib="{{bib}}" data-site_id={{site_id}} data-lap="{{lap}}"/>{{/add}}
+            </li>
+            {{/times}}
+          </ul>
+        </li>
+        <li>
+          deleted times:
+          <ul>
+            {{#deleted_times}}
+            <li>
+              {{val}}
+              <input class:"restore" type="button" value="restore" data-bib="{{bib}}" data-site_id="{{site_id}}" data-lap="{{lap}}"/>
+            </li>
+            {{/deleted_times}}
+          </ul>
+        </li>
+      </ul>
+    </li>
+    {{/sites}}
+  </ul>
+  {{/pbs}}
+</ul>

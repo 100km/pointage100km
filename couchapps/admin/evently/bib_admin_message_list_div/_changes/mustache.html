@@ -1,0 +1,31 @@
+<h3>Liste des messages valides</h3>
+<ul>
+  <li>
+      <div class="bib_admin_message_list_div_col_fixed_80">Sup?</div>
+      <div class="bib_admin_message_list_div_col_5">Destination</div>
+      <div class="bib_admin_message_list_div_col_15">Heure d'envoi</div>
+      <div class="bib_admin_message_list_div_col">Message</div>
+      <div style="clear:both;"></div>
+  </li>
+  {{#all_valid_messages}}
+    <li>
+      <div class="bib_admin_message_list_div_col_fixed_80_delete">
+        <form id="delete">
+          <input type="image" name="delete" src="img/delete.png"/>
+          <input type="hidden" name="id" value="{{message_id}}"/>
+          <input type="hidden" name="rev" value="{{message_rev}}"/>
+          <input type="hidden" name="target" value="{{target}}"/>
+          <input type="hidden" name="body" value="{{message}}"/>
+          <input type="hidden" name="addedTS" value="{{addedTS}}"/>
+        </form>
+      </div>
+      <div class="bib_admin_message_list_div_col_5">{{target}}</div>
+      <div class="bib_admin_message_list_div_col_15">{{time_hour}}</div>
+      <div class="bib_admin_message_list_div_col">{{message}}</div>
+      <div style="clear:both;"></div>
+    </li>
+  {{/all_valid_messages}}
+</ul>
+
+
+

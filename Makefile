@@ -1,11 +1,12 @@
-JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar
+JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar bin/stats.jar
 BINFILES = $(JARFILES:.jar=)
 DIST = bin.tar.xz
+ROOTDIR = server
 SBT = ./sbt
 
-all:: proguard
+all:: assembly
 
-proguard:: $(JARFILES)
+assembly:: $(JARFILES)
 
 dist:: $(DIST)
 
@@ -14,16 +15,16 @@ $(DIST): $(JARFILES) $(BINFILES)
 	tar Jcvf $(DIST) $(JARFILES) $(BINFILES)
 
 clean::
-	$(SBT) root/clean
+	cd $(ROOTDIR) && $(SBT) root/clean
 
 distclean::
 	$(MAKE) clean
 	$(RM) $(JARFILES)
 
 check::
-	$(SBT) root/test
+	cd $(ROOTDIR) && $(SBT) root/test
 
 %.jar: ALWAYS
-	$(SBT) `basename ${@:.jar=}`/proguard
+	cd $(ROOTDIR) && $(SBT) `basename ${@:.jar=}`/assembly
 
 ALWAYS::

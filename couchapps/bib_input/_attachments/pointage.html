@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title></title> <!-- will be generated from the database -->
+    <link rel="stylesheet" href="style/main.css" type="text/css">
+  </head>
+  <body>
+    <div id="title"></div>
+    <div id="message-bar"></div>
+    <div id="bib_input"></div>
+    <div id="items"></div>
+    <div id="previous_container"></div> <!-- stay here to define the position of previous -->
+    <div id="previous"></div>
+
+  </body>
+  <script src="../common/vendor/couchapp/loader.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      $("#arrow").hide();
+    });
+    $.couch.app(function(app) {
+      $.evently.changesOpts.filter = "bib_input/no-ping";
+      $("#bib_input").evently("bib_input", app);
+      $("#items").evently("items", app);
+      $("#title").evently("title", app);
+      $("#previous").evently("previous", app);
+      $("#message-bar").evently("message-bar", app);
+      $.evently.connect("#title", "#items", ["app_info_changed"]);
+      $.evently.connect("#title", "#message-bar", ["app_info_changed"]);
+      $.evently.connect("#items", "#previous", ["change_infos", "clear_infos"]);
+      $.evently.connect("#bib_input", "#items", ["set_selected_item"]);
+
+      // javascript events
+      $(window).scroll(place_previous);
+      place_previous();
+      document.onkeyup = function keyPress(event_obj) {
+        return deal_with_key(event_obj, app);
+      };
+    });
+
+  </script>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<link rel="stylesheet" href="style/qunit.css" type="text/css"/>
+<script src="../common/lib/underscore-min.js"></script>
+<script type="text/javascript" src="lib/qunit.js"></script>
+<script type="text/javascript" src="lib/tests.js"></script>
+<script src="../common/vendor/couchapp/loader.js"></script>
+<script src="../common/vendor/sp4ce/lcs.js"></script>
+<script src="../common/lib/utils.js"></script>
+<script type="text/javascript" charset="utf-8">
+//specifying the db to ensure our tests
+//run only on this db
+$.couch.app(function(app) {
+  test_bib_input(app);
+}, {db: "test_db"});
+$.couch.app(function(app) {
+  test_admin(app);
+}, {db: "test_db"});
+</script>
+</head>
+<body>
+<h1 id="qunit-header">bib_input tests</h1>
+<h2 id="qunit-banner"></h2>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests">
+</ol>
+</body>
+</html>
