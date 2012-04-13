@@ -6,7 +6,12 @@ function() {
 
   db.openDoc('checkpoints-' + site_id + '-' + bib, {
     success: function(doc) {
-      doc.times = $.grep(doc.times, function(element, index) { return index != lap; });
+      // Put the time in the deleted_times array.
+      var time = doc.times[lap];
+      doc.times = $.grep(doc.times, function(element) { return element != time; });
+      doc.deleted_times = doc.deleted_times || [];
+      doc.deleted_times.push(time);
+      // Save the document.
       db.saveDoc(doc);
     }
   });
