@@ -33,4 +33,4 @@ couchapp push common $full_name
 couchapp push bib_input $full_name
 couchapp push admin $full_name
 couchapp push main_display $full_name
-echo couchapp pushdocs _docs $full_name
+couchapp pushdocs _docs $full_name
