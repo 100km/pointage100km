@@ -18,7 +18,7 @@ object Stats extends App {
   val db: Database = new NioCouch().db("steenwerck100km")
 
   def update(checkpoint: Int ,bib: Int, race: Int) {
-    val id = "checkpoint-" + checkpoint + "-" + bib
+    val id = "checkpoints-" + checkpoint + "-" + bib
     val r = db.update("bib_input", "add-checkpoint", id,
 		      Map("ts" -> System.currentTimeMillis.toString)).execute()
     if (r \ "need_more" == JBool(true)) {
