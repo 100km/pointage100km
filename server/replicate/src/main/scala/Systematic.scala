@@ -8,20 +8,20 @@ import net.rfc1149.canape._
 
 import Global._
 
-class Systematic(local: Database, remote: Database) extends PeriodicTask(30 seconds) with LoggingError {
+class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask(30 seconds) with LoggingError {
 
   override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =
     if (Replicate.options.replicate)
-      withError(local.replicateTo(remote, Systematic.replicateOptions).toFuture,
+      withError(local.replicateTo(remote.get, Systematic.replicateOptions).toFuture,
 		"cannot replicate from local to remote")
     else
       Promise.successful(null)
 
   private[this] def remoteToLocalReplication =
     if (Replicate.options.replicate)
-      withError(local.replicateFrom(remote, Systematic.replicateOptions).toFuture,
+      withError(local.replicateFrom(remote.get, Systematic.replicateOptions).toFuture,
 		"cannot replicate from remote to local")
     else
       Promise.successful(null)
