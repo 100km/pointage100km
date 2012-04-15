@@ -1,79 +1,61 @@
 function(data) {
-    var p;
+    var p = {};
+    var res = [];
+    var i = 0;
 
-    function search_twitter(query, div_to_update) {
-	//based on code from: http://webhole.net/2009/11/28/how-to-read-json-with-javascript/ 
-	var url='http://search.twitter.com/search.json?callback=?&q=';
+    //$.log("data: " + JSON.stringify(data));
 
-	if (query == undefined) {
-	    $.log("undefined query!");
-	    return false;
+    function map_contestants(data) {
+	var result = {};
+
+	//$.log("contestants: " + JSON.stringify(data));
+
+	if (data.value) {
+	    result.bib = data.value.bib;
+	    result.lap = data.value.times.length;
+
+	    //unroll the "multi-row" stuff (don't understand the point of having it like that yet)
+	    res.push(result);
+	    i++;
 	}
 
-	query = escape(query);
-	
-	$.log("search twitter: '" + query + "'");
-	
-	function parse_search_result(json) {
-	    
-	    for (var i = 0; i < json.results.length; i++) {
-		tweet = json.results[i];
-
-		//only process the first 3 elements of the results
-		if (i == 3) {
-		    break;
-		}
-		
-		//TODO: find a replacement for "append" as I think it will not work well for db updates, maybe do horizontal scrolling?
-		$(div_to_update).append('<p><img src="' + tweet.profile_image_url + '" width="48" height="48" />' + tweet.text + '</p>');
-		
-		//$.log("tweet[" + i + "]: " + tweet.text);	
-	    }
-	}
-
-	$.getJSON(url+query, parse_search_result);
+	return result;
     }
 
-    search_twitter("#paris", "#tweet_results_for_bib_81");
+    function map_races(data) {
+	var result = {};
 
-    //search_twitter("#paris", "#results");
+	//$.log("races: " + JSON.stringify(data));
+
+	//result.race_id = data.race_id;
+	result = data.contestants.map(map_contestants);
+	
+	return result;
+    }
+
+    function map_bib(data) {
+	var result = {};
+
+	//$.log("bibs: " + JSON.stringify(data));
+
+	//here we need to retrieve the info about each contestant
+	result = data;
+
+	return result;
+    }
+
+    data.rows.map(map_races);
+
+    res.map(map_bib);
+
+    p.count = i;
+    p.items = res.map(map_bib);
+
     
+    $.log("res: " + JSON.stringify(res));
 
-    function get_messages(bib) {
-	var r = {};
-	var messages = new Array();
-	messages[0] = "toto1";
-	messages[1] = "toto2";
-	messages[2] = "toto3";
+    $.log("p: " + JSON.stringify(p));
 
-	r.message_count = 3;
-	r.messages = messages;
-	return r;
-    }
+    return p;
 
-    function process_messages_for_bib(bib) {
-	//this function should be calling search_twitter() for the given bib
-	//however, since getJSON is asynchronous, without synchronising all the calls to search_twitter (with utils.js:fork()?), this cannot work
-
-	var r = {};
-	r = get_messages(bib);
-
-	$.log("process_messages_for_bib " + bib);
-	$.log("r = " + JSON.stringify(r));
-    }
-
-    return {
-	races: data.rows.map(function(pair) {
-	    return {
-		race_id: pair.race_id,
-		items: pair.contestants.map(function(r) {
-		    p = {};
-		    p.bib = r.value && r.value.bib;
-		    p.lap = r.value && r.value.times.length;
-		    p.messages = process_messages_for_bib(p.bib);
-		    return p;
-		})
-	    }
-	})
-    }
 };
