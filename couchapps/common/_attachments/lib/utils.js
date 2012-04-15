@@ -187,6 +187,14 @@ function check_times(times, pings) {
     expected_site = (expected_site + 1) % site_number;
   }
 
+  // Be sure that we end on the same site.
+  while (sites.length && sites[sites.length - 1].site != parseInt(reference[reference.length - 1])) {
+    reference += expected_site;
+    expected_site = (expected_site + 1) % site_number;
+  }
+
+//$.log('input: ' + input + ', reference: ' + reference);
+
   // Compare the site vector with the reference.
   var pb;
   var compare = lcs.compare(reference, input);
@@ -202,6 +210,10 @@ function check_times(times, pings) {
         site_id: parseInt(status == lcs.DELETION ? reference[j] : input[i]),
         type: status == lcs.DELETION ? "Manque un passage" : "Passage supplémentaire",
         lap: sites[i].lap + 1,
+        next_site: status == lcs.DELETION ? sites[i].site : undefined,
+        next_time: status == lcs.DELETION ? sites[i].time : undefined,
+        prev_site: status == lcs.DELETION && i > 0 ? sites[i-1].site : undefined,
+        prev_time: status == lcs.DELETION && i > 0 ? sites[i-1].time : undefined,
       }
     }
   });
