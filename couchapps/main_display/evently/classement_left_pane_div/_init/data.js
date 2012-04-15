@@ -40,8 +40,8 @@ function(data) {
 	var result = {
 	    bib: 0,
 	    dossard: 0,
-	    nom: "inconnu",
-	    prenom: "inconnu",
+	    nom: "",
+	    prenom: "",
 	    course: 0,
 	    lap: 0,
 	};
