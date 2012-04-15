@@ -39,39 +39,55 @@ object Replicate extends App {
 
   private val localCouch = new NioCouch(auth = Some("admin", "admin"))
   private val localDatabase = localCouch.db("steenwerck100km")
-  private val hubCouch = new NioCouch(config.read[String]("master.host"),
-				      config.read[Int]("master.port"),
-				      Some(config.read[String]("master.user"),
-					   config.read[String]("master.password")))
-  private val cfgDatabase = hubCouch.db("steenwerck-config")
 
-  var dbName: Option[String] = None
-  while (!dbName.isDefined) {
-    try {
-      dbName = Some(cfgDatabase("configuration").execute()("dbname").extract[String])
-      log.info("server database name is " + dbName.get)
-    } catch {
-	case t =>
-	  log.error("cannot retrieve database name: " + t)
-	Thread.sleep(5000)
+  lazy private val hubCouch =
+    if (options.replicate)
+      Some(new NioCouch(config.read[String]("master.host"),
+			config.read[Int]("master.port"),
+			Some(config.read[String]("master.user"),
+			     config.read[String]("master.password"))))
+    else
+      None
+
+  lazy private val cfgDatabase = hubCouch.map(_.db("steenwerck-config"))
+
+  private lazy val remoteDbName: Option[String] = {
+    var dbName: Option[String] = None
+    if (options.replicate) {
+      while (!dbName.isDefined) {
+	try {
+	  dbName = cfgDatabase.map(_("configuration").execute()("dbname").extract[String])
+	  dbName.foreach(log.info("server database name is {}", _))
+	} catch {
+	  case t =>
+	    log.error("cannot retrieve database name: " + t)
+	    Thread.sleep(5000)
+	}
+      }
     }
+    dbName
   }
 
-  var previousDbName = try {
-    Some(localDatabase("configuration").execute()("dbname").extract[String])
-  } catch {
+  private lazy val previousDbName: Option[String] =
+    try {
+      Some(localDatabase("configuration").execute()("dbname").extract[String])
+    } catch {
       case t =>
 	log.info("cannot retrieve previous database name: " + t)
-        None
-  }
+	None
+    }
 
-  if (previousDbName != dbName) {
-    log.info("deleting previous database")
-    try {
-      localDatabase.delete().execute()
-    } catch {
-      case t =>
-	log.error("deletion failed: " + t)
+  private lazy val hubDatabase = for (c <- hubCouch; name <- remoteDbName) yield c.db(name)
+
+  if (options.replicate) {
+    if (previousDbName != remoteDbName) {
+      log.info("deleting previous database")
+      try {
+	localDatabase.delete().execute()
+      } catch {
+	case t =>
+	  log.error("deletion failed: " + t)
+      }
     }
   }
 
@@ -87,17 +103,17 @@ object Replicate extends App {
       exit(1)
   }
 
-  val hubDatabase = hubCouch.db(dbName.get)
-
   try {
     createLocalInfo(localDatabase)
     log.info("local information created")
     if (options.replicate) {
       log.info("starting initial replication")
-      try {
-	localDatabase.replicateFrom(hubDatabase, Map[String, String]()).execute()
-	log.info("initial replication done")
-      } catch {
+      try
+	hubDatabase.foreach { hdb =>
+	  localDatabase.replicateFrom(hdb, Map[String, String]()).execute()
+	  log.info("initial replication done")
+	}
+      catch {
 	case t =>
 	  log.error("initial replication failed: " + t)
       }
