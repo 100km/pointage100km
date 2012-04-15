@@ -1,68 +1,30 @@
-<div id="news-container">
-	<ul>
-		<li>
-			<div>
-				1) Lorem ipsum dolor sit amet, porta at, imperdiet id neque. more info
-			</div>
-		</li> 
-		<li>
-			<div>
-
-				2) Lorem ipsum dolor sit amet, consectetur adipiscing elit. more info
-			</div>
-		</li> 
-		<li>
-			<div>
-				3) Lorem ipsum dolor sit amet more info more info more info more info
-			</div>
-		</li>   
-		<li>
-			<div>
-				4) jugbit.com jquery vticker more info more info more info more info more info
-			</div>
-		</li>
-	</ul>
-</div>
-
-
-
 
 
 <h3>left pane title</h3>
 <div id="ranking-container">
-  <ul>
-    {{#races}}
-    <li> course {{race_id}} 
-      <ul>
+    <ul>
 	{{#items}}
 	<li>
-	  <p> Dossard {{bib}} (au tour {{lap}})</p>
-	  <div style="clear:left;"></div>
+	  <div>
+
+	    Dossard {{bib}} (au tour {{lap}})
+
+	  </div>
 	</li>
 	{{/items}}
       </ul>
-    </li>
-    {{/races}}
-  </ul>
 </div>
 
 
 
 <script type="text/javascript">
 $(function(){
-	$('#news-container').vTicker({ 
-		speed: 500,
-		pause: 3000,
-		animation: 'fade',
-		mousePause: false,
-		showItems: 3
-	});
 	$('#ranking-container').vTicker({ 
 		speed: 500,
-		pause: 3000,
+		pause: 1000,
 		animation: 'fade',
 		mousePause: false,
-		showItems: 3
+		showItems: 10
 	});
 	
 });
