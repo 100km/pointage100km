@@ -47,7 +47,8 @@ function(data) {
  */
 function do_check_times(res, bib, times, deleted_times, pings) {
   // Check the times.
-  var check = check_times(times, pings);
+  // NOTE(bapt): hard code the number of site...
+  var check = check_times(times, pings, 3);
 
   // There was a problem.
   if (check) {
@@ -60,7 +61,8 @@ function do_check_times(res, bib, times, deleted_times, pings) {
     // Display the times for each site.
     check.sites = [];
 
-    for (var i = 0; i < Math.min(times.length, pings.length); i++) {
+    // NOTE(bapt): Hard code site number.
+    for (var i = 0; i < 3; i++) {
       // Push the site object definition.
       check.sites.push({
         id: i,
@@ -137,11 +139,16 @@ function get_site_bib_times(check, times, i, bib) {
         remove: check.type == 'Passage supplémentaire' && check.lap == (lap + 1) && check.site_id == i,
       });
     }
-  } else if (check.type == 'Manque un passage' && check.lap == 1 && check.site_id == i) {
-    // There is no data for this site and the error detection say it misses the first lap.
+  }
+
+  // Add missing button that are outside range of times[i] array.
+  if (check.type == 'Manque un passage' && check.site_id == i
+    && (((!times[i] || times[i].length == 0) && check.lap == 1)
+      || check.lap > times[i].length)) {
+    // There is no data for this site and the error detection say it misses the lap.
     site_bib_times.push({
       add: true,
-      lap: 0,
+      lap: times[i] ? times[i].length : 0,
       bib: bib,
       site_id: i,
       next_site: check.next_site,
