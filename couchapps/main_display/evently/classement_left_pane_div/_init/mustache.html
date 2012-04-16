@@ -1,0 +1,52 @@
+
+
+<h3>left pane title</h3>
+<div id="ranking-container">
+    <ul>
+	{{#items}}
+	<li>
+	  <div>
+
+	    Dossard {{dossard}}: {{prenom}} {{nom}} (au tour {{lap}} de la course {{course}})
+
+	  </div>
+	</li>
+	{{/items}}
+      </ul>
+</div>
+
+
+
+<script type="text/javascript">
+$(function(){
+	$('#ranking-container').vTicker({ 
+		speed: 500,
+		pause: 1000,
+		animation: 'fade',
+		mousePause: false,
+		showItems: 10
+	});
+	
+});
+</script>
+
+
+
+
+
+
+
+<!--
+
+il faudrait creer "race_${i}" dans data.js a partir de ce que async.js recupere de la view de la base de donnees
+ensuite, deux possibilites:
+- utiliser setInterval pour appeler _changes et recharger la vue: il faut garder un etat pour se souvenir d'ou on est, chaque affichage serait a jour car il sereait genere par une requete separee
+- charger tous les participants et les traiter avec javascript locale
+
+-->
+
+<!--
+<div id="left_pane_info" class="left_pane">left pane</div>
+<div id="right_pane_info" class="right_pane">right pane</div>
+<div id="bottom_pane_info" class="bottom_pane">bottom pane</div>
+-->
