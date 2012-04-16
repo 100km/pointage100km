@@ -26,6 +26,33 @@ h1 {
   padding:8px;
 }
 
+
+.left_pane {
+    list-style: none;
+    padding:0px;
+    margin:0px;
+}
+
+.left_pane li {
+    list-style: none;
+    padding:0px;
+    margin:0px;
+}
+
+.left_pane ul {
+    list-style: none;
+    padding:0px;
+    margin:0px;
+}
+
+.right_pane {
+    list-style: none;
+    padding:0px;
+    margin:0px;
+}
+
+
+
 /*******************************
  * Styles for the message bar. *
  *******************************/
@@ -176,6 +203,37 @@ h1 {
   text-align:center;
   height:22px;
 }
+
+.items_col_25
+{
+  width:25%;
+  padding-top:10px;
+  padding-bottom:10px;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
+.items_col_30
+{
+  width:30%;
+  padding-top:10px;
+  padding-bottom:10px;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
+.items_col_35
+{
+  width:35%;
+  padding-top:10px;
+  padding-bottom:10px;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
 
 #items ul {
   list-style: none;

@@ -7,22 +7,32 @@ seulement des dossars de la course 1
 
 
 <h3>Course 100km Open</h3>
+<li>
+  <div class="items_col_20">Dossard</div>
+  <div class="items_col_35">Nom</div>
+  <div class="items_col_35">Prénom</div>
+  <div style="clear:both;"></div>
+</li>
+
 <div id="ranking-container">
-    <ul>
-	{{#items}}
-	<li>
-	  <div>
-
-	    Dossard {{dossard}}: {{prenom}} {{nom}} (au tour {{lap}} de la course {{course}})
-
-	  </div>
-	</li>
-	{{/items}}
-      </ul>
+  <ul>
+    {{#items}}
+    <li>
+      <div>
+        
+        <div class="items_col_20">{{dossard}}</div>
+        <div class="items_col_35">{{nom}}</div>
+        <div class="items_col_35">{{prenom}}</div>
+        <div style="clear:both;"></div>
+        
+      </div>
+    </li>
+    {{/items}}
+  </ul>
 </div>
 
 
-
+<!--
 <script type="text/javascript">
 $(function(){
 	$('#ranking-container').vTicker({ 
@@ -35,7 +45,7 @@ $(function(){
 	
 });
 </script>
-
+-->
 
 
 
