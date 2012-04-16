@@ -220,3 +220,7 @@ function check_times(times, pings, site_number) {
 
   return pb;
 }
+
+function increment_string_key(str) {
+  return str.substring(0,str.length-1)+String.fromCharCode(str.charCodeAt(str.length-1)+1)
+}
