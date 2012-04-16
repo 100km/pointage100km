@@ -54,6 +54,7 @@ function(data) {
 
 	if (app.contestants === undefined) {
 	    $.log("contestants not loaded yet");
+	    return;
 	}
 	else {
 	    var current_contestant = app.contestants[data.bib];
