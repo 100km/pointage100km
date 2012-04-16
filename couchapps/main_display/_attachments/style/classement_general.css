@@ -21,26 +21,29 @@ h1 {
 }
 
 .left_pane {
-    width: 50%;
+    width: 47%;
     float: left;
-  /*border:4px solid #dfd;
-  padding:8px;
-*/
+    border:4px solid #dfd;
+    padding:8px;
+    font-family: "Courier New", monospace;
 
 }
 
 .right_pane {
-    width: 50%;
+    width: 47%;
     float: right;
-  /*border:4px solid #dfd;
-  padding:8px;
-*/
+    border:4px solid #dfd;
+    padding:8px;
+    font-family: "Courier New", monospace;
+
 }
 
 .bottom_pane {
     width: 100%;
-  /*border:4px solid #dfd;
-  padding:8px;
-*/
+    border:4px solid #dfd;
+    padding:8px;
+    clear: both;
+    font-family: "Courier New", monospace;
+
 }
 
