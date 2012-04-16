@@ -43,6 +43,8 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
     Await.ready(futures, Duration.Inf)
   }
 
+  initialize
+
 }
 
 object Systematic {
