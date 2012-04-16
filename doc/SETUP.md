@@ -160,3 +160,13 @@ Note: you might need to install mdbtools to run mdb2couchdb.bash
 <pre>
 sudo apt-get install mdbtools
 </pre>
+
+# Configure replication options
+
+In the default.ini file, under `[replicator]` section, make sure to have those 2 lines
+<pre>
+worker_batch_size = 50
+http_connections = 2
+</pre>
+
+
