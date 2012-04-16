@@ -31,8 +31,5 @@ else
 fi
 
 full_name=http://$user:$password@$host/$dbname
-couchapp push common $full_name
-couchapp push bib_input $full_name
-couchapp push admin $full_name
-couchapp push main_display $full_name
+couchapp pushapps . $full_name
 couchapp pushdocs _docs $full_name
