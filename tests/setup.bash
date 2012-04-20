@@ -15,7 +15,8 @@ which curl &> /dev/null || { echo "This script needs curl. Please install it." ;
 
 user=${1:-admin}
 password=${2:-admin}
-url="http://$user:$password@localhost:5984"
+host=${3:-localhost:5984}
+url="http://$user:$password@$host"
 test_db="test_db"
 echo "Deleting previous test database..."
 curl -s -X DELETE "$url/$test_db" -H "Content-Type: application/json" 2>&1 | pad_head 2
@@ -27,3 +28,6 @@ couchapps_dir="$script_dir/../couchapps"
 
 echo "Pushing test couchapp. Launch the tests at the following URL"
 (cd "$script_dir/test_couchapp" && couchapp push $url/$test_db) 2>&1 | pad_head 2
+
+echo "Dowloading the result..."
+(cd "$script_dir" && wget $url/$test_db/_design/test_couchapp/index.html -O test_result.html) 2>&1 | pad_head 2
