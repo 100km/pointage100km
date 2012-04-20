@@ -32,7 +32,9 @@ function() {
               checkpoints.times = checkpoints.times || [];
               checkpoints.times.push(time);
               checkpoints.times.sort();
-              checkpoints.deleted_times = $.grep(checkpoints.deleted_times, function(element) { return element != time; });
+              checkpoints.deleted_times = checkpoints.deleted_times
+                ? $.grep(checkpoints.deleted_times, function(element) { return element != time; })
+                : [];
               db.saveDoc(checkpoints);
             },
             error: function() {
