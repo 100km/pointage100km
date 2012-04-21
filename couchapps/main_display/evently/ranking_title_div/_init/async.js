@@ -1,49 +1,49 @@
 function(cb) {
-    var i = 0;
-    var app = $$(this).app;
-    
-    function unwrap_data(data) {
-	return data.rows.map(function(row) {
-	    return row.value;
-	});
-    }
+  var i = 0;
+  var app = $$(this).app;
 
-    function get_all_contestants(app, cb1) {
-	app.db.view("common/all_contestants", {
-	    success: function(data) {
-		cb1(unwrap_data(data));
-	    }
-	});
-    }
+  function unwrap_data(data) {
+    return data.rows.map(function(row) {
+      return row.value;
+    });
+  }
 
-    function map_contestants(data) {
-	var result = {};
+  function get_all_contestants(app, cb1) {
+    app.db.view("common/all_contestants", {
+      success: function(data) {
+        cb1(unwrap_data(data));
+      }
+    });
+  }
 
-	//$.log("map_contestants: " + JSON.stringify(data));
-	
-	//no error checking: we suppose all contestants have the following info in the database
-	result.dossard = data.dossard;
-	result.nom     = data.nom;
-	result.prenom  = data.prenom;
-	result.course  = data.course;
+  function map_contestants(data) {
+    var result = {};
 
-	return result;
-    }
+    //$.log("map_contestants: " + JSON.stringify(data));
 
-    function cb2(params) {
-	var result = {};
+    //no error checking: we suppose all contestants have the following info in the database
+    result.dossard = data.dossard;
+    result.nom     = data.nom;
+    result.prenom  = data.prenom;
+    result.course  = data.course;
 
-	//$.log("cb2: " + JSON.stringify(params));
+    return result;
+  }
 
-	result = params.map(map_contestants);
+  function cb2(params) {
+    var result = {};
 
-	//$.log("result: " + JSON.stringify(result));
+    //$.log("cb2: " + JSON.stringify(params));
 
-	//sink
-	cb(result);
-    }
+    result = params.map(map_contestants);
 
-    get_all_contestants(app, cb2);
+    //$.log("result: " + JSON.stringify(result));
+
+    //sink
+    cb(result);
+  }
+
+  get_all_contestants(app, cb2);
 
 }
 
