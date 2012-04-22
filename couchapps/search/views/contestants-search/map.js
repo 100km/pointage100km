@@ -1,8 +1,15 @@
 function(doc) {
-  if (doc.prenom && doc.dossard) {
-    emit(doc.prenom, doc.dossard);
+  if (doc.dossard != undefined) {
+    if (doc.prenom)
+    for (prop in {"prenom":"", "nom":""}) {
+      if (doc[prop]) {
+        emit(doc[prop], {
+          match: prop,
+          prenom: doc.prenom || "",
+          nom: doc.nom || "",
+          dossard: doc.dossard
+        });
+      }
+    }
   }
-  if (doc.nom && doc.dossard) {
-    emit(doc.nom, doc.dossard);
-  }
-}
+};

@@ -10,13 +10,21 @@ function() {
         endkey: increment_string_key(term),
         success: function(data) {
           response(data.rows.map(function(row) {
+            var value = row.value.nom + " " + row.value.prenom;
+            var match = row.value[row.value.match];
+            var label = "<strong>"+match.substring(0,term.length)+"</strong>"+match.substring(term.length);
+            if (row.value.match == "nom") {
+              label = label + " " + row.value.prenom;
+            } else {
+              label = row.value.nom + " " + label;
+            }
             return {
-              label: "<strong>"+row.key.substring(0,term.length)+"</strong>"+row.key.substring(term.length),
-              value:row.key
+              label: label,
+              value: value
             };
           }));
         }
-      })
+      });
     }
   });
 };
