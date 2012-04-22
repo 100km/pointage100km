@@ -1,3 +1,9 @@
+function unwrap_data(data) {
+  return data.rows.map(function(row) {
+    return row.value;
+  });
+}
+
 function retries(n, f, debug_name) {
   if (n<=0) {
     alert("Too many retries for " + debug_name);
