@@ -6,7 +6,7 @@ seulement des dossars de la course 1
 -->
 
 
-<h3>Course 100km Open</h3>
+<h3>{{race_name}}</h3>
 <li>
   <div class="items_col_20">Pos</div>
   <div class="items_col_50">Dossard</div>
@@ -17,7 +17,7 @@ seulement des dossars de la course 1
   <div style="clear:both;"></div>
 </li>
 
-<div id="ranking-container">
+<div id="ranking-container-{{race_id}}">
   <ul>
     {{#items}}
     <li style="color:{{^is_odd}}grey{{/is_odd}}{{#is_odd}}dark{{/is_odd}}">
@@ -36,14 +36,14 @@ seulement des dossars de la course 1
 
 <script type="text/javascript">
 $(function(){
-    $('#ranking-container').vTicker({
+    $('#ranking-container-{{race_id}}').vTicker({
         speed: 500,
         pause: 1000,
         animation: 'fade',
         mousePause: false,
         showItems: 10
     }, function() {
-        $("#left_pane_div").trigger("update_race_number_1");
+        $("#left_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
     });
 });
 </script>

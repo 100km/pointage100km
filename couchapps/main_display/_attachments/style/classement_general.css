@@ -17,6 +17,18 @@ h3 {
   padding:2px;
 }
 
+ul {
+  list-style: none;
+  padding:0px;
+  margin:0px;
+}
+
+li {
+  list-style: none;
+  padding:0px;
+  margin:0px;
+}
+
 
 /* title CSS */
 #title {
@@ -82,20 +94,7 @@ h3 {
 }
 
 
-.left_pane ul {
-  list-style: none;
-  padding:0px;
-  margin:0px;
-}
-
-.left_pane li {
-  list-style: none;
-  padding:0px;
-  margin:0px;
-}
-
-
-
+/* Styme for bottom pane */
 .bottom_pane_items_col_5
 {
   width:5%;
@@ -134,16 +133,4 @@ h3 {
   height:22px;
   padding-top:4px;
   padding-bottom:4px;
-}
-
-.bottom_pane ul {
-  list-style: none;
-  padding:0px;
-  margin:0px;
-}
-
-.bottom_pane li {
-  list-style: none;
-  padding:0px;
-  margin:0px;
 }
