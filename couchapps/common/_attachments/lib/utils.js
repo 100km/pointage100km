@@ -228,5 +228,5 @@ function check_times(times, pings, site_number) {
 }
 
 function increment_string_key(str) {
-  return str.substring(0,str.length-1)+String.fromCharCode(str.charCodeAt(str.length-1)+1)
+  return str+'\ufff0';
 }
