@@ -10,7 +10,7 @@ body {
 .twitter {
     background: #f1f2f8;
     
-    width: 600px; /* Up to you but remember to change the div width below as well if you change it */
+    width: 300px; /* Up to you but remember to change the div width below as well if you change it */
     padding: 0 10px;
     
     overflow: hidden; /* clearfix */
@@ -38,7 +38,7 @@ body {
 .twitter marquee, 
 .twitter div {
     float: left;
-    width: 505px; /* Container width - heading width - 10px (for some right padding) */
+    width: 205px; /* Container width - heading width - 10px (for some right padding) */
     margin: 0;
     padding: 6px 0; /* Again we set the padding in here so as not to cut text */
     line-height: 1;
