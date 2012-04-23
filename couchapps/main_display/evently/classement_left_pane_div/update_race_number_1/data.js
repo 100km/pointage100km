@@ -14,7 +14,7 @@ function(data) {
 
     //$.log("current_infos = " + JSON.stringify(current_infos));
     if (current_contestant === undefined) {
-      $.log("skip contestant: " + data.bib);
+      $.log("skip contestant: " + current_infos.bib);
     }
 
     item.rank    = i;
