@@ -81,6 +81,7 @@ h3 {
   margin:0;
 }
 
+
 .left_pane ul {
   list-style: none;
   padding:0px;
@@ -88,6 +89,52 @@ h3 {
 }
 
 .left_pane li {
+  list-style: none;
+  padding:0px;
+  margin:0px;
+}
+
+
+
+.bottom_pane_items_col_5
+{
+  width:5%;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
+.bottom_pane_items_col_10
+{
+  width:10%;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
+.bottom_pane_items_col_15
+{
+  width:15%;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
+.bottom_pane_items_col_20
+{
+  width:20%;
+  float:left;
+  text-align:center;
+  height:22px;
+}
+
+.bottom_pane ul {
+  list-style: none;
+  padding:0px;
+  margin:0px;
+}
+
+.bottom_pane li {
   list-style: none;
   padding:0px;
   margin:0px;
