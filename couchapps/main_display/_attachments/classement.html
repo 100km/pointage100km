@@ -12,8 +12,8 @@
     </script>
 
     <div id="ranking_title_div"></div>
-    <div id="left_pane_div" class="left_pane">left pane text</div>
-    <div id="right_pane_div" class="right_pane">right pane text</div>
+    <div id="left_pane_div" class="left_pane" data-race_id=1></div>
+    <div id="right_pane_div" class="right_pane"  data-race_id=2></div>
     <div id="bottom_pane_div" class="bottom_pane">bottom pane text</div>
 
   </body>
@@ -24,10 +24,11 @@
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
       $("#ranking_title_div").evently("ranking_title_div", app);
-      $("#left_pane_div").evently("classement_left_pane_div", app);
+      $("#left_pane_div").evently("classement_side_pane_div", app);
+      $("#right_pane_div").evently("classement_side_pane_div", app);
       $("#bottom_pane_div").evently("classement_bottom_pane_div", app);
-      $.evently.connect("#ranking_title_div", "#left_pane_div", ["update_race_number_1"]);
-      $.evently.connect("#ranking_title_div", "#right_pane_div", ["update_race_number_2"]);
+      $.evently.connect("#ranking_title_div", "#left_pane_div", ["update_ranking"]);
+      $.evently.connect("#ranking_title_div", "#right_pane_div", ["update_ranking"]);
       $.evently.connect("#ranking_title_div", "#bottom_pane_div", ["_changes"]);
     });
 

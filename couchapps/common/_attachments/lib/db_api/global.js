@@ -4,7 +4,7 @@ function db_global_ranking(app, cb, race_id) {
     endkey:[race_id+1, null, null, null]
   }, {
     success: function(data) {
-      cb(data);
+      cb({data:data, race_id:race_id});
     }
   });
 }
