@@ -25,10 +25,10 @@
     $.couch.app(function(app) {
       $("#ranking_title_div").evently("ranking_title_div", app);
       $("#left_pane_div").evently("classement_left_pane_div", app);
-      $("#right_pane_div").evently("classement_right_pane_div", app);
       $("#bottom_pane_div").evently("classement_bottom_pane_div", app);
       $.evently.connect("#ranking_title_div", "#left_pane_div", ["update_race_number_1"]);
       $.evently.connect("#ranking_title_div", "#right_pane_div", ["update_race_number_2"]);
+      $.evently.connect("#ranking_title_div", "#bottom_pane_div", ["_changes"]);
     });
 
   </script>
@@ -36,6 +36,8 @@
 
 <!--
 
+$("#right_pane_div").evently("classement_right_pane_div", app);
+      
 
      1 course du soir
      2 course du matin
