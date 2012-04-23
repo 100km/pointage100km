@@ -28,7 +28,7 @@ function query_twitter(query, div_to_update, bib) {
     if (bib & 0x1)
         return false;
 
-    if (query == undefined) {
+    if (query === undefined) {
         $.log("undefined query!");
         return false;
     }
@@ -94,46 +94,24 @@ function query_twitter(query, div_to_update, bib) {
 
 </script>
 
-<!--
 
 <h3>Derniers passages</h3>
 <ul>
   <li>
-      <div class="items_col_fixed_80">Sup?</div>
-      <div class="items_col_10">Dossard</div>
-      <div class="items_col_5">Tour</div>
-      <div class="items_col_20">Nom</div>
-      <div class="items_col_20">Prénom</div>
-      <div class="items_col_15">Heure de passage</div>
+      <div class="bottom_pane_items_col_10">Dossard</div>
+      <div class="bottom_pane_items_col_5">Tour</div>
+      <div class="bottom_pane_items_col_10">Nom</div>
+      <div class="bottom_pane_items_col_10">Prénom</div>
+      <div class="bottom_pane_items_col_15">Heure de passage</div>
       <div style="clear:both;"></div>
   </li>
   {{#items}}
-    <li id="js_checkpoint_{{bib}}_{{lap}}">
-      <div class="items_col_fixed_80_delete">
-        <form class="delete">
-          <input type="image" name="delete" src="img/delete.png"/>
-          <input type="hidden" name="bib" value="{{bib}}"/>
-          <input type="hidden" name="lap" value="{{lap}}"/>
-          <input type="hidden" name="ts" value="{{ts}}"/>
-        </form>
-      </div>
-      <div class="items_col_10">{{bib}}</div>
-      <div class="items_col_5">{{lap}}</div>
-      <div class="items_col_20">{{nom}}</div>
-      <div class="items_col_20">{{prenom}}</div>
-      <div class="items_col_15">{{time_hour}}</div>
-      <div style="clear:both;"></div>
-    </li>
-  {{/items}}
-</ul>
-
--->
-
-<h3>Derniers passages</h3>
-<ul>
-  {{#items}}
   <li>
-    <p> Dossard {{bib}} (au tour {{lap}})</p>
+    <div class="bottom_pane_items_col_10">{{bib}}</div>
+    <div class="bottom_pane_items_col_5">{{lap}}</div>
+    <div class="bottom_pane_items_col_10">{{nom}}</div>
+    <div class="bottom_pane_items_col_10">{{prenom}}</div>
+    <div class="bottom_pane_items_col_15">{{time_hour}}</div>
     <div id="tweets_results_for_bib_{{bib}}" class="twitter">
       <p></p>
     </div>
@@ -142,7 +120,6 @@ function query_twitter(query, div_to_update, bib) {
   </li>
   {{/items}}
 </ul>
-
 
 
 <!--
