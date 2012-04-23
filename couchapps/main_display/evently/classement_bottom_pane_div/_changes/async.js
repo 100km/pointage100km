@@ -25,7 +25,7 @@ function(cb) {
 	}
       });
       
-      $.log("bottom_pane_async: data.rows: " + JSON.stringify(data.rows));
+      //$.log("bottom_pane_async: data.rows: " + JSON.stringify(data.rows));
       
       cb(data.rows);
     }

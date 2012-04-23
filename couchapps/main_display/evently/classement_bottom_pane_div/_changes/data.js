@@ -8,7 +8,7 @@ function(data) {
     }
   }
 
-  $.log("\n\nbottom_pane_data data: " + JSON.stringify(data));
+  //$.log("\n\nbottom_pane_data data: " + JSON.stringify(data));
 
   function search_twitter(query, div_to_update) {
     //based on code from: http://webhole.net/2009/11/28/how-to-read-json-with-javascript/
@@ -21,7 +21,7 @@ function(data) {
 
     query = escape(query);
 
-    $.log("search twitter: '" + query + "'");
+    //$.log("search twitter: '" + query + "'");
 
     function parse_search_result(json) {
 
@@ -67,8 +67,8 @@ function(data) {
     var r = {};
     r = get_messages(bib);
 
-    $.log("process_messages_for_bib " + bib);
-    $.log("r = " + JSON.stringify(r));
+    //$.log("process_messages_for_bib " + bib);
+    //$.log("r = " + JSON.stringify(r));
   }
 
 
