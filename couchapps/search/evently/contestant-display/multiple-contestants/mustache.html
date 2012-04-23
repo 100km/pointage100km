@@ -1,9 +1,11 @@
 <ol>
 {{#names}}
-<li>
-  {{#value}}
+{{#value}}
+<li data-bib="{{dossard}}"
+    data-name="{{nom}}"
+    data-firstname="{{prenom}}">
   {{nom}} {{prenom}}: dossard {{dossard}}
-  {{/value}}
 </li>
+{{/value}}
 {{/names}}
 </ol>
