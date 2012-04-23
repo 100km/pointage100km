@@ -9,10 +9,10 @@ function(cb, wtf, request) {
     success: function(data) {
       var res;
       if (split.length > 1) {
+        var regexp = new RegExp(split[1], "i");
         res = _.filter(data.rows, function(row) {
-          return (row.value.prenom == key && row.value.nom == split[1]) ||
-                 (row.value.nom == key && row.value.prenom == split[1]);
-          });
+            return regexp.test(row.value[search_nonmatch_field(row.value.match)]);
+        });
       } else {
         res = data.rows;
       }

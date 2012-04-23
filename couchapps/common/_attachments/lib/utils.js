@@ -230,3 +230,10 @@ function check_times(times, pings, site_number) {
 function increment_string_key(str) {
   return str+'\ufff0';
 }
+
+function search_nonmatch_field(str) {
+  if (str == "nom")
+    return "prenom"
+  else
+    return "nom";
+}
