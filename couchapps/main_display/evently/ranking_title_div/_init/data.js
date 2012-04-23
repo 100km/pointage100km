@@ -8,7 +8,5 @@ function(data) {
   $(this).trigger("update_race_number_2");
   //$(this).trigger("_changes");
   
-  $.log("triggering events");
-  
   return;
 };
