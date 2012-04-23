@@ -4,7 +4,7 @@
  * http://www.jugbit.com/jquery-vticker-vertical-news-ticker/
  */
 (function($){
-  $.fn.vTicker = function(options) {
+  $.fn.vTicker = function(options, cb) {
     var defaults = {
       speed: 700,
       pause: 4000,
@@ -81,10 +81,16 @@
     return this.each(function() {
       var obj = $(this);
       var maxHeight = 0;
+      var nb_obj = 0;
 
       obj.css({overflow: 'hidden', position: 'relative'})
         .children('ul').css({position: 'absolute', margin: 0, padding: 0})
         .children('li').css({margin: 0, padding: 0});
+
+      // Get the number of objects
+      obj.children('ul').children('li').each(function(){
+          nb_obj ++;
+      });
 
       if(options.height == 0)
       {
@@ -125,6 +131,12 @@
           options.isPaused = false;
         });
       }
+
+      // Add a timeout to call the callback
+      setTimeout(function() {
+        clearInterval(interval);
+        cb();
+      }, (nb_obj - options.showItems + 1) * options.pause);
     });
   };
 })(jQuery);
