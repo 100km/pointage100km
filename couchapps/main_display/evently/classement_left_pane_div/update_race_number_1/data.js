@@ -31,7 +31,7 @@ function(data) {
 
   p.count = i;
 
-  $.log("p: " + JSON.stringify(p));
+  //$.log("p: " + JSON.stringify(p));
 
   return p;
 };
