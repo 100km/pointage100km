@@ -4,7 +4,7 @@ function(data) {
   var i = 0;
   var app = $$(this).app;
 
-  var start_time = app.start_times[data.rows[0].contestants[0].value.bib];
+  var start_time = app.start_times[data.rows[0].contestants[0].value.race_id];
 
   while (data.rows[0].contestants[i]) {
     var item = {};
