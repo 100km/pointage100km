@@ -102,6 +102,8 @@ h3 {
   float:left;
   text-align:center;
   height:22px;
+  padding-top:4px;
+  padding-bottom:4px;
 }
 
 .bottom_pane_items_col_10
@@ -110,6 +112,8 @@ h3 {
   float:left;
   text-align:center;
   height:22px;
+  padding-top:4px;
+  padding-bottom:4px;
 }
 
 .bottom_pane_items_col_15
@@ -118,6 +122,8 @@ h3 {
   float:left;
   text-align:center;
   height:22px;
+  padding-top:4px;
+  padding-bottom:4px;
 }
 
 .bottom_pane_items_col_20
@@ -126,6 +132,8 @@ h3 {
   float:left;
   text-align:center;
   height:22px;
+  padding-top:4px;
+  padding-bottom:4px;
 }
 
 .bottom_pane ul {
