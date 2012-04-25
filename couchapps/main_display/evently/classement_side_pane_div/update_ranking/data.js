@@ -19,18 +19,19 @@ function(data) {
     var lap = - data.data.rows[0].contestants[i].key[1];
 
     //$.log("current_infos = " + JSON.stringify(current_infos));
-    if (current_contestant === undefined) {
-      $.log("skip contestant: " + current_infos.bib);
-    }
-
     i++;
     item.rank    = i;
     item.dossard = current_infos.bib;
     item.kms     = site_lap_to_kms(app, current_infos.site_id, lap)
-    item.nom     = current_contestant.nom;
-    item.prenom  = current_contestant.prenom;
     item.time    = time_to_hour_string(current_infos.times[lap-1] - start_time);
     item.is_odd  = ((i%2) == 0);
+
+    if (current_contestant === undefined) {
+      $.log("skip contestant infos for bib " + current_infos.bib);
+    } else {
+      item.nom     = current_contestant.nom;
+      item.prenom  = current_contestant.prenom;
+    }
 
     p.items.push(item);
   }
