@@ -43,8 +43,10 @@ $(function(){
         mousePause: false,
         showItems: 10
     }, function() {
-        $("#left_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
-        $("#right_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
+        setTimeout( function() {
+          $("#left_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
+          $("#right_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
+      }, 2000);
     });
 });
 </script>
