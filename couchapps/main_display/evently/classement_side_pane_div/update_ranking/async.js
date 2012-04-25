@@ -7,5 +7,9 @@ function(cb, x, data) {
 
   // $.log("race_id of this div is " + race_id + " and race_id of the event is " + race_id_evt);
 
-  db_global_ranking(app, cb, race_id);
+  // Do something only if we were triggered with the right race_id
+  if (race_id == race_id_evt)
+    db_global_ranking(app, cb, race_id);
+  else
+    return;
 };
