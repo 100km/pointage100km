@@ -5,6 +5,7 @@ function(cb, wtf, request) {
   var key = split[0];
   app.db.view("search/contestants-search", {
     startkey: key,
+    limit: 10,
     endkey: increment_string_key(key),
     success: function(data) {
       var res;
@@ -16,6 +17,7 @@ function(cb, wtf, request) {
       } else {
         res = data.rows;
       }
+      res.request = request;
       cb(res);
     }});
 };

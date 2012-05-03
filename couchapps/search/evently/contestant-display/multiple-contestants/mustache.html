@@ -1,3 +1,8 @@
+<p>Votre recherche: {{request}}{{#overflow}} (limitée à 10 personnes) {{/overflow}} </p>
+{{#empty_names}}
+<p> Désolé, votre recherche ne correspond à aucun concurrent </p>
+{{/empty_names}}
+{{^empty_names}}
 <ol>
 {{#names}}
 <li data-bib="{{dossard}}"
@@ -7,3 +12,4 @@
 </li>
 {{/names}}
 </ol>
+{{/empty_names}}
