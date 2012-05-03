@@ -7,7 +7,6 @@
   </head>
   <body>
     <div id="search"></div>
-    <div id="search-feedback"></div>
     <div id="contestant-display"></div>
   </body>
   <script src="../common/vendor/couchapp/loader.js"></script>
@@ -17,10 +16,8 @@
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
       $("#search").evently("search", app);
-      $("#search-feedback").evently("search-feedback", app);
       $("#contestant-display").evently("contestant-display", app);
       $.evently.connect("#search", "#contestant-display", ["display-contestants"]);
-      $.evently.connect("#search", "#search-feedback", ["display-contestants"]);
     });
   </script>
 </html>
