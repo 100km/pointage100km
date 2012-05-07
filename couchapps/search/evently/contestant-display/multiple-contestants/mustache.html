@@ -1,14 +1,15 @@
 <p>Votre recherche: {{request}}{{#overflow}} (limitée à 10 personnes) {{/overflow}} </p>
 {{#empty_names}}
-<p> Désolé, votre recherche ne correspond à aucun concurrent </p>
+<p>Désolé, votre recherche ne correspond à aucun concurrent.</p>
 {{/empty_names}}
 {{^empty_names}}
+<p>Cliquez sur un nom pour avoir les temps de passage détaillés.</p>
 <ol>
 {{#names}}
 <li data-bib="{{dossard}}"
     data-name="{{nom}}"
     data-firstname="{{prenom}}">
-  {{nom}} {{prenom}}: dossard {{dossard}}
+  <p><b>{{nom}}</b> {{prenom}}&nbsp: dossard {{dossard}}</p>
 </li>
 {{/names}}
 </ol>

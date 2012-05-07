@@ -1,0 +1,19 @@
+/***************************
+ * General HTML tag styles. *
+ ***************************/
+
+body {
+  font:1em Helvetica, sans-serif;
+  padding:4px;
+}
+
+table {
+  text-align:center;
+}
+
+td, th{
+  padding-left:8px;
+  padding-right:8px;
+  padding-top:2px;
+  padding-bottom:2px;
+}
