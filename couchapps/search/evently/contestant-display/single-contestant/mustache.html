@@ -1,10 +1,11 @@
 {{#infos}}
-<p>  {{nom}} {{prenom}}: dossard {{dossard}} </p>
+<h2> Résultats temporaires pour {{nom}} {{prenom}} (dossard {{dossard}}) </h2>
 {{/infos}}
-<ol>
+<table>
+<tr><th>Tour</th><th>Lieu</th><th>kms</th><th>Temps</th></tr>
 {{#times}}
-<li>
-  Site {{site_id}}, temps {{times}}
-</li>
+<tr>
+  <td>{{lap}}</td><td>{{site}}</td><td>{{kms}}</td><td>{{time}}</td>
+</tr>
 {{/times}}
-</ol>
+</table>
