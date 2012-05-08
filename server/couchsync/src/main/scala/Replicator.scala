@@ -1,6 +1,7 @@
 import akka.actor.ActorSystem
 import akka.dispatch.{Await, Future}
 import akka.util.duration._
+import java.io.File
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
@@ -21,7 +22,7 @@ object Replicator {
     } while (activeTasksCount > 0)
   }
 
-  def replicate(options: Options) {
+  def replicate(options: Options, dir: Option[File]) {
     val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
 
     val siteId = referenceDb("site-info").execute()("site-id").extract[Int]
@@ -39,7 +40,7 @@ object Replicator {
 
     step("construction de la configuration")
 
-    val c = new SlaveDb(options.localDir, options.usbDir)
+    val c = new SlaveDb(options.localDir, dir.getOrElse(options.usbDir))
     c.runCouchDb()
     val couch = c.couch
     wait("lancement de la base sur clé USB", 30) {
@@ -80,9 +81,14 @@ object Replicator {
     val end = step("La clé USB peut être retirée", false)
     Await.ready(end, 5 seconds)
 
+    Thread.sleep(5000)
+    referenceDb.delete(referenceDb("status").execute()).execute()
+
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
+  }
 
+  def shutdown() {
     system.shutdown()
   }
 }

@@ -62,6 +62,10 @@ class SlaveDb(srcDir: File, usbBaseDir: File) {
     process foreach (_.destroy())
     process = None
     _couch = None
+    umount(usbBaseDir)
   }
 
+  def umount(base: File) {
+    (new ProcessBuilder("umount", base.toString)).start()
+  }
 }
