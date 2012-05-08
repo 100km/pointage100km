@@ -237,3 +237,35 @@ function search_nonmatch_field(str) {
   else
     return "nom";
 }
+
+function cat_from_year(year, is_woman) {
+  var date = new Date();
+  var age = date.getYear() - year;
+
+  if (age <= 9)
+    return 0; // eveil
+  else if (age <= 11)
+    return 1; // poussin
+  else if (age <= 13)
+    return 2; // benjamin
+  else if (age <= 15)
+    return 3; // minime
+  else if (age <= 17)
+    return 4; // cadet
+  else if (age <= 19)
+    return 5; // junior
+  else if (age <= 22)
+    return 6; // espoir
+  else if (age <= 39)
+    return 7; // senior
+  else if (age <= 49)
+    return 8; // veteran 1
+  else if (age <= 59)
+    return 9; // veteran 2
+  else if (age <= 69)
+    return 10; // veteran 3
+  else if (is_woman)
+    return 10; // only veteran 3 for women
+  else
+    return 11; // veteran 4
+}
