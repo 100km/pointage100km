@@ -19,5 +19,5 @@ function(e, data) {
   data.ts = parseInt(li.find('input[name="ts"]').val());
 
   // Trigger the change_infos event to update the #previous widget.
-  //li.trigger("change_infos", data);
+  li.trigger("change_infos", data);
 }
