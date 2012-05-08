@@ -19,8 +19,13 @@ object CouchSync extends App {
   if (options.continuous) {
     val checker = new DirChecker(options.usbDir, 1000)
     while (true) {
-      val candidate = checker.suitable
-      Replicator.replicate(options, Some(candidate))
+      try {
+	val candidate = checker.suitable
+	Replicator.replicate(options, Some(candidate))
+      } catch {
+	  case t: Throwable =>
+	    println("Replication failed: " + t)
+      }
     }
   } else {
     Replicator.replicate(options, None)
