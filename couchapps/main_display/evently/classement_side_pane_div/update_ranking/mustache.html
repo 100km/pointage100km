@@ -1,0 +1,44 @@
+<h3>{{race_name}}</h3>
+<li>
+  <div class="items_col_20">Pos</div>
+  <div class="items_col_50">Dossard</div>
+  <div class="items_col_100">Nom</div>
+  <div class="items_col_100">Prénom</div>
+  <div class="items_col_50">Kms</div>
+  <div class="items_col_100">Temps</div>
+  <div style="clear:both;"></div>
+</li>
+
+<div id="ranking-container-{{race_id}}">
+  <ul>
+    {{#items}}
+    <li style="color:{{^is_odd}}grey{{/is_odd}}{{#is_odd}}dark{{/is_odd}}">
+        <div class="items_col_20">{{rank}}</div>
+        <div class="items_col_50">{{dossard}}</div>
+        <div class="items_col_100">{{nom}}</div>
+        <div class="items_col_100">{{prenom}}</div>
+        <div class="items_col_50">{{kms}}</div>
+        <div class="items_col_100">{{time}}</div>
+        <div style="clear:both;"></div>
+    </li>
+    {{/items}}
+  </ul>
+</div>
+
+
+<script type="text/javascript">
+$(function(){
+    $('#ranking-container-{{race_id}}').vTicker({
+        speed: 500,
+        pause: 1000,
+        animation: 'fade',
+        mousePause: false,
+        showItems: 10
+    }, function() {
+        setTimeout( function() {
+          $("#left_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
+          $("#right_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
+      }, 2000);
+    });
+});
+</script>

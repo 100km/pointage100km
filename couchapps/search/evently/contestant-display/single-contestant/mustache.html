@@ -1,0 +1,11 @@
+{{#infos}}
+<h2> Résultats temporaires pour {{nom}} {{prenom}} (dossard {{dossard}}) </h2>
+{{/infos}}
+<table>
+<tr><th>Tour</th><th>Lieu</th><th>kms</th><th>Temps</th></tr>
+{{#times}}
+<tr>
+  <td>{{lap}}</td><td>{{site}}</td><td>{{kms}}</td><td>{{time}}</td>
+</tr>
+{{/times}}
+</table>

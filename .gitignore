@@ -5,3 +5,4 @@ bin/*.jar
 .idea/workspace.xml
 bin.tar.xz
 *.swp
+tests/test_result.html
