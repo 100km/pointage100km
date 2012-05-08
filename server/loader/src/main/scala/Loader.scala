@@ -31,6 +31,8 @@ object Loader extends App {
 
   val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
 
+  val format = new java.text.SimpleDateFormat("yyyy/MM/dd")
+
   def get(id: String) = try { Some(db(id).execute()) } catch { case StatusCode(404, _) => None }
 
   def capitalize(name: String) = {
@@ -42,8 +44,13 @@ object Loader extends App {
   }
 
   def fix(contestant: Map[String, AnyRef]) =
-    contestant + ("nom" -> capitalize(contestant("nom").asInstanceOf[String])) +
-		 ("prenom" -> capitalize(contestant("prenom").asInstanceOf[String]))
+    contestant map {
+      case ("nom", v: String) => "nom" -> capitalize(v)
+      case ("prenom", v: String) => "prenom" -> capitalize(v)
+      case (k, v: java.util.Date) => k -> (if (v == null) null else format.format(v))
+      case (k, v: java.math.BigDecimal) => k -> v.doubleValue()
+      case (k, v) => k -> v
+    }
 
   for (row <- table) {
     val id = "contestant-" + row("dossard")

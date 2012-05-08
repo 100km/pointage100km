@@ -12,9 +12,11 @@ abstract class PeriodicTask(period: Duration) {
 
   private[this] def nextIteration() {
     try act() catch { case e => log.warning("error in PeriodicActor: " + e) }
-    Global.system.scheduler.scheduleOnce(period)(nextIteration _)
+    Global.system.scheduler.scheduleOnce(period)(nextIteration())
   }
 
-  nextIteration()
+  // initialize must be called to start the periodic task
+  def initialize(): Unit =
+    nextIteration()
 
 }

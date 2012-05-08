@@ -1,3 +1,9 @@
+function unwrap_data(data) {
+  return data.rows.map(function(row) {
+    return row.value;
+  });
+}
+
 function retries(n, f, debug_name) {
   if (n<=0) {
     alert("Too many retries for " + debug_name);
@@ -146,8 +152,8 @@ function site_lap_to_kms(app, site_id, lap) {
 // times[1] = [time_site1_lap1, time_site1_lap2, time_site1_lap3, ...]
 // times[2] = [time_site2_lap1, time_site2_lap2, time_site2_lap3, ...]
 // It takes also the last pings for each site in order to know if a site may have a problem.
-function check_times(times, pings) {
-  var site_number = Math.min(times.length, pings.length);
+function check_times(times, pings, site_number) {
+  var site_number = site_number || Math.min(times.length, pings.length);
 
   // Build the site vector. It is a vector of each step of the bib.
   var sites = [];
@@ -209,7 +215,7 @@ function check_times(times, pings) {
       pb = {
         site_id: parseInt(status == lcs.DELETION ? reference[j] : input[i]),
         type: status == lcs.DELETION ? "Manque un passage" : "Passage supplémentaire",
-        lap: sites[i].lap + 1,
+        lap: (status == lcs.DELETION ? parseInt(j / site_number) : sites[i].lap) + 1,
         next_site: status == lcs.DELETION ? sites[i].site : undefined,
         next_time: status == lcs.DELETION ? sites[i].time : undefined,
         prev_site: status == lcs.DELETION && i > 0 ? sites[i-1].site : undefined,
@@ -219,4 +225,47 @@ function check_times(times, pings) {
   });
 
   return pb;
+}
+
+function increment_string_key(str) {
+  return str+'\ufff0';
+}
+
+function search_nonmatch_field(str) {
+  if (str == "nom")
+    return "prenom"
+  else
+    return "nom";
+}
+
+function cat_from_year(year, is_woman) {
+  var date = new Date();
+  var age = date.getYear() - year;
+
+  if (age <= 9)
+    return 0; // eveil
+  else if (age <= 11)
+    return 1; // poussin
+  else if (age <= 13)
+    return 2; // benjamin
+  else if (age <= 15)
+    return 3; // minime
+  else if (age <= 17)
+    return 4; // cadet
+  else if (age <= 19)
+    return 5; // junior
+  else if (age <= 22)
+    return 6; // espoir
+  else if (age <= 39)
+    return 7; // senior
+  else if (age <= 49)
+    return 8; // veteran 1
+  else if (age <= 59)
+    return 9; // veteran 2
+  else if (age <= 69)
+    return 10; // veteran 3
+  else if (is_woman)
+    return 10; // only veteran 3 for women
+  else
+    return 11; // veteran 4
 }

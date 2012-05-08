@@ -1,5 +1,7 @@
 #! /bin/sh
 
+cd `dirname $0`
+
 usage() {
   cat <<"EOF"
     usage: server-pushapps local|server [user passwd dbname]
@@ -7,30 +9,27 @@ usage() {
     dbname defaults to steenwerck100km in local, and to the currently used database on server
 EOF
 }
-if [ "$1" = "local" ]; then
-  host="localhost:5984"
-elif [ "$1" = "server" ]; then
-  host="steenwerck.rfc1149.net"
+if [ "$1" = local ]; then
+  host=localhost:5984
+elif [ "$1" = server ]; then
+  host=steenwerck.rfc1149.net
 else
   usage
   exit 1
 fi
-user=${2:-"admin"}
-password=${3:-"admin"}
+user=${2:-admin}
+password=${3:-admin}
 if [ -z "$4" ]; then
-  if [ "$1" = "$server" ]; then
+  if [ "$1" = server ]; then
     dbname=`curl -s http://$user:$password@steenwerck.rfc1149.net/steenwerck-config/configuration |
       sed -e 's/^.*dbname":"//' -e 's/".*//'`
   else
-    dbname="steenwerck100km"
+    dbname=steenwerck100km
   fi
 else
   dbname="$4"
 fi
 
-full_name="http://$user:$password@$host/$dbname"
-couchapp push common $full_name
-couchapp push bib_input $full_name
-couchapp push admin $full_name
-couchapp push main_display $full_name
+full_name=http://$user:$password@$host/$dbname
+couchapp pushapps . $full_name
 couchapp pushdocs _docs $full_name

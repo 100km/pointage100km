@@ -5,6 +5,7 @@ function copy_app_data(app, infos) {
   app.kms_offset = [infos["kms_offset_site0"], infos["kms_offset_site1"], infos["kms_offset_site2"]]
   app.kms_lap = infos["kms_lap"]
   app.start_times = infos["start_times"]
+  app.cat_names = infos["cat_names"]
 }
 
 function appinfo_initialized(app) {

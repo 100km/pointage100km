@@ -3,31 +3,33 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Classement général</title>
-    <link rel="stylesheet" href="style/main.css" type="text/css"/>
     <link rel="stylesheet" href="../common/lib/twitter_scroller_using_marquee.css" type="text/css"/>
     <link rel="stylesheet" href="style/classement_general.css" type="text/css"/>
   </head>
   <body>
     <script type="text/javascript">
-	window.resizeTo(800,600);
+       window.resizeTo(800,600);
     </script>
 
-    <div id="laps"></div>
     <div id="ranking_title_div"></div>
-    <div id="left_pane_div" class="left_pane">left pane text</div>
-    <div id="right_pane_div" class="right_pane">right pane text</div>
+    <div id="left_pane_div" class="left_pane" data-race_id=1></div>
+    <div id="right_pane_div" class="right_pane"  data-race_id=2></div>
     <div id="bottom_pane_div" class="bottom_pane">bottom pane text</div>
 
   </body>
   <script src="../common/vendor/couchapp/loader.js"></script>
-  <script src="http://remysharp.com/downloads/jquery.marquee.js"></script>
-  <script type="text/javascript" src="http://www.jugbit.com/jquery/jquery.vticker-min.js"> </script>
+  <script src="../common/lib/jquery-marquee/jquery.marquee.js"></script>
+  <script src="../common/lib/jquery-vticker/jquery.vticker.js"> </script>
 
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
       $("#ranking_title_div").evently("ranking_title_div", app);
-      $("#left_pane_div").evently("classement_left_pane_div", app);
-      $.evently.connect("#ranking_title_div", "#left_pane_div", ["ranking_title_div_finish_load"]);
+      $("#left_pane_div").evently("classement_side_pane_div", app);
+      $("#right_pane_div").evently("classement_side_pane_div", app);
+      $("#bottom_pane_div").evently("classement_bottom_pane_div", app);
+      $.evently.connect("#ranking_title_div", "#left_pane_div", ["update_ranking"]);
+      $.evently.connect("#ranking_title_div", "#right_pane_div", ["update_ranking"]);
+      $.evently.connect("#ranking_title_div", "#bottom_pane_div", ["_changes"]);
     });
 
   </script>
@@ -35,11 +37,10 @@
 
 <!--
 
-      $("#right_pane_div").evently("classement_right_pane_div", app);
-      $("#bottom_pane_div").evently("classement_bottom_pane_div", app);
+$("#right_pane_div").evently("classement_right_pane_div", app);
+      
 
- 
-     1 course du soir 
+     1 course du soir
      2 course du matin
      4 course 1 tour le soir
      8 course des jeunes
