@@ -9,7 +9,7 @@ class DirChecker(base: File, milliseconds: Long) {
     val files = base.listFiles.toSet
     val newFiles = files -- cache
     cache = files
-    newFiles filter { _.isDirectory }
+    newFiles filter { f => f.isDirectory && (new File(f, "steenwerck")).exists }
   }
 
   @tailrec
