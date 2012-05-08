@@ -82,7 +82,7 @@ object Replicator {
     Await.ready(end, 5 seconds)
 
     Thread.sleep(5000)
-    referenceDb.delete(referenceDb("status").execute()).execute()
+    Await.ready(step("", false), 5 seconds)
 
     couch.releaseExternalResources()
     referenceDb.couch.releaseExternalResources()
