@@ -24,12 +24,6 @@ object Replicator {
     } while (activeTasksCount > 0)
   }
 
-  private def docCount(db1: Database, db2: Database) = {
-    Await.result(Future.sequence(List(db1, db2).map(_.allDocs.toFuture)), 20 seconds).map {
-      _.total_rows
-    }
-  }
-
   def replicate(options: Options) {
     val referenceDb = new NioCouch(options.hostName, auth = Some("admin", "admin")).db("steenwerck100km")
 
@@ -68,9 +62,8 @@ object Replicator {
         throw e
     }
     step("synchronisation")
-    db.replicateTo(referenceDb, ("filter" -> "common/to-replicate")).execute()
-    db.replicateFrom(referenceDb, ("filter" -> "common/to-replicate")).execute()
-    waitForNoTasks(couch)
+    referenceDb.replicateTo(db, ("filter" -> "common/to-replicate")).execute()
+    referenceDb.replicateFrom(db, ("filter" -> "common/to-replicate")).execute()
 
     step("compaction")
     db.compact().execute()
@@ -83,14 +76,7 @@ object Replicator {
     step("vidage du cache")
     (new ProcessBuilder("sync")).start()
 
-    step("vérification des documents…")
-    val List(count, refCount) = docCount(db, referenceDb)
-    val synchro = if (count == refCount)
-      "vérification ok"
-    else
-      ("vérifier la synchronisation (clé " + count +", base " + refCount + ")")
-
-    wait(synchro + " - écriture finale sur clé", 5) { false }
+    wait("écriture finale sur clé", 5) { false }
 
     c.stopCouchDb()
 
