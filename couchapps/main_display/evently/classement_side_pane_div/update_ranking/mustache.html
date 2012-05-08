@@ -1,11 +1,3 @@
-
-<!--
-
-seulement des dossars de la course 1
-
--->
-
-
 <h3>{{race_name}}</h3>
 <li>
   <div class="items_col_20">Pos</div>
@@ -13,7 +5,7 @@ seulement des dossars de la course 1
   <div class="items_col_100">Nom</div>
   <div class="items_col_100">Prénom</div>
   <div class="items_col_50">Kms</div>
-  <div class="items_col_100">Time</div>
+  <div class="items_col_100">Temps</div>
   <div style="clear:both;"></div>
 </li>
 
@@ -50,24 +42,3 @@ $(function(){
     });
 });
 </script>
-
-
-
-
-
-
-
-<!--
-
-il faudrait creer "race_${i}" dans data.js a partir de ce que async.js recupere de la view de la base de donnees
-ensuite, deux possibilites:
-- utiliser setInterval pour appeler _changes et recharger la vue: il faut garder un etat pour se souvenir d'ou on est, chaque affichage serait a jour car il sereait genere par une requete separee
-- charger tous les participants et les traiter avec javascript locale
-
--->
-
-<!--
-<div id="left_pane_info" class="left_pane">left pane</div>
-<div id="right_pane_info" class="right_pane">right pane</div>
-<div id="bottom_pane_info" class="bottom_pane">bottom pane</div>
--->
