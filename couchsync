@@ -82,9 +82,9 @@ replicate steenwerck100km $backupdb
 step "synchronisation 2/2"
 replicate $backupdb steenwerck100km
 
-# Wait until the replicate is flushed to disk by waiting for a few seconds.
+# Wait until the replicate is flushed to disk by asking CouchDB to sync.
 step "écriture de la sauvegarde"
-sleep 5
+post steenwerck100km/_ensure_full_commit -H "Content-Type: application/json"
 
 # Copy the temporary database to the USB key and remove it from the filesystem.
 step "copie sur la clé"
