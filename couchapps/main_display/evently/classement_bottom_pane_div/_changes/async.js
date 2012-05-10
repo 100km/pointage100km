@@ -6,7 +6,7 @@ function(cb) {
 
   if (!appinfo_initialized)
     cb([]);
-  
+
   // startkey and endkey are inversed because descending is true
   app.db.view("bib_input/recent-checkpoints", {
     descending: true,
@@ -16,17 +16,15 @@ function(cb) {
     endkey : [site_id,0],
     success: function(data) {
       _.each(data.rows, function(row) {
-	if (row.doc) {
-	  row.infos = {
-	    prenom: row.doc.prenom,
-	    nom: row.doc.nom,
-	    course: row.doc.course
-	  };
-	}
+        if (row.doc) {
+          row.infos = {
+            prenom: row.doc.prenom,
+            nom: row.doc.nom,
+            course: row.doc.course
+          };
+        }
       });
-      
-      //$.log("bottom_pane_async: data.rows: " + JSON.stringify(data.rows));
-      
+
       cb(data.rows);
     }
   });
