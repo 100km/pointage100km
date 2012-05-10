@@ -1,29 +1,35 @@
 {{^all_empty}}
 <div id="message-bar-core">
 {{#local_status?}}
-<h3>local status</h3>
+<h3>Status locaux</h3>
   <p>
-{{#local_status}}
-{{{message}}}
-{{/local_status}}
+    <ul>
+    {{#local_status}}
+      <li>{{{message}}}</li>
+    {{/local_status}}
+    </ul>
   </p>
 {{/local_status?}}
 
 {{#site_messages?}}
-<h3>site messages</h3>
+<h3>Messages personels</h3>
   <p>
-{{#site_messages}}
-{{{message}}}
-{{/site_messages}}
+    <ul>
+    {{#site_messages}}
+      <li>{{{message}}}</li>
+    {{/site_messages}}
+    </ul>
   </p>
 {{/site_messages?}}
 
 {{#bcast_messages?}}
-<h3>broadcast messages</h3>
+<h3>Messages généraux</h3>
   <p>
-{{#bcast_messages}}
-{{{message}}}
-{{/bcast_messages}}
+    <ul>
+    {{#bcast_messages}}
+      <li>{{{message}}}</li>
+    {{/bcast_messages}}
+    </ul>
   </p>
 {{/bcast_messages?}}
 </div>
