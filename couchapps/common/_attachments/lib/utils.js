@@ -143,7 +143,7 @@ function checkBib(bib) {
 }
 
 function site_lap_to_kms(app, site_id, lap) {
-  return app.kms_offset[site_id] + (lap - 1) * app.kms_lap;
+  return (app.kms_offset[site_id] + (lap - 1) * app.kms_lap).toFixed(2);
 }
 
 
