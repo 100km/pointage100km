@@ -13,6 +13,7 @@ function() {
       doc.deleted_times.push(time);
       // Save the document.
       db.saveDoc(doc);
+      $('#bib_admin_problems').trigger('_init');
     }
   });
 }

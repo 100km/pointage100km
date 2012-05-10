@@ -14,6 +14,7 @@ function() {
       doc.times.sort();
       // Save the document.
       db.saveDoc(doc);
+      $('#bib_admin_problems').trigger('_init');
     }
   });
 }
