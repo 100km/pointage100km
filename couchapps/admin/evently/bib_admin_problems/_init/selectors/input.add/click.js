@@ -36,6 +36,7 @@ function() {
                 ? $.grep(checkpoints.deleted_times, function(element) { return element != time; })
                 : [];
               db.saveDoc(checkpoints);
+              $('#bib_admin_problems').trigger('_init');
             },
             error: function() {
               db.saveDoc({
@@ -45,6 +46,7 @@ function() {
                 site_id: site_id,
                 times: [time]
               });
+              $('#bib_admin_problems').trigger('_init');
             }
           });
         },
