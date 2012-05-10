@@ -3,7 +3,7 @@ function() {
   $(this).autocomplete({
     html: true,
     source: function(request, response) {
-      var split = request.term.trim().split(" ");
+      var split = request.term.trim().toLowerCase().split(" ");
       var term = split[0];
       var opts = {
         my_limit: 10,

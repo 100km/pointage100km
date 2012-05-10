@@ -1,7 +1,7 @@
 function(cb, wtf, request) {
   var app = $$(this).app;
 
-  var split = request.trim().split(" ");
+  var split = request.trim().toLowerCase().split(" ");
   var key = split[0];
   var opts = {
     my_limit: 10,
