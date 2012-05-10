@@ -161,8 +161,3 @@ function get_site_bib_times(check, times, i, bib) {
   return site_bib_times;
 }
 
-
-function format_date(date) {
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-}
-

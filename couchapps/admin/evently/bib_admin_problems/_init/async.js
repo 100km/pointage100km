@@ -13,16 +13,3 @@ function(cb) {
   ],
   cb);
 };
-
-function get_ping(app, ping, callback) {
-  app.db.view('admin/alive', {
-    key: ping,
-    reduce: true,
-    success: function(view) {
-      callback(view.rows.length > 0
-        ? view.rows[0].value.max
-        : new Date(0));
-    },
-    error: function() { callback(); }
-  });
-};

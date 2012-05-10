@@ -269,3 +269,22 @@ function cat_from_year(year, is_woman) {
   else
     return 11; // veteran 4
 }
+
+
+function format_date(date) {
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+
+function get_ping(app, ping, callback) {
+  app.db.view('admin/alive', {
+    key: ping,
+    reduce: true,
+    success: function(view) {
+      callback(view.rows.length > 0
+        ? view.rows[0].value.max
+        : new Date(0));
+    },
+    error: function() { callback(); }
+  });
+};
