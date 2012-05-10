@@ -1,100 +1,3 @@
-<!--
-
-
-"dernier passages" comme dans bib_input; mais avec en plus "moyenne globale" et "moyenne du dernier tour"
-
-
-
--->
-
-
-
-
-
-
-<!-- based on code from:
-     http://webhole.net/2009/11/28/how-to-read-json-with-javascript/
-     http://exscale.se/__files/uploads/scrolling-twitter-feed.htm
--->
-
-
-<script type="text/javascript">
-
-function query_twitter(query, div_to_update, bib) {
-    var url='http://search.twitter.com/search.json?callback=?&q=';
-    var max_results_per_request = 3;
-    var query_params = '&rpp='+max_results_per_request+'&result_type=recent';
-
-    if (bib & 0x1)
-        return false;
-
-    if (query === undefined) {
-        $.log("undefined query!");
-        return false;
-    }
-
-    query = escape(query);
-
-    //$.log("2 search twitter: '" + query + "', params='" + query_params + "'");
-
-    function parse_search_result(json) {
-        var marquee_start_tag = '<marquee behavior="scroll" scrollamount="3" direction="left">';
-        var marquee_end_tag   = '</marquee>';
-        var marquee_tag = '';
-
-        marquee_tag = marquee_start_tag;
-
-        for (var i = 0; i < json.results.length; i++) {
-            tweet = json.results[i];
-
-            //only process the first 3 elements of the results
-            if (i == 3) {
-                break;
-            }
-
-            marquee_tag += tweet.text + '<i> ' + time_to_hour_string(tweet.created_at) + ' </i> | '
-
-            //$.log("tweet[" + i + "]: " + tweet.text);
-        }
-
-        marquee_tag += marquee_end_tag;
-
-        $(div_to_update + ' p').replaceWith(marquee_tag);
-
-        function betterMarquee(marquee_to_update) {
-            // Replace the marquee and do some fancy stuff (taken from remy sharp's website)
-            $(marquee_to_update + ' marquee').marquee('pointer')
-                .mouseover(function () {
-                    $(this).trigger('stop');
-                })
-                .mouseout(function () {
-                    $(this).trigger('start');
-                })
-                .mousemove(function (event) {
-                    if ($(this).data('drag') == true) {
-                        this.scrollLeft = $(this).data('scrollX') + ($(this).data('x') - event.clientX);
-                    }
-                })
-                .mousedown(function (event) {
-                    $(this).data('drag', true).data('x', event.clientX).data('scrollX', this.scrollLeft);
-                })
-                .mouseup(function () {
-                    $(this).data('drag', false);
-                });
-        }
-
-        betterMarquee(div_to_update);
-
-        //$.log("done parsing search results for bib=" + bib);
-    }
-
-    $.getJSON(url+query+query_params, parse_search_result);
-}
-
-
-</script>
-
-
 <h3>Derniers passages</h3>
 <ul>
   <li>
@@ -112,27 +15,8 @@ function query_twitter(query, div_to_update, bib) {
     <div class="bottom_pane_items_col_10">{{nom}}</div>
     <div class="bottom_pane_items_col_10">{{prenom}}</div>
     <div class="bottom_pane_items_col_15">{{time_hour}}</div>
-    <div id="tweets_results_for_bib_{{bib}}" class="twitter">
-      <p></p>
-    </div>
-    <script type="text/javascript"> query_twitter("#paris", "#tweets_results_for_bib_{{bib}}", {{bib}}); </script>
     <div style="clear:left;"></div>
   </li>
   {{/items}}
 </ul>
 
-
-<!--
-
-il faudrait creer "race_${i}" dans data.js a partir de ce que async.js recupere de la view de la base de donnees
-ensuite, deux possibilites:
-- utiliser setInterval pour appeler _changes et recharger la vue: il faut garder un etat pour se souvenir d'ou on est, chaque affichage serait a jour car il sereait genere par une requete separee
-- charger tous les participants et les traiter avec javascript locale
-
--->
-
-<!--
-<div id="left_pane_info" class="left_pane">left pane</div>
-<div id="right_pane_info" class="right_pane">right pane</div>
-<div id="bottom_pane_info" class="bottom_pane">bottom pane</div>
--->
