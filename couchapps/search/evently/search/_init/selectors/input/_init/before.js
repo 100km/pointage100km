@@ -3,6 +3,10 @@ function() {
   $(this).autocomplete({
     html: true,
     source: function(request, response) {
+      if (!isNaN(parseInt(request.term))) {
+        response([]);
+        return;
+      }
       var split = request.term.trim().toLowerCase().split(" ");
       var term = split[0];
       var opts = {
