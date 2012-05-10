@@ -1,0 +1,101 @@
+#! /bin/sh
+#
+# Usage: couchsync dbdir
+#
+
+#
+# Constants
+#
+couchurl=http://admin:admin@localhost:5984
+dburl=$couchurl/steenwerck100km
+
+#
+# Helper functions
+#
+
+# Send a PUT request
+put() {
+    urlfrag="$1"
+    shift
+    curl -s -S -X PUT $couchurl/$urlfrag "$@" > /dev/null
+}
+
+# Send a POST request
+post() {
+    urlfrag="$1"
+    shift
+    curl -s -S -X POST $couchurl/$urlfrag "$@" > /dev/null
+}
+
+# Replicate from a database to another one
+replicate() {
+    post _replicate \
+	--data "{\"source\":\"$1\",\"target\":\"$2\",\"filter\":\"common/to-replicate\"}" \
+	-H "Content-Type: application/json"
+}
+
+# Send a message
+message() {
+    post steenwerck100km/_design/bib_input/_update/force-update/status \
+	--data-urlencode "json={\"type\":\"status\",\"scope\":\"local\",\"message\":\"$1\"}" \
+	-H "Content-Type: application/x-www-form-urlencoded"
+}
+
+step() {
+    message "Ne pas enlever la clé USB - $1"
+}
+
+#
+# Main program
+#
+
+dbdir="$1"
+
+# Remember current directory
+prevdir=$(pwd)
+
+# Wait until a USB key appears, mounted under /media with a steenwerck file.
+while test ! -f /media/*/steenwerck; do
+    sleep 1
+done
+
+# Go into the USB key to block a possible umount.
+usbkeydir=$(dirname /media/*/steenwerck)
+cd "$usbkeydir"
+
+# Choose a unique name for the database.
+backupdb=backup-$$-$(date +%s)
+
+# If the backup already exists on the USB key, copy it in place, otherwise
+# create the database.
+step "copie initiale"
+if test -f backup.couch; then
+    cp backup.couch "$dbdir"/$backupdb.couch
+else
+    put $backupdb
+fi
+
+# Launch the replication in both directions, starting from the database to
+# the backup to make sure the filter is copied as well.
+step "synchronisation 1/2"
+replicate steenwerck100km $backupdb
+step "synchronisation 2/2"
+replicate $backupdb steenwerck100km
+
+# Wait until the replicate is flushed to disk by waiting for a few seconds.
+step "écriture de la sauvegarde"
+sleep 5
+
+# Copy the temporary database to the USB key and remove it from the filesystem.
+step "copie sur la clé"
+mv "$dbdir"/$backupdb.couch backup.couch
+
+# Leave USB key directory and umount it.
+cd "$prevdir"
+umount "$usbkeydir"
+message "La clé USB peut être retirée"
+sleep 3
+message ""
+
+# Restart the program
+$0 "$@"
