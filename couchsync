@@ -76,18 +76,24 @@ else
 fi
 
 # Launch the replication in both directions, starting from the database to
-# the backup to make sure the filter is copied as well.
+# the backup to make sure the filter is copied as well. Also, compact as
+# soon as the first synchronisation is over.
 step "synchronisation 1/2"
 replicate steenwerck100km $backupdb
 step "synchronisation 2/2"
 replicate $backupdb steenwerck100km
 
+# Give some time to the compaction.
+step "compaction de la sauvegarde"
+post $backupdb/_compact -H "Content-Type: application/json"
+sleep 5
+
 # Wait until the replicate is flushed to disk by asking CouchDB to sync.
-step "écriture de la sauvegarde"
-post steenwerck100km/_ensure_full_commit -H "Content-Type: application/json"
+step "écriture sur disque"
+post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
 
 # Copy the temporary database to the USB key and remove it from the filesystem.
-step "copie sur la clé"
+step "recopie sur la clé"
 mv "$dbdir"/$backupdb.couch backup.couch
 
 # Leave USB key directory and umount it.
