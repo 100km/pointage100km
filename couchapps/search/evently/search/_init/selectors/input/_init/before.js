@@ -3,7 +3,7 @@ function() {
   $(this).autocomplete({
     html: true,
     source: function(request, response) {
-      var split = request.term.split(" ");
+      var split = request.term.trim().split(" ");
       var term = split[0];
       app.db.view("search/contestants-search", {
         limit: 10,
