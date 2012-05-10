@@ -23,13 +23,16 @@ h3 {
 
 #bib_admin_title {
   text-align:center;
-  font-size:1em;
-  font-weight:bold;
   float:left;
   margin-left:auto;
   margin-right:auto;
   width:50%;
   padding:8px;
+}
+
+.title {
+  font-size:1em;
+  font-weight:bold;
 }
 
 #bib_admin_current_time{
@@ -48,6 +51,11 @@ h3 {
   padding:8px;
 }
 
+.ping{
+  float:left;
+  border:4px solid #ddd;
+  padding:8px;
+}
 
 /**********************************************************************
  * Style for the form to input messages (bib_admin_input_message_div) *
