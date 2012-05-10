@@ -1,0 +1,7 @@
+.family-name {
+text-transform:uppercase;
+}
+
+.firstname {
+text-transform:capitalize;
+}
