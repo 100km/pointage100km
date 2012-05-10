@@ -1,7 +1,7 @@
 function(cb, wtf, request) {
   var app = $$(this).app;
 
-  var split = request.replace(/[^A-Za-z ]/g, "").trim().split(" ");
+  var split = request.trim().split(" ");
   var key = split[0];
   app.db.view("search/contestants-search", {
     startkey: key,
