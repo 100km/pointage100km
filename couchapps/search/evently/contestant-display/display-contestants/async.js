@@ -3,20 +3,17 @@ function(cb, wtf, request) {
 
   var split = request.trim().split(" ");
   var key = split[0];
-  app.db.view("search/contestants-search", {
+  var opts = {
+    my_limit: 10,
     startkey: key,
-    limit: 10,
-    endkey: increment_string_key(key),
+    endkey: increment_string_key(key)
+  };
+  if (split.length>1) {
+    opts.term = split[1];
+  }
+  app.db.list("search/intersect-search", "contestants-search", opts, {
     success: function(data) {
-      var res;
-      if (split.length > 1) {
-        var regexp = new RegExp(split[1], "i");
-        res = _.filter(data.rows, function(row) {
-            return regexp.test(row.value[search_nonmatch_field(row.value.match)]);
-        });
-      } else {
-        res = data.rows;
-      }
+      var res = data.rows;
       res.request = request;
       cb(res);
     }});

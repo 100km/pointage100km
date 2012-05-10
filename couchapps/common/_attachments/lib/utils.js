@@ -231,12 +231,34 @@ function increment_string_key(str) {
   return str+'\ufff0';
 }
 
+//Copy paste from search/lists/intersect-search.js
+//TODO find a solution
 function search_nonmatch_field(str) {
   if (str == "nom")
     return "prenom"
   else
     return "nom";
 }
+
+function remove_accents(str) {
+  var changes = [
+    { base: "a", letters: /[àáâãäå]/g },
+    { base: "e", letters: /["éèêë"]/g },
+    { base: "i", letters: /[ìíîï]/g },
+    { base: "o", letters: /["òóôõö"]/g },
+    { base: "u", letters: /[ùúûü]/g },
+    { base: "y", letters: /[ýÿ]/g },
+    { base: "oe", letters: /œ/g },
+    { base: "ae", letters: /æ/g },
+    { base: "c", letters: /ç/g },
+    { base: "n", letters: /ñ/g }
+  ];
+  for(var i=0; i<changes.length; i++) {
+    str = str.replace(changes[i].letters, changes[i].base);
+  }
+  return str;
+}
+
 
 function cat_from_year(year, is_woman) {
   var date = new Date();
