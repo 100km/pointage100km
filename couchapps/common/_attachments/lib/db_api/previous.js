@@ -6,7 +6,7 @@ function db_previous(app, site_id, data, cb) {
   var race_id = infos["course"] || 0;
   var n = race_id == 0 ? 0 : 3;
   var warning = race_id == 0;
-  var kms = site_lap_to_kms(app, site_id, lap).toFixed(2);
+  var kms = site_lap_to_kms(app, site_id, lap);
 
   if (warning) {
     cb({warning:warning});
