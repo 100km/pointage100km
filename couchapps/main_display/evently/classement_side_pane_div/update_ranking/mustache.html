@@ -9,7 +9,7 @@
   <div style="clear:both;"></div>
 </li>
 
-<div id="ranking-container-{{race_id}}">
+<div id="ranking-container">
   <ul>
     {{#items}}
     <li style="color:{{^is_odd}}grey{{/is_odd}}{{#is_odd}}dark{{/is_odd}}">
@@ -24,21 +24,3 @@
     {{/items}}
   </ul>
 </div>
-
-
-<script type="text/javascript">
-$(function(){
-    $('#ranking-container-{{race_id}}').vTicker({
-        speed: 500,
-        pause: 1000,
-        animation: 'fade',
-        mousePause: false,
-        showItems: 10
-    }, function() {
-        setTimeout( function() {
-          $("#left_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
-          $("#right_pane_div").trigger("update_ranking", {race_id:{{race_id}} });
-      }, 2000);
-    });
-});
-</script>
