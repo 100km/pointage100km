@@ -19,8 +19,7 @@ function(cb, wtf, request) {
       }
     });
   } else {
-    var split = request.trim().toLowerCase().split(" ");
-    db_search(app, split, function(data) {
+    db_search_str(app, request, function(data) {
       var res = data.rows;
       res.request = request;
       cb(res);

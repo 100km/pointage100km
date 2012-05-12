@@ -7,10 +7,9 @@ function() {
         response([]);
         return;
       }
-      var split = request.term.trim().toLowerCase().split(" ");
-      db_search(app, split, function(data) {
+      db_search_str(app, request.term, function(data) {
         response(data.rows.map(function(row) {
-          return highlight_search(split, row);
+          return highlight_search(row);
         }));
       });
     }
