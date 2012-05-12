@@ -11,6 +11,9 @@
        window.resizeTo(800,600);
     </script>
 
+    <div id="clock_current_time"></div>
+    <div data-race_id=1 id="clock_100km_open"></div>
+    <div data-race_id=2 id="clock_100km_race"></div>
     <div id="ranking_title_div"></div>
     <div id="bottom_pane_div" class="bottom_pane">bottom pane text</div>
     <div id="left_pane_div" class="left_pane" data-race_id=1></div>
@@ -23,10 +26,15 @@
 
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
+      $("#clock_current_time").evently("clock_current_time", app);
+      $("#clock_100km_open").evently("clock_100km_race", app);
+      $("#clock_100km_race").evently("clock_100km_race", app);
       $("#ranking_title_div").evently("ranking_title_div", app);
       $("#left_pane_div").evently("classement_side_pane_div", app);
       $("#right_pane_div").evently("classement_side_pane_div", app);
       $("#bottom_pane_div").evently("classement_bottom_pane_div", app);
+      $.evently.connect("#clock_current_time", "#clock_100km_open", ["tick"]);
+      $.evently.connect("#clock_current_time", "#clock_100km_race", ["tick"]);
       $.evently.connect("#ranking_title_div", "#left_pane_div", ["update_ranking"]);
       $.evently.connect("#ranking_title_div", "#right_pane_div", ["update_ranking"]);
       $.evently.connect("#ranking_title_div", "#bottom_pane_div", ["_changes"]);
