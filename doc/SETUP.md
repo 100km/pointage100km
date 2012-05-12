@@ -43,7 +43,7 @@ $ sudo /usr/local/etc/init.d/couchdb start
 
 Here are the commands used to install couchDB on Ubuntu 10.04:
 <pre>
-sudo apt-get install g++ libssl-dev libcurses-dev libicu-dev libcurl4-gnutls-dev
+sudo apt-get install g++ libssl-dev libncurses-dev libicu-dev libcurl4-gnutls-dev
 # Install Spider Monkey (javascript engine)
 wget http://ftp.mozilla.org/pub/mozilla.org/js/js185-1.0.0.tar.gz
 tar -xzvf js185-1.0.0.tar.gz
