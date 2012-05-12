@@ -310,3 +310,34 @@ function get_ping(app, ping, callback) {
     error: function() { callback(); }
   });
 };
+
+function capitaliseFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function highlight_search(split, row) {
+  var firstvalue = row.value[row.value.match];
+  var secondvalue= row.value[search_nonmatch_field(row.value.match)];
+  var value;
+  var label1 = "<strong>" + firstvalue.substr(0, split[0].length) +
+     "</strong>" + firstvalue.substr(split[0].length);
+  var label2;
+  if (split.length>1) {
+    label2 = "<strong>" + secondvalue.substr(0, split[1].length) + "</strong>" +
+      secondvalue.substr(split[1].length);
+  } else {
+    label2 = secondvalue;
+  }
+  var label;
+  if (row.value.match == "nom") {
+    label = "<span class=family-name>" + label1 + "</span> <span class=firstname>" + label2 + "</span"
+    value = firstvalue.toUpperCase() + " " + capitaliseFirstLetter(secondvalue);
+  } else {
+    label = "<span class=firstname>" + label1 + "</span> <span class=family-name>" + label2 + "</span"
+    value = capitaliseFirstLetter(firstvalue) + " " + secondvalue.toUpperCase();
+  }
+  return {
+    label: label,
+    value: value
+  };
+}
