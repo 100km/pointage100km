@@ -4,13 +4,13 @@
 {{/empty_names}}
 {{^empty_names}}
 <p>Cliquez sur un nom pour avoir les temps de passage détaillés.</p>
-<ol>
+<table class="multiple-contestant">
 {{#names}}
-<li data-bib="{{dossard}}"
+<tr data-bib="{{dossard}}"
     data-name="{{nom}}"
     data-firstname="{{prenom}}">
-  <p><span class="family-name">{{nom}}</span> <span class="firstname">{{prenom}}</span>&nbsp: dossard {{dossard}}</p>
-</li>
+  <td><span class="family-name">{{nom}}</span> <span class="firstname">{{prenom}}</span>&nbsp: dossard {{dossard}}</td>
+</tr>
 {{/names}}
-</ol>
+</table>
 {{/empty_names}}

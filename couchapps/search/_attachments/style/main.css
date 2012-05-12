@@ -7,13 +7,22 @@ body {
   padding:4px;
 }
 
-table {
+.single-contestant {
   text-align:center;
 }
 
-td, th{
+.single-contestant td, th{
   padding-left:8px;
   padding-right:8px;
   padding-top:2px;
   padding-bottom:2px;
+}
+
+.multiple-contestant td {
+  padding:6px;
+}
+
+.multiple-contestant tr:hover {
+  background-color:#86b4c0;
+  cursor:pointer;
 }
