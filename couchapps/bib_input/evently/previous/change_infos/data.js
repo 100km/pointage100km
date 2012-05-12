@@ -31,14 +31,7 @@ function(data) {
       time_to_convert = data.ts - cur_time;
       prefix = "- ";
     }
-    sec = parseInt(time_to_convert / 1000);
-    min = parseInt(sec / 60);
-    // we don't take % 24 in order to be coherent with global average
-    // The race day we MUST have the correct start-time for each race.
-    hour = pad2(parseInt(min / 60));
-    sec = pad2(sec % 60);
-    min = pad2(min % 60);
-    pair.time = prefix + hour + ":" + min + ":" + sec;
+    pair.time = prefix + int_to_datestring(time_to_convert);
     pair.rank = data.rank-i;
     tmp[data.limit - 1 - i] = pair;
   }
