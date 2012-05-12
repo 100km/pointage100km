@@ -12,8 +12,8 @@ function appinfo_initialized(app) {
   return _.all([
     "site_id", "sites",
     "sites_nb", "races_names",
-    "kms_offset", "app.kms_lap",
-    "app.start_times"
+    "kms_offset", "kms_lap",
+    "start_times"
   ], function(key) {
     return app[key] != undefined;
   });
