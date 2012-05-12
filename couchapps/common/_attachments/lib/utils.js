@@ -315,7 +315,8 @@ function capitaliseFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function highlight_search(split, row) {
+function highlight_search(row) {
+  var split = row.split;
   var firstvalue = row.value[row.value.match];
   var secondvalue= row.value[search_nonmatch_field(row.value.match)];
   var value;
