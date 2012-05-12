@@ -60,12 +60,25 @@ function time_to_hour_string(t) {
   return pad2(date.getHours()) + ":" + pad2(date.getMinutes()) + ":" + pad2(date.getSeconds());
 }
 
+function hms_to_string(h, m, s) {
+  h = pad2(h);
+  m = pad2(m);
+  s = pad2(s);
+  return h+":"+m+":"+s;
+}
+function date_to_string(date) {
+  return hms_to_string(date.getHours(), date.getMinutes(), date.getSeconds());
+}
+function int_to_datestring(ts) {
+    sec = Math.floor(ts / 1000);
+    min = Math.floor(sec / 60);
+    // we don't take % 24 in order to be coherent with global average
+    // The race day we MUST have the correct start-time for each race.
+    hour = Math.floor(min / 60);
+return hms_to_string(hour, min % 60, sec % 60);
+}
 function update_clock_on_div(div) {
-  var current_time = new Date();
-  var h = pad2(current_time.getHours());
-  var m = pad2(current_time.getMinutes());
-  var s = pad2(current_time.getSeconds());
-  $(div).html(h+":"+m+":"+s);
+  $(div).html(date_to_string(new Date()));
 }
 
 //From http://stackoverflow.com/questions/4631774/coordinating-parallel-execution-in-node-js
