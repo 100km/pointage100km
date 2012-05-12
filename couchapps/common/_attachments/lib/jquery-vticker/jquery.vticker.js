@@ -136,7 +136,7 @@
       setTimeout(function() {
         clearInterval(interval);
         cb();
-      }, (nb_obj - options.showItems + 1) * options.pause);
+      }, (nb_obj - options.showItems + 0.5) * options.pause);
     });
   };
 })(jQuery);
