@@ -34,15 +34,20 @@ function(head, req) {
 
   var other_term = req.query.term;
   var limit = req.query.my_limit;
-  var regexp;
-  if (other_term != undefined) {
-    regexp = new RegExp(remove_accents(other_term), "i");
-  }
   var row;
   var arr = [];
   var i = 0;
   while(row = getRow()) {
-    if (regexp == undefined || regexp.test(remove_accents(row.value[search_nonmatch_field(row.value.match)]))) {
+    var add;
+    if (other_term == undefined) {
+      add = true;
+    } else {
+      var comp  = remove_accents(row.value[search_nonmatch_field(row.value.match)]).toLowerCase().substr(0, other_term.length);
+      var other = remove_accents(other_term).toLowerCase();
+      add = comp == other;
+    }
+
+    if (add) {
       arr.push(row);
       i++;
       if (limit && i==limit)
