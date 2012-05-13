@@ -12,9 +12,6 @@ function(data) {
   if (! data.data.rows[0])
     return p;
 
-  for (var j = 0; j<10; j++)
-    p.items.push({});
-
   while (data.data.rows[0].contestants[i]) {
     var item = {};
     var current_infos = data.data.rows[0].contestants[i].value;
@@ -41,8 +38,13 @@ function(data) {
 
   p.count = i;
 
-  for (var j = 0; j<10; j++)
-    p.items.push({});
+  if (p.items.length>10) {
+    for (var j = 0; j<10; j++)
+      p.items.unshift({});
+
+    for (var j = 0; j<10; j++)
+      p.items.push({});
+  }
 
   //$.log("p: " + JSON.stringify(p));
 
