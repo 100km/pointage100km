@@ -17,6 +17,9 @@ function(data) {
     p.time_hour = time_to_hour_string(p.ts);
     p.kms = site_lap_to_kms(app, 2, p.lap);
 
+    if (p.lap == 5)
+      p.style = "color:red; font-weight:bold;";
+
     p.nom = r.infos && r.infos.nom;
     p.prenom = r.infos && r.infos.prenom;
     p.race = r.infos && r.infos.course;
