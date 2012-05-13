@@ -1,12 +1,14 @@
 function(data) {
   var p = {};
   p.items = [];
-  var first_cat = [];
+  var first_cat = [[], []];
+  var first_steen_found = [false, false];
   var i = 0;
   var app = $$(this).app;
 
   var race_id = data.race_id;
   var start_time = app.start_times[race_id];
+  var text_gender = ["Premier homme ", "Première femme "];
   p.race_id = race_id;
   p.race_name = app.races_names[race_id];
 
@@ -29,15 +31,27 @@ function(data) {
     if (current_contestant === undefined) {
       $.log("skip contestant infos for bib " + current_infos.bib);
     } else {
+      var gender_female = current_contestant.sexe - 1;
+
       item.nom        = current_contestant.nom;
       item.prenom     = current_contestant.prenom;
+      item.cp         = current_contestant.cp;
+      item.city       = current_contestant.commune;
       item.cat_name   = app.cat_names[current_contestant.cat];
-      if (first_cat[current_contestant.cat] === undefined) {
+
+      // default font
+      item.font_weight = "normal";
+      if (first_cat[gender_female][current_contestant.cat] === undefined) {
         item.font_weight = "bold";
-        first_cat[current_contestant.cat] = true;
+        item.spec = text_gender[gender_female] + item.cat_name;
+        first_cat[gender_female][current_contestant.cat] = true;
       }
-      else
-        item.font_weight = "normal";
+
+      if ((item.cp == "59181") && (first_steen_found[gender_female] == false)) {
+        item.font_weight = "bold";
+        item.spec = item.spec + " et " + text_gender[gender_female] + "Steenwerckois";
+        first_steen_found[gender_female] = true;
+      }
     }
 
     p.items.push(item);
