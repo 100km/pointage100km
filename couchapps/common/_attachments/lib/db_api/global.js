@@ -19,6 +19,9 @@ function map_contestants(data) {
   result.prenom  = data.prenom;
   result.course  = data.course;
   result.cat     = cat_from_year(birth_date.getYear() , data.sexe == 2);
+  result.sexe    = data.sexe;
+  result.cp      = data.cp;
+  result.commune = data.commune;
 
   return result;
 }
