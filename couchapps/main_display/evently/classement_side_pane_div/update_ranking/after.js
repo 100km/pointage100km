@@ -7,8 +7,6 @@ function() {
     mousePause: false,
     showItems: 10
   }, function() {
-    setTimeout( function() {
-      $(_this).trigger("update_ranking");
-    }, 2000);
+    $(_this).trigger("update_ranking");
   });
 }
