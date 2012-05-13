@@ -11,5 +11,7 @@ function(data) {
   var final_time = new Date()-open_date_offset;
   if (final_time >= 0)
     res.time = int_to_datestring(final_time);
+  else
+    res.time = int_to_datestring(0);
   return res;
 }
