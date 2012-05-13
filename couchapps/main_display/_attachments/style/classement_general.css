@@ -42,6 +42,33 @@ li {
   padding-right:2px;
 }
 
+/* Clocks */
+#clock_current_time {
+  float:left;
+  border:4px solid #f70;
+  padding:2px;
+  background-color:#fd6;
+}
+
+#clock_100km_open {
+  float:left;
+  border:4px solid #aca;
+  padding:2px;
+  background-color:#dfd;
+}
+
+#clock_100km_race {
+  float:left;
+  border:4px solid #edd;
+  padding:2px;
+  background-color:#fee;
+}
+
+.time {
+  text-width:1em;
+  font-weight:bold;
+}
+
 .left_pane {
   width: 410px;
   float: left;
