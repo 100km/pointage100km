@@ -13,6 +13,8 @@ function(data) {
     mousePause: false,
     showItems: 10
   }, function() {
-    $(_this).trigger("update_ranking");
+    setTimeout(function() {
+      $(_this).trigger("update_ranking");
+    }, 1000);
   });
 }
