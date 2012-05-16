@@ -6,6 +6,6 @@
 "kms_offset_site2":23.44,
 "kms_lap":19.14,
 "races_names":["", "100 km Open", "100 km Course", "", "1 tour du soir"],
-"start_times":[0, 1337187600, 1337227200, 0, 1337187600],
+"start_times":[0, 1337187600000, 1337227200000, 0, 1337187600000],
 "cat_names":["Eve.", "Poussins", "Benjamins", "Minimes", "Cadets", "Juniors", "Espoirs", "Séniors", "Vétérans 1", "Vétérans 2", "Vétérans 3", "Vétérans 4"]
 }
