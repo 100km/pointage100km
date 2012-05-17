@@ -22,6 +22,7 @@ function(data) {
     var lap = - data.data.rows[0].contestants[i].key[1];
 
     // $.log("current_infos = " + JSON.stringify(current_infos));
+    item.is_odd = i%2;
     i++;
     item.rank    = i;
     item.dossard = current_infos.bib;
