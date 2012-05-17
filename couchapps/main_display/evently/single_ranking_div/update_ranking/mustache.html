@@ -1,32 +1,30 @@
-<h1>{{race_name}}</h1>
-<li>
-  <div class="items_col_20">Pos</div>
-  <div class="items_col_100">Nom</div>
-  <div class="items_col_100">Prénom</div>
-  <div class="items_col_50">Dossard</div>
-  <div class="items_col_50">Kms</div>
-  <div class="items_col_100">Temps</div>
-  <div class="items_col_100">Catégorie</div>
-  <div class="items_col_50">CP</div>
-  <div class="items_col_200">Ville</div>
-  <div class="items_col_200">Specificité</div>
-  <div style="clear:both;"></div>
-</li>
+<h1 align=center>{{race_name}}</h1>
+<table id="hor-zebra">
+<tr>
+  <th >Pos</th>
+  <th >Nom</th>
+  <th >Prénom</th>
+  <th >Dossard</th>
+  <th >Kms</th>
+  <th >Temps</th>
+  <th >Catégorie</th>
+  <th >CP</th>
+  <th >Ville</th>
+  <th >Specificité</th>
+</tr>
 
-<ul>
   {{#items}}
-  <li style="font-weight:{{font_weight}}">
-    <div class="items_col_20">{{rank}}</div>
-    <div class="items_col_100">{{nom}}</div>
-    <div class="items_col_100">{{prenom}}</div>
-    <div class="items_col_50">{{dossard}}</div>
-    <div class="items_col_50">{{kms}}</div>
-    <div class="items_col_100">{{time}}</div>
-    <div class="items_col_100">{{cat_name}}</div>
-    <div class="items_col_50">{{cp}}</div>
-    <div class="items_col_200">{{city}}</div>
-    <div class="items_col_200">{{spec}}</div>
-    <div style="clear:both;"></div>
-  </li>
+  <tr {{^is_odd}}class="odd"{{/is_odd}} style="font-weight:{{font_weight}}">
+    <td>{{rank}}</td>
+    <td>{{nom}}</td>
+    <td>{{prenom}}</td>
+    <td>{{dossard}}</td>
+    <td>{{kms}}</td>
+    <td>{{time}}</td>
+    <td>{{cat_name}}</td>
+    <td>{{cp}}</td>
+    <td>{{city}}</td>
+    <td>{{spec}}</td>
+  </tr>
   {{/items}}
-</ul>
+</table>

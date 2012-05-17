@@ -196,3 +196,29 @@ li {
   padding-top:2px;
   padding-bottom:2px;
 }
+
+#hor-zebra
+{
+  font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+  font-size: 12px;
+  width: 100%;
+  border-collapse: collapse;
+}
+#hor-zebra th
+{
+  text-align:center;
+  font-size: 14px;
+  font-weight: normal;
+  padding: 10px 8px;
+  border-bottom: 2px solid #ccc;
+}
+#hor-zebra td
+{
+  text-align:center;
+  padding: 8px;
+  border-bottom: 2px solid #ccc;
+}
+#hor-zebra .odd
+{
+  background: #e8e8e8;
+}
