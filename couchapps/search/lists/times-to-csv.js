@@ -14,6 +14,12 @@ function(head, req) {
 
   while(row = getRow()) {
     // We get the race of the bib
+    if (! row.doc) {
+      // Get next row to throw it
+      row = getRow();
+      continue;
+    }
+
     race_id = row.doc.course;
 
     row = getRow();
