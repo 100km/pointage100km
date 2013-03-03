@@ -23,7 +23,7 @@ object Steenwerck extends Build {
   lazy val json = Seq(libraryDependencies += "net.liftweb" %% "lift-json" % "2.4")
 
   lazy val jackcess =
-    Seq(libraryDependencies += "com.healthmarketscience.jackcess" % "jackcess" % "1.2.6")
+    Seq(libraryDependencies += "com.healthmarketscience.jackcess" % "jackcess" % "1.2.9")
 
   lazy val root =
     Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config, stats)
