@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # https://github.com/sbt/sbt-launcher-package/blob/full-packaging/src/scripts/sbt-launch-lib.bash
 get_mem_opts () {
