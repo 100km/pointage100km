@@ -1,6 +1,5 @@
 {
 "sites":["La Croix du Bac", "Le crampon", "La salle des sports"],
-"kms":[4.03,8.45,6.67],
 "kms_offset":[8.31,16.29,23.44],
 "kms_lap":19.14,
 "races_names":["", "100 km Open", "100 km Course", "", "1 tour du soir"],
