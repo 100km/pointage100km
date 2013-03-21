@@ -1,13 +1,13 @@
 #CouchDB installation
 
-As stated in DATABASE.mb, please install couchDB version 1.2.0
+As stated in DATABASE.mb, please install couchDB version 1.2.1
 
-Here are the commands used to install couchDB on Ubuntu 11.10:
+Here are the commands used to install couchDB on Ubuntu 11.10 or 12.04:
 <pre>
-sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang 
-wget http://wwwftp.ciril.fr/pub/apache/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
-tar -xzvf apache-couchdb-1.2.0.tar.gz
-cd apache-couchdb-1.2.0
+sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang
+wget http://wwwftp.ciril.fr/pub/apache/couchdb/1.2.1/apache-couchdb-1.2.1.tar.gz
+tar -xzvf apache-couchdb-1.2.1.tar.gz
+cd apache-couchdb-1.2.1
 ./configure
 make
 sudo make install
@@ -105,11 +105,11 @@ sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.6/bin/couch
 
 #try the couchapp
 
-In order to try the couchapp, please configure couchdb to have local administrative user to be "admin" with password "admin".  
+In order to try the couchapp, please configure couchdb to have local administrative user to be "admin" with password "admin".
 
 #####Method 1:
-Stop couchdb  
-Edit the `local.ini` file of couchdb
+Stop couchdb
+Edit the `local.ini` file of couchdb probably in `/usr/local/etc/couchdb/local.ini`
 <pre>
 [admins]
 admin=admin
@@ -117,7 +117,7 @@ admin=admin
 Restart couchdb: `sudo -u couchdb couchdb` (for those who run it on a command line)
 
 #####Method 2:
-Go to http://localhost:5984/_utils/ and look at the **bottom right corner** to create a admin account 
+Go to http://localhost:5984/_utils/ and look at the **bottom right corner** to create a admin account
 
 Then, just go to `couchapps` directory and run `./pushapps.bash`. The different couchapps are available at http://localhost:5984/steenwerck100km/_design/`couchapp_name`/`page_name`.html
 
@@ -133,8 +133,8 @@ cd pointage100km
 ./sbt
 </pre>
 
-wait a bit and enter the following on the prompt  
-note: {0,1,2} is the site_id you must choose one among those values  
+wait a bit and enter the following on the prompt
+note: {0,1,2} is the site_id you must choose one among those values
 note2: this needs a .cfg file that is not in the repository
 <pre>
 project replicate
@@ -155,7 +155,7 @@ run initialize_db/100km2012.mdb
 </pre>
 
 
-IS THIS STILL REQUIRED NOW THAT WE USE LOADER?  
+IS THIS STILL REQUIRED NOW THAT WE USE LOADER?
 Note: you might need to install mdbtools to run mdb2couchdb.bash
 <pre>
 sudo apt-get install mdbtools
