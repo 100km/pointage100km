@@ -5,6 +5,8 @@ import AssemblyKeys._
 
 object Steenwerck extends Build {
 
+  lazy val typesafeRepo = "Typesafe repository (releases)" at "http://repo.typesafe.com/typesafe/releases/"
+
   lazy val akka =
     Seq(libraryDependencies ++= Seq("com.typesafe.akka" % "akka-actor" % "2.0",
 				    "com.typesafe.akka" % "akka-slf4j" % "2.0",
