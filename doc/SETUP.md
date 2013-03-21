@@ -18,7 +18,7 @@ Here are the commands used to install couchDB on Debian 6.0.3:
 <pre>
 $ sudo apt-get install libmozjs-dev libicu-dev libcurl4-gnutls-dev
 $ sudo apt-get install erlang
-$ wget http://wwwftp.ciril.fr/pub/apache/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
+$ wget http://wwwftp.ciril.fr/pub/apache/couchdb/1.2.1/apache-couchdb-1.2.1.tar.gz
 ... (same as ubuntu instructions)...
 </pre>
 
