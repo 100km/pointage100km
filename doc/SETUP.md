@@ -60,9 +60,9 @@ make
 sudo make install
 # Then follow instructions for Ubuntu 11.10:
 sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang
-wget http://wwwftp.ciril.fr/pub/apache/couchdb/releases/1.2.0/apache-couchdb-1.2.0.tar.gz
-tar -xzvf apache-couchdb-1.2.0.tar.gz
-cd apache-couchdb-1.2.0
+wget http://wwwftp.ciril.fr/pub/apache/couchdb/1.2.1/apache-couchdb-1.2.1.tar.gz
+tar -xzvf apache-couchdb-1.2.1.tar.gz
+cd apache-couchdb-1.2.1
 ./configure
 make
 sudo make install
@@ -83,7 +83,7 @@ For now, there is no recommended version of couchapp. Versions 0.7 and 1.0.1 hav
 
 Here are the commands to install couchapp version 1.0.1 on Ubuntu 11.10:
 <pre>
-sudo apt-get install python-setuptools
+sudo apt-get install python-setuptools python-dev
 sudo easy_install pip
 sudo pip install git+http://github.com/couchapp/couchapp.git@1.0.1#egg=Couchapp
 // When asked for bitbucket username and password just hit enter
