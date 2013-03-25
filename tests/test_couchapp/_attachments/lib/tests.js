@@ -337,6 +337,10 @@ function test_admin(app) {
       site_id : 0,
       type : "Manque un passage",
       lap : 1,
+      "next_site": 1,
+      "next_time": 10,
+      "prev_site": undefined,
+      "prev_time": undefined
     };
 
     deepEqual(result, expected, "Should return missing first statement.");
