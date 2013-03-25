@@ -158,23 +158,16 @@ function test_average(app, bib, lap, checkpoints, expected) {
     });
   });
 }
-function test_global(app, checkpoints, expected) {
+function test_global(app, checkpoints, expected, race_id) {
   expect(expected.length);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     db_global_ranking(app, function(data) {
-      var race_ids = data.rows.map(function(el) { return el.race_id });
-      _.each(expected, function(el) {
-        var idx = _.indexOf(race_ids, el.race_id);
-        if (idx == -1) {
-          ok(false, "Looking for race " + el.race_id + " not found !")
-        } else {
-          var row = data.rows[idx];
-          var bibs = row.contestants.map(function(contestant) { return contestant.value.bib; });
-          deepEqual(bibs, el.bibs, "Check bibs order for race " + el.race_id);
-        }
-      });
+      console.log(JSON.stringify(data));
+      console.log(data);
+      var bibs = data.data.rows[0].contestants.map(function(contestant) { return contestant.value.bib; });
+      deepEqual(bibs, expected.bibs, "Check bibs order for race " + expected.race_id);
       cb();
-    });
+    }, race_id);
   });
 }
 function test_bib_input(app) {
@@ -280,17 +273,13 @@ function test_bib_input(app) {
       test_global(app, [
         { bib: 2, ts: 1000, site_id:0 },
         { bib: 1, ts: 1100, site_id:0 },
-      ], [
-        { race_id:1, bibs:[2, 1]}
-      ]);
+      ], { race_id:1, bibs:[2, 1]} , 1);
     });
     asyncTest("very simple with bib zero", function() {
       test_global(app, [
         { bib: 0, ts: 1000, site_id:0 },
         { bib: 1, ts: 1100, site_id:0 },
-      ], [
-        { race_id:1, bibs:[0, 1]}
-      ]);
+      ], { race_id:1, bibs:[0, 1]}, 1);
     });
     asyncTest("2 races, different laps", function() {
       test_global(app, [
@@ -303,10 +292,20 @@ function test_bib_input(app) {
         { bib: 3, ts: 12100, site_id:0 },
         { bib: 4, ts: 13000, site_id:0 },
         { bib: 4, ts: 13000, site_id:1 },
-      ], [
-        { race_id:1, bibs:[0, 1, 2]},
-        { race_id:2, bibs:[4, 3]},
-      ]);
+      ], { race_id:1, bibs:[0, 1, 2]}, 1);
+    });
+    asyncTest("2 races, different laps", function() {
+      test_global(app, [
+        { bib: 2, ts: 800, site_id:0 },
+        { bib: 0, ts: 1000, site_id:0 },
+        { bib: 1, ts: 1100, site_id:0 },
+        { bib: 0, ts: 2000, site_id:1 },
+        { bib: 1, ts: 2100, site_id:1 },
+        { bib: 0, ts: 3000, site_id:2 },
+        { bib: 3, ts: 12100, site_id:0 },
+        { bib: 4, ts: 13000, site_id:0 },
+        { bib: 4, ts: 13000, site_id:1 },
+      ], { race_id:2, bibs:[4, 3]}, 2);
     });
     asyncTest("missing checkpoints", function() {
       test_global(app, [
@@ -315,9 +314,7 @@ function test_bib_input(app) {
         { bib: 0, ts: 3000, site_id:2 },
         { bib: 1, ts: 4100, site_id:0 },
         { bib: 0, ts: 5000, site_id:0 },
-      ], [
-        { race_id:1, bibs:[1, 0]}
-      ]);
+      ], { race_id:1, bibs:[1, 0]}, 1);
     });
   });
 };
