@@ -8,7 +8,38 @@ This file is a global file common to all sites. For the following we consider N 
  * "kms_offset": an array of N reals containing the distance from the start to each site.
  * "kms_lap": the distance of one lap
  * "races_names": an array with the name of the different races tobe displayed in graphical interface
- * "start_times": an array with the start time of each race (in seconds since epoch)
+ * "start_times": an array with the start time of each race (in milli seconds since epoch)
  * "cat_names": an array with the name of the category
 
 
+##server configuration
+
+On the main server, you need:
+ * couchdb running
+ * a database steenwerck-config containing with:
+   * one document with id "configuration", with a field "dbname", containing the database name used by all other programs
+   * a security configuration allowing the main user to read this database.
+ * a database with the name indicated in "steenwerck-config" database containing the couchapp
+
+
+##client configuration
+
+On each client, you need:
+ * couchdb running
+ * "admin/admin" as main admin user
+
+
+##steenwerck.cfg
+
+This file is not commited on git. It is a file containing the information to log on the server couchdb.
+[master]
+host = <server hosting the couchdb>
+port = <port to reach couchdb>
+dbname = <LOCAL database name>
+user = <user used for server connection>
+password = <password used for server connection>
+
+
+##Notes
+
+For now, all the tool expects to have a local "admin/admin" account. Maybe we should change that in the future...
