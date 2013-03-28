@@ -15,9 +15,9 @@ function(data) {
     p.ts  = r.key[1];
     p.time_hour = time_to_hour_string(p.ts);
 
-    p.nom = r.infos && r.infos.nom;
-    p.prenom = r.infos && r.infos.prenom;
-    p.course = r.infos && r.infos.course;
+    p.name       = r.infos && r.infos.name;
+    p.first_name = r.infos && r.infos.first_name;
+    p.race       = r.infos && r.infos.race;
 
     return p;
   }

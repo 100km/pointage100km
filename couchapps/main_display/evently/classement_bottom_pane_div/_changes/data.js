@@ -20,9 +20,9 @@ function(data) {
     if (p.lap == 5)
       p.style = "color:red; font-weight:bold;";
 
-    p.nom = r.infos && r.infos.nom;
-    p.prenom = r.infos && r.infos.prenom;
-    p.race = r.infos && r.infos.course;
+    p.name = r.infos && r.infos.name;
+    p.first_name = r.infos && r.infos.first_name;
+    p.race = r.infos && r.infos.race;
 
     var time_to_convert = p.ts - app.start_times[p.race];
     p.global_average = p.kms * 1000 * 3600 / time_to_convert;

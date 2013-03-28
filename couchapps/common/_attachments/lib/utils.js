@@ -48,7 +48,7 @@ function place_previous() {
 }
 
 function empty_info() {
-  return {nom:"", prenom:"", course:""};
+  return {name:"", first_name:"", race:""};
 }
 
 function pad2(number) {
@@ -247,10 +247,10 @@ function increment_string_key(str) {
 //Copy paste from search/lists/intersect-search.js
 //TODO find a solution
 function search_nonmatch_field(str) {
-  if (str == "nom")
-    return "prenom"
+  if (str == "name")
+    return "first_name"
   else
-    return "nom";
+    return "name";
 }
 
 function remove_accents(str) {
@@ -343,7 +343,7 @@ function highlight_search(row) {
     label2 = secondvalue;
   }
   var label;
-  if (row.value.match == "nom") {
+  if (row.value.match == "name") {
     label = "<span class=family-name>" + label1 + "</span> <span class=firstname>" + label2 + "</span"
     value = firstvalue.toUpperCase() + " " + capitaliseFirstLetter(secondvalue);
   } else {

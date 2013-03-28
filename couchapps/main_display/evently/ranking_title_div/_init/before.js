@@ -8,8 +8,8 @@ function(cb) {
     // Set field in app so that everyone can access the contestants infos
     app.contestants = [];
     _.each(data, function (item, index) {
-      // $.log("In foreach : bib = " + item.dossard + " item = " + JSON.stringify(item));
-      app.contestants[item.dossard] = item;
+      // $.log("In foreach : bib = " + item.bib + " item = " + JSON.stringify(item));
+      app.contestants[item.bib] = item;
     });
 
     if (race_id) {

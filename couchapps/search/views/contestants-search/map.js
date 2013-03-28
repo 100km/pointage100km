@@ -1,13 +1,13 @@
 function(doc) {
-  if (doc.dossard != undefined) {
-    if (doc.prenom)
+  if (doc.bib != undefined) {
+    if (doc.first_name)
     for (prop in {"prenom":"", "nom":""}) {
       if (doc[prop]) {
         emit(doc[prop], {
           match: prop,
-          prenom: doc.prenom || "",
-          nom: doc.nom || "",
-          dossard: doc.dossard
+          first_name: doc.first_name || "",
+          name: doc.name || "",
+          bib: doc.bib
         });
       }
     }

@@ -1,7 +1,7 @@
 function(e) {
   $(this).trigger("single-contestant", {
-    nom: this.getAttribute('data-name'),
-    prenom: this.getAttribute('data-firstname'),
-    dossard: parseInt(this.getAttribute('data-bib'))
+    name: this.getAttribute('data-name'),
+    first_name: this.getAttribute('data-firstname'),
+    bib: parseInt(this.getAttribute('data-bib'))
   });
 }

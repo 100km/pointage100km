@@ -25,7 +25,7 @@ function(data) {
     item.is_odd = i%2;
     i++;
     item.rank    = i;
-    item.dossard = current_infos.bib;
+    item.bib     = current_infos.bib;
     item.kms     = site_lap_to_kms(app, current_infos.site_id, lap)
     item.time    = int_to_datestring(current_infos.times[lap-1] - start_time);
 
@@ -34,10 +34,10 @@ function(data) {
     } else {
       var gender_female = current_contestant.sexe - 1;
 
-      item.nom        = current_contestant.nom;
-      item.prenom     = current_contestant.prenom;
-      item.cp         = current_contestant.cp;
-      item.city       = current_contestant.commune;
+      item.name       = current_contestant.name;
+      item.first_name = current_contestant.first_name;
+      item.zipcode    = current_contestant.zipcode;
+      item.city       = current_contestant.city;
       item.cat_name   = app.cat_names[current_contestant.cat];
 
       // default font
@@ -48,7 +48,7 @@ function(data) {
         first_cat[gender_female][current_contestant.cat] = true;
       }
 
-      if ((item.cp == "59181") && (first_steen_found[gender_female] == false)) {
+      if ((item.zipcode == "59181") && (first_steen_found[gender_female] == false)) {
         item.font_weight = "bold";
         item.spec = item.spec + " et " + text_gender[gender_female] + "Steenwerckois";
         first_steen_found[gender_female] = true;

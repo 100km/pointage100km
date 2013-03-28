@@ -20,7 +20,7 @@ function(head, req) {
       continue;
     }
 
-    race_id = row.doc.course;
+    race_id = row.doc.race;
 
     row = getRow();
     for (var i=0; i<row.value.times.length; i=i+1) {
