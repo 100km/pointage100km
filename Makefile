@@ -1,4 +1,4 @@
-JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar bin/stats.jar
+JARFILES = bin/replicate.jar bin/couchsync.jar bin/wipe.jar bin/loader.jar bin/stats.jar bin/loaderaccess.jar
 BINFILES = $(JARFILES:.jar=)
 DIST = bin.tar.xz
 ROOTDIR = server

@@ -25,12 +25,17 @@ object Steenwerck extends Build {
   lazy val jackcess =
     Seq(libraryDependencies += "com.healthmarketscience.jackcess" % "jackcess" % "1.2.9")
 
+  lazy val mysql =
+    Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
+				    "commons-dbutils" % "commons-dbutils" % "1.5",
+				    "mysql" % "mysql-connector-java" % "5.1.22"))
+
   lazy val common = Project.defaultSettings ++ assemble ++
     Seq(scalaVersion := "2.9.1",
 	scalacOptions ++= Seq("-unchecked", "-deprecation"))
 
   lazy val root =
-    Project("root", file(".")) aggregate(replicate, couchsync, wipe, canape, config, stats)
+    Project("root", file(".")) aggregate(replicate, couchsync, wipe, stats, loader, loaderaccess)
 
   lazy val stats =
     Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape)
@@ -42,7 +47,10 @@ object Steenwerck extends Build {
     Project("couchsync", file("couchsync"), settings = common ++ scopt) dependsOn(canape, steenwerck)
 
   lazy val loader =
-    Project("loader", file("loader"), settings = common ++ akka ++ jackcess ++ scopt) dependsOn(canape)
+    Project("loader", file("loader"), settings = common ++ akka ++ mysql ++ scopt) dependsOn(canape)
+
+  lazy val loaderaccess =
+    Project("loaderaccess", file("loaderaccess"), settings = common ++ akka ++ jackcess ++ scopt) dependsOn(canape)
 
   lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt) dependsOn(canape, config)
 
