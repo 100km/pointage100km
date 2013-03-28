@@ -3,7 +3,7 @@ function db_previous(app, site_id, data, cb) {
   var lap = data.lap;
   var ts = data.ts;
   var infos = data;
-  var race_id = infos["course"] || 0;
+  var race_id = infos["race"] || 0;
   var n = race_id == 0 ? 0 : 3;
   var warning = race_id == 0;
   var kms = site_lap_to_kms(app, site_id, lap);
@@ -67,7 +67,7 @@ function db_previous(app, site_id, data, cb) {
     res.predecessors = data[1][0].rows;
     res.average = data[2][0];
     res.infos = infos || empty_info();
-    res.course = app.races_names[race_id];
+    res.race_name = app.races_names[race_id];
     res.bib_time = ts;
     res.warning = warning;
     res.kms = kms;

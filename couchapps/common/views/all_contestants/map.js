@@ -3,6 +3,6 @@
 // Used in ranking_title_div
 function(doc) {
   if (doc.type == 'contestant' ) {
-      emit(doc.dossard, doc);
+      emit(doc.bib, doc);
   }
 };

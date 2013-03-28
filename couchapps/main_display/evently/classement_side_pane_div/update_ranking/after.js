@@ -1,10 +1,10 @@
 function(data) {
   var _this = this;
 
-  if (data.race_id == 4)
-    $(_this).addClass('race_4');
+  if (data.race_id == 3)
+    $(_this).addClass('race_3');
   else
-    $(_this).removeClass('race_4');
+    $(_this).removeClass('race_3');
 
   $(this).find("#ranking-container").vTicker({
     speed: 500,

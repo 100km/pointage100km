@@ -6,10 +6,10 @@ function(cb, wtf, request) {
     app.db.openDoc(infos_id(request_int), {
       success: function(data) {
         var res = [{
-          match: "dossard",
-          prenom: data.prenom || "",
-          nom: data.nom || "",
-          dossard: data.dossard
+          match: "bib",
+          first_name: data.first_name || "",
+          name: data.name || "",
+          bib: data.bib
         }];
         res.request = request;
         cb([{value: data}]);

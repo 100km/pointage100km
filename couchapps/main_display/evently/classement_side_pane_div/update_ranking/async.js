@@ -12,7 +12,7 @@ function(cb) {
         if (data.rows.length > 0)
           db_global_ranking(app, cb, race_id);
         else
-          db_global_ranking(app, cb, 4);
+          db_global_ranking(app, cb, 3);
         }
     });
   }

@@ -14,14 +14,14 @@ function map_contestants(data) {
   var birth_date = new Date(data.naissance);
 
   //no error checking: we suppose all contestants have the following info in the database
-  result.dossard = data.dossard;
-  result.nom     = data.nom;
-  result.prenom  = data.prenom;
-  result.course  = data.course;
-  result.cat     = cat_from_year(birth_date.getYear() , data.sexe == 2);
-  result.sexe    = data.sexe;
-  result.cp      = data.cp;
-  result.commune = data.commune;
+  result.bib        = data.bib;
+  result.name       = data.name;
+  result.first_name = data.first_name;
+  result.race       = data.race;
+  result.cat        = cat_from_year(birth_date.getYear() , data.sexe == 2);
+  result.sex        = data.sex;
+  result.zipcode    = data.zipcode;
+  result.city       = data.city;
 
   return result;
 }

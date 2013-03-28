@@ -18,9 +18,9 @@ function(cb) {
       _.each(data.rows, function(row) {
         if (row.doc) {
           row.infos = {
-            prenom: row.doc.prenom,
-            nom: row.doc.nom,
-            course: row.doc.course
+            first_name: row.doc.first_name,
+            name: row.doc.name,
+            race: row.doc.race
           };
         }
       });

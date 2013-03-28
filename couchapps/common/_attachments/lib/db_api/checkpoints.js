@@ -74,8 +74,8 @@ function db_race_id(bib, app, f) {
   app.db.openDoc(infos_id(bib), {
     success: function(bib_info) {
       //0 is invalid as a race_id
-      //valid race_ids are 1,2,4,8
-      var race_id = bib_info["course"] || invalid_race_id;
+      //valid race_ids are 1,2,3,4,5
+      var race_id = bib_info["race"] || invalid_race_id;
       f(race_id);
     },
     error: handle_not_found_or_die(function() { f(invalid_race_id) })

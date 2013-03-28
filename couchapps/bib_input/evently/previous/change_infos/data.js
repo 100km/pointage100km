@@ -6,11 +6,11 @@ function(data) {
     return data;
   }
 
-  data.nom = data.infos.nom;
-  data.prenom = data.infos.prenom;
+  data.name = data.infos.name;
+  data.first_name = data.infos.first_name;
 
   var tmp = [];
-  var start_time = app.start_times[data.infos.course];
+  var start_time = app.start_times[data.infos.race];
 
   for (var i = 0; i<data.limit; i++) {
     var pair = {};

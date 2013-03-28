@@ -1,6 +1,6 @@
 function(cb, x, data) {
   var app = $$(this).app;
-  var bib = data.dossard;
+  var bib = data.bib;
   if (bib == undefined) {
     cb({times:[], infos:data});
     return;

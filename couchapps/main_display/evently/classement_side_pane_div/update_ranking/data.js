@@ -21,7 +21,7 @@ function(data) {
     //$.log("current_infos = " + JSON.stringify(current_infos));
     i++;
     item.rank    = i;
-    item.dossard = current_infos.bib;
+    item.bib     = current_infos.bib;
     item.kms     = site_lap_to_kms(app, current_infos.site_id, lap)
     item.time    = int_to_datestring(current_infos.times[lap-1] - start_time);
     item.is_odd  = ((i%2) == 0);
@@ -29,8 +29,8 @@ function(data) {
     if (current_contestant === undefined) {
       $.log("skip contestant infos for bib " + current_infos.bib);
     } else {
-      item.nom     = current_contestant.nom;
-      item.prenom  = current_contestant.prenom;
+      item.name       = current_contestant.name;
+      item.first_name = current_contestant.first_name;
     }
 
     p.items.push(item);
