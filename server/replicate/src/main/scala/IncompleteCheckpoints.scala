@@ -18,7 +18,7 @@ trait IncompleteCheckpoints {
         val JInt(bib) = doc \ "bib"
         db("contestant-" + bib).toFuture flatMap {
           r =>
-            val JInt(race) = r("course")
+            val JInt(race) = r("race")
             if (race != 0) {
               log.info("fixing incomplete race " + race + " for bib " + bib)
               db.insert(doc.replace("race_id" :: Nil, JInt(race))).toFuture recover {
