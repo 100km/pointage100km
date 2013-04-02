@@ -1,3 +1,5 @@
+//Unused ?
+//TODO teams
 function(doc) {
   if (doc._id == "infos")
     emit(false, doc);
