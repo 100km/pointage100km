@@ -1,5 +1,6 @@
 // View : global-ranking
 // Used for global ranking of all contestants (to be diplayed in the web site for example)
+//TODO teams
 function(doc) {
   if (doc.bib != undefined && doc.times && doc.times.length > 0 && doc.site_id != undefined) {
     var len = doc.times.length;

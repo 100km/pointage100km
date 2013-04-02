@@ -1,3 +1,5 @@
+//Used in search
+//TODO teams
 function(doc) {
   if (doc.bib != undefined) {
     if (doc.first_name)
