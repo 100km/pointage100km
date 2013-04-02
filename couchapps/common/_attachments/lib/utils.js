@@ -66,16 +66,55 @@ function hms_to_string(h, m, s) {
   s = pad2(s);
   return h+":"+m+":"+s;
 }
+//pluralize heure, minute and seconde in french
+function pluralize(n, str, display_zero) {
+  if (n==0 && !display_zero)
+    return "";
+  var prefix = n+" "+str;
+  if (n==1) return prefix;
+  return prefix+"s";
+}
+function language_and(values, strings) {
+  var result="";
+  var display_zero=false;
+  var linking_str;
+  var l = strings.length;
+  for (var i=0; i<l; i=i+1) {
+    if ((values[i] != 0) || (i==(l-1))) {
+      display_zero=true;
+    }
+    if (i==(l-1)) {
+      linking_str = "";
+    } else if (i==(l-2)) {
+      linking_str = " et ";
+    } else {
+      linking_str = ", ";
+    }
+    result += pluralize(values[i], strings[i], display_zero) + linking_str;
+  }
+  return result;
+}
+function hms_to_human_string(h, m, s) {
+  return language_and([h,m,s], ["heure", "minute", "seconde"]);
+}
 function date_to_string(date) {
   return hms_to_string(date.getHours(), date.getMinutes(), date.getSeconds());
 }
+function int_to_hms(ts) {
+  sec = Math.floor(ts / 1000);
+  min = Math.floor(sec / 60);
+  // we don't take % 24 in order to be coherent with global average
+  // The race day we MUST have the correct start-time for each race.
+  hour = Math.floor(min / 60);
+  return { sec:(sec%60), min:(min%60), hour:hour };
+}
 function int_to_datestring(ts) {
-    sec = Math.floor(ts / 1000);
-    min = Math.floor(sec / 60);
-    // we don't take % 24 in order to be coherent with global average
-    // The race day we MUST have the correct start-time for each race.
-    hour = Math.floor(min / 60);
-return hms_to_string(hour, min % 60, sec % 60);
+  var hms = int_to_hms(ts);
+  return hms_to_string(hms.hour, hms.min, hms.sec);
+}
+function int_to_human_string(ts) {
+  var hms = int_to_hms(ts);
+  return hms_to_human_string(hms.hour, hms.min, hms.sec);
 }
 function update_clock_on_div(div) {
   $(div).html(date_to_string(new Date()));

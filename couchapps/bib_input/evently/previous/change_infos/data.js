@@ -21,11 +21,13 @@ function(data) {
     var cur_time = cur_pred.value.times[data.lap - 1];
     pair.bib = cur_pred.value.bib;
     pair.hour_time = time_to_hour_string(cur_time); // this is the absolute hour
+    var prefix;
     if (i == 0) {
       time_to_convert = data.ts - start_time;
       prefix = "&nbsp; ";
       data.global_average = data.kms * 1000 * 3600 / time_to_convert;
       data.global_average = data.global_average.toFixed(2);
+      data.global_time = int_to_human_string(time_to_convert);
     }
     else {
       time_to_convert = data.ts - cur_time;
@@ -46,6 +48,7 @@ function(data) {
 
     data.last_site_name = app.sites[data.average.last_site]
     data.local_kms = local_kms.toFixed(2);
+    data.local_time = int_to_human_string(local_time);
     data.local_average = (local_kms * 1000 * 3600 / local_time).toFixed(2);
   }
 
