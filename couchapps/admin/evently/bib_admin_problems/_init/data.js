@@ -4,10 +4,17 @@ function(data) {
   var times = [];
   var deleted_times = [];
   var res = { pbs: [] };
-  var pings = [data[0][0], data[1][0], data[2][0]];
+  var pings = [];
 
-  while (data[3][0].rows[i]) {
-    var row = data[3][0].rows[i];
+  // Set ping infos
+  // TODO: hardcoded number of sites
+  for (i=0; i<7; i++)
+    pings[i] = data[i+1];
+
+  i = 0;
+
+  while (data[0][0].rows[i]) {
+    var row = data[0][0].rows[i];
     var bib = row.key[0];
 
     // we can now check for previous bib
@@ -47,8 +54,8 @@ function(data) {
  */
 function do_check_times(res, bib, times, deleted_times, pings) {
   // Check the times.
-  // NOTE(bapt): hard code the number of site...
-  var check = check_times(times, pings, 3);
+  // TODO: hardcoded number of sites
+  var check = check_times(times, pings, 7);
 
   // There was a problem.
   if (check) {
@@ -61,8 +68,8 @@ function do_check_times(res, bib, times, deleted_times, pings) {
     // Display the times for each site.
     check.sites = [];
 
-    // NOTE(bapt): Hard code site number.
-    for (var i = 0; i < 3; i++) {
+    // TODO: hardcoded number of sites
+    for (var i = 0; i < 7; i++) {
       // Push the site object definition.
       check.sites.push({
         id: i,
