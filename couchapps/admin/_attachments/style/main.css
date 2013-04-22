@@ -22,17 +22,18 @@ h3 {
  ************************************************************************************************/
 
 #bib_admin_title {
+  width:100%;
+}
+
+.title {
+  font-size:1em;
+  font-weight:bold;
   text-align:center;
   float:left;
   margin-left:auto;
   margin-right:auto;
   width:50%;
   padding:8px;
-}
-
-.title {
-  font-size:1em;
-  font-weight:bold;
 }
 
 #bib_admin_current_time{
