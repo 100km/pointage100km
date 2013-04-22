@@ -6,3 +6,4 @@ bin/*.jar
 bin.tar.xz
 *.swp
 tests/test_result.html
+.gitrev

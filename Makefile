@@ -3,10 +3,18 @@ BINFILES = $(JARFILES:.jar=)
 DIST = bin.tar.xz
 ROOTDIR = server
 SBT = ./sbt
+GITVER := $(shell git describe --long --always)
 
 all:: assembly
 
+incremental::
+	if [ x$(GITVER) != x$$(cat .gitrev 2> /dev/null) ]; then $(MAKE) assembly; fi
+
+.gitrev: ALWAYS
+	echo $(GITVER) > .gitrev
+
 assembly:: $(JARFILES)
+	$(MAKE) .gitrev
 
 dist:: $(DIST)
 
