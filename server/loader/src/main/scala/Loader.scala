@@ -67,11 +67,13 @@ object Loader extends App {
       val id = "contestant-" + bib
       val firstName = capitalize(contestant("first_name").asInstanceOf[String])
       val name = capitalize(contestant("name").asInstanceOf[String])
+      val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
       val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
                 Map("_id" -> id,
 		    "type" -> "contestant",
 		    "name" -> name,
-		    "first_name" -> firstName)
+		    "first_name" -> firstName) ++
+                (if (teamId == null) Map() else Map("team_id" -> teamId))
       val desc = "bib %d (%s %s)".format(bib, firstName, name)
       try {
 	db.insert(util.toJObject(doc)).execute()
