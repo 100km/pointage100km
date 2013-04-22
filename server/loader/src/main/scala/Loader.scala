@@ -88,6 +88,7 @@ object Loader extends App {
       case ("year", v: java.sql.Date) => "year" -> v.get(Calendar.YEAR)
       case (k, v: java.math.BigDecimal) => k -> v.doubleValue()
       case (k, v: java.util.Date) => k -> v.toString()
+      case ("id", id) => ("mysql_id" -> id)
       case (k, v) => k -> v
     }
 
