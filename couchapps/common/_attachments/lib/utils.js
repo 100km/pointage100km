@@ -83,7 +83,7 @@ function language_and(values, strings) {
     if ((values[i] != 0) || (i==(l-1))) {
       display_zero=true;
     }
-    if (i==(l-1)) {
+    if (i==(l-1) || !display_zero) {
       linking_str = "";
     } else if (i==(l-2)) {
       linking_str = " et ";
