@@ -38,7 +38,7 @@ object Stats extends App {
       val bibStr = Integer.toString(bib)
       try {
         val id = "contestant-" + bibStr
-        val doc = Map("_id" -> id, "course" -> (1<< nextInt(3)), "type" -> "contestant", "nom" -> ("Bob_" + bibStr), "prenom" -> ("bobbie" + bibStr), "dossard" -> bib, "naissance" -> (1920 + nextInt(75)).toString(), "sexe" -> (1 + nextInt(1)))
+        val doc = Map("_id" -> id, "race" -> (1<< nextInt(3)), "type" -> "contestant", "name" -> ("Bob_" + bibStr), "first_name" -> ("bobbie" + bibStr), "bib" -> bib, "birth" -> (1920 + nextInt(75)).toString(), "sex" -> (if (nextInt(1) == 0) "M" else "F"))
         db.insert(util.toJObject(doc)).execute()
         println("Inserted " + bibStr)
       } catch {
