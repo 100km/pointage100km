@@ -72,8 +72,7 @@ object Loader extends App {
                 Map("_id" -> id,
 		    "type" -> "contestant",
 		    "name" -> name,
-		    "first_name" -> firstName) ++
-                (if (teamId == null) Map() else Map("team_id" -> teamId))
+		    "first_name" -> firstName)
       val desc = "bib %d (%s %s)".format(bib, firstName, name)
       try {
 	db.insert(util.toJObject(doc)).execute()
