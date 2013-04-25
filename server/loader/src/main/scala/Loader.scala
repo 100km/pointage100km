@@ -59,6 +59,16 @@ object Loader extends App {
     def get(id: String) = try { Some(db(id).execute()) } catch { case StatusCode(404, _) => None }
 
     val run = new QueryRunner(source)
+
+    val teams = {
+      val t = run.query("SELECT * FROM teams WHERE year = ?",
+			new MapListHandler,
+			new java.lang.Integer(Options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
+      (for (team <- t)
+         yield (team("id").asInstanceOf[java.lang.Integer] ->
+		team("name").asInstanceOf[String])).toMap
+    }
+
     val q = run.query("SELECT * FROM registrations WHERE year = ?",
 		      new MapListHandler,
 		      new java.lang.Integer(Options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
@@ -72,7 +82,11 @@ object Loader extends App {
                 Map("_id" -> id,
 		    "type" -> "contestant",
 		    "name" -> name,
-		    "first_name" -> firstName)
+		    "first_name" -> firstName) ++
+		(if (teamId != null)
+		  Map("team_name" -> teams(teamId))
+		 else
+		   Map.empty)
       val desc = "bib %d (%s %s)".format(bib, firstName, name)
       try {
 	db.insert(util.toJObject(doc)).execute()
