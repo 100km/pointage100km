@@ -1,10 +1,10 @@
 function(head, req) {
 
   function search_nonmatch_field(str) {
-    if (str == "nom")
-      return "prenom"
+    if (str == "name")
+      return "first_name"
     else
-      return "nom";
+      return "name";
   }
 
   function remove_accents(str) {
