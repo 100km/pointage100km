@@ -3,7 +3,7 @@
 function(doc) {
   if (doc.bib != undefined) {
     if (doc.first_name)
-    for (prop in {"prenom":"", "nom":""}) {
+    for (prop in {"first_name":"", "name":""}) {
       if (doc[prop]) {
         emit(doc[prop], {
           match: prop,
