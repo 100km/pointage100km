@@ -6,6 +6,12 @@ function(data) {
     return data;
   }
 
+  if (data.race == 5) {
+    data.race_name = app.races_names[data.race];
+    data.team = true;
+    return data;
+  }
+
   data.name = data.infos.name;
   data.first_name = data.infos.first_name;
 

@@ -5,6 +5,10 @@
 <center>
   <h3>Dossard {{bib}} : {{name}} {{first_name}} au tour {{lap}}</h3>
   <h4>{{race_name}}</h4>
+{{#team}}
+  <p>Membre de l'équipe {{team_id}}
+{{/team}}
+{{^team}}
   <table>
     <caption>Classement intermédiaire</caption>
     <tr>
@@ -37,4 +41,5 @@
   <p>Moyenne depuis {{last_site_name}}&nbsp;: <strong>{{local_average}} km/h</strong><br/>({{local_kms}} km en {{local_time}})</p>
   {{/avg_present}}
   {{/average}}
+{{/team}}
 {{/warning}}
