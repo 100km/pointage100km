@@ -2,7 +2,7 @@
 "sites":["Le froid nid", "La Croix du Bac", "La salle des sports, boucle&nbsp;1", "La menegatte", "La gare", "La blanche", "La salle des sports, boucle&nbsp;2"],
 "kms_offset":[10.00,15.00,21.82,25.00,29.00,34.00,37.30],
 "kms_lap":31.35,
-"races_names":["", "100 km Open", "100 km Course", "1 tour du soir", "", "100 km relai"],
+"races_names":["", "100 km Open", "100 km Course", "1 tour du soir", "Course des jeunes", "100 km relai", "Marathon"],
 "start_times":[0, 1363888800000, 1363888800000, 1363888800000, 0, 1363888800000],
 "cat_names":["Eve.", "Poussins", "Benjamins", "Minimes", "Cadets", "Juniors", "Espoirs", "Séniors", "Vétérans 1", "Vétérans 2", "Vétérans 3", "Vétérans 4"]
 }
