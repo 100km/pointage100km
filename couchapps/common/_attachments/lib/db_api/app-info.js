@@ -29,3 +29,12 @@ function db_app_data(app, cb) {
     cb();
   });
 }
+
+function db_app_data_no_site(app, cb) {
+  get_doc(app,
+          function(data) {
+            copy_app_data(app, data);
+            cb();
+          }
+          , "infos");
+}
