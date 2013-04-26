@@ -92,7 +92,7 @@ STEPS:
 
 to keep in mind:
 - When you launch wipe, ALL replicate processes running on checkpoints pcs MUST be stopped prior entering new checkpoints,
-  All data entered before the replicate can be considered lost (if you really need to get them, they will actually be deleted only when replicate is restarted)
+  All data entered before the wipe that has not been synchronized to the server can be considered lost (if you really need to get them, they will actually be deleted only when replicate is restarted)
 - When you push a couchapp to be used in the race, you must push all your changes to github, else they will be overwritten (even info.json)
 
 ##Notes
