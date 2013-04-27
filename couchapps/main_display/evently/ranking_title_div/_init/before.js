@@ -14,11 +14,11 @@ function(cb) {
 
     if (race_id) {
       // We are in the title for only one race
-      $("#single_ranking_div").trigger("update_ranking", {race_id:race_id});
+      $("#single_ranking_div").trigger("update_ranking");
     }
     else {
-      $("#left_pane_div").trigger("update_ranking", {race_id:1});
-      $("#right_pane_div").trigger("update_ranking", {race_id:2});
+      $("#left_pane_div").trigger("update_ranking");
+      $("#right_pane_div").trigger("update_ranking");
     }
 
     return;
@@ -27,7 +27,13 @@ function(cb) {
 
   fork([
     function(cb) { db_get_all_contestants(app, cb) },
-    function(cb) { db_app_data(app, cb) }
+    function(cb) {
+      if (!appinfo_initialized(app)) {
+        db_app_data(app, cb);
+      } else {
+        cb();
+      }
+    }
   ], function(result) {
     set_contestant(result[0][0]);
   });
