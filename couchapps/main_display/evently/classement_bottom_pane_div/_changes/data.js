@@ -1,7 +1,9 @@
 function(data) {
   var p;
   var app = $$(this).app;
-  if (data[0] == undefined) {
+  var site_id = data.site_id;
+  data = data.data;
+  if (data[0] == undefined || !appinfo_initialized(app)) {
     return {
       item_0 : [],
       items : [],
@@ -15,14 +17,17 @@ function(data) {
     p.lap = r.value && r.value.lap;
     p.ts  = r.key[1];
     p.time_hour = time_to_hour_string(p.ts);
-    p.kms = site_lap_to_kms(app, 2, p.lap);
-
-    if (p.lap == 5)
-      p.style = "color:red; font-weight:bold;";
+    p.kms = site_lap_to_kms(app, site_id, p.lap);
 
     p.name = r.infos && r.infos.name;
     p.first_name = r.infos && r.infos.first_name;
-    p.race = r.infos && r.infos.race;
+
+    var race_id = r.infos && r.infos.race;
+    p.race = race_id;
+
+    if (p.lap == app.races_laps[race_id])
+      p.style = "color:red; font-weight:bold;";
+
 
     var time_to_convert = p.ts - app.start_times[p.race];
     p.global_average = p.kms * 1000 * 3600 / time_to_convert;
