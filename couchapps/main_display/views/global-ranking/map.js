@@ -4,6 +4,8 @@
 function(doc) {
   if (doc.bib != undefined && doc.times && doc.times.length > 0 && doc.site_id != undefined) {
     var len = doc.times.length;
-      emit([doc.race_id, -len, -doc.site_id, doc.times[len-1]], doc);
+    for (var i=0; i<len; i=i+1) {
+      emit([doc.race_id, -(i+1), -doc.site_id, doc.times[i]], doc);
+    }
   }
 };
