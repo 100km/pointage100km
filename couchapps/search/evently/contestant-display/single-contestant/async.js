@@ -5,11 +5,16 @@ function(cb, x, data) {
     cb({times:[], infos:data});
     return;
   }
+
+  var race_id = data.race
+  var max_lap = app.races_laps[race_id];
   app.db.view("search/all-times-per-bib", {
-    key: bib,
+    startkey: [bib,null],
+    endkey: [bib,max_lap+1],
+    inclusive_end: false,
     success: function(times) {
       cb({
-        times: times.rows.map(function(row) { return row.value}),
+        times: times,
         infos: data
       });
     }
