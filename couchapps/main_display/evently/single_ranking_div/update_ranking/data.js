@@ -32,7 +32,7 @@ function(data) {
     if (current_contestant === undefined) {
       $.log("skip contestant infos for bib " + current_infos.bib);
     } else {
-      var gender_female = current_contestant.sexe - 1;
+      var gender_female = current_contestant.sex == "F" ? 1 : 0;
 
       item.name       = current_contestant.name;
       item.first_name = current_contestant.first_name;
