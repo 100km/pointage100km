@@ -1,5 +1,6 @@
 function copy_app_data(app, infos) {
   app.sites = infos["sites"]
+  app.races_laps = infos["races_laps"]
   app.sites_nb = app.sites.length
   app.races_names = infos["races_names"]
   app.kms_offset = infos["kms_offset"]

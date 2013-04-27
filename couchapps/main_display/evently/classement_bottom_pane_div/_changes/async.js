@@ -1,11 +1,12 @@
 function(cb) {
   var app = $$(this).app;
-  var site_id = 2; //app.site_id;
 
-  //$.log("site_id " + app.site_id);
+  if (!appinfo_initialized(app)) {
+    cb({site_id: undefined, data: []});
+    return;
+  }
 
-  if (!appinfo_initialized)
-    cb([]);
+  var site_id = app.sites_nb - 1;
 
   // startkey and endkey are inversed because descending is true
   app.db.view("bib_input/recent-checkpoints", {
@@ -25,7 +26,7 @@ function(cb) {
         }
       });
 
-      cb(data.rows);
+      cb({site_id: site_id, data: data.rows});
     }
   });
 };
