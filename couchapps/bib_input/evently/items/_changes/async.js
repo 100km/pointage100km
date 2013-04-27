@@ -1,8 +1,10 @@
 function(cb) {
   var app = $$(this).app;
-  var site_id = app.site_id;
-  if (!appinfo_initialized(app))
+  if (!appinfo_initialized(app)) {
     cb([]);
-  db_recent(app, cb);
+    return;
+  }
+  var site_id = app.site_id;
+  db_recent(app, cb, site_id, 10);
 };
 
