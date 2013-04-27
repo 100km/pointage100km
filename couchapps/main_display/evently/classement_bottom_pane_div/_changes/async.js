@@ -10,6 +10,6 @@ function(cb) {
 
   db_recent(app, function(data) {
     cb({site_id: site_id, data: data});
-  }, site_id, 5);
+  }, site_id, 5, true);
 };
 
