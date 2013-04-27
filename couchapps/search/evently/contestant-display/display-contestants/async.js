@@ -5,13 +5,6 @@ function(cb, wtf, request) {
   if (!isNaN(request_int)) {
     app.db.openDoc(infos_id(request_int), {
       success: function(data) {
-        var res = [{
-          match: "bib",
-          first_name: data.first_name || "",
-          name: data.name || "",
-          bib: data.bib
-        }];
-        res.request = request;
         cb([{value: data}]);
       },
       error: function() {
