@@ -2,9 +2,10 @@
 <table id="hor-zebra">
 <tr>
   <th >Pos</th>
-  <th >Nom</th>
+  <th >Nom d'Équipe</th>
   <th >Kms</th>
   <th >Temps</th>
+  <th >Nom</th>
   <th >Prénom</th>
   <th >Dossard</th>
   <th >CP</th>
@@ -13,22 +14,13 @@
 
   {{#items}}
   <tr {{^is_odd}}class="odd"{{/is_odd}} style="font-weight:{{font_weight}}">
-    <td>{{rank}}</td>
-    <td>{{team_name}}</td>
-    <td>{{kms}}</td>
-    <td>{{time}}</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td rowspan={{rowspan}}>{{rank}}</td>
+    <td rowspan={{rowspan}}>{{team_name}}</td>
+    <td rowspan={{rowspan}}>{{kms}}</td>
+    <td rowspan={{rowspan}}>{{time}}</td>
   </tr>
   {{#members}}
   <tr {{^is_odd}}class="odd"{{/is_odd}} style="font-weight:{{font_weight}}">
-    <td></td>
-    <td></td>
     <td>{{name}}</td>
     <td>{{first_name}}</td>
     <td>{{bib}}</td>
