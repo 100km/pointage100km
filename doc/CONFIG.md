@@ -94,6 +94,7 @@ to keep in mind:
 - When you launch wipe, ALL replicate processes running on checkpoints pcs MUST be stopped prior entering new checkpoints,
   All data entered before the wipe that has not been synchronized to the server can be considered lost (if you really need to get them, they will actually be deleted only when replicate is restarted)
 - When you push a couchapp to be used in the race, you must push all your changes to github, else they will be overwritten (even info.json)
+- main_display loads all the contestants names at the opening of the page, so you MUST reload main_display every time you load new contestants using loader (if you do not, the new constestants will still show in main_display, but their names will be blank)
 
 ##Notes
 
