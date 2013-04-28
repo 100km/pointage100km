@@ -3,7 +3,7 @@ function(data) {
   var app = $$(this).app;
   var site_id = data.site_id;
   data = data.data;
-  if (data[0] == undefined || !appinfo_initialized(app)) {
+  if (data[0] == undefined || !appinfo_initialized_no_site(app)) {
     return {
       item_0 : [],
       items : [],
@@ -38,7 +38,8 @@ function(data) {
   }
 
   return {
-    items : data.map(create_infos)
+    items : data.map(create_infos),
+    site_name: app.sites[site_id]
   }
 
 };

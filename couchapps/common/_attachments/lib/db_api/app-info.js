@@ -9,15 +9,18 @@ function copy_app_data(app, infos) {
   app.cat_names = infos["cat_names"]
 }
 
-function appinfo_initialized(app) {
+function appinfo_initialized_no_site(app) {
   return _.all([
-    "site_id", "sites",
+    "sites",
     "sites_nb", "races_names",
     "kms_offset", "kms_lap",
     "start_times"
   ], function(key) {
     return app[key] != undefined;
   });
+}
+function appinfo_initialized(app) {
+  return appinfo_initialized_no_site && (app.site_id != undefined);
 }
 
 function db_app_data(app, cb) {
