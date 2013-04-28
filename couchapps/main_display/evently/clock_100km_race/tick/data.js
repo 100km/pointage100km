@@ -2,7 +2,7 @@ function(data) {
   var race_id = parseInt(this[0].getAttribute("data-race_id"));
   var app = $$(this).app;
 
-  if (!appinfo_initialized(app))
+  if (!appinfo_initialized_no_site(app))
     return {};
 
   var open_date_offset = app.start_times[race_id];

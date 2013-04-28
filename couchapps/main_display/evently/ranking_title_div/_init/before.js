@@ -28,8 +28,8 @@ function(cb) {
   fork([
     function(cb) { db_get_all_contestants(app, cb) },
     function(cb) {
-      if (!appinfo_initialized(app)) {
-        db_app_data(app, cb);
+      if (!appinfo_initialized_no_site(app)) {
+        db_app_data_no_site(app, cb);
       } else {
         cb();
       }
