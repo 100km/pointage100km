@@ -52,8 +52,9 @@ STEPS:
     - Optional: Do a rapid test of the app:
       - On the developper PC:
         - launch ./wipe
-        - set the start times of the races to now.
+        - set the start times of the races to now + 10 minutes.
         - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
+        - ensure couchdb is running on developper PC.
         - launch replicate 0
         - establish tunnel with mysql server : ssh -L 3106:localhost:3106 SERVERNAME (maybe need to stop local mysql to release port 3106)
         - launch loader with 100km_prod credentials (lookup website code)
@@ -71,14 +72,18 @@ STEPS:
       - launch ./wipe
       - !!Check that the times of the start of the races are correct!! check that everything you are pushing is committed and pushed to git
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
-      - launch replicate with site_id 0
-      - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3106)
-      - launch loader with 100km_prod credentials (lookup website code)
+      - ensure couchdb is running on developper PC.
+      - launch replicate with site_id 0: ./bin/replicate 0
+      - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
+      - launch loader with 100km_prod credentials (lookup website code): bin/loader -u 100km_prod -p XXXXXX -d 100km_prod YEAR
       - (FIXME do we want to to this)update puppet master to distribute etc/network/interfaces with auto ppp0
   - foreach checkpoint pc X:
+    - !!!!!!!FIXME: do something about FF offline mode!!!!!!!
     - launch sudo puppet agent --test
-    - launch ./replicate X; Stick the post-it with X and the name on the pc;
+    - open screen
+    - in screen, launch ./replicate X; Stick the post-it with X and the name on the pc;
       - !! if X == 6, launch replicate --full !!
+    - detach screen
     - put to sleep.
 
 1. @all checkpoints site
@@ -95,6 +100,14 @@ to keep in mind:
   All data entered before the wipe that has not been synchronized to the server can be considered lost (if you really need to get them, they will actually be deleted only when replicate is restarted)
 - When you push a couchapp to be used in the race, you must push all your changes to github, else they will be overwritten (even info.json)
 - main_display loads all the contestants names at the opening of the page, so you MUST reload main_display every time you load new contestants using loader (if you do not, the new constestants will still show in main_display, but their names will be blank)
+
+##Troubleshooting:
+   - If you get
+```
+[Replicator-akka.actor.default-dispatcher-3] ERROR Replicate(akka://Replicator) - deletion failed: java.net.ConnectException: Connection refused
+[Replicator-akka.actor.default-dispatcher-3] ERROR Replicate(akka://Replicator) - cannot create database: java.net.ConnectException: Connection refused
+```
+Did you forget to launch couchdb on the local computer ? Is it setup with admin/admin ?
 
 ##Notes
 
