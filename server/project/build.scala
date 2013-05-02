@@ -35,16 +35,13 @@ object Steenwerck extends Build {
 	scalacOptions ++= Seq("-unchecked", "-deprecation"))
 
   lazy val root =
-    Project("root", file(".")) aggregate(replicate, couchsync, wipe, stats, loader, loaderaccess)
+    Project("root", file(".")) aggregate(replicate, wipe, stats, loader, loaderaccess)
 
   lazy val stats =
     Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape)
 
   lazy val replicate =
     Project("replicate", file("replicate"), settings = common ++ akka ++ scopt) dependsOn(canape, config, steenwerck)
-
-  lazy val couchsync =
-    Project("couchsync", file("couchsync"), settings = common ++ scopt) dependsOn(canape, steenwerck)
 
   lazy val loader =
     Project("loader", file("loader"), settings = common ++ akka ++ mysql ++ scopt) dependsOn(canape)
