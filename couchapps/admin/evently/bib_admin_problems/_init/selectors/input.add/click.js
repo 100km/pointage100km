@@ -27,6 +27,11 @@ function() {
           var miss_km = site_lap_to_kms(app, site_id, lap);
           var time = (next_time - prev_time) / (next_km - prev_km) * (miss_km - prev_km) + prev_time;
 
+          if (isNaN(time)) {
+            alert("Refusing to insert NaN in DB");
+            return;
+          }
+
           db.openDoc('checkpoints-' + site_id + '-' + bib, {
             success: function(checkpoints) {
               checkpoints.times = checkpoints.times || [];
