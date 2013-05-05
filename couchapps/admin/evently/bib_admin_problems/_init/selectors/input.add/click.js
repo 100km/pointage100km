@@ -19,7 +19,7 @@ function() {
             prev_site = parseInt(prev_site);
             prev_km = site_lap_to_kms(app, prev_site, prev_site == 2 ? (lap - 1) : lap);
           } else {
-            prev_time = infos.start_times[constestant.course];
+            prev_time = infos.start_times[constestant.race];
             prev_km = 0;
           }
 
@@ -47,7 +47,7 @@ function() {
               db.saveDoc({
                 _id: 'checkpoints-' + site_id + '-' + bib,
                 bib: bib,
-                race_id: constestant.course,
+                race_id: constestant.race,
                 site_id: site_id,
                 times: [time]
               });
