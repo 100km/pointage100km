@@ -3,6 +3,7 @@ function(data) {
   var current_bib = 0;
   var times = [];
   var deleted_times = [];
+  var artificial_times = [];
   var res = { pbs: [] };
   var pings = [];
 
@@ -20,11 +21,12 @@ function(data) {
     // we can now check for previous bib
     if (bib != current_bib) {
       // Do the check.
-      do_check_times(res, current_bib, times, deleted_times, pings);
+      do_check_times(res, current_bib, times, deleted_times, artificial_times, pings);
 
       // Empty the times table for next bib check.
       times = [];
       deleted_times = [];
+      artificial_times = [];
 
       // Update current bib for the next check.
       current_bib = bib;
@@ -33,12 +35,13 @@ function(data) {
     // Just keep the info for all rows
     times[row.value.site_id] = row.value.times;
     deleted_times[row.value.site_id] = row.value.deleted_times;
+    artificial_times[row.value.site_id] = row.value.artificial_times;
 
     i++;
   }
 
   // Do the check for the last bib.
-  do_check_times(res, current_bib, times, deleted_times, pings);
+  do_check_times(res, current_bib, times, deleted_times, artificial_times, pings);
 
   // Return the data.
   return res;
@@ -52,7 +55,7 @@ function(data) {
  * @param deleted_times: the deleted times for this site.
  * @param pings: the pings for each site.
  */
-function do_check_times(res, bib, times, deleted_times, pings) {
+function do_check_times(res, bib, times, deleted_times, artificial_times, pings) {
   // Check the times.
   // TODO: hardcoded number of sites
   var check = check_times(times, pings, 7);
@@ -76,6 +79,7 @@ function do_check_times(res, bib, times, deleted_times, pings) {
         bib: bib,
         times: get_site_bib_times(check, times, i, bib),
         deleted_times: get_site_bib_deleted_times(deleted_times, i, bib),
+        artificial_times: get_site_bib_artificial_times(artificial_times, i, bib)
       });
     }
   }
@@ -102,6 +106,29 @@ function get_site_bib_deleted_times(deleted_times, i, bib) {
   }
 
   return site_bib_deleted_times;
+}
+
+/**
+ * Get the artificial times for the site and bib.
+ * @param artificial_times: the list of all artificial times (for all sites).
+ * @param i: the site id.
+ * @param bib: the current bib.
+ */
+function get_site_bib_artificial_times(artificial_times, i, bib) {
+  var site_bib_artificial_times = [];
+
+  if (artificial_times[i]) {
+    for (var j = 0; j < artificial_times[i].length; j++) {
+      site_bib_artificial_times.push({
+        val: format_date(new Date(artificial_times[i][j])),
+        lap: j,
+        bib: bib,
+        site_id: i
+      });
+    }
+  }
+
+  return site_bib_artificial_times;
 }
 
 

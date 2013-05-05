@@ -37,6 +37,10 @@ function() {
               checkpoints.times = checkpoints.times || [];
               checkpoints.times.push(time);
               checkpoints.times.sort();
+              checkpoints.artificial_times = checkpoints.artificial_times || [];
+              checkpoints.artificial_times.push(time);
+              checkpoints.artificial_times.sort();
+              checkpoints.artificial_times = _.uniq(checkpoints.artificial_times);
               checkpoints.deleted_times = checkpoints.deleted_times
                 ? $.grep(checkpoints.deleted_times, function(element) { return element != time; })
                 : [];
