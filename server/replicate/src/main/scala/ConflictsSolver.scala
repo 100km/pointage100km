@@ -21,11 +21,13 @@ trait ConflictsSolver {
   private def times(from: mapObject): List[BigInt] = getTimes(from, "times")
 
   private def deletedTimes(from: mapObject): List[BigInt] = getTimes(from, "deleted_times")
+  private def artificialTimes(from: mapObject): List[BigInt] = getTimes(from, "artificial_times")
 
   private def mergeInto(ref: mapObject, conflicting: mapObject): mapObject = {
     val deleted = deletedTimes(ref).union(deletedTimes(conflicting)).distinct.sorted
+    val artificial = artificialTimes(ref).union(artificialTimes(conflicting)).distinct.sorted
     val remaining = times(ref).union(times(conflicting)).diff(deleted).distinct.sorted
-    ref + ("deleted_times" -> toJValue(deleted)) + ("times" -> toJValue(remaining))
+    ref + ("deleted_times" -> toJValue(deleted)) + ("artificial_times" -> toJValue(artificial)) + ("times" -> toJValue(remaining))
   }
 
   private def solveConflicts(db: Database, id: String, revs: List[String]) =

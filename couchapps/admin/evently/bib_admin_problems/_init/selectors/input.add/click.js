@@ -19,7 +19,7 @@ function() {
             prev_site = parseInt(prev_site);
             prev_km = site_lap_to_kms(app, prev_site, prev_site == 2 ? (lap - 1) : lap);
           } else {
-            prev_time = infos.start_times[constestant.course];
+            prev_time = infos.start_times[constestant.race];
             prev_km = 0;
           }
 
@@ -27,11 +27,20 @@ function() {
           var miss_km = site_lap_to_kms(app, site_id, lap);
           var time = (next_time - prev_time) / (next_km - prev_km) * (miss_km - prev_km) + prev_time;
 
+          if (isNaN(time)) {
+            alert("Refusing to insert NaN in DB");
+            return;
+          }
+
           db.openDoc('checkpoints-' + site_id + '-' + bib, {
             success: function(checkpoints) {
               checkpoints.times = checkpoints.times || [];
               checkpoints.times.push(time);
               checkpoints.times.sort();
+              checkpoints.artificial_times = checkpoints.artificial_times || [];
+              checkpoints.artificial_times.push(time);
+              checkpoints.artificial_times.sort();
+              checkpoints.artificial_times = _.uniq(checkpoints.artificial_times);
               checkpoints.deleted_times = checkpoints.deleted_times
                 ? $.grep(checkpoints.deleted_times, function(element) { return element != time; })
                 : [];
@@ -42,7 +51,7 @@ function() {
               db.saveDoc({
                 _id: 'checkpoints-' + site_id + '-' + bib,
                 bib: bib,
-                race_id: constestant.course,
+                race_id: constestant.race,
                 site_id: site_id,
                 times: [time]
               });
