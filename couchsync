@@ -3,6 +3,11 @@
 # Usage: couchsync dbdir
 #
 
+if [ $# != 1 ]; then
+    echo "Usage: couchsync dbdir" >&2
+    exit 1
+fi
+
 #
 # Constants
 #
