@@ -76,6 +76,15 @@ fi
 
 dbdir="$1"
 
+# Check that we can write to the database directory.
+probe=$dbdir/probe$$
+if touch $probe 2> /dev/null; then
+  rm $probe
+else
+  echo "error: $dbdir is not writable" >&2
+  exit 1
+fi
+
 # Remember current directory
 prevdir=$(pwd)
 
