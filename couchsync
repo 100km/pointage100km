@@ -1,10 +1,10 @@
-#! /bin/sh
+#! /usr/bin/bash
 #
 # Usage: couchsync dbdir
 #
 
 if [ $# != 1 ]; then
-    echo "Usage: couchsync dbdir" >&2
+    echo "Usage: couchsync [ <dbdir> | --init ]" >&2
     exit 1
 fi
 
@@ -12,11 +12,17 @@ fi
 # Constants
 #
 couchurl=http://admin:admin@localhost:5984
-dburl=$couchurl/steenwerck100km
 
 #
 # Helper functions
 #
+
+# Send a GET request
+get() {
+    urlfrag="$1"
+    shift
+    curl -s -S -X GET $couchurl/$urlfrag "$@"
+}
 
 # Send a PUT request
 put() {
@@ -50,9 +56,22 @@ step() {
     message "Ne pas enlever la clé USB - $1"
 }
 
+getdbkey() {
+    echo $(get steenwerck100km/_design/common/_show/couchsync/couchsync)
+}
+
 #
 # Main program
 #
+
+if [ x"$1" == x--init ]; then
+  echo 'Put the following content into a "steenwerck" file in the root of an *EMPTY* USB key'
+  echo
+  getdbkey
+  echo
+  echo 'Once again: the key MUST be clean!'
+  exit 0
+fi
 
 dbdir="$1"
 
@@ -67,6 +86,10 @@ done
 # Go into the USB key to block a possible umount.
 usbkeydir=$(dirname /media/*/steenwerck)
 cd "$usbkeydir"
+
+# Check the credentials on the key against the ones in the database
+step "Vérification de la validité de la clé USB"
+if [ x"$(getdbkey)" = x"$(cat steenwerck)" ]; then
 
 # Choose a unique name for the database.
 backupdb=backup-$$-$(date +%s)
@@ -101,12 +124,19 @@ post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
 step "recopie sur la clé"
 mv "$dbdir"/$backupdb.couch backup.couch
 
+endmsg="La clé USB peut être retirée"
+
+else
+
+endmsg="Authentification invalide - retirer la clé USB"
+fi
+
 # Leave USB key directory and umount it.
 cd "$prevdir"
 umount "$usbkeydir"
-message "La clé USB peut être retirée"
+message "$endmsg"
 sleep 3
 message ""
 
 # Restart the program
-$0 "$@"
+exec $0 "$@"

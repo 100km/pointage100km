@@ -59,6 +59,12 @@ object Wipe extends App {
     hubDatabase.insert(cfgDatabase("_security").execute(), "_security").execute()
     println("Inserting configuration document")
     hubDatabase.insert(Map("dbname" -> newName), "configuration").execute()
+    println("Generating random identification for couchsync")
+    val key = new Array[Byte](256)
+    scala.util.Random.nextBytes(key)
+    val md = java.security.MessageDigest.getInstance("SHA-1")
+    val ha = new sun.misc.BASE64Encoder().encode(md.digest(key))
+    hubDatabase.insert(Map("key" -> ha), "couchsync").execute()
     println("All things done")
   } catch {
       case StatusCode(401, _) =>
