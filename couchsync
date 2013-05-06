@@ -65,11 +65,12 @@ getdbkey() {
 #
 
 if [ x"$1" == x--init ]; then
-  echo 'Put the following content into a "steenwerck" file in the root of an *EMPTY* USB key'
+  echo 'Put the following content into a "steenwerck" file in the root of an empty USB key'
   echo
   getdbkey
   echo
-  echo 'Once again: the key MUST be clean!'
+  echo 'It is strongly suggested to ensure that the key is empty, or at least that it'
+  echo 'does not contain a file ending in .couch'
   exit 0
 fi
 
@@ -89,7 +90,11 @@ cd "$usbkeydir"
 
 # Check the credentials on the key against the ones in the database
 step "Vérification de la validité de la clé USB"
-if [ x"$(getdbkey)" = x"$(cat steenwerck)" ]; then
+dbkey="$(getdbkey)"
+if [ x"$dbkey" = x"$(cat steenwerck)" ]; then
+
+  # Choose the backup file name on the key to prevent accidents
+  usbfile=$(echo $dbkey | cut -c 1-16).backup
 
   # Choose a unique name for the database.
   backupdb=backup-$$-$(date +%s)
@@ -97,8 +102,8 @@ if [ x"$(getdbkey)" = x"$(cat steenwerck)" ]; then
   # If the backup already exists on the USB key, copy it in place, otherwise
   # create the database.
   step "copie initiale"
-  if test -f backup.couch; then
-    cp backup.couch "$dbdir"/$backupdb.couch
+  if test -f $usbfile; then
+    cp $usbfile "$dbdir"/$backupdb.couch
   else
     put $backupdb
   fi
@@ -122,7 +127,7 @@ if [ x"$(getdbkey)" = x"$(cat steenwerck)" ]; then
 
   # Copy the temporary database to the USB key and remove it from the filesystem.
   step "recopie sur la clé"
-  mv "$dbdir"/$backupdb.couch backup.couch
+  mv "$dbdir"/$backupdb.couch $usbfile
 
   endmsg="La clé USB peut être retirée"
 
