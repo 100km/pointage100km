@@ -70,7 +70,7 @@ if [ x"$1" == x--init ]; then
   getdbkey
   echo
   echo 'It is strongly suggested to ensure that the key is empty, or at least that it'
-  echo 'does not contain a file ending in .couch'
+  echo 'does not contain a file ending in .backup'
   exit 0
 fi
 
@@ -88,68 +88,69 @@ fi
 # Remember current directory
 prevdir=$(pwd)
 
-# Wait until a USB key appears, mounted under /media with a steenwerck file.
-while test ! -f /media/*/steenwerck; do
-  sleep 1
-done
+while true; do
 
-# Go into the USB key to block a possible umount.
-usbkeydir=$(dirname /media/*/steenwerck)
-cd "$usbkeydir"
+  # Wait until a USB key appears, mounted under /media with a steenwerck file.
+  while test ! -f /media/*/steenwerck; do
+    sleep 1
+  done
 
-# Check the credentials on the key against the ones in the database
-step "Vérification de la validité de la clé USB"
-dbkey="$(getdbkey)"
-if [ x"$dbkey" = x"$(cat steenwerck)" ]; then
+  # Go into the USB key to block a possible umount.
+  usbkeydir=$(dirname /media/*/steenwerck)
+  cd "$usbkeydir"
 
-  # Choose the backup file name on the key to prevent accidents
-  usbfile=$(echo $dbkey | cut -c 1-16).backup
+  # Check the credentials on the key against the ones in the database
+  step "Vérification de la validité de la clé USB"
+  dbkey="$(getdbkey)"
+  if [ x"$dbkey" = x"$(cat steenwerck)" ]; then
 
-  # Choose a unique name for the database.
-  backupdb=backup-$$-$(date +%s)
+    # Choose the backup file name on the key to prevent accidents
+    usbfile=$(echo $dbkey | cut -c 1-16).backup
 
-  # If the backup already exists on the USB key, copy it in place, otherwise
-  # create the database.
-  step "copie initiale"
-  if test -f $usbfile; then
-    cp $usbfile "$dbdir"/$backupdb.couch
+    # Choose a unique name for the database.
+    backupdb=backup-$$-$(date +%s)
+
+    # If the backup already exists on the USB key, copy it in place, otherwise
+    # create the database.
+    step "copie initiale"
+    if test -f $usbfile; then
+      cp $usbfile "$dbdir"/$backupdb.couch
+    else
+      put $backupdb
+    fi
+
+    # Launch the replication in both directions, starting from the database to
+    # the backup to make sure the filter is copied as well. Also, compact as
+    # soon as the first synchronisation is over.
+    step "synchronisation 1/2"
+    replicate steenwerck100km $backupdb
+    step "synchronisation 2/2"
+    replicate $backupdb steenwerck100km
+
+    # Give some time to the compaction.
+    step "compaction de la sauvegarde"
+    post $backupdb/_compact -H "Content-Type: application/json"
+    sleep 5
+
+    # Wait until the replicate is flushed to disk by asking CouchDB to sync.
+    step "écriture sur disque"
+    post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
+
+    # Copy the temporary database to the USB key and remove it from the filesystem.
+    step "recopie sur la clé"
+    mv "$dbdir"/$backupdb.couch $usbfile
+
+    endmsg="La clé USB peut être retirée"
+
   else
-    put $backupdb
+    endmsg="Authentification invalide - retirer la clé USB"
   fi
 
-  # Launch the replication in both directions, starting from the database to
-  # the backup to make sure the filter is copied as well. Also, compact as
-  # soon as the first synchronisation is over.
-  step "synchronisation 1/2"
-  replicate steenwerck100km $backupdb
-  step "synchronisation 2/2"
-  replicate $backupdb steenwerck100km
+  # Leave USB key directory and umount it.
+  cd "$prevdir"
+  umount "$usbkeydir"
+  message "$endmsg"
+  sleep 3
+  message ""
 
-  # Give some time to the compaction.
-  step "compaction de la sauvegarde"
-  post $backupdb/_compact -H "Content-Type: application/json"
-  sleep 5
-
-  # Wait until the replicate is flushed to disk by asking CouchDB to sync.
-  step "écriture sur disque"
-  post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
-
-  # Copy the temporary database to the USB key and remove it from the filesystem.
-  step "recopie sur la clé"
-  mv "$dbdir"/$backupdb.couch $usbfile
-
-  endmsg="La clé USB peut être retirée"
-
-else
-  endmsg="Authentification invalide - retirer la clé USB"
-fi
-
-# Leave USB key directory and umount it.
-cd "$prevdir"
-umount "$usbkeydir"
-message "$endmsg"
-sleep 3
-message ""
-
-# Restart the program
-exec $0 "$@"
+done
