@@ -4,8 +4,8 @@
 #
 
 if [ $# != 1 ]; then
-    echo "Usage: couchsync [ <dbdir> | --init ]" >&2
-    exit 1
+  echo "Usage: couchsync [ <dbdir> | --init ]" >&2
+  exit 1
 fi
 
 #
@@ -19,45 +19,45 @@ couchurl=http://admin:admin@localhost:5984
 
 # Send a GET request
 get() {
-    urlfrag="$1"
-    shift
-    curl -s -S -X GET $couchurl/$urlfrag "$@"
+  urlfrag="$1"
+  shift
+  curl -s -S -X GET $couchurl/$urlfrag "$@"
 }
 
 # Send a PUT request
 put() {
-    urlfrag="$1"
-    shift
-    curl -s -S -X PUT $couchurl/$urlfrag "$@" > /dev/null
+  urlfrag="$1"
+  shift
+  curl -s -S -X PUT $couchurl/$urlfrag "$@" > /dev/null
 }
 
 # Send a POST request
 post() {
-    urlfrag="$1"
-    shift
-    curl -s -S -X POST $couchurl/$urlfrag "$@" > /dev/null
+  urlfrag="$1"
+  shift
+  curl -s -S -X POST $couchurl/$urlfrag "$@" > /dev/null
 }
 
 # Replicate from a database to another one
 replicate() {
-    post _replicate \
-	--data "{\"source\":\"$1\",\"target\":\"$2\",\"filter\":\"common/to-replicate\"}" \
-	-H "Content-Type: application/json"
+  post _replicate \
+    --data "{\"source\":\"$1\",\"target\":\"$2\",\"filter\":\"common/to-replicate\"}" \
+    -H "Content-Type: application/json"
 }
 
 # Send a message
 message() {
-    post steenwerck100km/_design/bib_input/_update/force-update/status \
-	--data-urlencode "json={\"type\":\"status\",\"scope\":\"local\",\"message\":\"$1\"}" \
-	-H "Content-Type: application/x-www-form-urlencoded"
+  post steenwerck100km/_design/bib_input/_update/force-update/status \
+    --data-urlencode "json={\"type\":\"status\",\"scope\":\"local\",\"message\":\"$1\"}" \
+    -H "Content-Type: application/x-www-form-urlencoded"
 }
 
 step() {
-    message "Ne pas enlever la clé USB - $1"
+  message "Ne pas enlever la clé USB - $1"
 }
 
 getdbkey() {
-    echo $(get steenwerck100km/_design/common/_show/couchsync/couchsync)
+  echo $(get steenwerck100km/_design/common/_show/couchsync/couchsync)
 }
 
 #
@@ -80,7 +80,7 @@ prevdir=$(pwd)
 
 # Wait until a USB key appears, mounted under /media with a steenwerck file.
 while test ! -f /media/*/steenwerck; do
-    sleep 1
+  sleep 1
 done
 
 # Go into the USB key to block a possible umount.
@@ -91,44 +91,43 @@ cd "$usbkeydir"
 step "Vérification de la validité de la clé USB"
 if [ x"$(getdbkey)" = x"$(cat steenwerck)" ]; then
 
-# Choose a unique name for the database.
-backupdb=backup-$$-$(date +%s)
+  # Choose a unique name for the database.
+  backupdb=backup-$$-$(date +%s)
 
-# If the backup already exists on the USB key, copy it in place, otherwise
-# create the database.
-step "copie initiale"
-if test -f backup.couch; then
+  # If the backup already exists on the USB key, copy it in place, otherwise
+  # create the database.
+  step "copie initiale"
+  if test -f backup.couch; then
     cp backup.couch "$dbdir"/$backupdb.couch
-else
+  else
     put $backupdb
-fi
+  fi
 
-# Launch the replication in both directions, starting from the database to
-# the backup to make sure the filter is copied as well. Also, compact as
-# soon as the first synchronisation is over.
-step "synchronisation 1/2"
-replicate steenwerck100km $backupdb
-step "synchronisation 2/2"
-replicate $backupdb steenwerck100km
+  # Launch the replication in both directions, starting from the database to
+  # the backup to make sure the filter is copied as well. Also, compact as
+  # soon as the first synchronisation is over.
+  step "synchronisation 1/2"
+  replicate steenwerck100km $backupdb
+  step "synchronisation 2/2"
+  replicate $backupdb steenwerck100km
 
-# Give some time to the compaction.
-step "compaction de la sauvegarde"
-post $backupdb/_compact -H "Content-Type: application/json"
-sleep 5
+  # Give some time to the compaction.
+  step "compaction de la sauvegarde"
+  post $backupdb/_compact -H "Content-Type: application/json"
+  sleep 5
 
-# Wait until the replicate is flushed to disk by asking CouchDB to sync.
-step "écriture sur disque"
-post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
+  # Wait until the replicate is flushed to disk by asking CouchDB to sync.
+  step "écriture sur disque"
+  post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
 
-# Copy the temporary database to the USB key and remove it from the filesystem.
-step "recopie sur la clé"
-mv "$dbdir"/$backupdb.couch backup.couch
+  # Copy the temporary database to the USB key and remove it from the filesystem.
+  step "recopie sur la clé"
+  mv "$dbdir"/$backupdb.couch backup.couch
 
-endmsg="La clé USB peut être retirée"
+  endmsg="La clé USB peut être retirée"
 
 else
-
-endmsg="Authentification invalide - retirer la clé USB"
+  endmsg="Authentification invalide - retirer la clé USB"
 fi
 
 # Leave USB key directory and umount it.
