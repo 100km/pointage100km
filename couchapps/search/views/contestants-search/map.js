@@ -9,6 +9,7 @@ function(doc) {
           match: prop,
           first_name: doc.first_name || "",
           name: doc.name || "",
+          race: doc.race,
           bib: doc.bib
         });
       }
