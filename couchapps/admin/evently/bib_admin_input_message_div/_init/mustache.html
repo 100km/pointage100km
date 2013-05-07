@@ -5,7 +5,12 @@
   <div id="message_len"></div>
   <div style="clear:both;"></div>
   <!-- TODO: Use data in infos JSON -->
-  <label>Destination : <input type="text" name="bib_admin_message_target" size=2 value="-1" maxlength=2> (-1 = tous les sites; 0 = La Croix du Bac; 1 = Le Crampon; 2 = La Salle des Sports)</label>
+  <label>Destination : <select name="bib_admin_message_target">
+  <option value="-1" >tous les sites</option>
+  {{#sites}}
+    <option value="{{site_id}}">{{site_name}}</option>
+  {{/sites}}
+  </select></label>
   <div style="clear:both;"></div>
   <button id="bib_admin_message_send_button" style="font: 14px Arial" value="send_message">Envoyer</button>
   <div id="message_check"></div>
