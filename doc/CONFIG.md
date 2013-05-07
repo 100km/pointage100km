@@ -77,12 +77,14 @@ STEPS:
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): bin/loader -u 100km_prod -p XXXXXX -d 100km_prod YEAR
       - (FIXME do we want to to this)update puppet master to distribute etc/network/interfaces with auto ppp0
+      - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
   - foreach checkpoint pc X:
     - !!!!!!!FIXME: do something about FF offline mode!!!!!!!
     - launch sudo puppet agent --test
     - open screen
     - in screen, launch ./replicate X; Stick the post-it with X and the name on the pc;
       - !! if X == 6, launch replicate --full !!
+    - in screen, launch `sudo ./couchsync /usr/local/var/lib/couchdb`
     - detach screen
     - put to sleep.
 
