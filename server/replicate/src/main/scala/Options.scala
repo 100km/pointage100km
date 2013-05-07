@@ -11,16 +11,18 @@ class Options(name: String) extends OptionParser(name) {
   private var _watchdog: Boolean = true
 
   def compact: Boolean = _compact
-  def fixConflicts: Boolean = _fixConflicts
-  def fixIncomplete: Boolean = _fixIncomplete
-  def obsolete: Boolean = _obsolete
+  def fixConflicts: Boolean = _fixConflicts && !isSlave
+  def fixIncomplete: Boolean = _fixIncomplete && !isSlave
+  def obsolete: Boolean = _obsolete && !isSlave
   def replicate: Boolean = _replicate
   def siteId: Int = _siteId
-  def watchdog: Boolean = _watchdog
+  def watchdog: Boolean = _watchdog && !isSlave
 
   def onChanges = fixConflicts || fixIncomplete || watchdog
   def systematic = compact || replicate
   def initOnly = !onChanges && !systematic
+
+  def isSlave = _siteId == 999
 
   opt("c", "conflicts", "fix conflicts as they appear", { _fixConflicts = true })
   opt("f", "full", "turn on every service", {
@@ -45,7 +47,7 @@ class Options(name: String) extends OptionParser(name) {
   opt("no", "no-obsolete", "do not remove obsolete documents", { _obsolete = false })
   opt("nr", "no-replicate", "start replication", { _replicate = false })
   opt("nw", "no-watchdog", "do not start the watchdog", { _watchdog = false })
-  arg("site_id", "numerical id of the current site", {
+  arg("site_id", "numerical id of the current site (999 for slave mode)", {
     s: String => _siteId = Integer.parseInt(s)
   })
 

@@ -107,8 +107,11 @@ object Replicate extends App {
   }
 
   try {
-    createLocalInfo(localDatabase)
-    log.info("local information created")
+    if (!options.isSlave) {
+      createLocalInfo(localDatabase)
+      log.info("local information created")
+    } else
+      log.info("not creating local information on slave")
     if (options.replicate) {
       log.info("starting initial replication")
       try

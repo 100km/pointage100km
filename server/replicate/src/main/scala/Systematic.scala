@@ -13,7 +13,7 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
   override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =
-    if (Replicate.options.replicate)
+    if (Replicate.options.replicate && !Replicate.options.isSlave)
       withError(local.replicateTo(remote.get, Systematic.replicateOptions).toFuture,
 		"cannot replicate from local to remote")
     else
