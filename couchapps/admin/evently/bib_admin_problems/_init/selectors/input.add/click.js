@@ -53,6 +53,7 @@ function() {
                 bib: bib,
                 race_id: constestant.race,
                 site_id: site_id,
+                artificial_times: [time],
                 times: [time]
               });
               $('#bib_admin_problems').trigger('_init');
