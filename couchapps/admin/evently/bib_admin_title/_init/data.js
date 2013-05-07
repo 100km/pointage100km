@@ -11,9 +11,17 @@ function(datas) {
   // Set title for the document
   document.title = "Administration Pointage";
 
+  var five_minutes_ago = new Date().getTime() - 5*1000*60;
   // Set ping infos
-  for (i=0; i<app.sites_nb; i++)
-    pings[i] = {ping : format_date(new Date(datas[i+1][0])), name : app.sites[i]};
+  for (i=0; i<app.sites_nb; i++) {
+    var ping = datas[i+1][0];
+    var color = ping < five_minutes_ago ? "red" : "green";
+    pings[i] = {
+      ping : format_date(new Date(ping)),
+      name : app.sites[i],
+      color: color
+    };
+  }
 
   return {"pings" : pings};
 };
