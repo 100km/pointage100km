@@ -93,11 +93,18 @@ STEPS:
 1. @all checkpoints site
   - NEEDS: 7 checkpoints PCs, 7 3G keys, 14 pens, paper, site keys;
   - wakeup pc, setup 3G, put 2pen and paper
-  - open pointage couchapp @ localhost:steenwerck100km/_design/bib_input/pointage.html
+  - open pointage couchapp @ localhost:5984/steenwerck100km/_design/bib_input/pointage.html
   - set fullscreen (F11)
   - only at the finish line: setup the display pc :
     - setup LAN to finish line checkpoint PC
-    - open "main_display" couchapp on the database of the checkpoint pc for the site_id 6
+    - ensure couchdb is not running on the display pc:
+      - sudo /usr/local/etc/init.d/couchdb stop
+      - check "ps aux | grep beam" and "ps aux | grep couchdb" returns nothing but the grep process
+      - if necessary "sudo killall -u couchdb", recheck ps aux
+      - in a screen, setup ssh tunel to checkpoint pc: ssh -L 5984:127.0.0.1:5984 steenwerck@steenwerck6
+      - (if there is a problem with dns, lookup the ip address of steenwerck6, the checkpoint pc for the site 6)
+    - open "main_display" couchapp on localhost: http://localhost:5984/steenwerck100km/_design/main_display/classement.html
+    - setup double display and close the lid
 
 to keep in mind:
 - When you launch wipe, ALL replicate processes running on checkpoints pcs MUST be stopped prior entering new checkpoints,
