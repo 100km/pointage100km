@@ -101,8 +101,7 @@ STEPS:
       - sudo /usr/local/etc/init.d/couchdb stop
       - check "ps aux | grep beam" and "ps aux | grep couchdb" returns nothing but the grep process
       - if necessary "sudo killall -u couchdb", recheck ps aux
-      - in a screen, setup ssh tunel to checkpoint pc: ssh -L 5984:127.0.0.1:5984 steenwerck@steenwerck6
-      - (if there is a problem with dns, lookup the ip address of steenwerck6, the checkpoint pc for the site 6)
+      - in a screen, setup ssh tunel to checkpoint pc: ssh -L 5984:127.0.0.1:5984 steenwerck@192.168.42.1
     - open "main_display" couchapp on localhost: http://localhost:5984/steenwerck100km/_design/main_display/classement.html
     - setup double display and close the lid
 
