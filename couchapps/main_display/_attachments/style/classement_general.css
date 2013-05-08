@@ -33,7 +33,7 @@ li {
 /* Clocks */
 #clock_current_time {
   float:left;
-  font-size:1.1em;
+  font-size:1.05em;
   border:4px solid #f70;
   padding-top:0px;
   padding-bottom:0px;
