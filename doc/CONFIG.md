@@ -87,6 +87,7 @@ STEPS:
        - `pon SFR /dev/ttyUSB3` for SFR keys (white) 1, 2, 3, 5
        - `pon SFR /dev/ttyUSB0` for SFR key (white) 4
        - `pon BT /dev/ttyUSB2` for Bouygues Télécom keys (black)
+    - !! if X == 6, launch "sudo ./share-connection" in /home/steenwerck
     - detach screen
     - put to sleep.
 
