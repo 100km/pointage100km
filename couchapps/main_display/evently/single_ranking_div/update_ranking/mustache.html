@@ -3,38 +3,28 @@
 <tr>
   <th >Pos</th>
   <th >Nom</th>
-  <th >Kms</th>
-  <th >Temps</th>
   <th >Prénom</th>
   <th >Dossard</th>
+  <th >Kms</th>
+  <th >Temps</th>
+  <th >Catégorie</th>
   <th >CP</th>
   <th >Ville</th>
+  <th >Specificité</th>
 </tr>
 
   {{#items}}
   <tr {{^is_odd}}class="odd"{{/is_odd}} style="font-weight:{{font_weight}}">
     <td>{{rank}}</td>
-    <td>{{team_name}}</td>
-    <td>{{kms}}</td>
-    <td>{{time}}</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  {{#members}}
-  <tr {{^is_odd}}class="odd"{{/is_odd}} style="font-weight:{{font_weight}}">
-    <td></td>
-    <td></td>
     <td>{{name}}</td>
     <td>{{first_name}}</td>
     <td>{{bib}}</td>
+    <td>{{kms}}</td>
+    <td>{{time}}</td>
+    <td>{{cat_name}}</td>
     <td>{{zipcode}}</td>
     <td>{{city}}</td>
+    <td>{{spec}}</td>
   </tr>
-  {{/members}}
   {{/items}}
 </table>
