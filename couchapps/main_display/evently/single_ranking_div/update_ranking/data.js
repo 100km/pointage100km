@@ -42,6 +42,7 @@ function(data) {
 
       // default font
       item.font_weight = "normal";
+      item.spec = "";
       if (first_cat[gender_female][current_contestant.cat] === undefined) {
         item.font_weight = "bold";
         item.spec = text_gender[gender_female] + item.cat_name;
@@ -50,7 +51,9 @@ function(data) {
 
       if ((item.zipcode == "59181") && (first_steen_found[gender_female] == false)) {
         item.font_weight = "bold";
-        item.spec = item.spec + " et " + text_gender[gender_female] + "Steenwerckois";
+        if (item.spec != "")
+          item.spec = item.spec + " et ";
+        item.spec = item.spec + text_gender[gender_female] + "Steenwerckois";
         first_steen_found[gender_female] = true;
       }
     }
