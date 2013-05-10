@@ -4,6 +4,6 @@
 "kms_lap":31.44,
 "races_names":["", "100 km Open", "100 km Course", "1 tour du soir", "Course des jeunes", "100 km relai", "Marathon"],
 "races_laps": [-1, 3            , 3              , 1               , -1                 , 1             , -1],
-"start_times":[0, 1368032400000, 1368072000000, 1368032400000, 0, 1368032400000],
+"start_times":[0, 1368032400000, 1368072000000, 1368032400000, 0, 1368072000000],
 "cat_names":["Eve.", "Poussins", "Benjamins", "Minimes", "Cadets", "Juniors", "Espoirs", "Séniors", "Vétérans 1", "Vétérans 2", "Vétérans 3", "Vétérans 4"]
 }
