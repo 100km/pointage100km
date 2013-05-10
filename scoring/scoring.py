@@ -175,12 +175,13 @@ all_res = sorted(all_res, key=lambda tup: [tup[3], -tup[5], tup[6]])
 #print
 
 cur_race = 0
+sys.stdout.write("INSERT INTO race_rankings (race_id, bib, position, distance, time) VALUES\n")
 for t in all_res:
   if (cur_race != t[3]):
     position = 0
     cur_race = t[3]
 
   position = position + 1
-  s = "%d,%d,%d,%s,%d:%02d:%02d" % (t[3], t[2], position, t[5], t[7], t[8], t[9])
+  s = "(%d,%d,%d,%s,'%d:%02d:%02d')," % (t[3], t[2], position, t[5], t[7], t[8], t[9])
   sys.stdout.write("%s\n" % s.encode("utf-8"))
   sys.stdout.flush()
