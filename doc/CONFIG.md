@@ -112,6 +112,10 @@ to keep in mind:
 - When you push a couchapp to be used in the race, you must push all your changes to github, else they will be overwritten (even info.json)
 - main_display loads all the contestants names at the opening of the page, so you MUST reload main_display every time you load new contestants using loader (if you do not, the new constestants will still show in main_display, but their names will be blank)
 
+##After the race
+- make sure to fix all problems in http://localhost:5984/steenwerck100km/_design/admin/admin.html
+- go to http://localhost:5984/steenwerck100km/_design/search/_list/times-to-csv/all-times-and-infos?include_docs=true to have the detailed results and put ino MySQL. DOn't forget to change the last `,` into a `;`
+
 ##Troubleshooting:
    - If you get
 ```
