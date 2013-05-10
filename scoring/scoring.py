@@ -3,13 +3,13 @@
 
 import couchdb, sys
 
-starts = {1: 1368032400000, 2: 1368072000000}
+starts = {1: 1368032400000, 2: 1368072000000, 3: 1368032400000, 5: 1368072000000}
 
-offsets = {0: 6.57,
-           1: 11.6,
-           3: 4.16,
-           4: 6.77,
-           5: 11.63,
+offsets = {0: 6570,
+           1: 11600,
+           3: 4160,
+           4: 6770,
+           5: 11630,
            'l': 0}
 
 server = couchdb.client.Server()
@@ -69,7 +69,7 @@ class Contestant:
 
     def distance(self):
         if self.checkpoints:
-            return 5.68 + 15.72 * self.loops + self.offset
+            return 5680 + 15720 * self.loops + self.offset
 
     def set_checkpoints(self, checkpoints):
         self.checkpoints = checkpoints
@@ -97,6 +97,7 @@ class Contestant:
         self.end_time = n[-1][0]
 
 contestants = []
+all_res = []
 
 for bib in range(0, 1000):
     docid = 'contestant-%d' % bib
@@ -131,10 +132,25 @@ for bib in range(0, 1000):
         checkpoints.sort()
         contestant.set_checkpoints(checkpoints)
         distance = contestant.distance()
-        if distance > 100:
+        if distance > 100000:
             sys.stderr.write("Distance for bib %d is %s: %s\n" % (contestant.bib, distance, contestant.checkpoints))
-            distance = 100
+            distance = 100000
         hours, minutes, seconds = contestant.race_hms()
+        all_res.append((
+            contestant.name,
+            contestant.first_name,
+            contestant.bib,
+            contestant.race_id,
+            contestant.sex,
+            distance,
+            contestant.race_time(),
+            hours,
+            minutes,
+            seconds,
+            contestant.city,
+            contestant.zipcode,
+            contestant.category()
+        ))
         s = "%s,%s,%d,%d,%s,%s,%d,%d:%02d:%02d,%s,%s,%s" % (
             contestant.name,
             contestant.first_name,
@@ -149,5 +165,22 @@ for bib in range(0, 1000):
             contestant.city,
             contestant.zipcode,
             contestant.category())
-        sys.stdout.write("%s\n" % s.encode("utf-8"))
-        sys.stdout.flush()
+#        sys.stdout.write("%s\n" % s.encode("utf-8"))
+#        sys.stdout.flush()
+
+
+all_res = sorted(all_res, key=lambda tup: [tup[3], -tup[5], tup[6]])
+
+#print
+#print
+
+cur_race = 0
+for t in all_res:
+  if (cur_race != t[3]):
+    position = 0
+    cur_race = t[3]
+
+  position = position + 1
+  s = "%d,%d,%d,%s,%d:%02d:%02d" % (t[3], t[2], position, t[5], t[7], t[8], t[9])
+  sys.stdout.write("%s\n" % s.encode("utf-8"))
+  sys.stdout.flush()
