@@ -30,7 +30,7 @@ function db_teams_global_ranking(app, cb, race_id) {
 
 function map_contestants(data) {
   var result = {};
-  var birth_date = new Date(data.naissance);
+  var birth_date = new Date(data.birth);
 
   //no error checking: we suppose all contestants have the following info in the database
   result.bib        = data.bib;
