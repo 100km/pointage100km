@@ -15,7 +15,7 @@ offsets = {0: 6570,
 server = couchdb.client.Server()
 db = server['steenwerck100km']
 
-print "nom,prenom,dossard,course,sexe,distance,sec,heures,minutes,seconds,hms,ville,codepostal,categorie"
+sys.stderr.write("This software output SQL statement to put in your database ! Don't forget to change the race_id to the one you have inserted for the new year ! And put a semi colon at the end instead of the coma.\n")
 
 class Contestant:
 
