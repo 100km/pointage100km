@@ -129,37 +129,18 @@ You can visit http://localhost:5984/_utils/ and see that it created a database `
 
 Initialize the site_id with these commands:
 <pre>
-cd pointage100km
-./sbt
+bin/replicate {0,1,2}
 </pre>
 
-wait a bit and enter the following on the prompt
 note: {0,1,2} is the site_id you must choose one among those values
 note2: this needs a .cfg file that is not in the repository
+
+then, to initialise the participant's names :
+For now, you have to know a host with a sql database running with the data. Then use
 <pre>
-project replicate
-run {0,1,2}
+bin/loader -h host -u user -p passwd -d database year
 </pre>
-
-then, to initialise the participant's names with these commands:
-
-<pre>
-./sbt
-</pre>
-
-wait until the prompt, then
-
-<pre>
-project loader
-run initialize_db/100km2012.mdb
-</pre>
-
-
-IS THIS STILL REQUIRED NOW THAT WE USE LOADER?
-Note: you might need to install mdbtools to run mdb2couchdb.bash
-<pre>
-sudo apt-get install mdbtools
-</pre>
+TODO: commit a dump of sample contestants to use and add instructions to load them
 
 # Configure replication options
 
