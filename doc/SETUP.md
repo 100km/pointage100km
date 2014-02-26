@@ -2,7 +2,7 @@
 
 As stated in DATABASE.mb, please install couchDB version 1.2.1
 
-Here are the commands used to install couchDB on Ubuntu 11.10 or 12.04:
+Here are the commands used to install couchDB on Ubuntu 11.10 or 12.04 or Debian 7:
 <pre>
 sudo apt-get install libmozjs185-dev libicu-dev libcurl4-gnutls-dev erlang
 wget http://wwwftp.ciril.fr/pub/apache/couchdb/1.2.1/apache-couchdb-1.2.1.tar.gz
