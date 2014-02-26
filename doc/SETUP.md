@@ -119,7 +119,7 @@ Restart couchdb: `sudo -u couchdb couchdb` (for those who run it on a command li
 #####Method 2:
 Go to http://localhost:5984/_utils/ and look at the **bottom right corner** to create a admin account
 
-Then, just go to `couchapps` directory and run `./pushapps.bash`. The different couchapps are available at http://localhost:5984/steenwerck100km/_design/`couchapp_name`/`page_name`.html
+Then, just go to `couchapps` directory and run `./server-pushapps local`. The different couchapps are available at http://localhost:5984/steenwerck100km/_design/`couchapp_name`/`page_name`.html
 
 For example, bib_input is located at http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html
 
