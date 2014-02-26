@@ -121,7 +121,7 @@ Go to http://localhost:5984/_utils/ and look at the **bottom right corner** to c
 
 Then, just go to `couchapps` directory and run `./server-pushapps local`. The different couchapps are available at http://localhost:5984/steenwerck100km/_design/`couchapp_name`/`page_name`.html
 
-For example, bib_input is located at http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html
+For example, `bib_input` is located at `http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html`
 
 You can visit http://localhost:5984/_utils/ and see that it created a database `steenwerck100km`
 
