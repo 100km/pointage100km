@@ -135,7 +135,7 @@ function test_previous(app, bib, lap, checkpoints, expected) {
   expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var ts = timestamp_at_lap(checkpoints, bib, lap);
-    var data = {bib: bib, lap: lap, ts: ts, course: 1};
+    var data = {bib: bib, lap: lap, ts: ts, race: 1};
     db_previous(app, app.site_id, data, function(data) {
       var bibs = {
         predecessors: data.predecessors.map(function(predecessor) { return predecessor.value.bib }),
@@ -150,7 +150,7 @@ function test_average(app, bib, lap, checkpoints, expected) {
   expect(1);
   with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
     var ts = timestamp_at_lap(checkpoints, bib, lap);
-    var data = {bib: bib, lap: lap, ts: ts, course: 1};
+    var data = {bib: bib, lap: lap, ts: ts, race: 1};
     db_previous(app, app.site_id, data, function(data) {
       var average = data.average;
       deepEqual(average, expected, "Compare the data given to the callback given to db_previous");
