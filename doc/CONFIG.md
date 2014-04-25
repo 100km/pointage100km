@@ -56,7 +56,7 @@ STEPS:
         - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
         - ensure couchdb is running on developper PC.
         - launch replicate 0
-        - establish tunnel with mysql server : ssh -L 3106:localhost:3106 SERVERNAME (maybe need to stop local mysql to release port 3106)
+        - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3106)
         - launch loader with 100km_prod credentials (lookup website code)
         - insert a few bibs
         - set the start times of the races to show the morning race
