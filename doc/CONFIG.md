@@ -52,7 +52,7 @@ STEPS:
     - Optional: Do a rapid test of the app:
       - On the developper PC:
         - launch ./wipe
-        - set the start times of the races to now + 10 minutes
+        - set the start times of the races to now + 10 minutes: in config.json, put the value of `echo $(($(date +%s)*1000 + 10*60*1000))`
         - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
         - ensure couchdb is running on developper PC.
         - launch replicate 0
