@@ -16,7 +16,7 @@ This file is a global file common to all sites. For the following we consider N 
 
 On the main server, you need:
  * couchdb running
- * a database steenwerck-config containing with:
+ * a database steenwerck-config containing:
    * one document with id "configuration", with a field "dbname", containing the database name used by all other programs
    * a security configuration allowing the main user to read this database.
  * a database with the name indicated in "steenwerck-config" database containing the couchapp
@@ -52,7 +52,7 @@ STEPS:
     - Optional: Do a rapid test of the app:
       - On the developper PC:
         - launch ./wipe
-        - set the start times of the races to now + 10 minutes.
+        - set the start times of the races to now + 10 minutes
         - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
         - ensure couchdb is running on developper PC.
         - launch replicate 0
@@ -62,6 +62,7 @@ STEPS:
         - set the start times of the races to show the morning race
         - insert a few bibs
       - On the display PC
+        - launch sudo rm -rf /var/lib/puppet
         - launch sudo puppet agent --test
         - launch replicate 0
         - see that bibs appear in localhost:steenwerck100km/_design/bib_input/pointage.html
@@ -78,6 +79,7 @@ STEPS:
       - launch loader with 100km_prod credentials (lookup website code): bin/loader -u 100km_prod -p XXXXXX -d 100km_prod YEAR
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
   - foreach checkpoint pc X:
+    - launch sudo rm -rf /var/lib/puppet
     - launch sudo puppet agent --test
     - open screen
     - in screen, launch ./replicate X; Stick the post-it with X and the name on the pc;
