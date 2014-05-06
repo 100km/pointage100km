@@ -114,7 +114,12 @@ while true; do
     # create the database.
     step "copie initiale"
     if test -f $usbfile; then
-      cp $usbfile "$dbdir"/$backupdb.couch
+      full_backupdb="$dbdir"/$backupdb.couch
+      cp $usbfile $full_backupdb
+      user=$(stat -c "%U" "$dbdir")
+      group=$(stat -c "%G" "$dbdir")
+      chown "$user:$group" "$full_backupdb"
+      chmod 664 "$full_backupdb"
     else
       put $backupdb
     fi
