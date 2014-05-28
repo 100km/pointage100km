@@ -32,12 +32,14 @@ On each client, you need:
 ##steenwerck.cfg
 
 This file is not commited on git. It is a file containing the information to log on the server couchdb.
+```
 [master]
 host = <server hosting the couchdb>
 port = <port to reach couchdb>
 dbname = <LOCAL database name>
 user = <user used for server connection>
 password = <password used for server connection>
+```
 
 ##Launching a race
 If a bib has been input in the bib_input couchapp before the contestant had been transfered from the website db to couchdb, (for example you forgot to run bin/loader, or a contestant registered after the begining of the race), you need to have a bin/replicate launched with the -I option to fix the checkpoint document
