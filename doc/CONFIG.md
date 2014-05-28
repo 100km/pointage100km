@@ -73,7 +73,8 @@ STEPS:
         - polish pixel accurate display :-)
     - Really start the race:
       - launch ./wipe
-      - !!Check that the times of the start of the races are correct!! check that everything you are pushing is committed and pushed to git
+      - !!Check that the times of the start of the races are correct `echo $(($(date +%s --date="29 May 2014 06:00:00")*1000 + 15*60*1000))` !!
+      - check that everything you are couchapp_pushing is committed and pushed to git (infos.json, JS, HTML, ...)
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
       - ensure couchdb is running on developper PC.
       - launch replicate with site_id 0: ./bin/replicate 0
