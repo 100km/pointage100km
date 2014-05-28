@@ -67,7 +67,7 @@ STEPS:
         - launch sudo rm -rf /var/lib/puppet
         - launch sudo puppet agent --test
         - launch replicate 0
-        - see that bibs appear in localhost:steenwerck100km/_design/bib_input/pointage.html
+        - see that bibs appear in http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html
         - see that rankings appear without morning race @ http://localhost:5984/steenwerck100km/_design/main_display/classement.html
         - see that rankings appear with morning race @ http://localhost:5984/steenwerck100km/_design/main_display/classement.html
         - polish pixel accurate display :-)
