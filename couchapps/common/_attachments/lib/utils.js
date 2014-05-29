@@ -338,8 +338,6 @@ function cat_from_year(year, is_woman) {
     return 9; // veteran 2
   else if (age <= 69)
     return 10; // veteran 3
-  else if (is_woman)
-    return 10; // only veteran 3 for women
   else
     return 11; // veteran 4
 }
