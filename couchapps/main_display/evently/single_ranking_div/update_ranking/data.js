@@ -4,13 +4,18 @@ function(data) {
   var first_cat = [[], []];
   var first_steen_found = [false, false];
   var i = 0;
+  var current_rank = 0;
   var app = $$(this).app;
-
+  var handi_ranking = app.handi_ranking === true;
   var race_id = data.race_id;
   var start_time = app.start_times[race_id];
   var text_gender = ["Premier homme ", "Première femme "];
   p.race_id = race_id;
   p.race_name = app.races_names[race_id];
+  if (handi_ranking)
+    p.handi_name = " HANDISPORT";
+  else
+    p.handi_name = "";
 
   if (! data.data.rows[0])
     return p;
@@ -21,10 +26,16 @@ function(data) {
     var current_contestant = app.contestants[current_infos.bib];
     var lap = - data.data.rows[0].contestants[i].key[1];
 
-    // $.log("current_infos = " + JSON.stringify(current_infos));
-    item.is_odd = i%2;
     i++;
-    item.rank    = i;
+
+    if (current_contestant.handisport ^ handi_ranking) {
+      continue;
+    }
+
+    // $.log("current_infos = " + JSON.stringify(current_infos));
+    item.is_odd = current_rank%2;
+    current_rank++;
+    item.rank    = current_rank;
     item.bib     = current_infos.bib;
     item.kms     = site_lap_to_kms(app, current_infos.site_id, lap)
     item.time    = int_to_datestring(current_infos.times[lap-1] - start_time);
