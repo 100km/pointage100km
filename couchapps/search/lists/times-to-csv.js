@@ -12,7 +12,7 @@ function(head, req) {
   row = getRow()
   var start_times = row.value.start_times;
 
-  send("INSERT INTO race_checkpoint_times (race_description, bib, time, checkpoint_index) VALUES\r\n");
+  send("INSERT INTO `race_checkpoint_times` (`race_description`, `bib`, `time`, `checkpoint_index`) VALUES\r\n");
   while(row = getRow()) {
     // We get the race of the bib
     if (! row.doc) {
@@ -43,7 +43,7 @@ function(head, req) {
         lap = 2;
 
       // race_description is hard-coded
-      send("(" + [52 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
+      send("(" + [56 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
     }
   }
 
