@@ -3,7 +3,7 @@
 
 import couchdb, sys
 
-starts = {1: 1368032400000, 2: 1368072000000, 3: 1368032400000, 5: 1368072000000}
+starts = {1: 1401296400000, 2: 1401336000000, 3: 1401296400000, 5: 1401336000000}
 
 offsets = {0: 6570,
            1: 11600,
@@ -32,7 +32,7 @@ class Contestant:
         self.checkpoints = []
 
     def category(self):
-        age = 2013 - int(self.birth[:4])
+        age = 2014 - int(self.birth[:4])
         if age <= 9:
             return "eveil"
         elif age <= 11:
@@ -53,7 +53,7 @@ class Contestant:
             return "veteran 1"
         elif age <= 59:
             return "veteran 2"
-        elif age <= 69 or self.is_woman:
+        elif age <= 69:
             return "veteran 3"
         else:
             return "veteran 4"
@@ -175,7 +175,7 @@ all_res = sorted(all_res, key=lambda tup: [tup[3], -tup[5], tup[6]])
 #print
 
 cur_race = 0
-sys.stdout.write("INSERT INTO race_rankings (race_id, bib, position, distance, time) VALUES\n")
+sys.stdout.write("INSERT INTO `race_rankings` (`race_id`, `bib`, `position`, `distance`, `time`) VALUES\n")
 for t in all_res:
   if (cur_race != t[3]):
     position = 0
