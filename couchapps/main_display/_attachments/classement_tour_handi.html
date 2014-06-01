@@ -14,6 +14,7 @@
 
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
+      app.handi_ranking=true;
       $("#ranking_title_div").evently("ranking_title_div", app);
       $("#single_ranking_div").evently("single_ranking_div", app);
       $.evently.connect("#ranking_title_div", "#single_ranking_div", ["update_ranking"]);
