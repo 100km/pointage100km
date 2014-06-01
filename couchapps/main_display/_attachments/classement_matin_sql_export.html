@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="style/classement_general.css" type="text/css"/>
   </head>
   <body>
-    <div id="ranking_title_div" data-race_id=3></div>
-    <div id="single_ranking_div" data-race_id=3></div>
+    <div id="ranking_title_div" data-race_id=2></div>
+    <div id="single_ranking_div" data-race_id=2></div>
   </body>
   <script src="../common/vendor/couchapp/loader.js"></script>
 
   <script type="text/javascript" charset="utf-8">
     $.couch.app(function(app) {
+      app.sql_export=true;
       $("#ranking_title_div").evently("ranking_title_div", app);
       $("#single_ranking_div").evently("single_ranking_div", app);
       $.evently.connect("#ranking_title_div", "#single_ranking_div", ["update_ranking"]);
