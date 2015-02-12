@@ -1,16 +1,38 @@
 #! /bin/sh
 #
 
+start_couchdb() {
+  while true; do
+    /entrypoint.sh couchdb
+    echo CouchDB crashed 2>&1
+    sleep 5
+  done
+}
+
+start_replicate() {
+  cd /home/steenwerck
+  while true; do
+     gosu steenwerck pointage100km/bin/replicate "$@"
+     if [ $? = 0 ]; then
+       echo Replicate exited with status 0
+       exit 0
+     fi
+     echo Replicate crashed 2>&1
+     sleep 5
+  done
+}
+
 if [ "$1" = replicate ]; then
   shift
   echo Starting couchdb and replicate "$@"
-  /entrypoint.sh couchdb &
-  cd /home/steenwerck && exec gosu steenwerck pointage100km/bin/replicate "$@"
+  start_couchdb &
+  sleep 5
+  start_replicate "$@"
 fi
 
 if [ "$1" = couchdb ]; then
   echo Starting couchdb
-  exec /entrypoint.sh couchdb
+  start_couchdb
 fi
 
 exec "$@"
