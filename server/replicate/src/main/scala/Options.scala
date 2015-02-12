@@ -35,7 +35,7 @@ object Options {
       po("fix incomplete checkpoints", fixIncomplete, defaults.fixIncomplete)
       po("remove obsolete documents", obsolete, defaults.obsolete)
       po("run replication service", replicate, defaults.replicate)
-      po("run watchdog service", watchdog, defaults.watchdog)
+      po("run watchdog (ping) service", watchdog, defaults.watchdog)
       System.out.println("Computed values:")
       po("slave only", isSlave, defaults.isSlave)
       po("check onChanges feed", onChanges, defaults.onChanges)
@@ -68,7 +68,7 @@ object Options {
       opt[Unit]("no-replicate") abbr("nr") text("do not start replication") action { (_, c) =>
 	c.copy(replicate = false)
       }
-      opt[Unit]("no-watchdog") abbr("nw") text("do not start watchdog") action { (_, c) =>
+      opt[Unit]("no-watchdog") abbr("nw") text("do not start watchdog (ping)") action { (_, c) =>
 	c.copy(_watchdog = false)
       }
       arg[Int]("<site-id>") text("numerical id of the current site (999 for slave mode)") action { (x, c) =>
