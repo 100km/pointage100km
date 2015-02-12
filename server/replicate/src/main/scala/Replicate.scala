@@ -38,9 +38,11 @@ object Replicate extends App {
 
   def ping(db: Database): Future[JValue] = steenwerck.ping(db, options.siteId).toFuture
 
-  private val localCouch =
-    new NioCouch(auth = Some(config.readOpt[String]("local.user").getOrElse("admin"),
-			     config.readOpt[String]("local.password").getOrElse("admin")))
+  private val localAuth = config.readOpt[String]("local.user").flatMap(user =>
+    config.readOpt[String]("local.password").map(password => (user, password)))
+
+  private val localCouch = new NioCouch(auth = localAuth)
+
   private val localDatabase =
     localCouch.db(config.readOpt[String]("local.dbname").getOrElse("steenwerck100km"))
 
