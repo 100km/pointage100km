@@ -1,4 +1,4 @@
-FROM klaemo/couchdb:1.6.1
+FROM rfc1149/couchdb:1.6.1
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
 RUN apt-get update
