@@ -13,7 +13,7 @@ object Steenwerck extends Build {
         resolvers += typesafeRepo)
 
   lazy val assemble =
-    Seq(jarName in assembly := "../../../bin/" + name.value + ".jar",
+    Seq(jarName in assembly := "../../../../bin/" + name.value + ".jar",
 	test in assembly := {})
 
   lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")
