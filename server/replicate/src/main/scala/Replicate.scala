@@ -1,18 +1,15 @@
 import akka.actor.{DeadLetterActorRef, Props}
-import akka.dispatch.Future
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import scala.concurrent.Future
 import steenwerck._
 
 object Replicate extends App {
 
   private implicit val formats = DefaultFormats
 
-  val options = new Options("replicate")
-
-  if (!options.parse(args))
-    sys.exit(1)
+  val options = Options.parse(args) getOrElse { sys.exit(1) }
 
   import Global._
 
@@ -29,7 +26,7 @@ object Replicate extends App {
 	try {
 	  forceUpdate(db, name, localInfo).execute()
 	} catch {
-	  case t =>
+	  case t: Exception =>
 	    log.warning("cannot force-update, hoping it is right: " + t)
 	}
     }
@@ -62,7 +59,7 @@ object Replicate extends App {
 	  dbName = cfgDatabase.map(_("configuration").execute()("dbname").extract[String])
 	  dbName.foreach(log.info("server database name is {}", _))
 	} catch {
-	  case t =>
+	  case t: Exception =>
 	    log.error("cannot retrieve database name: " + t)
 	    Thread.sleep(5000)
 	}
@@ -75,7 +72,7 @@ object Replicate extends App {
     try {
       Some(localDatabase("configuration").execute()("dbname").extract[String])
     } catch {
-      case t =>
+      case t: Exception =>
 	log.info("cannot retrieve previous database name: " + t)
 	None
     }
@@ -88,7 +85,7 @@ object Replicate extends App {
       try {
 	localDatabase.delete().execute()
       } catch {
-	case t =>
+	case t: Exception =>
 	  log.error("deletion failed: " + t)
       }
     }
@@ -100,7 +97,7 @@ object Replicate extends App {
   } catch {
     case StatusCode(412, _) =>
       log.info("database already exists")
-    case t =>
+    case t: Exception =>
       log.error("cannot create database: " + t)
       localCouch.releaseExternalResources()
       exit(1)
@@ -120,12 +117,12 @@ object Replicate extends App {
 	  log.info("initial replication done")
 	}
       catch {
-	case t =>
+	case t: Exception =>
 	  log.error("initial replication failed: " + t)
       }
     }
   } catch {
-    case t =>
+    case t: Exception =>
       log.error("cannot create local information: " + t)
       exit(1)
   }

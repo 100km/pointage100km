@@ -1,26 +1,24 @@
 import sbt._
 import Keys._
-import sbtassembly.Plugin._
-import AssemblyKeys._
+import sbtassembly.AssemblyPlugin.autoImport._
 
 object Steenwerck extends Build {
 
   lazy val typesafeRepo = "Typesafe repository (releases)" at "http://repo.typesafe.com/typesafe/releases/"
 
   lazy val akka =
-    Seq(libraryDependencies ++= Seq("com.typesafe.akka" % "akka-actor" % "2.0",
-				    "com.typesafe.akka" % "akka-slf4j" % "2.0",
+    Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.3.9",
+				    "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
 				    "ch.qos.logback" % "logback-classic" % "1.0.9" % "compile"),
         resolvers += typesafeRepo)
 
   lazy val assemble =
-    assemblySettings ++
-    Seq(jarName in assembly <<= name(n => ("../../../bin/" + n + ".jar").toString),
+    Seq(jarName in assembly := "../../../bin/" + name.value + ".jar",
 	test in assembly := {})
 
-  lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "1.1.3")
+  lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")
 
-  lazy val json = Seq(libraryDependencies += "net.liftweb" %% "lift-json" % "2.4")
+  lazy val json = Seq(libraryDependencies += "net.liftweb" %% "lift-json" % "2.6")
 
   lazy val jackcess =
     Seq(libraryDependencies += "com.healthmarketscience.jackcess" % "jackcess" % "1.2.9")
@@ -31,8 +29,8 @@ object Steenwerck extends Build {
 				    "mysql" % "mysql-connector-java" % "5.1.22"))
 
   lazy val common = Project.defaultSettings ++ assemble ++
-    Seq(scalaVersion := "2.9.1",
-	scalacOptions ++= Seq("-unchecked", "-deprecation"))
+    Seq(scalaVersion := "2.11.5",
+	scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"))
 
   lazy val root =
     Project("root", file(".")) aggregate(replicate, wipe, stats, loader, loaderaccess)

@@ -1,10 +1,10 @@
-import akka.dispatch.{Await, Future, Promise}
 import akka.event.Logging
-import akka.util.Duration
-import akka.util.duration._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import Global._
 
@@ -17,14 +17,14 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
       withError(local.replicateTo(remote.get, Systematic.replicateOptions).toFuture,
 		"cannot replicate from local to remote")
     else
-      Promise.successful(null)
+     Future.successful(null)
 
   private[this] def remoteToLocalReplication =
     if (Replicate.options.replicate)
       withError(local.replicateFrom(remote.get, Systematic.replicateOptions).toFuture,
 		"cannot replicate from remote to local")
     else
-      Promise.successful(null)
+      Future.successful(null)
 
   private[this] var noCompactionSince: Int = 0
 
@@ -33,7 +33,7 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
     if (noCompactionSince == 0 && Replicate.options.compact)
       local.compact().toFuture
     else
-      Promise.successful(null)
+      Future.successful(null)
   }
 
   private[this] def futures =

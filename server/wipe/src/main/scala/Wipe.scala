@@ -8,27 +8,23 @@ object Wipe extends App {
 
   import implicits._
 
-  val system = ActorSystem()
-  implicit val dispatcher = system.dispatcher
+  private case class Options(login: String = null, password: String = null)
 
-  private object Options {
-    var login: String = _
-    var password: String = _
+  private val parser = new OptionParser[Options]("wipe") {
+    help("help") text ("show this help")
+    arg[String]("login") text("login to access the master database") action { (x, c) => c.copy(login = x) }
+    arg[String]("password") text("pasword to access the master database") action { (x, c) => c.copy(password = x) }
   }
 
-  private val parser = new OptionParser("wipe") {
-    help("h", "help", "show this help")
-    arg("login", "login to access the master database", { s: String => Options.login = s })
-    arg("password", "pasword to access the master database", { s: String => Options.password = s })
-  }
+  private val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
 
-  if (!parser.parse(args))
-    sys.exit(1)
+  private val system = ActorSystem()
+  private implicit val dispatcher = system.dispatcher
 
   val config = Config("steenwerck.cfg", "../steenwerck.cfg", "../../steenwerck.cfg")
   val hubCouch = new NioCouch(config.read[String]("master.host"),
 			      config.read[Int]("master.port"),
-			      Some(Options.login, Options.password))
+			      Some(options.login, options.password))
 
   val cfgDatabase = hubCouch.db("steenwerck-config")
 
@@ -40,11 +36,11 @@ object Wipe extends App {
     cfgDatabase.insert(oldNameDoc + ("dbname" -> newName)).execute()
     newName
   } catch {
-    case t =>
+    case _: Exception =>
       try {
 	cfgDatabase.create()
       } catch {
-	case e =>
+	case e: Exception =>
 	  println("Cannot create configuration database: " + e)
       }
       cfgDatabase.insert(Map("dbname" -> "steenwerck-0"), "configuration").execute()
@@ -69,7 +65,7 @@ object Wipe extends App {
   } catch {
       case StatusCode(401, _) =>
 	println("You are not authorized to perform this operation")
-      case t =>
+      case t: Exception =>
 	println("Exception caught: " + t)
   }
 

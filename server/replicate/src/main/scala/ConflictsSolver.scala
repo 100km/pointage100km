@@ -1,9 +1,9 @@
-import akka.dispatch.Future
 import akka.event.LoggingAdapter
 import net.liftweb.json._
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import net.rfc1149.canape.util._
+import scala.concurrent.Future
 
 import Global._
 
@@ -33,15 +33,17 @@ trait ConflictsSolver {
   private def solveConflicts(db: Database, id: String, revs: List[String]) =
     getRevs(db, id, revs).toFuture flatMap {
       docs =>
-        (solve(db, docs) {
+        val f = (solve(db, docs) {
           docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _))
         }).toFuture map {
           result =>
             log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
             result
-        } onFailure {
+        }
+	f onFailure {
           case e: Exception => log.warning("unable to solve conflicts for " + id + " (" + revs.size + " documents): " + e)
         }
+	f
     }
 
   def fixConflictingCheckpoints(db: Database) =

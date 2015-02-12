@@ -1,6 +1,6 @@
 package net.rfc1149.canape
 
-import akka.dispatch.ExecutionContext
+import scala.concurrent.ExecutionContext
 
 class NioCouch(host: String = "localhost",
                port: Int = 5984,

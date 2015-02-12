@@ -1,9 +1,9 @@
-import akka.dispatch.{Await, Future}
 import akka.event.Logging
-import akka.util.Duration
-import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import Global._
 
@@ -22,9 +22,11 @@ class LongShot(db: Database) extends PeriodicTask(300 seconds) with LoggingError
       } }
     }
     docs flatMap { toDelete =>
-      Future.sequence(toDelete map { db.delete(_).toFuture }) onSuccess {
+      val future = Future.sequence(toDelete map { db.delete(_).toFuture })
+      future onSuccess {
         case _ => if (!toDelete.isEmpty) log.info("succesfully deleted obsolete transient documents (" + toDelete.size + ")")
       }
+      future
     }
   }
 

@@ -1,4 +1,3 @@
-import akka.dispatch.Future
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._

@@ -1,54 +1,57 @@
 import scopt.OptionParser
 
-class Options(name: String) extends OptionParser(name) {
+object Options {
 
-  private var _compact: Boolean = true
-  private var _fixConflicts: Boolean = false
-  private var _fixIncomplete: Boolean = false
-  private var _obsolete: Boolean = true
-  private var _replicate: Boolean = true
-  private var _siteId: Int = _
-  private var _watchdog: Boolean = true
+  case class Config(compact: Boolean = true,
+		    _fixConflicts: Boolean = false,
+		    _fixIncomplete: Boolean = false,
+		    _obsolete: Boolean = true,
+		    replicate: Boolean = true,
+		    siteId: Int = -1,
+		    _watchdog: Boolean = true) {
 
-  def compact: Boolean = _compact
-  def fixConflicts: Boolean = _fixConflicts && !isSlave
-  def fixIncomplete: Boolean = _fixIncomplete && !isSlave
-  def obsolete: Boolean = _obsolete && !isSlave
-  def replicate: Boolean = _replicate
-  def siteId: Int = _siteId
-  def watchdog: Boolean = _watchdog && !isSlave
+    def fixConflicts: Boolean = _fixConflicts && !isSlave
+    def fixIncomplete: Boolean = _fixIncomplete && !isSlave
+    def obsolete: Boolean = _obsolete && !isSlave
+    def watchdog: Boolean = _watchdog && !isSlave
 
-  def onChanges = fixConflicts || fixIncomplete || watchdog
-  def systematic = compact || replicate
-  def initOnly = !onChanges && !systematic
+    def onChanges = fixConflicts || fixIncomplete || watchdog
+    def systematic = compact || replicate
+    def initOnly = !onChanges && !systematic
 
-  def isSlave = _siteId == 999
+    def isSlave = siteId == 999
+  }
 
-  opt("c", "conflicts", "fix conflicts as they appear", { _fixConflicts = true })
-  opt("f", "full", "turn on every service", {
-    _compact = true
-    _fixConflicts = true
-    _fixIncomplete = true
-    _obsolete = true
-    _replicate = true
-    _watchdog = true
-  })
-  help("h", "help", "show this help")
-  opt("i", "init-only", "turn off every service", {
-    _compact = false
-    _fixConflicts = false
-    _fixIncomplete = false
-    _obsolete = false
-    _replicate = false
-    _watchdog = false
-  })
-  opt("I", "incomplete", "fix incomplete checkpoints", { _fixIncomplete = true })
-  opt("nc", "no-compact", "compact database regularly", { _compact = false })
-  opt("no", "no-obsolete", "do not remove obsolete documents", { _obsolete = false })
-  opt("nr", "no-replicate", "start replication", { _replicate = false })
-  opt("nw", "no-watchdog", "do not start the watchdog", { _watchdog = false })
-  arg("site_id", "numerical id of the current site (999 for slave mode)", {
-    s: String => _siteId = Integer.parseInt(s)
-  })
+  def parse(args: Array[String]) = {
+    val parser = new OptionParser[Config]("replicate") {
+      opt[Unit]('c', "conflicts") text("fix conflicts as they appear") action { (_, c) =>
+	c.copy(_fixConflicts = true) }
+      opt[Unit]('f', "full") text("turn on every service") action { (_, c) =>
+	c.copy(compact = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
+	       replicate = true, _watchdog = true) }
+      help("help") text("show this help")
+      opt[Unit]('i', "init-only") text("turn off every service") action { (_, c) =>
+	c.copy(compact = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
+	       replicate = false, _watchdog = false) }
+      opt[Unit]('I', "incomplete") text("fix incomplete checkpoints") action { (_, c) =>
+	c.copy(_fixIncomplete = true) }
+      opt[Unit]("no-compact") abbr("nc") text("do not compact database regularly") action { (_, c) =>
+	c.copy(compact = false)
+      }
+      opt[Unit]("no-obsolete") abbr("no") text("do not remove obsolete documents") action { (_, c) =>
+	c.copy(_obsolete = false)
+      }
+      opt[Unit]("no-replicate") abbr("nr") text("do not start replication") action { (_, c) =>
+	c.copy(replicate = false)
+      }
+      opt[Unit]("no-watchdog") abbr("nw") text("do not start watchdog") action { (_, c) =>
+	c.copy(_watchdog = false)
+      }
+      arg[Int]("<site-id>") text("numerical id of the current site (999 for slave mode)") action { (x, c) =>
+	c.copy(siteId = x)
+      }
+    }
+    parser.parse(args, Config())
+  }
 
 }

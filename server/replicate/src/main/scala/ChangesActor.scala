@@ -1,9 +1,10 @@
 import akka.actor.{Actor, ActorRef, FSM, Status}
 import akka.event.Logging
 import akka.pattern._
-import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import Global._
 

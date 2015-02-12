@@ -11,7 +11,7 @@ class Config(file: File) extends Ini(file) {
 
   def get[T](section: String, key: String)(implicit m: Manifest[T]): Option[T] =
     getSection(section) flatMap {
-      _.get(key, 0, m.erasure) match {
+      _.get(key, 0, m.runtimeClass) match {
 	case null => None
 	case v    => Some(v.asInstanceOf[T])
       }

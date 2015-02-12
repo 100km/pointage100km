@@ -2,16 +2,27 @@ import akka.actor.ActorSystem
 import net.liftweb.json._
 import net.rfc1149.canape._
 import net.rfc1149.canape.implicits._
+import scopt.OptionParser
 import scala.util.Random.nextInt
 
 object Stats extends App {
 
-  val options = new Options("stats")
+  private case class Config(siteId: Int = -1, delay: Int = 0, count: Int = 100)
 
-  if (!options.parse(args))
-    sys.exit(1)
+  private val parser = new scopt.OptionParser[Config]("stats") {
+    opt[Int]('c', "count") action { (x, c) =>
+      c.copy(count = x) } text("Number of checkpoints to insert (default: 100)")
+    opt[Int]('d', "delay") action { (x, c) =>
+      c.copy(delay = x) } text("Wait for delay in ms between updates (default: 0)")
+    opt[Int]('s', "site_id") action { (x, c) =>
+      c.copy(siteId = x) } text("Numerical id of the current site (default: random [0-2])")
+    help("help") text("print this usage")
+  }
 
-  private implicit val system = ActorSystem()
+  private val options = parser.parse(args, Config()) getOrElse { sys.exit(1) }
+
+  private val system = ActorSystem()
+  private implicit val dispatcher = system.dispatcher
 
   private implicit val formats = DefaultFormats
 

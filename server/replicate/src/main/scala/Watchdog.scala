@@ -1,8 +1,9 @@
 import akka.actor.{Actor, FSM}
 import akka.event.Logging
-import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class Watchdog(db: Database) extends Actor with FSM[Int, Unit] with LoggingError {
 

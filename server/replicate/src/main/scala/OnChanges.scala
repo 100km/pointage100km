@@ -1,12 +1,12 @@
 import akka.actor.{Actor, Cancellable, Props}
-import akka.dispatch.{Await, Future, Promise}
 import akka.event.Logging
-import akka.util.Deadline._
-import akka.util.Duration
-import akka.util.duration._
 import net.liftweb.json._
 import net.rfc1149.canape._
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
+import Deadline._
 import Global._
 
 class OnChanges(local: Database)
@@ -16,10 +16,12 @@ class OnChanges(local: Database)
 
   private[this] val watchdog = context.actorOf(Props(new Watchdog(local)), "watchdog")
 
-  private[this] def withError[T](future: Future[T], message: String): Future[Any] =
+  private[this] def withError[T](future: Future[T], message: String): Future[Any] = {
     future onFailure {
       case e: Exception => log.warning(message + ": " + e)
     }
+    future
+  }
 
   private[this] def incompleteCheckpoints =
     withError(fixIncompleteCheckpoints(local),
@@ -31,9 +33,9 @@ class OnChanges(local: Database)
 
   private[this] def futures = {
     val fc = if (Replicate.options.fixConflicts) conflictingCheckpoints
-	     else Promise.successful(true)
+	     else Future.successful(true)
     val fi = if (Replicate.options.fixIncomplete) incompleteCheckpoints
-	     else Promise.successful(true)
+	     else Future.successful(true)
     Future.sequence(List(fc, fi))
   }
 

@@ -1,6 +1,5 @@
 package net.rfc1149.canape
 
-import akka.dispatch.ExecutionContext
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.Serialization.write
@@ -8,6 +7,7 @@ import org.jboss.netty.buffer._
 import org.jboss.netty.handler.codec.base64.Base64
 import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.util.CharsetUtil
+import scala.concurrent.ExecutionContext
 
 /**
  * Connexion to a CouchDB server.

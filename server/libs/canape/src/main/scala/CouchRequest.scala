@@ -1,10 +1,10 @@
 package net.rfc1149.canape
 
 import akka.actor.{ActorRef, Status}
-import akka.dispatch.{Await, ExecutionContext, Future, Promise}
-import akka.util.Duration
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.concurrent.duration.Duration
 
 trait CouchRequest[T <: AnyRef] {
 
@@ -26,7 +26,7 @@ trait CouchRequest[T <: AnyRef] {
           result failure (future.getCause)
       }
     })
-    result
+    result.future
   }
 
   def execute(atMost: Duration = Duration.Inf): T =
@@ -43,7 +43,7 @@ trait CouchRequest[T <: AnyRef] {
           result.failure(future.getCause)
       }
     })
-    result
+    result.future
   }
 
   def map[U <: AnyRef : Manifest](transformer: (T) => U): CouchRequest[U] =

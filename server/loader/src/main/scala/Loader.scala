@@ -7,11 +7,25 @@ import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.dbutils.handlers.MapListHandler
 import scala.collection.JavaConversions._
+import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
 import scopt.OptionParser
 
 // Usage: loader dbfile
 
 object Loader extends App {
+
+  private case class Options(year: Int = 0, host: String = "localhost",
+			     user: Option[String] = None, password: Option[String] = None,
+			     database: String = "100km")
+
+  private val parser = new OptionParser[Options]("loader") {
+    help("help") text("show this help")
+    opt[String]('h', "host") text("Mysql host ( default: localhost") action { (x, c) => c.copy(host = x) }
+    opt[String]('u', "user") text("Mysql user") action { (x, c) => c.copy(user = Some(x)) }
+    opt[String]('p', "password") text("Mysql password") action { (x, c) => c.copy(password = Some(x)) }
+    opt[String]('d', "database") text("Mysql database (default: 100km") action { (x, c) => c.copy(database = x) }
+    arg[Int]("year") text("Year to import") action { (x, c) => c.copy(year = x) }
+  }
 
   implicit val formats = DefaultFormats
 
@@ -24,37 +38,17 @@ object Loader extends App {
   val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
 
-  private object Options {
-    var year: Int = _
-    var host: Option[String] = None
-    var user: Option[String] = None
-    var password: Option[String] = None
-    var database: Option[String] = None
-  }
-
-  private val parser = new OptionParser("loader") {
-    help("H", "help", "show this help")
-    opt("h", "host", "Mysql host", { h: String => Options.host = Some(h) })
-    opt("u", "user", "Mysql user", { u: String => Options.user = Some(u) })
-    opt("p", "password", "Mysql password", { p: String => Options.password = Some(p) })
-    opt("d", "database", "Mysql database", { d: String => Options.database = Some(d) })
-    arg("<year>", "Year to import", { y: String => Options.year = y.toInt })
-  }
-
   val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
 
   try {
 
-    if (!parser.parse(args)) {
-      sys.exit(1)
-    }
+    val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
 
     val source = new BasicDataSource
     source.setDriverClassName("com.mysql.jdbc.Driver")
-    source.setUrl("jdbc:mysql://" + Options.host.getOrElse("localhost") + "/" +
-		  Options.database.getOrElse("100km"))
-    Options.user.foreach(source.setUsername(_))
-    Options.password.foreach(source.setPassword(_))
+    source.setUrl("jdbc:mysql://" + options.host + "/" + options.database)
+    options.user.foreach(source.setUsername(_))
+    options.password.foreach(source.setPassword(_))
 
     def get(id: String) = try { Some(db(id).execute()) } catch { case StatusCode(404, _) => None }
 
@@ -63,7 +57,7 @@ object Loader extends App {
     val teams = {
       val t = run.query("SELECT * FROM teams WHERE year = ?",
 			new MapListHandler,
-			new java.lang.Integer(Options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
+			new java.lang.Integer(options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
       (for (team <- t)
          yield (team("id").asInstanceOf[java.lang.Integer] ->
 		team("name").asInstanceOf[String])).toMap
@@ -71,7 +65,7 @@ object Loader extends App {
 
     val q = run.query("SELECT * FROM registrations WHERE year = ?",
 		      new MapListHandler,
-		      new java.lang.Integer(Options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
+		      new java.lang.Integer(options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
     for (contestant <- q) {
       val bib = contestant("bib").asInstanceOf[java.lang.Long]
       val id = "contestant-" + bib

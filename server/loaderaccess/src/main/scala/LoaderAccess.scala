@@ -4,30 +4,30 @@ import java.io.File
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.collection.JavaConversions._
+import scala.language.postfixOps
 import scopt.OptionParser
 
 // Usage: loaderaccess dbfile
 
 object LoaderAccess extends App {
 
+  private object Options {
+    var file: File = _
+  }
+
+  private val parser = new OptionParser[File]("loaderaccess") {
+    help("help") text("show this help")
+    arg[String]("database") text("MS access database to import") action ((x, c) => new File(x))
+  }
+
+  private val filename = parser.parse(args, null) getOrElse { sys.exit(1) }
+
   implicit val formats = DefaultFormats
 
   val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
 
-  private object Options {
-    var file: File = _
-  }
-
-  private val parser = new OptionParser("loader") {
-    help("h", "help", "show this help")
-    arg("database", "MS access database to import", { s: String => Options.file = new File(s) })
-  }
-
-  if (!parser.parse(args))
-    sys.exit(1)
-
-  val table = jackcess.Database.open(Options.file, true).getTable("inscription")
+  val table = jackcess.Database.open(filename, true).getTable("inscription")
 
   val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
 

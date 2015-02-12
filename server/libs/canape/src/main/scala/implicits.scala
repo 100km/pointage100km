@@ -1,6 +1,7 @@
 package net.rfc1149.canape
 
 import net.liftweb.json._
+import scala.language.implicitConversions
 
 object implicits {
 
