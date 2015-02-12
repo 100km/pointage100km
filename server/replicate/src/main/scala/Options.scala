@@ -3,6 +3,7 @@ import scopt.OptionParser
 object Options {
 
   case class Config(compact: Boolean = true,
+		    dryRun: Boolean = false,
 		    _fixConflicts: Boolean = false,
 		    _fixIncomplete: Boolean = false,
 		    _obsolete: Boolean = true,
@@ -20,6 +21,27 @@ object Options {
     def initOnly = !onChanges && !systematic
 
     def isSlave = siteId == 999
+
+    def dump() = {
+      def po(opt: String, current: Any, default: Any) = {
+	val defaultString = if (current != default && default != null) (" (default: %s)".format(default)) else ""
+	System.out.println("  - %s: %s%s".format(opt, current, defaultString))
+      }
+      val defaults = Config()
+      System.out.println("Current configuration:")
+      po("site id", siteId, null)
+      po("compact database regularly", compact, defaults.compact)
+      po("fix conflicts", fixConflicts, defaults.fixConflicts)
+      po("fix incomplete checkpoints", fixIncomplete, defaults.fixIncomplete)
+      po("remove obsolete documents", obsolete, defaults.obsolete)
+      po("run replication service", replicate, defaults.replicate)
+      po("run watchdog service", watchdog, defaults.watchdog)
+      System.out.println("Computed values:")
+      po("slave only", isSlave, defaults.isSlave)
+      po("check onChanges feed", onChanges, defaults.onChanges)
+      po("run periodic tasks", systematic, defaults.systematic)
+      po("init only", initOnly, defaults.initOnly)
+    }
   }
 
   def parse(args: Array[String]) = {
@@ -29,7 +51,9 @@ object Options {
       opt[Unit]('f', "full") text("turn on every service") action { (_, c) =>
 	c.copy(compact = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
 	       replicate = true, _watchdog = true) }
-      help("help") text("show this help")
+      opt[Unit]('n', "dry-run") text("dump configuration and do not run") action { (_, c) =>
+        c.copy(dryRun = true) }
+      help("help") abbr("h") text("show this help")
       opt[Unit]('i', "init-only") text("turn off every service") action { (_, c) =>
 	c.copy(compact = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
 	       replicate = false, _watchdog = false) }

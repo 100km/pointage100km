@@ -24,7 +24,7 @@ object Loader extends App {
     opt[String]('u', "user") text("Mysql user") action { (x, c) => c.copy(user = Some(x)) }
     opt[String]('p', "password") text("Mysql password") action { (x, c) => c.copy(password = Some(x)) }
     opt[String]('d', "database") text("Mysql database (default: 100km") action { (x, c) => c.copy(database = x) }
-    arg[Int]("year") text("Year to import") action { (x, c) => c.copy(year = x) }
+    arg[Int]("<year>") text("Year to import") action { (x, c) => c.copy(year = x) }
   }
 
   implicit val formats = DefaultFormats

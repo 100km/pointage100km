@@ -1,7 +1,7 @@
 import akka.event.LoggingAdapter
 import net.liftweb.json._
 import net.rfc1149.canape._
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Future
 
 import Global._
 
@@ -27,7 +27,7 @@ trait IncompleteCheckpoints {
                   JNull
               }
             } else
-              Promise.successful(JNull).future
+              Future.successful(JNull)
         } recover {
           case StatusCode(404, _) =>
             log.debug("no information available for contestant " + bib)

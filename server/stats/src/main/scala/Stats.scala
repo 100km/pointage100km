@@ -16,7 +16,7 @@ object Stats extends App {
       c.copy(delay = x) } text("Wait for delay in ms between updates (default: 0)")
     opt[Int]('s', "site_id") action { (x, c) =>
       c.copy(siteId = x) } text("Numerical id of the current site (default: random [0-2])")
-    help("help") text("print this usage")
+    help("help") abbr("h") text("show this help")
   }
 
   private val options = parser.parse(args, Config()) getOrElse { sys.exit(1) }

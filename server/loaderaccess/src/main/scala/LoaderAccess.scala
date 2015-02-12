@@ -16,8 +16,8 @@ object LoaderAccess extends App {
   }
 
   private val parser = new OptionParser[File]("loaderaccess") {
-    help("help") text("show this help")
-    arg[String]("database") text("MS access database to import") action ((x, c) => new File(x))
+    help("help") abbr("h") text("show this help")
+    arg[String]("<database>") text("MS access database to import") action ((x, c) => new File(x))
   }
 
   private val filename = parser.parse(args, null) getOrElse { sys.exit(1) }

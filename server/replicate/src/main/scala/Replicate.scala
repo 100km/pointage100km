@@ -10,6 +10,10 @@ object Replicate extends App {
   private implicit val formats = DefaultFormats
 
   val options = Options.parse(args) getOrElse { sys.exit(1) }
+  if (options.dryRun) {
+    options.dump()
+    sys.exit(0)
+  }
 
   import Global._
 
