@@ -50,6 +50,7 @@ STEPS:
   - NEEDS: pen and post-its, 1 developper PC, 7 checkpoints PCs, 1 display PC with video projector.
   - On the developper pc:
     - make sure you have the latest sources
+    - do not forget to checkout submodules: git submodule update --init
     - compile scala: make
     - Optional: Do a rapid test of the app:
       - On the developper PC:

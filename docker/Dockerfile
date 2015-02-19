@@ -8,7 +8,7 @@ RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
 
 USER steenwerck
 RUN cd /home/steenwerck && git clone http://github.com/100km/pointage100km.git
-RUN cd /home/steenwerck/pointage100km && make
+RUN cd /home/steenwerck/pointage100km && git submodule update --init && make
 
 USER root
 ADD start.sh /
