@@ -7,12 +7,16 @@ import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.dbutils.handlers.MapListHandler
 import scala.collection.JavaConversions._
+import scala.concurrent.duration._
 import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
 import scopt.OptionParser
 
 // Usage: loader dbfile
 
 object Loader extends App {
+
+  import implicits._
+  implicit val timeout: Duration = (5, SECONDS)
 
   private case class Options(year: Int = 0, host: String = "localhost",
 			     user: Option[String] = None, password: Option[String] = None,
@@ -35,10 +39,10 @@ object Loader extends App {
     def get(i: Int) = cal.get(i)
   }
 
-  val system = ActorSystem()
+  implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
 
-  val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
+  val db = new Couch(auth = Some("admin", "admin")).db("steenwerck100km")
 
   try {
 
@@ -50,7 +54,7 @@ object Loader extends App {
     options.user.foreach(source.setUsername(_))
     options.password.foreach(source.setPassword(_))
 
-    def get(id: String) = try { Some(db(id).execute()) } catch { case StatusCode(404, _) => None }
+    def get(id: String) = try { Some(db(id).execute()) } catch { case Couch.StatusError(404, _) => None }
 
     val run = new QueryRunner(source)
 
@@ -86,7 +90,7 @@ object Loader extends App {
 	db.insert(util.toJObject(doc)).execute()
 	println("Inserted " + desc)
       } catch {
-	case StatusCode(409, _) =>
+	case Couch.StatusError(409, _) =>
 	  println("Updating existing " + desc)
 	  db.insert(util.toJObject(doc + ("_rev" -> get(id).map(_("_rev"))))).execute()
       }

@@ -10,6 +10,8 @@ import Global._
 
 class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask(30 seconds) with LoggingError {
 
+  import implicits._
+
   override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =

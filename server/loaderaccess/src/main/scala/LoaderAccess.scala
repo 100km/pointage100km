@@ -4,12 +4,16 @@ import java.io.File
 import net.liftweb.json._
 import net.rfc1149.canape._
 import scala.collection.JavaConversions._
+import scala.concurrent.duration._
 import scala.language.postfixOps
 import scopt.OptionParser
 
 // Usage: loaderaccess dbfile
 
 object LoaderAccess extends App {
+
+  import implicits._
+  implicit val timeout: Duration = (5, SECONDS)
 
   private object Options {
     var file: File = _
@@ -24,16 +28,16 @@ object LoaderAccess extends App {
 
   implicit val formats = DefaultFormats
 
-  val system = ActorSystem()
+  implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
 
   val table = jackcess.Database.open(filename, true).getTable("inscription")
 
-  val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
+  val db = new Couch(auth = Some("admin", "admin")).db("steenwerck100km")
 
   val format = new java.text.SimpleDateFormat("yyyy/MM/dd")
 
-  def get(id: String) = try { Some(db(id).execute()) } catch { case StatusCode(404, _) => None }
+  def get(id: String) = try { Some(db(id).execute()) } catch { case Couch.StatusError(404, _) => None }
 
   def capitalize(name: String) = {
     val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
@@ -60,7 +64,7 @@ object LoaderAccess extends App {
       db.insert(util.toJObject(doc)).execute()
       println("Inserted " + desc)
     } catch {
-	case StatusCode(409, _) =>
+	case Couch.StatusError(409, _) =>
 	  println("Updating existing " + desc)
 	  db.insert(util.toJObject(doc + ("_rev" -> get(id).map(_("_rev"))))).execute()
     }

@@ -2,12 +2,16 @@ import akka.actor.{DeadLetterActorRef, Props}
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import scala.concurrent.duration._
 import scala.concurrent.Future
 import steenwerck._
 
 object Replicate extends App {
 
+  import implicits._
+ 
   private implicit val formats = DefaultFormats
+  private implicit val timeout: Duration = (5, SECONDS)
 
   val options = Options.parse(args) getOrElse { sys.exit(1) }
   if (options.dryRun) {
@@ -26,7 +30,7 @@ object Replicate extends App {
     try {
       db.insert(localInfo, name).execute()
     } catch {
-      case StatusCode(409, _) =>
+      case Couch.StatusError(409, _) =>
 	try {
 	  forceUpdate(db, name, localInfo).execute()
 	} catch {
@@ -36,19 +40,19 @@ object Replicate extends App {
     }
   }
 
-  def ping(db: Database): Future[JValue] = steenwerck.ping(db, options.siteId).toFuture
+  def ping(db: Database): Future[JValue] = steenwerck.ping(db, options.siteId)
 
   private val localAuth = config.readOpt[String]("local.user").flatMap(user =>
     config.readOpt[String]("local.password").map(password => (user, password)))
 
-  private val localCouch = new NioCouch(auth = localAuth)
+  private val localCouch = new Couch(auth = localAuth)
 
   private val localDatabase =
     localCouch.db(config.readOpt[String]("local.dbname").getOrElse("steenwerck100km"))
 
   lazy private val hubCouch =
     if (options.replicate)
-      Some(new NioCouch(config.read[String]("master.host"),
+      Some(new Couch(config.read[String]("master.host"),
 			config.read[Int]("master.port"),
 			Some(config.read[String]("master.user"),
 			     config.read[String]("master.password"))))
@@ -62,7 +66,7 @@ object Replicate extends App {
     if (options.replicate) {
       while (!dbName.isDefined) {
 	try {
-	  dbName = cfgDatabase.map(_("configuration").execute()("dbname").extract[String])
+	  dbName = cfgDatabase.map(_("configuration").execute()(timeout)("dbname").extract[String])
 	  dbName.foreach(log.info("server database name is {}", _))
 	} catch {
 	  case t: Exception =>
@@ -76,7 +80,7 @@ object Replicate extends App {
 
   private lazy val previousDbName: Option[String] =
     try {
-      Some(localDatabase("configuration").execute()("dbname").extract[String])
+      Some(localDatabase("configuration").execute()(timeout)("dbname").extract[String])
     } catch {
       case t: Exception =>
 	log.info("cannot retrieve previous database name: " + t)
@@ -101,7 +105,7 @@ object Replicate extends App {
     localDatabase.create().execute()
     log.info("database created")
   } catch {
-    case StatusCode(412, _) =>
+    case Couch.StatusError(412, _) =>
       log.info("database already exists")
     case t: Exception =>
       log.error("cannot create database: " + t)

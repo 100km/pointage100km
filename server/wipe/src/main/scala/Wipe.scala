@@ -2,11 +2,13 @@ import akka.actor.ActorSystem
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import scala.concurrent.duration._
 import scopt.OptionParser
 
 object Wipe extends App {
 
   import implicits._
+  implicit val timeout: Duration = (5, SECONDS)
 
   private case class Options(login: String = null, password: String = null)
 
@@ -18,13 +20,13 @@ object Wipe extends App {
 
   private val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
 
-  private val system = ActorSystem()
+  private implicit val system = ActorSystem()
   private implicit val dispatcher = system.dispatcher
 
   val config = Config("steenwerck.cfg", "../steenwerck.cfg", "../../steenwerck.cfg")
-  val hubCouch = new NioCouch(config.read[String]("master.host"),
-			      config.read[Int]("master.port"),
-			      Some(options.login, options.password))
+  val hubCouch = new Couch(config.read[String]("master.host"),
+			   config.read[Int]("master.port"),
+			   Some(options.login, options.password))
 
   val cfgDatabase = hubCouch.db("steenwerck-config")
 
@@ -63,7 +65,7 @@ object Wipe extends App {
     hubDatabase.insert(Map("key" -> ha), "couchsync").execute()
     println("All things done")
   } catch {
-      case StatusCode(401, _) =>
+      case Couch.StatusError(401, _) =>
 	println("You are not authorized to perform this operation")
       case t: Exception =>
 	println("Exception caught: " + t)

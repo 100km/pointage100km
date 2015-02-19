@@ -9,6 +9,8 @@ import Global._
 
 trait ConflictsSolver {
 
+  import implicits._
+
   val log: LoggingAdapter
 
   private implicit val formats = DefaultFormats

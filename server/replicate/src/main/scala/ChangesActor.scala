@@ -11,6 +11,8 @@ import Global._
 class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None)
   extends Actor with FSM[ChangesActor.State, Long] {
 
+  import implicits._
+
   implicit val formats = DefaultFormats
 
   import ChangesActor._
@@ -25,7 +27,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   }
 
   private[this] def getInitialSequence() = {
-    database.status().toFuture().map(m => m("update_seq").extract[Long]).pipeTo(self)
+    database.status().map(m => m("update_seq").extract[Long]).pipeTo(self)
     goto(InitialSequence) using (-1)
   }
 

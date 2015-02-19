@@ -29,7 +29,7 @@ trait IncompleteCheckpoints {
             } else
               Future.successful(JNull)
         } recover {
-          case StatusCode(404, _) =>
+          case Couch.StatusError(404, _) =>
             log.debug("no information available for contestant " + bib)
             JNull
         }

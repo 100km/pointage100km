@@ -2,6 +2,7 @@ import akka.actor.ActorSystem
 import net.liftweb.json._
 import net.rfc1149.canape._
 import net.rfc1149.canape.implicits._
+import scala.concurrent.duration._
 import scopt.OptionParser
 import scala.util.Random.nextInt
 
@@ -21,12 +22,13 @@ object Stats extends App {
 
   private val options = parser.parse(args, Config()) getOrElse { sys.exit(1) }
 
-  private val system = ActorSystem()
+  private implicit val system = ActorSystem()
   private implicit val dispatcher = system.dispatcher
 
   private implicit val formats = DefaultFormats
+  private implicit val timeout: Duration = (5, SECONDS)
 
-  val db: Database = new NioCouch().db("steenwerck100km")
+  val db: Database = new Couch().db("steenwerck100km")
 
   def update(checkpoint: Int ,bib: Int, race: Int) {
     val id = "checkpoints-" + checkpoint + "-" + bib
@@ -53,7 +55,7 @@ object Stats extends App {
         db.insert(util.toJObject(doc)).execute()
         println("Inserted " + bibStr)
       } catch {
-        case StatusCode(409, _) =>
+        case Couch.StatusError(409, _) =>
           println("Bib info already exist for bib " + bibStr )
       }
     }

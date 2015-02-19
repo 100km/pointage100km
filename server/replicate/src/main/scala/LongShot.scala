@@ -9,6 +9,8 @@ import Global._
 
 class LongShot(db: Database) extends PeriodicTask(300 seconds) with LoggingError {
 
+  import implicits._
+
   private[this] implicit val formats = DefaultFormats
 
   override val log = Logging(system, "longShot")
