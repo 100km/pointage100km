@@ -1,0 +1,4 @@
+[submodule "server/libs/canape"]
+	path = server/libs/canape
+	url = https://github.com/samueltardieu/canape
+	branch = master
