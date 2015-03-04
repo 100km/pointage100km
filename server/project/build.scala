@@ -29,7 +29,7 @@ object Steenwerck extends Build {
 				    "mysql" % "mysql-connector-java" % "5.1.22"))
 
   lazy val common = Project.defaultSettings ++ assemble ++
-    Seq(scalaVersion := "2.11.5",
+    Seq(scalaVersion := "2.11.6",
 	scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"))
 
   lazy val root =
