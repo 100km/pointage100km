@@ -8,7 +8,8 @@ lazy val akka =
                                   "ch.qos.logback" % "logback-classic" % "1.0.9"))
 
 lazy val assemble =
-  Seq(jarName in assembly := "../../../../bin/" + name.value + ".jar",
+  Seq(assemblyJarName in assembly := s"${name.value}.jar",
+      target in assembly := new File("../../../../bin/"),
       test in assembly := {})
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")
