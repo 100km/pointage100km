@@ -1,7 +1,7 @@
 *~
 target/
 steenwerck.cfg
-bin/*.jar
+bin/*
 .idea/workspace.xml
 bin.tar.xz
 *.swp
