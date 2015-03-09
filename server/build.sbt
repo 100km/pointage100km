@@ -7,9 +7,12 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
                                   "ch.qos.logback" % "logback-classic" % "1.0.9"))
 
+lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
+
 lazy val assemble =
-  Seq(assemblyJarName in assembly := s"${name.value}.jar",
-      target in assembly := new File("../../../../bin/"),
+  Seq(assemblyJarName in assembly := name.value,
+      target in assembly := new File("../bin/"),
+      assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript)),
       test in assembly := {})
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")

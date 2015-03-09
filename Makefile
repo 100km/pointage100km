@@ -1,6 +1,4 @@
-JARFILES = bin/replicate.jar bin/wipe.jar bin/loader.jar bin/stats.jar
-# JARFILES += bin/loaderaccess.jar
-BINFILES = $(JARFILES:.jar=)
+BINFILES = bin/replicate bin/wipe bin/loader bin/stats bin/loaderaccess
 DIST = bin.tar.xz
 ROOTDIR = server
 SBT = ./sbt
@@ -14,14 +12,14 @@ incremental::
 .gitrev: ALWAYS
 	echo $(GITVER) > .gitrev
 
-assembly:: $(JARFILES)
+assembly:: $(BINFILES)
 	$(MAKE) .gitrev
 
 dist:: $(DIST)
 
-$(DIST): $(JARFILES) $(BINFILES)
+$(DIST): $(BINFILES)
 	$(RM) $(DIST)
-	tar Jcvf $(DIST) $(JARFILES) $(BINFILES)
+	tar Jcvf $(DIST) $(BINFILES)
 
 clean::
 	cd $(ROOTDIR) && $(SBT) root/clean
@@ -33,7 +31,7 @@ distclean::
 check::
 	cd $(ROOTDIR) && $(SBT) root/test
 
-%.jar: ALWAYS
+$(BINFILES): ALWAYS
 	cd $(ROOTDIR) && $(SBT) `basename ${@:.jar=}`/assembly
 
 ALWAYS::
