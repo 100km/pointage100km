@@ -6,6 +6,7 @@ lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.3.9",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
                                   "com.typesafe.akka" %% "akka-stream-experimental" % "1.0-M4",
+                                  "net.ceedubs" %% "ficus" % "1.1.2",
                                   "ch.qos.logback" % "logback-classic" % "1.0.9"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")

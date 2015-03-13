@@ -43,8 +43,8 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   when(ChangesError, stateTimeout = backoff) {
     case Event(StateTimeout, _) =>
       requestChanges()
-      if (backoff < FiniteDuration(5, SECONDS))
-        backoff += FiniteDuration(1, SECONDS)
+      if (backoff < Global.maximumBackoffTime)
+        backoff += Global.backoffTimeIncrement
       log.info("connecting, next backoff is {}", backoff)
       goto(Processing)
   }

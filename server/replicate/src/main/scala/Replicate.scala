@@ -42,20 +42,20 @@ object Replicate extends App {
 
   def ping(db: Database): Future[JValue] = steenwerck.ping(db, options.siteId)
 
-  private val localAuth = config.readOpt[String]("local.user").flatMap(user =>
-    config.readOpt[String]("local.password").map(password => (user, password)))
+  private val localAuth = configurationFile.readOpt[String]("local.user").flatMap(user =>
+    configurationFile.readOpt[String]("local.password").map(password => (user, password)))
 
   private val localCouch = new Couch(auth = localAuth)
 
   private val localDatabase =
-    localCouch.db(config.readOpt[String]("local.dbname").getOrElse("steenwerck100km"))
+    localCouch.db(configurationFile.readOpt[String]("local.dbname").getOrElse("steenwerck100km"))
 
   lazy private val hubCouch =
     if (options.replicate)
-      Some(new Couch(config.read[String]("master.host"),
-			config.read[Int]("master.port"),
-			Some(config.read[String]("master.user"),
-			     config.read[String]("master.password"))))
+      Some(new Couch(configurationFile.read[String]("master.host"),
+			configurationFile.read[Int]("master.port"),
+			Some(configurationFile.read[String]("master.user"),
+			     configurationFile.read[String]("master.password"))))
     else
       None
 
