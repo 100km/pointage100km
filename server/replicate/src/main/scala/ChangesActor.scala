@@ -1,92 +1,61 @@
-import akka.actor.{Actor, ActorRef, FSM, Status}
+import akka.actor.{ActorRef, FSM}
 import akka.event.Logging
-import akka.pattern._
+import akka.stream.ActorFlowMaterializer
+import akka.stream.actor.ActorSubscriberMessage.{OnError, OnNext}
+import akka.stream.actor.{ActorSubscriber, WatermarkRequestStrategy}
+import akka.stream.scaladsl.Sink
 import net.liftweb.json._
 import net.rfc1149.canape._
+
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import Global._
-
-class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None)
-  extends Actor with FSM[ChangesActor.State, Long] {
-
-  import implicits._
+class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None) extends ActorSubscriber with FSM[ChangesActor.State, Unit] {
 
   implicit val formats = DefaultFormats
+  implicit val system = context.system
+
+  implicit val requestStrategy = WatermarkRequestStrategy(10)
+
+  implicit var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
 
   import ChangesActor._
 
   private[this] val log = Logging(context.system, this)
 
-  private[this] def requestChanges(since: Long) = {
-    val changes = database.changes(Map("feed" -> "continuous", "since" -> since.toString) ++
-				   (if (filter.isDefined) Map("filter" -> filter.get) else Map()))
-    changes.map(js => ((js \ "seq").extract[Long], js)).toStreamingFuture(self) pipeTo (self)
-    goto(Connecting)
-  }
+  private[this] implicit val materializer = ActorFlowMaterializer(None)
 
-  private[this] def getInitialSequence() = {
-    database.status().map(m => m("update_seq").extract[Long]).pipeTo(self)
-    goto(InitialSequence) using (-1)
-  }
+  private[this] def requestChanges() = database.continuousChanges(filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JObject](self))).run()
 
-  startWith(InitialSequence, -1)
-  getInitialSequence()
+  startWith(ChangesError, ())
 
-  when(InitialSequence) {
-    case Event(Status.Failure(e), _) =>
-      goto(ChangesError) using (-1)
-    case Event(latestSeq: Long, _) =>
-      requestChanges(latestSeq) using (latestSeq)
-  }
-
-  when(Connecting) {
-    case Event(Status.Failure(e), _) =>
-      log.warning("cannot connect to the database: " + e)
+  when(Processing) {
+    case Event(OnNext(value), _) =>
+      sendTo ! value
+      backoff = FiniteDuration(0, SECONDS)
+      log.info("resetting backoff")
+      stay()
+    case Event(OnError(t), _) =>
+      log.warning("error when subscribing to changes stream: {}", t)
       goto(ChangesError)
-    case Event((), _) =>
-      log.info("connected to the changes stream")
+  }
+
+  when(ChangesError, stateTimeout = backoff) {
+    case Event(StateTimeout, _) =>
+      requestChanges()
+      if (backoff < FiniteDuration(5, SECONDS))
+        backoff += FiniteDuration(1, SECONDS)
+      log.info("connecting, next backoff is {}", backoff)
       goto(Processing)
   }
 
-  when(ChangesError, stateTimeout = 5 seconds) {
-    case Event(StateTimeout, latestSeq) =>
-      if (latestSeq == -1)
-        getInitialSequence()
-      else
-        requestChanges(latestSeq)
-    case Event('closed, _) =>
-      // This can happen after a 404 failure
-      stay()
-  }
-
-  when(Processing) {
-    case Event(Status.Failure(e), _) =>
-      log.warning("error while running change request: " + e)
-      goto(ChangesError)
-    case Event('closed, _) =>
-      log.warning("stream closed while running change request")
-      goto(ChangesError)
-    case Event((latestSeq: Long, m: JObject), _) =>
-      sendTo ! m
-      stay() using (latestSeq)
-  }
-
-  initialize
+  initialize()
 
 }
 
 object ChangesActor {
-
   sealed trait State
 
-  private case object InitialSequence extends State
-
-  private case object Connecting extends State
-
   private case object Processing extends State
-
   private case object ChangesError extends State
-
 }

@@ -65,14 +65,15 @@ object Replicate extends App {
     var dbName: Option[String] = None
     if (options.replicate) {
       while (!dbName.isDefined) {
-	try {
-	  dbName = cfgDatabase.map(_("configuration").execute()(timeout)("dbname").extract[String])
-	  dbName.foreach(log.info("server database name is {}", _))
-	} catch {
-	  case t: Exception =>
-	    log.error("cannot retrieve database name: " + t)
-	    Thread.sleep(5000)
-	}
+        try {
+          implicit val formats = Replicate.this.formats
+          dbName = cfgDatabase.map(_("configuration").execute()(timeout)("dbname").extract[String])
+          dbName.foreach(log.info("server database name is {}", _))
+        } catch {
+          case t: Exception =>
+            log.error("cannot retrieve database name: " + t)
+            Thread.sleep(5000)
+        }
       }
     }
     dbName
@@ -80,7 +81,8 @@ object Replicate extends App {
 
   private lazy val previousDbName: Option[String] =
     try {
-      Some(localDatabase("configuration").execute()(timeout)("dbname").extract[String])
+      implicit val formats = Replicate.this.formats
+      Some(localDatabase("configuration").execute()(timeout).apply("dbname").extract[String])
     } catch {
       case t: Exception =>
 	log.info("cannot retrieve previous database name: " + t)

@@ -12,16 +12,16 @@ trait IncompleteCheckpoints {
   import implicits._
 
   def fixIncompleteCheckpoints(db: Database) =
-    for (r <- db.view("common", "incomplete-checkpoints").toFuture)
+    for (r <- db.view("common", "incomplete-checkpoints"))
     yield Future.traverse(r.values[JObject]) {
       doc =>
         val JInt(bib) = doc \ "bib"
-        db("contestant-" + bib).toFuture flatMap {
+        db("contestant-" + bib) flatMap {
           r =>
             val JInt(race) = r("race")
             if (race != 0) {
               log.info("fixing incomplete race " + race + " for bib " + bib)
-              db.insert(doc.replace("race_id" :: Nil, JInt(race))).toFuture recover {
+              db.insert(doc.replace("race_id" :: Nil, JInt(race))) recover {
                 case e: Exception =>
                   log.warning("unable to fix contestant " + bib + ": " + e)
                   JNull

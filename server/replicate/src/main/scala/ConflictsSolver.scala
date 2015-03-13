@@ -33,11 +33,11 @@ trait ConflictsSolver {
   }
 
   private def solveConflicts(db: Database, id: String, revs: List[String]) =
-    getRevs(db, id, revs).toFuture flatMap {
+    getRevs(db, id, revs) flatMap {
       docs =>
         val f = (solve(db, docs) {
           docs => docs.tail.foldLeft(docs.head)(mergeInto(_, _))
-        }).toFuture map {
+        }) map {
           result =>
             log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
             result
@@ -49,7 +49,7 @@ trait ConflictsSolver {
     }
 
   def fixConflictingCheckpoints(db: Database) =
-    db.view("common", "conflicting-checkpoints").toFuture flatMap {
+    db.view("common", "conflicting-checkpoints") flatMap {
       r =>
         Future.sequence(for ((id, _, value) <- r.items[Nothing, List[String]])
         yield solveConflicts(db, id, value))

@@ -17,14 +17,14 @@ class LongShot(db: Database) extends PeriodicTask(300 seconds) with LoggingError
 
   private[this] def checkForObsolete() = {
     val deadline = System.currentTimeMillis - 3600000   // 1 hour ago is old
-    val docs = db.view("admin", "transient-docs").toFuture map {
+    val docs = db.view("admin", "transient-docs") map {
       _.values[JObject] filter { _ \ "time" match {
         case JInt(time) if time < deadline => true
         case _                             => false
       } }
     }
     docs flatMap { toDelete =>
-      val future = Future.sequence(toDelete map { db.delete(_).toFuture })
+      val future = Future.sequence(toDelete map { db.delete(_) })
       future onSuccess {
         case _ => if (!toDelete.isEmpty) log.info("succesfully deleted obsolete transient documents (" + toDelete.size + ")")
       }

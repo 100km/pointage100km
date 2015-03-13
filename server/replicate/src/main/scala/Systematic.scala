@@ -16,14 +16,14 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
 
   private[this] def localToRemoteReplication =
     if (Replicate.options.replicate && !Replicate.options.isSlave)
-      withError(local.replicateTo(remote.get, Systematic.replicateOptions).toFuture,
+      withError(local.replicateTo(remote.get, Systematic.replicateOptions),
 		"cannot replicate from local to remote")
     else
      Future.successful(null)
 
   private[this] def remoteToLocalReplication =
     if (Replicate.options.replicate)
-      withError(local.replicateFrom(remote.get, Systematic.replicateOptions).toFuture,
+      withError(local.replicateFrom(remote.get, Systematic.replicateOptions),
 		"cannot replicate from remote to local")
     else
       Future.successful(null)
@@ -33,7 +33,7 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
   private[this] def compaction = {
     noCompactionSince = (noCompactionSince + 1) % 4
     if (noCompactionSince == 0 && Replicate.options.compact)
-      local.compact().toFuture
+      local.compact()
     else
       Future.successful(null)
   }
@@ -51,6 +51,6 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
 
 object Systematic {
 
-  private val replicateOptions = ("continuous" -> true) ~ ("filter" -> "common/to-replicate")
+  private val replicateOptions = Map("continuous" -> true, "filter" -> "common/to-replicate")
 
 }
