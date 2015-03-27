@@ -7,7 +7,7 @@ RUN apt-get install -y --no-install-recommends openjdk-7-jre-headless git make
 RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
 
 USER steenwerck
-RUN cd /home/steenwerck && git clone http://github.com/100km/pointage100km.git
+RUN cd /home/steenwerck && git clone -c http.postBuffer=524288000 http://github.com/100km/pointage100km.git
 RUN cd /home/steenwerck/pointage100km && git submodule update --init && make
 
 USER root
@@ -19,4 +19,4 @@ ENTRYPOINT [ "/start.sh" ]
 # create administrators by extending this Dockerfile and adding:
 #   RUN echo "sam =  -hashed-beda[REDACTED]05fc" >> /usr/local/etc/couchdb/local.ini
 # or if you don't care about cleartext passwords
-#  RUN echo "admin = admin" >> /usr/local/etc/couchdb/local.ini
+RUN echo "admin = admin" >> /usr/local/etc/couchdb/local.ini
