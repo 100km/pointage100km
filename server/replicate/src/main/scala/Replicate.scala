@@ -133,9 +133,10 @@ object Replicate extends App {
       exit(1)
   }
 
-  if (options.initOnly)
+  if (options.initOnly) {
+    localDatabase.ensureFullCommit()
     exit(0)
-  else {
+  } else {
     if (options.systematic)
       new Systematic(localDatabase, hubDatabase)
     if (options.obsolete)
