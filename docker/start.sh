@@ -15,6 +15,8 @@ start_replicate() {
      gosu steenwerck pointage100km/bin/replicate "$@"
      if [ $? = 0 ]; then
        echo Replicate exited with status 0
+       # Let couchdb some time to persist the data in any case
+       sync
        exit 0
      fi
      echo Replicate crashed 2>&1

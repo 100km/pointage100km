@@ -39,7 +39,7 @@ lazy val stats =
   Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape)
 
 lazy val replicate =
-  Project("replicate", file("replicate"), settings = common ++ akka ++ scopt) dependsOn(canape, config, steenwerck)
+  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt) dependsOn(canape, config, steenwerck)
 
 lazy val loader =
   Project("loader", file("loader"), settings = common ++ akka ++ mysql ++ scopt) dependsOn(canape)
@@ -51,6 +51,6 @@ lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt
 
 lazy val canape = Project("canape", file("libs/canape"), settings = common)
 
-lazy val steenwerck = Project("steenwerck", file("libs/steenwerck"), settings = common ++ akka) dependsOn(canape)
+lazy val steenwerck = Project("steenwerck", file("libs/steenwerck"), settings = common ++ json ++ akka) dependsOn(canape)
 
 lazy val config = Project(id = "config", base = file("libs/config"), settings = common)
