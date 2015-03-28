@@ -2,7 +2,7 @@ FROM rfc1149/couchdb:1.6.1
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends openjdk-7-jre-headless git make
+RUN apt-get install -y --force-yes --no-install-recommends openjdk-7-jre-headless git make
 
 RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
 
