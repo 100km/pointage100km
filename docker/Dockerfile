@@ -19,4 +19,4 @@ ENTRYPOINT [ "/start.sh" ]
 # create administrators by extending this Dockerfile and adding:
 #   RUN echo "sam =  -hashed-beda[REDACTED]05fc" >> /usr/local/etc/couchdb/local.ini
 # or if you don't care about cleartext passwords
-RUN echo "admin = admin" >> /usr/local/etc/couchdb/local.ini
+#   RUN echo "admin = admin" >> /usr/local/etc/couchdb/local.ini
