@@ -38,7 +38,7 @@ object Loader extends App {
   val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
 
-  val db = new NioCouch(auth = Some("admin", "admin")).db("steenwerck100km")
+  val db = new NioCouch().db("steenwerck100km")
 
   try {
 
