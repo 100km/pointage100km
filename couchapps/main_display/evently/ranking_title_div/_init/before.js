@@ -15,7 +15,7 @@ function(cb) {
     if (race_id) {
       // We are in the title for only one race
       if (race_id==5) {
-        $("#single_ranking_div").trigger("update_team_ranking");
+        $("#single_ranking_div").trigger("update_ranking");
       } else {
         $("#single_ranking_div").trigger("update_ranking");
       }

@@ -6,16 +6,19 @@ function(data) {
   p.items = [];
   var items = [];
   var app = $$(this).app;
+  var handi_ranking = app.handi_ranking === true;
+  var sql_export = app.sql_export === true;
   var race_id = data.race_id;
   var start_time = app.start_times[race_id];
   p.race_id = race_id;
   p.race_name = app.races_names[race_id];
+  p.sql_export = sql_export;
 
   if (! checkpoints_data)
     return p;
 
   _.each(checkpoints_data, function(team, idx) {
-    var item = {}
+    var item = {race_id: 56 + race_id};
     var lap = team.members.length;
     var last_bib_checkpoint = team.members[0]["checkpoint"];
     var team_id = team.team_id;
