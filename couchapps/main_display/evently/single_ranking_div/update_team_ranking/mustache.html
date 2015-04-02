@@ -1,3 +1,12 @@
+{{#sql_export}}
+<p>
+INSERT INTO race_rankings (race_id, bib, position, distance, time) VALUES </br>
+  {{#items}}
+    ({{race_id}},{{bib}},{{rank}},{{ms}},'{{time}}'){{^last}},{{/last}}</br>
+  {{/items}}
+</p>
+{{/sql_export}}
+{{^sql_export}}
 <h1 align=center>{{race_name}}</h1>
 <table id="hor-zebra">
 <tr>
@@ -30,3 +39,4 @@
   {{/members}}
   {{/items}}
 </table>
+{{/sql_export}}
