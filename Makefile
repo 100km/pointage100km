@@ -1,4 +1,4 @@
-BINFILES = bin/replicate bin/wipe bin/loader bin/stats bin/loaderaccess
+BINFILES = bin/replicate bin/wipe bin/loader bin/stats
 DIST = bin.tar.xz
 ROOTDIR = server
 SBT = ./sbt
