@@ -14,6 +14,8 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   implicit val system = context.system
 
+  implicit val dispatcher = system.dispatcher
+
   implicit val requestStrategy = WatermarkRequestStrategy(10)
 
   implicit var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
@@ -24,12 +26,17 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   private[this] implicit val materializer = ActorFlowMaterializer(None)
 
-  private[this] def requestChanges() = database.continuousChanges(filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
+  private[this] def requestChanges() =
+    database.status().foreach { s =>
+      val seqOption = Map("since" -> (s \ "update_seq").as[Int].toString)
+      database.continuousChanges(seqOption ++ filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
+    }
 
   startWith(ChangesError, ())
 
   when(Processing) {
     case Event(OnNext(value), _) =>
+      log.info(s"Processing event $value")
       sendTo ! value
       backoff = FiniteDuration(0, SECONDS)
       log.debug("resetting backoff")
