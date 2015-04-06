@@ -1,12 +1,14 @@
 import akka.actor.ActorSystem
 import java.io.File
 import java.util.Calendar
-import net.liftweb.json._
 import net.rfc1149.canape._
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.dbutils.handlers.MapListHandler
+import play.api.libs.json.Json.JsValueWrapper
+import play.api.libs.json._
 import scala.collection.JavaConversions._
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
 import scopt.OptionParser
@@ -31,9 +33,7 @@ object Loader extends App {
     arg[Int]("<year>") text("Year to import") action { (x, c) => c.copy(year = x) }
   }
 
-  implicit val formats = DefaultFormats
-
-  implicit def toCalendar(date: java.util.Date) = new {
+  implicit class toCalendar(date: java.util.Date) {
     private val cal = Calendar.getInstance()
     cal.setTime(date)
     def get(i: Int) = cal.get(i)
@@ -44,6 +44,9 @@ object Loader extends App {
 
   val db = new Couch().db("steenwerck100km")
 
+  private def forceInsert(doc: JsObject): Future[_] =
+    db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> olderDoc \ "_rev")) }
+
   try {
 
     val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
@@ -51,25 +54,24 @@ object Loader extends App {
     val source = new BasicDataSource
     source.setDriverClassName("com.mysql.jdbc.Driver")
     source.setUrl("jdbc:mysql://" + options.host + "/" + options.database)
-    options.user.foreach(source.setUsername(_))
-    options.password.foreach(source.setPassword(_))
+    options.user.foreach(source.setUsername)
+    options.password.foreach(source.setPassword)
 
-    def get(id: String) = try { Some(db(id).execute()) } catch { case Couch.StatusError(404, _) => None }
+    def get(id: String) = try { Some(db(id).execute()) } catch { case Couch.StatusError(404, _, _) => None }
 
     val run = new QueryRunner(source)
 
     val teams = {
       val t = run.query("SELECT * FROM teams WHERE year = ?",
 			new MapListHandler,
-			new java.lang.Integer(options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
+			new java.lang.Integer(options.year))
       (for (team <- t)
-         yield (team("id").asInstanceOf[java.lang.Integer] ->
-		team("name").asInstanceOf[String])).toMap
+        yield team("id").asInstanceOf[java.lang.Integer] -> team("name").asInstanceOf[String]).toMap
     }
 
     val q = run.query("SELECT * FROM registrations WHERE year = ?",
 		      new MapListHandler,
-		      new java.lang.Integer(options.year)).asInstanceOf[java.util.List[java.util.Map[java.lang.String, java.lang.Object]]]
+		      new java.lang.Integer(options.year))
     for (contestant <- q) {
       val bib = contestant("bib").asInstanceOf[java.lang.Long]
       val id = "contestant-" + bib
@@ -77,39 +79,36 @@ object Loader extends App {
       val name = contestant("name").asInstanceOf[String]
       val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
       val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
-                Map("_id" -> id,
-		    "type" -> "contestant",
-		    "name" -> name,
-		    "first_name" -> firstName) ++
-		(if (teamId != null)
-		  Map("team_name" -> teams(teamId))
-		 else
-		   Map.empty)
-      val desc = "bib %d (%s %s)".format(bib, firstName, name)
+        Json.obj("_id" -> id,
+          "type" -> "contestant",
+          "name" -> name,
+          "first_name" -> firstName) ++
+        (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
+      val desc = s"bib $bib ($firstName $name)"
       try {
-	db.insert(util.toJObject(doc)).execute()
-	println("Inserted " + desc)
+        db.insert(doc).execute()
+        println("Inserted " + desc)
       } catch {
-	case Couch.StatusError(409, _) =>
-	  println("Updating existing " + desc)
-	  db.insert(util.toJObject(doc + ("_rev" -> get(id).map(_("_rev"))))).execute()
+        case Couch.StatusError(409, _, _) =>
+          println("Updating existing " + desc)
+          forceInsert(doc).execute()
       }
     }
 
-    def fix(m: Map[String, AnyRef]) = m.map {
-      case ("year", v: java.sql.Date) => "year" -> v.get(Calendar.YEAR)
-      case (k, v: java.math.BigDecimal) => k -> v.doubleValue()
-      case (k, v: java.util.Date) => k -> v.toString()
-      case ("id", id) => ("mysql_id" -> id)
-      case (k, v) => k -> v
-    }
+    def fix(m: Map[String, AnyRef]): JsObject = JsObject(m.toSeq map {
+      case ("year", v: java.sql.Date) => "year" -> JsNumber(v.get(Calendar.YEAR))
+      case (k, v: java.math.BigDecimal) => k -> JsNumber(v.doubleValue())
+      case (k, v: java.util.Date) => k -> JsString(v.toString)
+      case ("id", id: String) => "mysql_id" -> JsString(id)
+      case (k, v: String) => k -> JsString(v)
+    })
 
     def capitalize(name: String) = {
       val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
-      capitalized.zip(name) map { _ match {
-	case (_, '-') => '-'
-	case (c, _)   => c
-      } } mkString
+      capitalized.zip(name) map {
+        case (_, '-') => '-'
+        case (c, _)   => c
+      } mkString
     }
   } finally {
     db.couch.releaseExternalResources()

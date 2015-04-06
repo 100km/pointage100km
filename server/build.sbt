@@ -2,6 +2,8 @@ import sbt._
 import Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
 
+resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.3.9",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
@@ -19,7 +21,7 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")
 
-lazy val json = Seq(libraryDependencies += "net.liftweb" %% "lift-json" % "2.6")
+lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.8")
 
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
@@ -40,7 +42,7 @@ lazy val replicate =
   Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt) dependsOn(canape, config, steenwerck)
 
 lazy val loader =
-  Project("loader", file("loader"), settings = common ++ akka ++ mysql ++ scopt) dependsOn(canape)
+  Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt) dependsOn(canape)
 
 lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt) dependsOn(canape, config)
 
