@@ -7,21 +7,21 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask(30 seconds) with LoggingError {
+class Systematic(options: Options.Config, local: Database, remote: Option[Database]) extends PeriodicTask(30 seconds) with LoggingError {
 
   override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =
-    if (Replicate.options.replicate && !Replicate.options.isSlave)
+    if (options.replicate && !options.isSlave)
       withError(local.replicateTo(remote.get, Systematic.replicateOptions),
-		"cannot replicate from local to remote")
+        "cannot replicate from local to remote")
     else
      Future.successful(null)
 
   private[this] def remoteToLocalReplication =
-    if (Replicate.options.replicate)
+    if (options.replicate)
       withError(local.replicateFrom(remote.get, Systematic.replicateOptions),
-		"cannot replicate from remote to local")
+        "cannot replicate from remote to local")
     else
       Future.successful(null)
 
@@ -29,7 +29,7 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
 
   private[this] def compaction = {
     noCompactionSince = (noCompactionSince + 1) % 4
-    if (noCompactionSince == 0 && Replicate.options.compact)
+    if (noCompactionSince == 0 && options.compact)
       local.compact()
     else
       Future.successful(null)

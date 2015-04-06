@@ -8,15 +8,21 @@ import scala.concurrent.duration._
 
 object Replicate extends App {
 
-  import implicits._
-
-  private implicit val timeout: Duration = (5, SECONDS)
-
   val options = Options.parse(args) getOrElse { sys.exit(1) }
+
   if (options.dryRun) {
     options.dump()
     sys.exit(0)
   }
+
+  new Replicate(options)
+}
+
+class Replicate(options: Options.Config) {
+
+  import implicits._
+
+  private implicit val timeout: Duration = (5, SECONDS)
 
   import Global._
 
@@ -36,8 +42,6 @@ object Replicate extends App {
         }
     }
   }
-
-  def ping(db: Database): Future[JsValue] = steenwerck.ping(db, options.siteId)
 
   private val localAuth = configurationFile.readOpt[String]("local.user").flatMap(user =>
     configurationFile.readOpt[String]("local.password").map(password => (user, password)))
@@ -139,11 +143,11 @@ object Replicate extends App {
     exit(0)
   } else {
     if (options.systematic)
-      new Systematic(localDatabase, hubDatabase)
+      new Systematic(options, localDatabase, hubDatabase)
     if (options.obsolete)
       new LongShot(localDatabase)
     if (options.onChanges)
-      system.actorOf(Props(new OnChanges(localDatabase)), "onChanges")
+      system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
   }
 
   private def exit(status: Int) {

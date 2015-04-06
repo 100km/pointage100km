@@ -9,12 +9,12 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class OnChanges(local: Database)
+class OnChanges(options: Options.Config, local: Database)
   extends Actor with IncompleteCheckpoints with ConflictsSolver {
 
   val log = Logging(context.system, this)
 
-  private[this] val watchdog = context.actorOf(Props(new Watchdog(local)), "watchdog")
+  private[this] val watchdog = context.actorOf(Props(new Watchdog(options, local)), "watchdog")
 
   private[this] def withError[T](future: Future[T], message: String): Future[Any] = {
     future onFailure {
@@ -32,9 +32,9 @@ class OnChanges(local: Database)
       "unable to get conflicting checkpoints")
 
   private[this] def futures = {
-    val fc = if (Replicate.options.fixConflicts) conflictingCheckpoints
+    val fc = if (options.fixConflicts) conflictingCheckpoints
 	     else Future.successful(true)
-    val fi = if (Replicate.options.fixIncomplete) incompleteCheckpoints
+    val fi = if (options.fixIncomplete) incompleteCheckpoints
 	     else Future.successful(true)
     Future.sequence(List(fc, fi))
   }
@@ -70,7 +70,7 @@ class OnChanges(local: Database)
           self,
           'trigger))
       js \ "id" match {
-        case JsString(s) if s.startsWith("checkpoints-" + Replicate.options.siteId + "-") =>
+        case JsString(s) if s.startsWith("checkpoints-" + options.siteId + "-") =>
           watchdog ! js
         case _ =>
       }

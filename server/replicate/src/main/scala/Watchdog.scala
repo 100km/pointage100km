@@ -6,7 +6,7 @@ import play.api.libs.json.JsObject
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class Watchdog(db: Database) extends Actor with FSM[Int, Unit] with LoggingError {
+class Watchdog(options: Options.Config, db: Database) extends Actor with FSM[Int, Unit] with LoggingError {
 
   override val log = Logging(context.system, this)
 
@@ -16,7 +16,7 @@ class Watchdog(db: Database) extends Actor with FSM[Int, Unit] with LoggingError
 
     case Event(StateTimeout, _) =>
       if (Replicate.options.watchdog)
-        withError(Replicate.ping(db), "cannot ping database")
+        withError(steenwerck.ping(db, options.siteId), "cannot ping database")
       stay()
 
     case Event(js: JsObject, _) =>
@@ -24,6 +24,6 @@ class Watchdog(db: Database) extends Actor with FSM[Int, Unit] with LoggingError
 
   }
 
-  initialize
+  initialize()
 
 }
