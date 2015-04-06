@@ -1,7 +1,6 @@
 import akka.actor.ActorSystem
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import play.api.libs.json._
 import scala.concurrent.duration._
 import scopt.OptionParser
 
@@ -32,20 +31,20 @@ object Wipe extends App {
 
   val newName = try {
     val oldNameDoc = cfgDatabase("configuration").execute()
-    val oldName = oldNameDoc("dbname").extract[String]
+    val JsString(oldName) = oldNameDoc \ "dbname"
     val newCount = oldName.substring(11).toInt
     val newName = "steenwerck-" + (newCount + 1)
-    cfgDatabase.insert(oldNameDoc + ("dbname" -> newName)).execute()
+    cfgDatabase.insert(oldNameDoc - "dbname" ++ Json.obj("dbname" -> newName)).execute()
     newName
   } catch {
     case _: Exception =>
       try {
-	cfgDatabase.create()
+        cfgDatabase.create()
       } catch {
-	case e: Exception =>
-	  println("Cannot create configuration database: " + e)
+        case e: Exception =>
+          println("Cannot create configuration database: " + e)
       }
-      cfgDatabase.insert(Map("dbname" -> "steenwerck-0"), "configuration").execute()
+      cfgDatabase.insert(Json.obj("dbname" -> "steenwerck-0"), "configuration").execute()
       "steenwerck-0"
   }
 
@@ -56,19 +55,19 @@ object Wipe extends App {
     println("Copying security document")
     hubDatabase.insert(cfgDatabase("_security").execute(), "_security").execute()
     println("Inserting configuration document")
-    hubDatabase.insert(Map("dbname" -> newName), "configuration").execute()
+    hubDatabase.insert(Json.obj("dbname" -> newName), "configuration").execute()
     println("Generating random identification for couchsync")
     val key = new Array[Byte](256)
     scala.util.Random.nextBytes(key)
     val md = java.security.MessageDigest.getInstance("SHA-1")
     val ha = new sun.misc.BASE64Encoder().encode(md.digest(key))
-    hubDatabase.insert(Map("key" -> ha), "couchsync").execute()
+    hubDatabase.insert(Json.obj("key" -> ha), "couchsync").execute()
     println("All things done")
   } catch {
-      case Couch.StatusError(401, _) =>
-	println("You are not authorized to perform this operation")
+      case Couch.StatusError(401, _, _) =>
+        println("You are not authorized to perform this operation")
       case t: Exception =>
-	println("Exception caught: " + t)
+        println("Exception caught: " + t)
   }
 
   hubCouch.releaseExternalResources()
