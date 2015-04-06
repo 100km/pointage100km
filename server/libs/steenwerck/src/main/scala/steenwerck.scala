@@ -1,29 +1,24 @@
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
+import play.api.libs.json.{JsObject, JsValue, Json}
+
 import scala.concurrent.Future
 
 package object steenwerck {
 
-  private implicit val formats = DefaultFormats
-
   private val uuid = java.util.UUID.randomUUID
 
-  def forceUpdate[T](db: Database, id: String, data: T)(implicit ev: T => JObject): Future[JValue] =
-    db.update("bib_input", "force-update", id, Map("json" -> compact(render(data))))
+  def forceUpdate[T](db: Database, id: String, data: T)(implicit ev: T => JsObject): Future[JsValue] =
+    db.update("bib_input", "force-update", id, Map("json" -> Json.stringify(data)))
 
   private def makePing(siteId: Int, time: Long) =
-    Map("type" -> JString("ping"), "site_id" -> JInt(siteId), "time" -> JInt(time))
+    Json.obj("type" -> "ping", "site_id" -> siteId, "time" -> time)
 
   private def pingId(siteId: Int) = s"ping-site$siteId-$uuid"
 
-  def ping(db: Database, siteId: Int): Future[JValue] =
+  def ping(db: Database, siteId: Int): Future[JsValue] =
     forceUpdate(db, pingId(siteId), makePing(siteId, System.currentTimeMillis))
 
-  def message(db: Database, msg: String): Future[JValue] =
-    forceUpdate(db, "status",
-		("type" -> "status") ~
-		("scope" -> "local") ~
-		("message" -> msg))
+  def message(db: Database, msg: String): Future[JsValue] =
+    forceUpdate(db, "status", Json.obj("type" -> "status", "scope" -> "local", "message" -> msg))
 
 }
