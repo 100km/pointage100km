@@ -1,37 +1,43 @@
-import akka.event.LoggingAdapter
-import net.liftweb.json._
-import net.rfc1149.canape._
-import scala.concurrent.Future
-
 import Global._
+import akka.event.LoggingAdapter
+import net.rfc1149.canape._
+import play.api.libs.json._
+
+import scala.concurrent.Future
 
 trait IncompleteCheckpoints {
 
   val log: LoggingAdapter
 
-  import implicits._
-
   def fixIncompleteCheckpoints(db: Database) =
     for (r <- db.view("common", "incomplete-checkpoints"))
-    yield Future.traverse(r.values[JObject]) {
+    yield Future.traverse(r.values[JsObject]) {
       doc =>
-        val JInt(bib) = doc \ "bib"
+        val bib = (doc \ "bib").as[Int]
         db("contestant-" + bib) flatMap {
           r =>
-            val JInt(race) = r("race")
+            val race = (r \ "race").as[Int]
             if (race != 0) {
-              log.info("fixing incomplete race " + race + " for bib " + bib)
-              db.insert(doc.replace("race_id" :: Nil, JInt(race))) recover {
+              val first = (r \ "first_name").as[String]
+              val name = (r \ "name").as[String]
+              val contestant = s"contestant $bib ($first $name) in race $race"
+              val newDoc = doc.transform((__ \ 'race_id).json.update(__.read(JsNumber(race)))).get
+              val inserter = db.insert(newDoc)
+              inserter onSuccess {
+                case _ =>
+                  log.info(s"successfully fixed incomplete race information for $contestant")
+              }
+              inserter recover {
                 case e: Exception =>
-                  log.warning("unable to fix contestant " + bib + ": " + e)
-                  JNull
+                  log.warning(s"unable to fix incomplete race information for $contestant: $e")
+                  JsUndefined
               }
             } else
-              Future.successful(JNull)
+              Future.successful(JsUndefined)
         } recover {
-          case Couch.StatusError(404, _) =>
+          case Couch.StatusError(404, _, _) =>
             log.debug("no information available for contestant " + bib)
-            JNull
+            JsUndefined
         }
     }
 

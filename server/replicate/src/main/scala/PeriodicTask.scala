@@ -1,5 +1,5 @@
 import akka.event.LoggingAdapter
-import scala.concurrent.ExecutionContext
+
 import scala.concurrent.duration.FiniteDuration
 
 // The PeriodicTask is different from a scheduler-launched repetitive task

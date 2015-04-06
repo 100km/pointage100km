@@ -1,13 +1,13 @@
+import Global._
 import akka.actor.{Actor, Cancellable, Props}
 import akka.event.Logging
-import net.liftweb.json._
 import net.rfc1149.canape._
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.language.postfixOps
+import play.api.libs.json.{JsString, JsObject}
 
-import Deadline._
-import Global._
+import scala.concurrent.duration.Deadline._
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
 class OnChanges(local: Database)
   extends Actor with IncompleteCheckpoints with ConflictsSolver {
@@ -64,15 +64,15 @@ class OnChanges(local: Database)
   private[this] var timer: Option[Cancellable] = None
 
   override def receive() = {
-    case js: JObject =>
+    case js: JsObject =>
       if (!timer.isDefined)
-	timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
-							   self,
-							   'trigger))
+        timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
+          self,
+          'trigger))
       js \ "id" match {
-	  case JString(s) if s.startsWith("checkpoints-" + Replicate.options.siteId + "-") =>
-	    watchdog ! js
-	  case _ =>
+        case JsString(s) if s.startsWith("checkpoints-" + Replicate.options.siteId + "-") =>
+          watchdog ! js
+        case _ =>
       }
     case 'trigger =>
       trigger()

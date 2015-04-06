@@ -4,15 +4,14 @@ import akka.stream.ActorFlowMaterializer
 import akka.stream.actor.ActorSubscriberMessage.{OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, WatermarkRequestStrategy}
 import akka.stream.scaladsl.Sink
-import net.liftweb.json._
 import net.rfc1149.canape._
+import play.api.libs.json.JsObject
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None) extends ActorSubscriber with FSM[ChangesActor.State, Unit] {
 
-  implicit val formats = DefaultFormats
   implicit val system = context.system
 
   implicit val requestStrategy = WatermarkRequestStrategy(10)
@@ -25,7 +24,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   private[this] implicit val materializer = ActorFlowMaterializer(None)
 
-  private[this] def requestChanges() = database.continuousChanges(filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JObject](self))).run()
+  private[this] def requestChanges() = database.continuousChanges(filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
 
   startWith(ChangesError, ())
 

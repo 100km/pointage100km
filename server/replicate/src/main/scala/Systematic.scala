@@ -1,16 +1,13 @@
+import Global._
 import akka.event.Logging
-import net.liftweb.json._
-import net.liftweb.json.JsonDSL._
 import net.rfc1149.canape._
-import scala.concurrent.{Await, Future}
+import play.api.libs.json.Json
+
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-import Global._
-
 class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask(30 seconds) with LoggingError {
-
-  import implicits._
 
   override val log = Logging(system, "systematic")
 
@@ -45,12 +42,12 @@ class Systematic(local: Database, remote: Option[Database]) extends PeriodicTask
     Await.ready(futures, Duration.Inf)
   }
 
-  initialize
+  initialize()
 
 }
 
 object Systematic {
 
-  private val replicateOptions = Map("continuous" -> true, "filter" -> "common/to-replicate")
+  private val replicateOptions = Json.obj("continuous" -> true, "filter" -> "common/to-replicate")
 
 }

@@ -1,5 +1,6 @@
 import akka.event.LoggingAdapter
-import scala.concurrent.{ExecutionContext, Future}
+
+import scala.concurrent.Future
 
 trait LoggingError {
 
