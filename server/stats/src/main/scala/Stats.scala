@@ -1,10 +1,9 @@
 import akka.actor.ActorSystem
-import net.liftweb.json._
 import net.rfc1149.canape._
 import net.rfc1149.canape.implicits._
+import play.api.libs.json.{Json, JsBoolean}
 import scala.concurrent.duration._
-import scopt.OptionParser
-import scala.util.Random.nextInt
+import scala.util.Random._
 
 object Stats extends App {
 
@@ -25,7 +24,6 @@ object Stats extends App {
   private implicit val system = ActorSystem()
   private implicit val dispatcher = system.dispatcher
 
-  private implicit val formats = DefaultFormats
   private implicit val timeout: Duration = (5, SECONDS)
 
   val db: Database = new Couch().db("steenwerck100km")
@@ -34,8 +32,8 @@ object Stats extends App {
     val id = "checkpoints-" + checkpoint + "-" + bib
     val r = db.update("bib_input", "add-checkpoint", id,
 		      Map("ts" -> System.currentTimeMillis.toString)).execute()
-    if (r \ "need_more" == JBool(true)) {
-      val d = db(id).execute() + ("race_id" -> race) + ("bib" -> bib) + ("site_id" -> checkpoint)
+    if (r \ "need_more" == JsBoolean(true)) {
+      val d = db(id).execute() ++ Json.obj("race_id" -> race, "bib" -> bib, "site_id" -> checkpoint)
       db.insert(d).execute()
     }
   }
@@ -51,11 +49,13 @@ object Stats extends App {
       val bibStr = Integer.toString(bib)
       try {
         val id = "contestant-" + bibStr
-        val doc = Map("_id" -> id, "race" -> (1<< nextInt(3)), "type" -> "contestant", "name" -> ("Bob_" + bibStr), "first_name" -> ("bobbie" + bibStr), "bib" -> bib, "birth" -> (1920 + nextInt(75)).toString(), "sex" -> (if (nextInt(1) == 0) "M" else "F"))
-        db.insert(util.toJObject(doc)).execute()
+        val doc = Json.obj("_id" -> id, "race" -> (1<< nextInt(3)), "type" -> "contestant", "name" -> s"Bob_$bibStr",
+          "first_name" -> s"bobbie$bibStr", "bib" -> bib, "birth" -> (1920 + nextInt(75)).toString(),
+          "sex" -> (if (nextBoolean) "M" else "F"))
+        db.insert(doc).execute()
         println("Inserted " + bibStr)
       } catch {
-        case Couch.StatusError(409, _) =>
+        case Couch.StatusError(409, _, _) =>
           println("Bib info already exist for bib " + bibStr )
       }
     }
