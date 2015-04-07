@@ -95,11 +95,14 @@ object Loader extends App {
       }
     }
 
-    def fix(m: Map[String, AnyRef]): JsObject = JsObject(m.toSeq map {
+    def fix(m: Map[String, Any]): JsObject = JsObject(m.toSeq map {
       case ("year", v: java.sql.Date) => "year" -> JsNumber(v.get(Calendar.YEAR))
       case (k, v: java.math.BigDecimal) => k -> JsNumber(v.doubleValue())
+      case (k, v: java.lang.Long) => k -> JsNumber(v.toLong)
+      case (k, v: java.lang.Integer) => k -> JsNumber(v.toInt)
       case (k, v: java.util.Date) => k -> JsString(v.toString)
       case ("id", id: String) => "mysql_id" -> JsString(id)
+      case (k, v: Boolean) => k -> JsBoolean(v)
       case (k, v: String) => k -> JsString(v)
     })
 
