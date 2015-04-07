@@ -36,10 +36,8 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   when(Processing) {
     case Event(OnNext(value), _) =>
-      log.info(s"Processing event $value")
       sendTo ! value
       backoff = FiniteDuration(0, SECONDS)
-      log.debug("resetting backoff")
       stay()
     case Event(OnError(t), _) =>
       log.warning("error when subscribing to changes stream: {}", t)
@@ -51,7 +49,6 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
       requestChanges()
       if (backoff < Global.maximumBackoffTime)
         backoff += Global.backoffTimeIncrement
-      log.debug("connecting, next backoff is {}", backoff)
       goto(Processing)
   }
 
