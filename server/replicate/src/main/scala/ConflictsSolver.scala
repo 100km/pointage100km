@@ -19,8 +19,7 @@ trait ConflictsSolver {
     def times = getTimes("times")
     def deletedTimes = getTimes("deleted_times")
     def artificialTimes = getTimes("artificial_times")
-    def setTimes(name: String, times: List[BigDecimal]): JsObject =
-      from - name ++ Json.obj(name -> times)
+    def setTimes(name: String, times: List[BigDecimal]): JsObject = from - name ++ Json.obj(name -> times)
   }
 
   private def mergeInto(ref: JsObject, conflicting: JsObject): JsObject = {
@@ -47,8 +46,7 @@ trait ConflictsSolver {
     }
 
   def fixConflictingCheckpoints(db: Database): Future[Iterable[Seq[JsObject]]] =
-    db.view("common", "conflicting-checkpoints") flatMap {
-      r =>
+    db.view("common", "conflicting-checkpoints") flatMap { r =>
         Future.sequence(for ((id, _, value) <- r.items[JsValue, List[String]])
           yield solveConflicts(db, id, value))
     }

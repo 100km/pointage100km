@@ -23,6 +23,9 @@ lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3
 
 lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.8")
 
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "2.4.15" % "test",
+                      fork in Test := true)
+
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
                                   "commons-dbutils" % "commons-dbutils" % "1.5",
@@ -39,7 +42,7 @@ lazy val stats =
   Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape)
 
 lazy val replicate =
-  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt) dependsOn(canape, config, steenwerck)
+  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2) dependsOn(canape, config, steenwerck)
 
 lazy val loader =
   Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt) dependsOn(canape)

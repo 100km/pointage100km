@@ -48,7 +48,7 @@ class Replicate(options: Options.Config) {
 
   private val localCouch = new Couch(auth = localAuth)
 
-  private val localDatabase =
+  val localDatabase =
     localCouch.db(configurationFile.readOpt[String]("local.dbname").getOrElse("steenwerck100km"))
 
   lazy private val hubCouch =
