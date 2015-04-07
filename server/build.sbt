@@ -39,7 +39,7 @@ lazy val root =
   Project("root", file(".")) aggregate(replicate, wipe, stats, loader)
 
 lazy val stats =
-  Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape)
+  Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val replicate =
   Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2) dependsOn(canape, config, steenwerck)

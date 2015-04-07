@@ -44,6 +44,11 @@ object Stats extends App {
     System.currentTimeMillis - before
   }
 
+  if (!steenwerck.testsAllowed(db).execute()) {
+    println("The current database does not allow tests")
+    sys.exit(1)
+  }
+
   try {
     for (bib <- 0 to 1000) {
       val bibStr = Integer.toString(bib)

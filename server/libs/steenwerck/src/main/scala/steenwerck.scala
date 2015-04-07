@@ -1,7 +1,7 @@
 import net.rfc1149.canape._
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsBoolean, JsObject, JsValue, Json}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 package object steenwerck {
 
@@ -20,5 +20,8 @@ package object steenwerck {
 
   def message(db: Database, msg: String): Future[JsValue] =
     forceUpdate(db, "status", Json.obj("type" -> "status", "scope" -> "local", "message" -> msg))
+
+  def testsAllowed(db: Database)(implicit context: ExecutionContext): Future[Boolean] =
+    db("configuration").map(d => (d \ "tests_allowed") == JsBoolean(true))
 
 }

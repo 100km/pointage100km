@@ -2,7 +2,7 @@ import java.util.UUID
 
 import net.rfc1149.canape.{helpers, Database}
 import org.specs2.mutable._
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsBoolean, JsObject, JsValue, Json}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -20,7 +20,7 @@ class ReplicateSpec extends Specification with After {
 		// Global.system.shutdown
 	}
 
-	trait WithCleanup extends After {
+	trait WithCleanup extends BeforeAfter {
 
 		var idsToCleanup: Seq[String] = Seq()
 
