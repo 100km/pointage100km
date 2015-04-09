@@ -1,9 +1,8 @@
 import akka.actor.Props
 import net.rfc1149.canape._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import steenwerck._
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object Replicate extends App {
@@ -43,31 +42,20 @@ class Replicate(options: Options.Config) {
     }
   }
 
-  private val localAuth = configurationFile.readOpt[String]("local.user").flatMap(user =>
-    configurationFile.readOpt[String]("local.password").map(password => (user, password)))
+  private val localCouch = steenwerck.localCouch
 
-  private val localCouch = new Couch(auth = localAuth)
+  val localDatabase = localCouch.db(steenwerck.localDbName)
 
-  val localDatabase =
-    localCouch.db(configurationFile.readOpt[String]("local.dbname").getOrElse("steenwerck100km"))
+  lazy private val hubCouch = steenwerck.masterCouch()
 
-  lazy private val hubCouch =
-    if (options.replicate)
-      Some(new Couch(configurationFile.read[String]("master.host"),
-        configurationFile.read[Int]("master.port"),
-        Some(configurationFile.read[String]("master.user"),
-          configurationFile.read[String]("master.password"))))
-    else
-      None
+  lazy private val cfgDatabase = hubCouch.db("steenwerck-config")
 
-  lazy private val cfgDatabase = hubCouch.map(_.db("steenwerck-config"))
-
-  private lazy val remoteDbName: Option[String] = {
+  private lazy val remoteDbName: String = {
     var dbName: Option[String] = None
     if (options.replicate) {
       while (!dbName.isDefined) {
         try {
-          dbName = cfgDatabase.map(db => (db("configuration").execute()(timeout) \ "dbname").as[String])
+          dbName = Some((cfgDatabase("configuration").execute()(timeout) \ "dbname").as[String])
           dbName.foreach(log.info("server database name is {}", _))
         } catch {
           case t: Exception =>
@@ -76,7 +64,7 @@ class Replicate(options: Options.Config) {
         }
       }
     }
-    dbName
+    dbName.get
   }
 
   private lazy val previousDbName: Option[String] =
@@ -88,10 +76,10 @@ class Replicate(options: Options.Config) {
         None
     }
 
-  private lazy val hubDatabase = for (c <- hubCouch; name <- remoteDbName) yield c.db(name)
+  private lazy val hubDatabase = hubCouch.db(remoteDbName)
 
   if (options.replicate) {
-    if (previousDbName != remoteDbName) {
+    if (previousDbName != Some(remoteDbName)) {
       log.info("deleting previous database")
       try {
         localDatabase.delete().execute()
@@ -122,12 +110,10 @@ class Replicate(options: Options.Config) {
       log.info("not creating local information on slave")
     if (options.replicate) {
       log.info("starting initial replication")
-      try
-        hubDatabase.foreach { hdb =>
-          localDatabase.replicateFrom(hdb, Json.obj()).execute()
-          log.info("initial replication done")
-        }
-      catch {
+      try {
+        localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()
+        log.info("initial replication done")
+      } catch {
         case t: Exception =>
           log.error("initial replication failed: " + t)
       }

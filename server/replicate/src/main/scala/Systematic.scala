@@ -7,20 +7,20 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
-class Systematic(options: Options.Config, local: Database, remote: Option[Database]) extends PeriodicTask(30 seconds) with LoggingError {
+class Systematic(options: Options.Config, local: Database, remote: Database) extends PeriodicTask(30 seconds) with LoggingError {
 
   override val log = Logging(system, "systematic")
 
   private[this] def localToRemoteReplication =
     if (options.replicate && !options.isSlave)
-      withError(local.replicateTo(remote.get, Systematic.replicateOptions),
+      withError(local.replicateTo(remote, Systematic.replicateOptions),
         "cannot replicate from local to remote")
     else
      Future.successful(null)
 
   private[this] def remoteToLocalReplication =
     if (options.replicate)
-      withError(local.replicateFrom(remote.get, Systematic.replicateOptions),
+      withError(local.replicateFrom(remote, Systematic.replicateOptions),
         "cannot replicate from remote to local")
     else
       Future.successful(null)

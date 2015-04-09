@@ -42,7 +42,7 @@ object Loader extends App {
   implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
 
-  val db = new Couch().db("steenwerck100km")
+  val db = steenwerck.localCouch.db(steenwerck.localDbName)
 
   private def forceInsert(doc: JsObject): Future[_] =
     db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> olderDoc \ "_rev")) }
