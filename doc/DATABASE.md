@@ -4,7 +4,11 @@ We will use CouchDB as our main database, in order to benefit from its
 replication capabilities.
 
 To limit the risk of incompatibilities, all databases should be running
-the same version of CouchDB. For the moment, we have settled on 1.2.0.
+the same version of CouchDB. For the moment, we have settled on 1.6.1
+with an additional patch (which will be included in 1.7 and 2.0).
+
+The right version of the database is built as a docker container
+from https://github.com/100km/docker-couchdb.
 
 ## Database Setup
 
