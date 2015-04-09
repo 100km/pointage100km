@@ -127,8 +127,8 @@ to keep in mind:
 [Replicator-akka.actor.default-dispatcher-3] ERROR Replicate(akka://Replicator) - deletion failed: java.net.ConnectException: Connection refused
 [Replicator-akka.actor.default-dispatcher-3] ERROR Replicate(akka://Replicator) - cannot create database: java.net.ConnectException: Connection refused
 ```
-Did you forget to launch couchdb on the local computer ? Is it setup with admin/admin ?
+Did you forget to launch couchdb on the local computer ? Is it in admin party mode (no explicit administrator account defined)?
 
 ##Notes
 
-For now, all the tool expects to have a local "admin/admin" account. Maybe we should change that in the future...
+For now, all the tool expects to be in admin party mode. Maybe we should change that in the future…
