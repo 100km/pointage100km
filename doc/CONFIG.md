@@ -26,7 +26,6 @@ On the main server, you need:
 
 On each client, you need:
  * couchdb running
- * "admin/admin" as main admin user
  * nautilus shouldn't open a window when inserting USB drive : `gsettings set org.gnome.desktop.media-handling automount-open false`
 
 ##steenwerck.cfg
