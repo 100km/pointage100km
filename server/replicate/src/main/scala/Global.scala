@@ -15,4 +15,6 @@ object Global {
 
   val backoffTimeIncrement: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.backoff-time-increment")
   val maximumBackoffTime: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.maximum-backoff-time")
+  val replicateRelaunchInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("replication-relaunch-interval")
+  val compactionInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("compactionInterval")
 }

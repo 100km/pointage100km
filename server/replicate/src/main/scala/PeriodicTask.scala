@@ -1,6 +1,7 @@
 import akka.event.LoggingAdapter
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 // The PeriodicTask is different from a scheduler-launched repetitive task
 // as it will enforce the delay between invocations of act().
@@ -11,7 +12,7 @@ abstract class PeriodicTask(period: FiniteDuration) {
 
   val log: LoggingAdapter
 
-  def act(): Unit
+  def futures: Seq[Future[_]]
 
   // initialize must be called to start the periodic task
   def initialize(): Unit =
@@ -19,7 +20,7 @@ abstract class PeriodicTask(period: FiniteDuration) {
 
   private[this] def nextIteration(): Unit = {
     try {
-      act()
+      Await.ready(Future.sequence(futures), Duration.Inf)
     } catch {
       case e: Exception => log.warning("error in PeriodicTask: " + e)
     }

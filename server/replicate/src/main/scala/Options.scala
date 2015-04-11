@@ -17,15 +17,14 @@ object Options {
     def watchdog: Boolean = _watchdog && !isSlave
 
     def onChanges = fixConflicts || fixIncomplete || watchdog
-    def systematic = compact || replicate
-    def initOnly = !onChanges && !systematic
+    def initOnly = !onChanges && !(compact || replicate)
 
     def isSlave = siteId == 999
 
     def dump() = {
       def po(opt: String, current: Any, default: Any) = {
-	val defaultString = if (current != default && default != null) (" (default: %s)".format(default)) else ""
-	System.out.println("  - %s: %s%s".format(opt, current, defaultString))
+        val defaultString = if (current != default && default != null) (" (default: %s)".format(default)) else ""
+        System.out.println("  - %s: %s%s".format(opt, current, defaultString))
       }
       val defaults = Config()
       System.out.println("Current configuration:")
@@ -39,7 +38,6 @@ object Options {
       System.out.println("Computed values:")
       po("slave only", isSlave, defaults.isSlave)
       po("check onChanges feed", onChanges, defaults.onChanges)
-      po("run periodic tasks", systematic, defaults.systematic)
       po("init only", initOnly, defaults.initOnly)
     }
   }

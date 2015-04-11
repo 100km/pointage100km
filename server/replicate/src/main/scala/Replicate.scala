@@ -128,8 +128,10 @@ class Replicate(options: Options.Config) {
     localDatabase.ensureFullCommit()
     exit(0)
   } else {
-    if (options.systematic)
-      new Systematic(options, localDatabase, hubDatabase)
+    if (options.replicate)
+      new ReplicateRelaunch(options, localDatabase, hubDatabase)
+    if (options.compact)
+      new Compaction
     if (options.obsolete)
       new LongShot(localDatabase)
     if (options.onChanges)
