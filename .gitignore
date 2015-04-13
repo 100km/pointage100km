@@ -1,6 +1,5 @@
 *~
 target/
-steenwerck.cfg
 steenwerck.conf
 bin/*
 .idea/workspace.xml
