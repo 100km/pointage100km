@@ -1,13 +1,9 @@
-import Global._
-import akka.event.Logging
 import net.rfc1149.canape._
 
-class Compaction(local: Database) extends PeriodicTask(replicateRelaunchInterval) with LoggingError {
+import scala.concurrent.duration.FiniteDuration
 
-  override val log = Logging(system, "compaction")
+class Compaction(local: Database, override val period: FiniteDuration) extends PeriodicTaskActor {
 
-  override def futures = Seq(local.compact())
-
-  initialize()
+  override def future = local.compact()
 
 }

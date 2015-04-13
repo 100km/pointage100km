@@ -1,17 +1,17 @@
-import akka.actor.ActorSystem
-import java.io.File
 import java.util.Calendar
+
+import akka.actor.ActorSystem
 import net.rfc1149.canape._
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
 import org.apache.commons.dbutils.handlers.MapListHandler
-import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json._
+import scopt.OptionParser
+
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
-import scopt.OptionParser
 
 // Usage: loader dbfile
 

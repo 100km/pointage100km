@@ -48,7 +48,7 @@ class OnChanges(options: Options.Config, local: Database)
       Await.ready(futures, Duration.Inf)
     } catch {
       case e: Exception =>
-	log.warning("error when running onChanges task: " + e)
+        log.warning("error when running onChanges task: " + e)
     }
     nextRun = now + (5 seconds)
   }

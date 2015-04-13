@@ -129,11 +129,13 @@ class Replicate(options: Options.Config) {
     exit(0)
   } else {
     if (options.replicate)
-      new ReplicateRelaunch(options, localDatabase, hubDatabase)
-    if (options.compact)
-      new Compaction
+      system.actorOf(Props(new ReplicateRelaunch(options.isSlave, localDatabase, hubDatabase)), "replicate-relaunch")
+    if (options.compactLocal)
+      system.actorOf(Props(new Compaction(localDatabase, localCompactionInterval)), "compact-local")
+    if (options.compactMaster)
+      system.actorOf(Props(new Compaction(hubDatabase, masterCompactionInterval)), "compact-master")
     if (options.obsolete)
-      new LongShot(localDatabase)
+      system.actorOf(Props(new RemoveObsoleteDocuments(localDatabase)), "obsolete")
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
   }
