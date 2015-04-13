@@ -20,4 +20,5 @@ object Global {
   val masterCompactionInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("master-compaction-interval")
   val obsoleteRemoveInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-remove-interval")
   val obsoleteAge: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-age")
+  val initialReplicationTimeout: FiniteDuration = replicateConfig.as[FiniteDuration]("initial-replication-timeout")
 }

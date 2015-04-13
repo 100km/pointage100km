@@ -111,7 +111,7 @@ class Replicate(options: Options.Config) {
     if (options.replicate) {
       log.info("starting initial replication")
       try {
-        localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()
+        localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()(initialReplicationTimeout)
         log.info("initial replication done")
       } catch {
         case t: Exception =>

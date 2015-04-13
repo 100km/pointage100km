@@ -28,17 +28,20 @@ On each client, you need:
  * couchdb running
  * nautilus shouldn't open a window when inserting USB drive : `gsettings set org.gnome.desktop.media-handling automount-open false`
 
-##steenwerck.cfg
+##steenwerck.conf
 
 This file is not commited on git. It is a file containing the information to log on the server couchdb.
 ```
-[master]
-host = <server hosting the couchdb>
-port = <port to reach couchdb>
-dbname = <LOCAL database name>
-user = <user used for server connection>
-password = <password used for server connection>
+master {
+  host = <server hosting the couchdb>
+  port = <port to reach couchdb>
+  user = <user used for server connection>
+  password = <password used for server connection>
+}
 ```
+
+Similarly, a `local` section can be added in this file to override local database information. Parameters for the `replicate`
+application can be overridden in a `replicate` section.
 
 ##Launching a race
 If a bib has been input in the bib_input couchapp before the contestant had been transfered from the website db to couchdb, (for example you forgot to run bin/loader, or a contestant registered after the begining of the race), you need to have a bin/replicate launched with the -I option to fix the checkpoint document
