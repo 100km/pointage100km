@@ -9,7 +9,7 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
                                   "com.typesafe.akka" %% "akka-stream-experimental" % "1.0-M5",
                                   "net.ceedubs" %% "ficus" % "1.1.2",
-                                  "ch.qos.logback" % "logback-classic" % "1.0.9"))
+                                  "ch.qos.logback" % "logback-classic" % "1.1.3"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
 
@@ -28,8 +28,8 @@ lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "2.
 
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
-                                  "commons-dbutils" % "commons-dbutils" % "1.5",
-                                  "mysql" % "mysql-connector-java" % "5.1.22"))
+                                  "commons-dbutils" % "commons-dbutils" % "1.6",
+                                  "mysql" % "mysql-connector-java" % "5.1.35"))
 
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.6",
