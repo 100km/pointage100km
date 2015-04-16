@@ -2,8 +2,6 @@ import sbt._
 import Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
 
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.3.9",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.3.9",
@@ -33,7 +31,8 @@ lazy val mysql =
 
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.6",
-      scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"))
+      scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
+      resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/")
 
 lazy val root =
   Project("root", file(".")) aggregate(replicate, wipe, stats, loader)
