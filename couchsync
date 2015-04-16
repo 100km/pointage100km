@@ -47,6 +47,7 @@ replicate() {
 
 # Send a message
 message() {
+  echo $1
   post steenwerck100km/_design/bib_input/_update/force-update/status \
     --data-urlencode "json={\"type\":\"status\",\"scope\":\"local\",\"message\":\"$1\"}" \
     -H "Content-Type: application/x-www-form-urlencoded"
