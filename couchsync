@@ -11,7 +11,7 @@ fi
 #
 # Constants
 #
-couchurl=http://admin:admin@localhost:5984
+couchurl=http://localhost:5984
 
 #
 # Helper functions
@@ -91,12 +91,15 @@ prevdir=$(pwd)
 while true; do
 
   # Wait until a USB key appears, mounted under /media with a steenwerck file.
-  while test ! -f /media/*/steenwerck; do
+  steenwerck_file=$(find /media/ -maxdepth 3 -type f -name steenwerck -print -quit) 
+  while [ "$steenwerck_file" = "" ]
+  do
     sleep 1
+    steenwerck_file=$(find /media/ -maxdepth 3 -type f -name steenwerck -print -quit) 
   done
 
   # Go into the USB key to block a possible umount.
-  usbkeydir=$(dirname /media/*/steenwerck)
+  usbkeydir=$(dirname $steenwerck_file)
   cd "$usbkeydir"
 
   # Check the credentials on the key against the ones in the database
