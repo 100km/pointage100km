@@ -1,14 +1,19 @@
 FROM rfc1149/couchdb:1.6.1
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
-RUN apt-get update
-RUN apt-get install -y --force-yes --no-install-recommends openjdk-7-jre-headless git make
+RUN apt-get update && \
+    apt-get install -y --force-yes --no-install-recommends openjdk-7-jre-headless git make
 
 RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
 
 USER steenwerck
-RUN cd /home/steenwerck && git clone http://github.com/100km/pointage100km.git
-RUN cd /home/steenwerck/pointage100km && git submodule update --init && make
+RUN cd /home/steenwerck && \
+    git clone --recursive http://github.com/100km/pointage100km.git && \
+    cd pointage100km && \
+    make bin/replicate && \
+    find server -name target -print0 | xargs -0 rm -rf && \
+    cd .. && \
+    rm -rf .sbt .ivy2
 
 USER root
 ADD start.sh /
