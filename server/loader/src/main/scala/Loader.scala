@@ -1,4 +1,5 @@
 import java.util.Calendar
+import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
 import net.rfc1149.canape._
@@ -18,7 +19,7 @@ import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
 object Loader extends App {
 
   import implicits._
-  implicit val timeout: Duration = (5, SECONDS)
+  implicit val timeout: Duration = 1 minute
 
   private case class Options(year: Int = 0, host: String = "localhost",
 			     user: Option[String] = None, password: Option[String] = None,
@@ -26,7 +27,7 @@ object Loader extends App {
 
   private val parser = new OptionParser[Options]("loader") {
     help("help") text("show this help")
-    opt[String]('h', "host") text("Mysql host ( default: localhost") action { (x, c) => c.copy(host = x) }
+    opt[String]('h', "host") text("Mysql host (default: localhost)") action { (x, c) => c.copy(host = x) }
     opt[String]('u', "user") text("Mysql user") action { (x, c) => c.copy(user = Some(x)) }
     opt[String]('p', "password") text("Mysql password") action { (x, c) => c.copy(password = Some(x)) }
     opt[String]('d', "database") text("Mysql database (default: 100km") action { (x, c) => c.copy(database = x) }
@@ -44,7 +45,41 @@ object Loader extends App {
 
   val db = steenwerck.localCouch.db(steenwerck.localDbName)
 
-  private def forceInsert(doc: JsObject): Future[_] =
+  private def capitalize(name: String) = {
+    val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
+    capitalized.zip(name) map {
+      case (_, '-') => '-'
+      case (c, _)   => c
+    } mkString
+  }
+
+  private def fix(m: Map[String, Any]): JsObject = JsObject(m.toSeq map {
+    case ("year", v: java.sql.Date) => "year" -> JsNumber(v.get(Calendar.YEAR))
+    case (k, v: java.math.BigDecimal) => k -> JsNumber(v.doubleValue())
+    case (k, v: java.lang.Long) => k -> JsNumber(v.toLong)
+    case (k, v: java.lang.Integer) => k -> JsNumber(v.toInt)
+    case (k, v: java.util.Date) => k -> JsString(v.toString)
+    case ("id", id: String) => "mysql_id" -> JsString(id)
+    case (k, v: Boolean) => k -> JsBoolean(v)
+    case (k, v: String) => k -> JsString(v)
+  })
+
+  private def containsAll(doc: JsObject, original: JsObject): Boolean = {
+    if ((doc \ "bib").as[Int] != 460) {
+      doc.fields.foreach {
+        case (k, v) if original \ k != v =>
+          val r = original \ k
+          println(s"Bib ${doc \ "bib"}: field $k is different: $v (${v.getClass}) vs. $r (${r.getClass})")
+        case _ =>
+      }
+    }
+    doc.fields.forall {
+      case (k, v) if original \ k == v => true
+      case _ => false
+    }
+  }
+
+  private def forceInsert(doc: JsObject): Future[JsValue] =
     db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> olderDoc \ "_rev")) }
 
   try {
@@ -57,8 +92,6 @@ object Loader extends App {
     options.user.foreach(source.setUsername)
     options.password.foreach(source.setPassword)
 
-    def get(id: String) = try { Some(db(id).execute()) } catch { case Couch.StatusError(404, _, _) => None }
-
     val run = new QueryRunner(source)
 
     val teams = {
@@ -69,50 +102,54 @@ object Loader extends App {
         yield team("id").asInstanceOf[java.lang.Integer] -> team("name").asInstanceOf[String]).toMap
     }
 
+    val upToDate = new AtomicInteger(0)
+    val inserted = new AtomicInteger(0)
+    val updated = new AtomicInteger(0)
     val q = run.query("SELECT * FROM registrations WHERE year = ?",
 		      new MapListHandler,
 		      new java.lang.Integer(options.year))
-    for (contestant <- q) {
-      val bib = contestant("bib").asInstanceOf[java.lang.Long]
-      val id = "contestant-" + bib
-      val firstName = capitalize(contestant("first_name").asInstanceOf[String])
-      val name = contestant("name").asInstanceOf[String]
-      val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
-      val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
-        Json.obj("_id" -> id,
-          "type" -> "contestant",
-          "name" -> name,
-          "first_name" -> firstName) ++
-        (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
-      val desc = s"bib $bib ($firstName $name)"
-      try {
-        db.insert(doc).execute()
-        println("Inserted " + desc)
-      } catch {
-        case Couch.StatusError(409, _, _) =>
-          println("Updating existing " + desc)
-          forceInsert(doc).execute()
+    println(s"Starting update for ${q.size} documents")
+    for (r <- q.grouped(20)) {
+      val future = Future.traverse(r) { contestant =>
+        val bib = contestant("bib").asInstanceOf[java.lang.Long]
+        val id = "contestant-" + bib
+        val firstName = capitalize(contestant("first_name").asInstanceOf[String])
+        val name = contestant("name").asInstanceOf[String]
+        val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
+        val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
+          Json.obj("_id" -> id,
+            "type" -> "contestant",
+            "name" -> name,
+            "first_name" -> firstName) ++
+          (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
+        val desc = s"bib $bib ($firstName $name)"
+        db(id) map { original =>
+          if (containsAll(doc, original)) {
+            upToDate.incrementAndGet()
+            Future.successful(Json.obj())
+          } else {
+            db.insert(doc ++ Json.obj("_rev" -> original \ "_rev")) andThen {
+              case _ =>
+                println(s"Updated existing $desc")
+                updated.incrementAndGet()
+            } recoverWith {
+              case t: Throwable =>
+                println(s"Could not update existing $desc: $t")
+                throw t
+            }
+          }
+        } recoverWith { case Couch.StatusError(404, _, _) =>
+          db.insert(doc) andThen { case _ =>
+            println(s"Inserted $desc")
+            inserted.incrementAndGet()
+          }
+        }
       }
+      future.execute()
     }
-
-    def fix(m: Map[String, Any]): JsObject = JsObject(m.toSeq map {
-      case ("year", v: java.sql.Date) => "year" -> JsNumber(v.get(Calendar.YEAR))
-      case (k, v: java.math.BigDecimal) => k -> JsNumber(v.doubleValue())
-      case (k, v: java.lang.Long) => k -> JsNumber(v.toLong)
-      case (k, v: java.lang.Integer) => k -> JsNumber(v.toInt)
-      case (k, v: java.util.Date) => k -> JsString(v.toString)
-      case ("id", id: String) => "mysql_id" -> JsString(id)
-      case (k, v: Boolean) => k -> JsBoolean(v)
-      case (k, v: String) => k -> JsString(v)
-    })
-
-    def capitalize(name: String) = {
-      val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
-      capitalized.zip(name) map {
-        case (_, '-') => '-'
-        case (c, _)   => c
-      } mkString
-    }
+    println(s"Inserted documents: ${inserted.get()}")
+    println(s"Updated documents: ${updated.get()}")
+    println(s"Documents already up-to-date: ${upToDate.get()}")
   } finally {
     db.couch.releaseExternalResources()
     system.shutdown()
