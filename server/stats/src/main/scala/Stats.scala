@@ -1,7 +1,7 @@
 import akka.actor.ActorSystem
 import net.rfc1149.canape._
 import net.rfc1149.canape.implicits._
-import play.api.libs.json.{Json, JsBoolean}
+import play.api.libs.json.{JsValue, Json, JsBoolean}
 import scala.concurrent.duration._
 import scala.util.Random._
 
@@ -40,7 +40,7 @@ object Stats extends App {
 
   def recentCheckpointsMillis() = {
     val before = System.currentTimeMillis
-    db.view("bib_input", "recent-checkpoints", List(("limit","10"))).execute()
+    db.view[JsValue, JsValue]("bib_input", "recent-checkpoints", List(("limit","10"))).execute()
     System.currentTimeMillis - before
   }
 

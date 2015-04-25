@@ -14,15 +14,15 @@ class RemoveObsoleteDocuments(db: Database) extends PeriodicTaskActor {
 
   override def future: Future[Seq[JsValue]] = {
     val deadline = System.currentTimeMillis - obsoleteMillisecons
-    val docs = db.view("admin", "transient-docs") map {
-      _.values[JsObject] filter { _ \ "time" match {
-        case JsNumber(time) if time < deadline => true
-        case _                                 => false
-      } }
-    }
-    docs flatMap { toDelete =>
-      val future = Future.sequence(toDelete map { db.delete })
-      future onSuccess {
+    db.view[JsValue, JsObject]("admin", "transient-docs") flatMap { docs =>
+      val toDelete = docs map (_._2) filter {
+        _ \ "time" match {
+          case JsNumber(time) if time < deadline => true
+          case _ => false
+        }
+      }
+      val future = Future.traverse(toDelete)(db.delete)
+      future.onSuccess {
         case _ => if (toDelete.nonEmpty) log.info("successfully deleted obsolete transient documents (" + toDelete.size + ")")
       }
       future

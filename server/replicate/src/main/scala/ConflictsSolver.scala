@@ -46,7 +46,7 @@ trait ConflictsSolver {
     }
 
   def fixConflictingCheckpoints(db: Database): Future[Iterable[Seq[JsObject]]] =
-    db.view("common", "conflicting-checkpoints") flatMap { r =>
+    db.mapOnly("common", "conflicting-checkpoints") flatMap { r =>
         Future.sequence(for ((id, _, value) <- r.items[JsValue, List[String]])
           yield solveConflicts(db, id, value))
     }
