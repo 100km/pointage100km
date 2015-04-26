@@ -11,6 +11,7 @@ object Options {
                     _fixIncomplete: Boolean = false,
                     _obsolete: Boolean = true,
                     replicate: Boolean = true,
+                    alerts: Boolean = false,
                     siteId: Int = -1,
                     _watchdog: Boolean = true) {
 
@@ -39,6 +40,7 @@ object Options {
       po("remove obsolete documents", obsolete, defaults.obsolete)
       po("run replication service", replicate, defaults.replicate)
       po("run watchdog (ping) service", watchdog, defaults.watchdog)
+      po("run alerts service", alerts, defaults.alerts)
       System.out.println("Computed values:")
       po("slave only", isSlave, defaults.isSlave)
       po("check onChanges feed", onChanges, defaults.onChanges)
@@ -50,7 +52,7 @@ object Options {
     val parser = new OptionParser[Config]("replicate") {
       opt[Unit]('c', "conflicts") text("fix conflicts as they appear") action { (_, c) =>
         c.copy(_fixConflicts = true) }
-      opt[Unit]('f', "full") text("turn on every service") action { (_, c) =>
+      opt[Unit]('f', "full") text("turn on every service but alerts") action { (_, c) =>
         c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
           replicate = true, _watchdog = true) }
       opt[Unit]('n', "dry-run") text("dump configuration and do not run") action { (_, c) =>
@@ -75,6 +77,9 @@ object Options {
       }
       opt[Unit]("no-watchdog") abbr("nw") text("do not start watchdog (ping)") action { (_, c) =>
         c.copy(_watchdog = false)
+      }
+      opt[Unit]("alerts") abbr("a") text("run alerts service") action { (_, c) =>
+        c.copy(alerts = true)
       }
       arg[Int]("<site-id>") text("numerical id of the current site (999 for slave mode)") action { (x, c) =>
         c.copy(siteId = x)

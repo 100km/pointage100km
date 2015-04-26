@@ -3,6 +3,7 @@ package replicate
 import akka.actor.Props
 import net.rfc1149.canape._
 import play.api.libs.json.Json
+import replicate.alerts.Alerts
 import replicate.maintenance.{ReplicateRelaunch, RemoveObsoleteDocuments, Compaction}
 import replicate.utils.{OnChanges, Infos, Options, Global}
 import steenwerck._
@@ -118,13 +119,14 @@ class Replicate(options: Options.Config) {
       try {
         localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()(initialReplicationTimeout)
         log.info("initial replication done")
-        localDatabase("infos") map(_.as[Infos]) andThen {
+        val loadInfos = localDatabase("infos") map(_.as[Infos]) andThen {
           case Success(infos) =>
             Global.infos = Some(infos)
             log.info("race information loaded from database")
           case Failure(t)     =>
             log.error(t, "unable to read race information from database")
         }
+        loadInfos.execute()
       } catch {
         case t: Exception =>
           log.error("initial replication failed: " + t)
@@ -150,6 +152,8 @@ class Replicate(options: Options.Config) {
       system.actorOf(Props(new RemoveObsoleteDocuments(localDatabase)), "obsolete")
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
+    if (options.alerts)
+      system.actorOf(Props(new Alerts(localDatabase)), "alerts")
   }
 
   private def exit(status: Int) {
