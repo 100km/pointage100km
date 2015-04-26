@@ -42,8 +42,6 @@ class OnChanges(options: Options.Config, local: Database)
     Future.sequence(List(fc, fi))
   }
 
-  private[this] var changesOccurred = false
-
   private[this] var nextRun = now
 
   private[this] def trigger() {
