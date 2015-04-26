@@ -1,5 +1,8 @@
+package replicate.maintenance
+
 import net.rfc1149.canape._
 import play.api.libs.json.Json
+import replicate.utils.{Global, PeriodicTaskActor}
 
 import scala.concurrent.Future
 

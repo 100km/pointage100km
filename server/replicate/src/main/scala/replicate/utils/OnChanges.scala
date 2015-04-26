@@ -1,8 +1,11 @@
-import Global._
+package replicate.utils
+
 import akka.actor.{Actor, Cancellable, Props}
 import akka.event.Logging
 import net.rfc1149.canape._
-import play.api.libs.json.{JsString, JsObject}
+import play.api.libs.json.{JsObject, JsString}
+import replicate.maintenance.{Watchdog, IncompleteCheckpoints, ConflictsSolver}
+import replicate.utils.Global._
 
 import scala.concurrent.duration.Deadline._
 import scala.concurrent.duration._

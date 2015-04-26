@@ -1,3 +1,5 @@
+package replicate.utils
+
 import play.api.libs.json.{Json, Reads}
 
 case class Infos(cat_names: Array[String],

@@ -1,6 +1,10 @@
+package replicate
+
 import akka.actor.Props
 import net.rfc1149.canape._
 import play.api.libs.json.Json
+import replicate.maintenance.{ReplicateRelaunch, RemoveObsoleteDocuments, Compaction}
+import replicate.utils.{OnChanges, Infos, Options, Global}
 import steenwerck._
 
 import scala.concurrent.duration._

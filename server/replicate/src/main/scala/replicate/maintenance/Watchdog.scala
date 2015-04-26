@@ -1,7 +1,11 @@
+package replicate.maintenance
+
 import akka.actor.{Actor, FSM}
 import akka.event.Logging
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
+import replicate.Replicate
+import replicate.utils.{LoggingError, Options}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps

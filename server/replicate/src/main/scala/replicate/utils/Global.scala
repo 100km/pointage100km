@@ -1,3 +1,5 @@
+package replicate.utils
+
 import akka.actor.ActorSystem
 import akka.event.Logging
 import com.typesafe.config.{Config, ConfigFactory}

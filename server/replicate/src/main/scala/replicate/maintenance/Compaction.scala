@@ -1,4 +1,7 @@
+package replicate.maintenance
+
 import net.rfc1149.canape._
+import replicate.utils.PeriodicTaskActor
 
 import scala.concurrent.duration.FiniteDuration
 

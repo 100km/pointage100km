@@ -1,9 +1,12 @@
-import Global._
+package replicate.maintenance
+
 import akka.event.LoggingAdapter
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import replicate.utils.Global
+import replicate.utils.Global._
 
 import scala.concurrent.Future
 

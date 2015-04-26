@@ -1,3 +1,5 @@
+package replicate.utils
+
 import akka.event.LoggingAdapter
 
 import scala.concurrent.Future

@@ -1,8 +1,11 @@
+package replicate
+
 import java.util.UUID
 
 import net.rfc1149.canape.{Database, helpers}
 import org.specs2.mutable._
 import play.api.libs.json.{JsObject, JsValue, Json}
+import replicate.utils.Options
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}

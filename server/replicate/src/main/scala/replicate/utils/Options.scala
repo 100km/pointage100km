@@ -1,3 +1,5 @@
+package replicate.utils
+
 import scopt.OptionParser
 
 object Options {

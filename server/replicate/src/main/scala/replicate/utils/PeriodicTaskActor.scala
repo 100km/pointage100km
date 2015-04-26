@@ -1,3 +1,5 @@
+package replicate.utils
+
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging}
 import akka.pattern.pipe
