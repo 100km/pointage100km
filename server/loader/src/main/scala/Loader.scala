@@ -65,14 +65,6 @@ object Loader extends App {
   })
 
   private def containsAll(doc: JsObject, original: JsObject): Boolean = {
-    if ((doc \ "bib").as[Int] != 460) {
-      doc.fields.foreach {
-        case (k, v) if original \ k != v =>
-          val r = original \ k
-          println(s"Bib ${doc \ "bib"}: field $k is different: $v (${v.getClass}) vs. $r (${r.getClass})")
-        case _ =>
-      }
-    }
     doc.fields.forall {
       case (k, v) if original \ k == v => true
       case _ => false
@@ -108,7 +100,7 @@ object Loader extends App {
     val q = run.query("SELECT * FROM registrations WHERE year = ?",
 		      new MapListHandler,
 		      new java.lang.Integer(options.year))
-    println(s"Starting update for ${q.size} documents")
+    println(s"Starting checking/inserting/updating ${q.size} documents")
     for (r <- q.grouped(20)) {
       val future = Future.traverse(r) { contestant =>
         val bib = contestant("bib").asInstanceOf[java.lang.Long]
@@ -123,7 +115,7 @@ object Loader extends App {
             "first_name" -> firstName) ++
           (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
         val desc = s"bib $bib ($firstName $name)"
-        db(id) map { original =>
+        db(id) flatMap { original =>
           if (containsAll(doc, original)) {
             upToDate.incrementAndGet()
             Future.successful(Json.obj())
@@ -135,7 +127,7 @@ object Loader extends App {
             } recoverWith {
               case t: Throwable =>
                 println(s"Could not update existing $desc: $t")
-                throw t
+                Future.successful(Json.obj())
             }
           }
         } recoverWith { case Couch.StatusError(404, _, _) =>
