@@ -30,7 +30,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   private[this] def requestChanges() =
     database.status().foreach { s =>
-      val seqOption = Map("since" -> (s \ "update_seq").as[Int].toString)
+      val seqOption = Map("since" -> (s \ "update_seq").as[Int].toString, "heartbeat" -> Global.heartbeatInterval.toMillis.toString)
       database.continuousChanges(seqOption ++ filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
     }
 

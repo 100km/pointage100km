@@ -17,6 +17,7 @@ object Global {
 
   val backoffTimeIncrement: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.backoff-time-increment")
   val maximumBackoffTime: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.maximum-backoff-time")
+  val heartbeatInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.heartbeat-interval")
   val replicateRelaunchInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("replication-relaunch-interval")
   val localCompactionInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("local-compaction-interval")
   val masterCompactionInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("master-compaction-interval")
