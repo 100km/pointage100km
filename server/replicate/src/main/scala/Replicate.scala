@@ -4,6 +4,7 @@ import play.api.libs.json.Json
 import steenwerck._
 
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 object Replicate extends App {
 
@@ -113,6 +114,13 @@ class Replicate(options: Options.Config) {
       try {
         localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()(initialReplicationTimeout)
         log.info("initial replication done")
+        localDatabase("infos") map(_.as[Infos]) andThen {
+          case Success(infos) =>
+            Global.infos = Some(infos)
+            log.info("race information loaded from database")
+          case Failure(t)     =>
+            log.error(t, "unable to read race information from database")
+        }
       } catch {
         case t: Exception =>
           log.error("initial replication failed: " + t)

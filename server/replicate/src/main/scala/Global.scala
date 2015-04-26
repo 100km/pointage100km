@@ -21,4 +21,6 @@ object Global {
   val obsoleteRemoveInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-remove-interval")
   val obsoleteAge: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-age")
   val initialReplicationTimeout: FiniteDuration = replicateConfig.as[FiniteDuration]("initial-replication-timeout")
+
+  var infos: Option[Infos] = None
 }
