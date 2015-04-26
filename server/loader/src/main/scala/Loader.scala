@@ -84,6 +84,9 @@ object Loader extends App {
     options.user.foreach(source.setUsername)
     options.password.foreach(source.setPassword)
 
+    val existing: Map[Long, JsObject] = db.view[Long, JsObject]("common", "all_contestants").execute().toMap
+    println(s"Contestants already in the CouchDB database: ${existing.size}")
+
     val run = new QueryRunner(source)
 
     val teams = {
@@ -100,7 +103,9 @@ object Loader extends App {
     val q = run.query("SELECT * FROM registrations WHERE year = ?",
 		      new MapListHandler,
 		      new java.lang.Integer(options.year))
-    println(s"Starting checking/inserting/updating ${q.size} documents")
+    println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
+    // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
+    // be overloaded and that we will encounter no timeouts.
     for (r <- q.grouped(20)) {
       val future = Future.traverse(r) { contestant =>
         val bib = contestant("bib").asInstanceOf[java.lang.Long]
@@ -115,26 +120,31 @@ object Loader extends App {
             "first_name" -> firstName) ++
           (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
         val desc = s"bib $bib ($firstName $name)"
-        db(id) flatMap { original =>
-          if (containsAll(doc, original)) {
-            upToDate.incrementAndGet()
-            Future.successful(Json.obj())
-          } else {
-            db.insert(doc ++ Json.obj("_rev" -> original \ "_rev")) andThen {
-              case _ =>
-                println(s"Updated existing $desc")
-                updated.incrementAndGet()
+        existing.get(bib) match {
+          case Some(original) =>
+            if (containsAll(doc, original)) {
+              upToDate.incrementAndGet()
+              Future.successful(Json.obj())
+            } else {
+              db.insert(doc ++ Json.obj("_rev" -> original \ "_rev")) andThen {
+                case _ =>
+                  println(s"Updated existing $desc")
+                  updated.incrementAndGet()
+              } recoverWith {
+                case t: Throwable =>
+                  println(s"Could not update existing $desc: $t")
+                  Future.successful(Json.obj())
+              }
+            }
+          case None =>
+            db.insert(doc) andThen { case _ =>
+              println(s"Inserted $desc")
+              inserted.incrementAndGet()
             } recoverWith {
               case t: Throwable =>
-                println(s"Could not update existing $desc: $t")
+                println(s"Could not insert $desc: $t")
                 Future.successful(Json.obj())
             }
-          }
-        } recoverWith { case Couch.StatusError(404, _, _) =>
-          db.insert(doc) andThen { case _ =>
-            println(s"Inserted $desc")
-            inserted.incrementAndGet()
-          }
         }
       }
       future.execute()
