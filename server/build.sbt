@@ -41,7 +41,7 @@ lazy val stats =
   Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val replicate =
-  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2) dependsOn(canape, steenwerck)
+  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2 ++ Revolver.settings) dependsOn(canape, steenwerck)
 
 lazy val loader =
   Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt) dependsOn(canape, steenwerck)
