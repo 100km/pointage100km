@@ -4,7 +4,7 @@ cd `dirname $0`
 
 usage() {
   cat <<"EOF"
-    usage: server-pushapps local|server [user passwd dbname]
+    usage: server-pushapps local|server [user passwd [dbname]]
     user and passwd default to admin:admin
     dbname defaults to steenwerck100km in local, and to the currently used database on server
 EOF
