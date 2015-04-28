@@ -22,6 +22,11 @@ class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
     log.info(s"""Launched race ranking alert service for race "$raceName"""")
   }
 
+  private[this] def info(message: String) = {
+    log.info(message)
+    Alerts.deliverAlert(message)
+  }
+
   private[this] def checkForChange(winner: Option[Int]): Future[Unit] = {
     if (winner != currentWinner) {
       val winnerNameFuture =
@@ -31,11 +36,11 @@ class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
         (currentWinner, winner) match {
           case (None, None) =>
           case (None, Some(_)) =>
-            log.info(s"""First winner ever for race "$raceName": $winnerName""")
+            info(s"""First winner ever for race "$raceName": $winnerName""")
           case (Some(_), None) =>
-            log.info(s"""No more winner for race "$raceName"""")
+            info(s"""No more winner for race "$raceName"""")
           case (_, Some(_)) =>
-            log.info(s"""First place for race "$raceName" is now for $winnerName""")
+            info(s"""First place for race "$raceName" is now for $winnerName""")
         }
         currentWinner = winner
       }
