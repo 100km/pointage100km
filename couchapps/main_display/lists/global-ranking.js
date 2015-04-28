@@ -2,7 +2,7 @@ function(head, req) {
 
   start({
     "headers": {
-      "Content-Type": "text/plain"
+      "Content-Type": "application/json"
     }
   });
 
