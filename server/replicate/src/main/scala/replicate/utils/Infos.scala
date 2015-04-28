@@ -21,12 +21,13 @@ case class Infos(cat_names: Array[String],
 object Infos {
   implicit val infosReads: Reads[Infos] = Json.reads[Infos]
 
-  case class RaceInfo(name: String, laps: Int, startTime: Long, endTime: Long) {
-    def this(raceId: Int, infos: Infos) =
-      this(infos.races_names(raceId), infos.races_laps(raceId),
-        infos.start_times(raceId), infos.start_times(raceId) + infos.races_hours(raceId) * 24 * 3600 * 1000)
+  class RaceInfo(raceId: Int, infos: Infos) {
+    val name = infos.races_names(raceId)
+    val laps = infos.races_laps(raceId)
+    val startTime = infos.start_times(raceId)
+    val endTime = startTime + infos.races_hours(raceId) * 24 * 3600 * 1000
 
-    def checkpointTimeInRace(time: Long): Boolean = time >= startTime && time <= endTime
+    def isCheckpointTimeInRace(time: Long): Boolean = time >= startTime && time <= endTime
   }
 
 }

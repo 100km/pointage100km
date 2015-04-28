@@ -25,7 +25,13 @@ object Global {
   val obsoleteRemoveInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-remove-interval")
   val obsoleteAge: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-age")
   val initialReplicationTimeout: FiniteDuration = replicateConfig.as[FiniteDuration]("initial-replication-timeout")
-  val raceRankingAlertInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("race-ranking-alert-interval")
+
+  object RaceRanking {
+    private val raceRankingConfig = replicateConfig.as[Config]("race-ranking")
+    val alertInterval: FiniteDuration = raceRankingConfig.as[FiniteDuration]("alert-interval")
+    val topRunners: Int = raceRankingConfig.as[Int]("top-runners")
+    val previousRanking: Int = raceRankingConfig.as[Int]("previous-ranking")
+  }
 
   var infos: Option[Infos] = None
 }

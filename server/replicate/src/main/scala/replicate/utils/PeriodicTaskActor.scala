@@ -47,7 +47,7 @@ trait PeriodicTaskActor extends Actor with ActorLogging {
       log.debug(s"waiting for $period")
       context.system.scheduler.scheduleOnce(period, self, 'act)
     case Failure(e) =>
-      log.warning(s"error in execution: $e")
+      log.error(e, "error in execution")
       self ! 'wait
     case _ =>
       log.debug("execution done")
