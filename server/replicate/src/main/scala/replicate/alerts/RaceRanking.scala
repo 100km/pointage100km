@@ -1,14 +1,15 @@
 package replicate.alerts
 
+import akka.stream.{FlowMaterializer, ActorFlowMaterializer}
 import net.rfc1149.canape.{Couch, Database}
 import replicate.utils.{Global, PeriodicTaskActor}
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
 
   private[this] implicit val dispatcher = context.system.dispatcher
+  private[this] implicit val fm = ActorFlowMaterializer()
 
   override def period = Global.raceRankingAlertInterval
 

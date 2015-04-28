@@ -153,7 +153,7 @@ object Loader extends App {
     println(s"Updated documents: ${updated.get()}")
     println(s"Documents already up-to-date: ${upToDate.get()}")
   } finally {
-    db.couch.releaseExternalResources()
+    db.couch.releaseExternalResources().execute()
     system.shutdown()
   }
 }

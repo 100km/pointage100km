@@ -73,7 +73,7 @@ object Stats extends App {
       println(i + " " + recentCheckpointsMillis)
     }
   } finally {
-    db.couch.releaseExternalResources()
+    db.couch.releaseExternalResources().execute()
     system.shutdown()
   }
 

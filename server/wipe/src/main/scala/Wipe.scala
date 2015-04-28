@@ -67,7 +67,7 @@ object Wipe extends App {
         println("Exception caught: " + t)
   }
 
-  hubCouch.releaseExternalResources()
+  hubCouch.releaseExternalResources().execute()
   system.shutdown()
 
 }

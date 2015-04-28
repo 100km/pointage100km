@@ -104,7 +104,6 @@ class Replicate(options: Options.Config) {
       log.info("database already exists")
     case t: Exception =>
       log.error("cannot create database: " + t)
-      localCouch.releaseExternalResources()
       exit(1)
   }
 
@@ -157,7 +156,8 @@ class Replicate(options: Options.Config) {
   }
 
   private def exit(status: Int) {
-    localCouch.releaseExternalResources()
+    localCouch.releaseExternalResources().execute()
+    hubCouch.releaseExternalResources().execute()
     system.shutdown()
     System.exit(status)
   }
