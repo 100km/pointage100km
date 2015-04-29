@@ -16,6 +16,8 @@ class BroadcastAlert(database: Database) extends PeriodicTaskActor {
 
   private[this] var sentBroadcasts: Map[String, Seq[(Messaging, String)]] = Map()
 
+  private[this] var nextTimestamp: Option[Long] = None
+
   private[this] def cancelBroadcasts(ids: Seq[String]): Future[Unit] =
     Future.sequence(for (id <- ids; (messaging, identifier) <- sentBroadcasts(id))
       yield messaging.cancelMessage(identifier)).map(_ => for (id <- ids) sentBroadcasts -= id)
@@ -25,7 +27,9 @@ class BroadcastAlert(database: Database) extends PeriodicTaskActor {
     Message(Message.Broadcast, Severity.Info, title = title, body = bcast.message, url = None)
   }
 
-  private[this] def analyzeBroadcasts(broadcasts: Seq[Broadcast]): Future[Unit] = {
+  private[this] def analyzeBroadcasts(timestampedBroadcasts: Seq[(Long, Broadcast)]): Future[Unit] = {
+    timestampedBroadcasts.lastOption.foreach(tsbcast => nextTimestamp = Some(tsbcast._1 + 1))
+    val broadcasts = timestampedBroadcasts.map(_._2)
     val toDelete: Seq[String] = broadcasts.filter(_.deletedTS.isDefined).map(_._id).filter(sentBroadcasts.contains)
     val toSend: Seq[Broadcast] = broadcasts.filter(bcast => bcast.deletedTS.isEmpty && !sentBroadcasts.contains(bcast._id))
     cancelBroadcasts(toDelete).flatMap(_ =>
@@ -33,6 +37,6 @@ class BroadcastAlert(database: Database) extends PeriodicTaskActor {
         .map(_.foreach(sentBroadcasts += _)))
   }
 
-  override def future = Broadcast.broadcasts(database).flatMap(analyzeBroadcasts)
+  override def future = Broadcast.broadcasts(database, nextTimestamp).flatMap(analyzeBroadcasts)
 
 }
