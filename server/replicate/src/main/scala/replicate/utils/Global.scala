@@ -42,6 +42,11 @@ object Global {
     val criticalDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("critical-delay")
   }
 
+  object BroadcastAlerts {
+    private val broadcastAlertsConfig = replicateConfig.as[Config]("broadcast-alerts")
+    val checkInterval: FiniteDuration = broadcastAlertsConfig.as[FiniteDuration]("check-interval")
+  }
+
   var infos: Option[Infos] = None
   var configuration: Option[Configuration] = None
 }

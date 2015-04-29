@@ -16,13 +16,14 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   import Alerts._
 
   override def preStart() = {
-    deliverAlert(officers, Message(Administrativia, Severity.Info, "Alert service starting",
+    deliverAlert(officers, Message(Administrativia, Severity.Verbose, "Alert service starting",
       s"Delivering alerts to ${officers.mkString(", ")}",
       Global.configuration.map(_.adminLink)))
     for (infos <- Global.infos; raceInfo <- infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
     for (infos <- Global.infos; checkpointInfo <- infos.checkpoints.values)
       context.actorOf(Props(new PingAlert(database, checkpointInfo)), s"checkpoint-${checkpointInfo.checkpointId}")
+    context.actorOf(Props(new BroadcastAlert(database)), "broadcasts")
   }
 
   def receive = {

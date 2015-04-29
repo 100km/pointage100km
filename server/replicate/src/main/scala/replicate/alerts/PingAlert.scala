@@ -15,8 +15,8 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
 
   private[this] implicit val dispatcher = context.system.dispatcher
 
-  override def period = Global.CheckpointAlerts.checkInterval
-  override def immediateStart = true
+  override val period = Global.CheckpointAlerts.checkInterval
+  override val immediateStart = true
 
   private[this] var currentState: State = Starting
 

@@ -16,12 +16,11 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
   private[this] implicit val dispatcher = context.system.dispatcher
   private[this] implicit val fm = ActorFlowMaterializer()
 
-  override def period = Global.RankingAlerts.checkInterval
+  override val period = Global.RankingAlerts.checkInterval
+  override def immediateStart = true
 
   // null means that there has been no update yet
   private[this] var currentHead: Seq[Int] = null
-
-  override def immediateStart = true
 
   private[this] def alert(severity: Severity, rank: Int, message: String, addLink: Boolean): Future[Seq[(Messaging, String)]] = {
     Alerts.deliverAlert(Alerts.officers, Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",

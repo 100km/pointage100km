@@ -21,6 +21,7 @@ object Message {
   }
 
   case object Administrativia extends Category
+  case object Broadcast extends Category
   case object Checkpoint extends Category
   case object Connectivity extends Category
   case object RaceInfo extends Category
