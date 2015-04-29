@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Code d'accès Pushbullet</title>
+    <script src="../common/vendor/couchapp/loader.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+          $("#token").html(window.location.hash.substring("#access_token=".length));
+        });
+    </script>
+</head>
+<body>
+Votre code d'accès Pushbullet est <b>[<span id="token">still unknown</span>]</b>.
+
+Communiquez le à un administrateur de <i>replicate</i> pour pouvoir recevoir les alertes,
+puis <a href="admin.html">retournez sur la page d'administration</a>.
+</body>
+</html>
