@@ -3,7 +3,7 @@ package replicate.messaging
 import scala.concurrent.Future
 import scalaj.http.{HttpOptions, Http}
 
-class FreeMobileSMS(user: String, password: String) extends Messaging {
+class FreeMobileSMS(override val officerId: String, user: String, password: String) extends Messaging {
 
   override def sendMessage(message: String): Future[Boolean] =
     Future {

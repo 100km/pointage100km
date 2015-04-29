@@ -1,11 +1,8 @@
 package replicate.messaging
 
-import akka.http.scaladsl.model.HttpResponse
-import akka.stream.scaladsl.Flow
 import replicate.utils.Global
 
 import scala.concurrent.Future
-import scala.util.{Success, Try}
 
 trait Messaging {
 
@@ -18,5 +15,12 @@ trait Messaging {
    * @return a future which will complete to true if the delivery was successful, false otherwise
    */
   def sendMessage(message: String): Future[Boolean]
+
+  /**
+   * Unique id of the officer
+   */
+  def officerId: String
+
+  override def toString = s"<Messaging $officerId>"
 
 }
