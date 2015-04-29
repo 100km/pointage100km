@@ -19,7 +19,7 @@ class Watchdog(options: Options.Config, db: Database) extends Actor with FSM[Int
   when(0, stateTimeout = 30 seconds) {
 
     case Event(StateTimeout, _) =>
-      if (Replicate.options.watchdog)
+      if (Replicate.options.ping)
         withError(steenwerck.ping(db, options.siteId), "cannot ping database")
       stay()
 
