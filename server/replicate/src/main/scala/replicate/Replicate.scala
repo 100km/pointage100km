@@ -5,7 +5,7 @@ import net.rfc1149.canape._
 import play.api.libs.json.Json
 import replicate.alerts.Alerts
 import replicate.maintenance.{ReplicateRelaunch, RemoveObsoleteDocuments, Compaction}
-import replicate.utils.{OnChanges, Infos, Options, Global}
+import replicate.utils._
 import steenwerck._
 
 import scala.concurrent.duration._
@@ -61,11 +61,12 @@ class Replicate(options: Options.Config) {
     if (options.replicate) {
       while (!dbName.isDefined) {
         try {
-          dbName = Some((cfgDatabase("configuration").execute()(timeout) \ "dbname").as[String])
+          Global.configuration = Some(cfgDatabase("configuration").execute()(timeout).as[Configuration])
+          dbName = Global.configuration.map(_.dbname)
           dbName.foreach(log.info("server database name is {}", _))
         } catch {
-          case t: Exception =>
-            log.error("cannot retrieve database name: " + t)
+          case t: Throwable =>
+            log.error(t, "cannot retrieve database name")
             Thread.sleep(5000)
         }
       }
@@ -75,7 +76,7 @@ class Replicate(options: Options.Config) {
 
   private lazy val previousDbName: Option[String] =
     try {
-      Some((localDatabase("configuration").execute()(timeout) \ "dbname").as[String])
+      Some(localDatabase("configuration").execute()(timeout).as[Configuration].dbname)
     } catch {
       case t: Exception =>
         log.info("cannot retrieve previous database name: " + t)

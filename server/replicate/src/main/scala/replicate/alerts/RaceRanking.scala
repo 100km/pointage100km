@@ -3,9 +3,11 @@ package replicate.alerts
 import akka.stream.ActorFlowMaterializer
 import net.rfc1149.canape.Database
 import play.api.libs.json.JsString
+import replicate.messaging.Messaging
 import replicate.utils.{Global, PeriodicTaskActor}
 
 import scala.concurrent.Future
+import scala.util.Try
 
 class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
 
@@ -26,10 +28,10 @@ class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
     log.debug(s"""Launched race ranking alert service for race "$raceName"""")
   }
 
-  private[this] def info(message: String): Future[Unit] = {
-    val decorated = s"$raceName: $message"
-    log.info(decorated)
-    Alerts.deliverAlert(decorated).map(_ => ())
+  private[this] def alert(rank: Int, message: String, addLink: Boolean): Future[Map[Messaging, Try[Option[String]]]] = {
+    log.info(s"Race $raceName, rank $rank: $message")
+    Alerts.deliverAlert(Alerts.officers, title = s"$raceName, rank $rank",
+      body = message, url = if (addLink) Global.configuration.map(_.adminLink) else None)
   }
 
   private[this] def contestantInfo(bib: Int): Future[String] =
@@ -43,11 +45,11 @@ class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
       yield {
         Some(currentHead.indexOf(bib)).filterNot(_ == -1) match {
           case Some(previousRanking) if ranking < previousRanking =>
-            contestantInfo(bib).flatMap(name => info(s"$name is now ranked $ranking (previously $previousRanking)"))
+            contestantInfo(bib).flatMap(name => alert(ranking, s"$name was previously at rank $previousRanking", addLink = false))
           case None if currentHead.size == Global.RaceRanking.topRunners =>
-            contestantInfo(bib).flatMap(name => info(s"$name just appeared at rank $ranking"))
+            contestantInfo(bib).flatMap(name => alert(ranking, s"$name just jumped to the head of the race", addLink = true))
           case None =>
-            contestantInfo(bib).flatMap(name => info(s"$name is now ranked $ranking (initial ranking)"))
+            contestantInfo(bib).flatMap(name => alert(ranking, s"$name is at the head (initial ranking)", addLink = false))
           case _ =>
             Future.successful(())
         }

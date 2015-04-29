@@ -34,4 +34,5 @@ object Global {
   }
 
   var infos: Option[Infos] = None
+  var configuration: Option[Configuration] = None
 }

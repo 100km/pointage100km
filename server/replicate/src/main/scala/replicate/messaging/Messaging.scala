@@ -11,16 +11,42 @@ trait Messaging {
   /**
    * Send a message to the intended recipient.
    *
-   * @param message the message
-   * @return a future which will complete to true if the delivery was successful, false otherwise
+   * @param title the message title
+   * @param body the message body
+   * @param url the messagee link if any
+   * @return a future which will complete to an optional string allowing to cancel the delivery
+   *         if it has been succesful, or a failure otherwise
    */
-  def sendMessage(message: String): Future[Boolean]
+  def sendMessage(title: String, body: String, url: Option[String] = None): Future[Option[String]]
+
+  /**
+   * Dismiss a previously sent message.
+   *
+   * @param identifier the identifier returned by [[sendMessage]]
+   * @return a future which completes into the success value of the cancellation
+   */
+  def dismissMessage(identifier: String): Future[Boolean] =
+    sys.error("Current backend does not support message dismissal")
+
+  /**
+   * Cancel a previously sent message.
+   *
+   * @param identifier the identifier returned by [[sendMessage]]
+   * @return a future which completes into the success value of the cancellation
+   */
+  def cancelMessage(identifier: String): Future[Boolean] =
+    sys.error("Current backend does not support message cancellation")
 
   /**
    * Unique id of the officer
    */
   def officerId: String
 
-  override def toString = s"<Messaging $officerId>"
+  /**
+   * Identifier for the service
+   */
+  val serviceName: String
+
+  override def toString = s"$serviceName($officerId)"
 
 }
