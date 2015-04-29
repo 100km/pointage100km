@@ -39,7 +39,7 @@ object Alerts {
 
   import Global.dispatcher
 
-  val officers: List[Messaging] = {
+  val officers: List[Messaging] = SystemLogger :: {
     val officersConfig = Global.replicateConfig.as[Map[String, Config]]("officers")
     officersConfig.toList.filterNot(_._2.as[Option[Boolean]]("disabled") == Some(true)).map { case (officerId, config) =>
         config.as[String]("type") match {
