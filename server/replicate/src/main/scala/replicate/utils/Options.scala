@@ -52,7 +52,7 @@ object Options {
     val parser = new OptionParser[Config]("replicate") {
       opt[Unit]('c', "conflicts") text("fix conflicts as they appear") action { (_, c) =>
         c.copy(_fixConflicts = true) }
-      opt[Unit]('f', "full") text("turn on every service but watchdog") action { (_, c) =>
+      opt[Unit]('f', "full") text("turn on every service but ping") action { (_, c) =>
         c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
           replicate = true, _ping = false, alerts = true) }
       opt[Unit]('n', "dry-run") text("dump configuration and do not run") action { (_, c) =>
@@ -75,7 +75,7 @@ object Options {
       opt[Unit]("no-replicate") abbr("nr") text("do not start replication") action { (_, c) =>
         c.copy(replicate = false)
       }
-      opt[Unit]("no-ping") abbr("np") text("do not start watchdog (ping)") action { (_, c) =>
+      opt[Unit]("no-ping") abbr("np") text("do not start ping") action { (_, c) =>
         c.copy(_ping = false)
       }
       opt[Unit]('a', "alerts") text("run alerts service") action { (_, c) =>

@@ -4,7 +4,7 @@ import akka.actor.{Actor, Cancellable, Props}
 import akka.event.Logging
 import net.rfc1149.canape._
 import play.api.libs.json.{JsObject, JsString}
-import replicate.maintenance.{Watchdog, IncompleteCheckpoints, ConflictsSolver}
+import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
 import replicate.utils.Global._
 
 import scala.concurrent.duration.Deadline._
@@ -17,7 +17,7 @@ class OnChanges(options: Options.Config, local: Database)
 
   val log = Logging(context.system, this)
 
-  private[this] val watchdog = context.actorOf(Props(new Watchdog(options, local)), "watchdog")
+  private[this] val ping = context.actorOf(Props(new PingService(options, local)), "ping")
 
   private[this] def withError[T](future: Future[T], message: String): Future[Any] = {
     future onFailure {
@@ -71,8 +71,8 @@ class OnChanges(options: Options.Config, local: Database)
           self,
           'trigger))
       js \ "id" match {
-        case JsString(s) if s.startsWith("checkpoints-" + options.siteId + "-") =>
-          watchdog ! js
+        case JsString(s) if s.startsWith(s"checkpoints-${options.siteId}-") =>
+          ping ! js
         case _ =>
       }
     case 'trigger =>

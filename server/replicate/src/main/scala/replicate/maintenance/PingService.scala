@@ -10,7 +10,7 @@ import replicate.utils.{LoggingError, Options}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class Watchdog(options: Options.Config, db: Database) extends Actor with FSM[Int, Unit] with LoggingError {
+class PingService(options: Options.Config, db: Database) extends Actor with FSM[Int, Unit] with LoggingError {
 
   override val log = Logging(context.system, this)
 
