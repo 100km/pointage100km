@@ -38,7 +38,7 @@ package object steenwerck {
   lazy val config : Config = {
     val options = ConfigParseOptions.defaults().setAllowMissing(false)
     var baseName = "steenwerck"
-    (0 to 2).foldLeft(None: Option[Config]) {
+    (0 to 3).foldLeft(None: Option[Config]) {
       case (s@Some(config), _) =>
         s
       case (None, level) =>
