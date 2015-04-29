@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Database
+import play.api.libs.json.Json
 import replicate.messaging.Message.{Administrativia, Severity}
 import replicate.messaging._
 import replicate.utils.Global
@@ -16,8 +17,11 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   import Alerts._
 
   override def preStart() = {
+    val officersStr = officers.mkString(", ")
+    database.update("bib_input", "force-update", "officers",
+      Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))
     deliverAlert(officers, Message(Administrativia, Severity.Verbose, "Alert service starting",
-      s"Delivering alerts to ${officers.mkString(", ")}",
+      s"Delivering alerts to $officersStr",
       Global.configuration.map(_.adminLink)))
     for (infos <- Global.infos; raceInfo <- infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")

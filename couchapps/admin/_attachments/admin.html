@@ -17,7 +17,8 @@
     <div id="bib_admin_problems"></div>
     <hr style="width: 80%"/>
     <div style="font-size: 80%; text-align: center">
-      Obtenez votre code d'alerte Pushbullet <a href="https://www.pushbullet.com/authorize?client_id=3kDezN4AXk1kYpbQWHXZhqh4dTM8cNLq&response_type=token&redirect_uri=http:%2F%2Flocalhost:5984/steenwerck100km%2F_design%2Fadmin%2Fpushbullet-token.html">ici</a>.
+      Liste des modules d'alerte actifs: <span id="officers">inconnu</span> — 
+      Obtenez votre code d'alerte Pushbullet <a href="https://www.pushbullet.com/authorize?client_id=3kDezN4AXk1kYpbQWHXZhqh4dTM8cNLq&response_type=token&redirect_uri=http:%2F%2Flocalhost:5984/steenwerck100km%2F_design%2Fadmin%2Fpushbullet-token.html">ici</a>
     </div>
   </body>
   <script src="../common/vendor/couchapp/loader.js"></script>
@@ -29,7 +30,7 @@
       $("#bib_admin_input_message_div").evently("bib_admin_input_message_div", app);
       $("#bib_admin_message_list_div").evently("bib_admin_message_list_div", app);
       $("#bib_admin_problems").evently("bib_admin_problems", app);
-      $.evently.connect("#bib_admin_div", "#bib_admin_message_list_div", ["post_changes"]);
+      $("#officers").evently("officers", app)
     });
 
   </script>
@@ -43,5 +44,14 @@
       update_clock_on_div("#the_current_time");
     }
     setInterval( update_wall_clock , 1000);
+  </script>
+
+  <script type="text/javascript" charset="utf-8">
+    // Load the list of people looking receiving the alerts
+    $(document).ready(function () {
+      $.getJSON("../../officers", function (data) {
+        $("#officers").html(data.officers);
+      });
+    });
   </script>
 </html>
