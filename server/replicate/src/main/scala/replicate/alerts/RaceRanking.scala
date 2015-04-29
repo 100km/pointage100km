@@ -25,7 +25,7 @@ class RaceRanking(database: Database, raceId: Int) extends PeriodicTaskActor {
 
   override def immediateStart = true
 
-  private[this] def alert(severity: Severity, rank: Int, message: String, addLink: Boolean): Future[Map[Messaging, Try[Option[String]]]] = {
+  private[this] def alert(severity: Severity, rank: Int, message: String, addLink: Boolean): Future[Map[Messaging, String]] = {
     Alerts.deliverAlert(Alerts.officers, Message(RaceInfo, severity, title = s"$raceName, rank $rank",
       body = message, url = if (addLink) Global.configuration.map(_.adminLink) else None))
   }

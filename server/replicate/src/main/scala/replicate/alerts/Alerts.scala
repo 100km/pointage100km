@@ -18,13 +18,8 @@ class Alerts(database: Database) extends Actor with ActorLogging {
 
   override def preStart() = {
     deliverAlert(officers, Message(Administrativia, Severity.Info, "Alert service starting",
-      s"Delivering alerts to officers ${officers.mkString(", ")}",
-      Global.configuration.map(_.adminLink))).foreach {
-      _.foreach {
-        case (messaging, status) =>
-          log.info(s"Status delivery for $messaging: $status")
-      }
-    }
+      s"Delivering alerts to ${officers.mkString(", ")}",
+      Global.configuration.map(_.adminLink)))
     for (infos <- Global.infos)
       for (raceId <- infos.races.keys)
         context.actorOf(Props(new RaceRanking(database, raceId)), s"race-ranking-$raceId")
@@ -50,10 +45,22 @@ object Alerts {
     }
   }
 
-  def deliverAlert(recipients: Seq[Messaging], message: Message): Future[Map[Messaging, Try[Option[String]]]] = {
-    Future.sequence(recipients.map { recipient =>
+  def deliverAlert(recipients: Seq[Messaging], message: Message): Future[Map[Messaging, String]] = {
+    val deliveryResult = Future.sequence(recipients.map { recipient =>
       recipient.sendMessage(message).map(Success(_)).recover { case t => Failure(t) }.map(recipient -> _)
-    }).map(_.toMap)
+    })
+    deliveryResult.onSuccess { case result =>
+      val failures = result.collect { case (officer, Failure(_)) => officer }
+      if (failures.nonEmpty) {
+        val remaining = recipients.diff(failures)
+        val errorRecipients = if (message.category == Administrativia || message.severity <= Severity.Warning) List(SystemLogger) else remaining
+        if (remaining.nonEmpty) {
+          deliverAlert(errorRecipients, Message(Administrativia, Severity.Info, "Delivery issues",
+            s"Could not deliver alert to ${failures.mkString(", ")}", None))
+        }
+      }
+    }
+    deliveryResult.map(_.collect { case (officer, Success(Some(identifier))) => officer -> identifier }.toMap)
   }
 
 }
