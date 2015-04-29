@@ -41,7 +41,7 @@ object Wipe extends App {
         case e: Exception =>
           println("Cannot create configuration database: " + e)
       }
-      cfgDatabase.insert(Json.obj("dbname" -> "steenwerck-0"), "configuration").execute()
+      cfgDatabase.insert(Json.obj("dbname" -> "steenwerck-0", "tests_allowed" -> false), "configuration").execute()
       "steenwerck-0"
   }
 
