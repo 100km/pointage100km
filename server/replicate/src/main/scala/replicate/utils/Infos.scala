@@ -9,6 +9,7 @@ case class Infos(cat_names: Array[String],
                  races_laps: Array[Int],
                  races_names: Array[String],
                  sites: Array[String],
+                 sites_coordinates: Array[Infos.Coordinates],
                  start_times: Array[Long]) {
 
   import Infos._
@@ -22,6 +23,10 @@ case class Infos(cat_names: Array[String],
 }
 
 object Infos {
+
+  case class Coordinates(latitude: Double, longitude: Double)
+
+  implicit val coordinatesRead: Reads[Coordinates] = Json.reads[Coordinates]
   implicit val infosReads: Reads[Infos] = Json.reads[Infos]
 
   class RaceInfo(val raceId: Int, infos: Infos) {
@@ -36,6 +41,7 @@ object Infos {
   class CheckpointInfo(val checkpointId: Int, infos: Infos) {
     val name = infos.sites(checkpointId)
     val kms = infos.kms_offset(checkpointId)
+    val coordinates = infos.sites_coordinates(checkpointId)
   }
 
 }

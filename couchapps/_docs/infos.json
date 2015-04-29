@@ -6,5 +6,12 @@
 "races_laps": [-1, 3            , 3              , 1               , -1                 , 1             ,  -1],
 "races_hours": [-1, 24,           13,              24,               -1,                  13,              -1],
 "start_times":[0, 1401296400000, 1401336000000, 1401296400000, 0, 1401336000000],
-"cat_names":["Eve.", "Poussins", "Benjamins", "Minimes", "Cadets", "Juniors", "Espoirs", "Séniors", "Vétérans 1", "Vétérans 2", "Vétérans 3", "Vétérans 4"]
+"cat_names":["Eve.", "Poussins", "Benjamins", "Minimes", "Cadets", "Juniors", "Espoirs", "Séniors", "Vétérans 1", "Vétérans 2", "Vétérans 3", "Vétérans 4"],
+"sites_coordinates":[{"latitude": 50.702567, "longitude": 2.736555},
+                     {"latitude": 50.71255, "longitude": 2.78678},
+                     {"latitude": 50.696444, "longitude": 2.798444},
+                     {"latitude": 50.701045, "longitude": 2.779363},
+                     {"latitude": 50.675542, "longitude": 2.790285},
+                     {"latitude": 50.682368, "longitude": 2.748249},
+                     {"latitude": 50.700161, "longitude": 2.779041}]
 }
