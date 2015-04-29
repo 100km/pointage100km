@@ -20,7 +20,9 @@ class Alerts(database: Database) extends Actor with ActorLogging {
       s"Delivering alerts to ${officers.mkString(", ")}",
       Global.configuration.map(_.adminLink)))
     for (infos <- Global.infos; raceInfo <- infos.races.values)
-      context.actorOf(Props(new RaceRanking(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
+      context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
+    for (infos <- Global.infos; checkpointInfo <- infos.checkpoints.values)
+      context.actorOf(Props(new PingAlert(database, checkpointInfo)), s"checkpoint-${checkpointInfo.checkpointId}")
   }
 
   def receive = {
@@ -43,7 +45,7 @@ object Alerts {
     }
   }
 
-  def deliverAlert(recipients: Seq[Messaging], message: Message): Future[Map[Messaging, String]] = {
+  def deliverAlert(recipients: Seq[Messaging], message: Message): Future[Seq[(Messaging, String)]] = {
     val deliveryResult = Future.sequence(recipients.map { recipient =>
       recipient.sendMessage(message).map(Success(_)).recover { case t => Failure(t) }.map(recipient -> _)
     })
@@ -58,7 +60,7 @@ object Alerts {
         }
       }
     }
-    deliveryResult.map(_.collect { case (officer, Success(Some(identifier))) => officer -> identifier }.toMap)
+    deliveryResult.map(_.collect { case (officer, Success(Some(identifier))) => officer -> identifier }.toSeq)
   }
 
 }

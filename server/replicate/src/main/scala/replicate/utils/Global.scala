@@ -26,12 +26,20 @@ object Global {
   val obsoleteAge: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-age")
   val initialReplicationTimeout: FiniteDuration = replicateConfig.as[FiniteDuration]("initial-replication-timeout")
 
-  object RaceRanking {
-    private val raceRankingConfig = replicateConfig.as[Config]("race-ranking")
-    val checkInterval: FiniteDuration = raceRankingConfig.as[FiniteDuration]("check-interval")
-    val topRunners: Int = raceRankingConfig.as[Int]("top-runners")
-    val headOfRace: Int = raceRankingConfig.as[Int]("head-of-race")
-    val suspiciousRankJump: Int = raceRankingConfig.as[Int]("suspicious-rank-jump")
+  object RankingAlerts {
+    private val rankingAlertsConfig = replicateConfig.as[Config]("ranking-alerts")
+    val checkInterval: FiniteDuration = rankingAlertsConfig.as[FiniteDuration]("check-interval")
+    val topRunners: Int = rankingAlertsConfig.as[Int]("top-runners")
+    val headOfRace: Int = rankingAlertsConfig.as[Int]("head-of-race")
+    val suspiciousRankJump: Int = rankingAlertsConfig.as[Int]("suspicious-rank-jump")
+  }
+
+  object CheckpointAlerts {
+    private val checkpointAlertsConfig = replicateConfig.as[Config]("checkpoint-alerts")
+    val checkInterval: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("check-interval")
+    val noticeDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("notice-delay")
+    val warningDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("warning-delay")
+    val criticalDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("critical-delay")
   }
 
   var infos: Option[Infos] = None

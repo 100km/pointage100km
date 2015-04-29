@@ -16,6 +16,9 @@ case class Infos(cat_names: Array[String],
   val races: Map[Int, RaceInfo] =
     races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(id => id -> new RaceInfo(id, this)).toMap
 
+  val checkpoints: Map[Int, CheckpointInfo] =
+    (0 until sites.length).map(id => id -> new CheckpointInfo(id, this)).toMap
+
 }
 
 object Infos {
@@ -28,6 +31,11 @@ object Infos {
     val endTime = startTime + infos.races_hours(raceId) * 24 * 3600 * 1000
 
     def isCheckpointTimeInRace(time: Long): Boolean = time >= startTime && time <= endTime
+  }
+
+  class CheckpointInfo(val checkpointId: Int, infos: Infos) {
+    val name = infos.sites(checkpointId)
+    val kms = infos.kms_offset(checkpointId)
   }
 
 }

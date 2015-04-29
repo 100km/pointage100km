@@ -21,11 +21,11 @@ object Message {
   }
 
   case object Administrativia extends Category
-  case object CheckpointMessage extends Category
+  case object Checkpoint extends Category
   case object Connectivity extends Category
   case object RaceInfo extends Category
 
-  val allCategories = Array(Administrativia, CheckpointMessage, Connectivity, RaceInfo)
+  val allCategories = Array(Administrativia, Checkpoint, Connectivity, RaceInfo)
 
   object Severity extends Enumeration {
     type Severity = Value
