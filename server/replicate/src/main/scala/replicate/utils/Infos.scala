@@ -1,5 +1,6 @@
 package replicate.utils
 
+import akka.http.scaladsl.model.Uri
 import play.api.libs.json.{Json, Reads}
 
 case class Infos(cat_names: Array[String],
@@ -24,7 +25,9 @@ case class Infos(cat_names: Array[String],
 
 object Infos {
 
-  case class Coordinates(latitude: Double, longitude: Double)
+  case class Coordinates(latitude: Double, longitude: Double) {
+    lazy val url = Uri("https://maps.google.com/maps").withQuery("q" -> s"loc:${latitude},${longitude}")
+  }
 
   implicit val coordinatesRead: Reads[Coordinates] = Json.reads[Coordinates]
   implicit val infosReads: Reads[Infos] = Json.reads[Infos]

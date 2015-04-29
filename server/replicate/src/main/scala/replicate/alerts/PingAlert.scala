@@ -29,7 +29,8 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
 
   private[this] def alert(severity: Severity.Severity, message: String): Future[Unit] = {
     cancelPreviousNotifications(currentNotifications)
-    Alerts.deliverAlert(Alerts.officers, Message(Checkpoint, severity, title = checkpointInfo.name, body = message, url = None))
+    Alerts.deliverAlert(Alerts.officers, Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
+      url = Some(checkpointInfo.coordinates.url)))
       .map(currentNotifications = _)
   }
 
