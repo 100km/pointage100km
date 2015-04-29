@@ -24,7 +24,7 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Me
       if (response.isSuccess)
         Json.parse(response.body).as[JsObject]
       else
-        sys.error("unable to send message to $officerId")
+        sys.error(s""""unable to send command to $officerId""")
     }
   }
 
@@ -34,10 +34,11 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Me
   private[this] def delete(api: String): Future[JsValue] =
     send(api, _.method("DELETE"))
 
-  override def sendMessage(title: String, body: String, url: Option[String] = None): Future[Option[String]] = {
-    val basePayload = Json.obj("title" -> title, "body" -> body, "icon" -> base64icon)
-    val payload = basePayload ++ url.fold(Json.obj("type" -> "note"))(l => Json.obj("type" -> "link", "url" -> l))
-    post("/pushes", payload).map(j => Some((j \ "iden").as[String]))
+  override def sendMessage(message: Message): Future[Option[String]] = {
+    val basePayload = Json.obj("title" -> message.title, "body" -> message.body, "icon" -> base64icon)
+    val payload = basePayload ++ message.url.fold(Json.obj("type" -> "note"))(l => Json.obj("type" -> "link", "url" -> l.toString))
+    post("/pushes", payload)
+      .transform(j => Some((j \ "iden").as[String]), _ => new RuntimeException(s"""unable to send message "$message" to $officerId"""))
   }
 
   override def dismissMessage(identifier: String): Future[Boolean] =
@@ -51,7 +52,6 @@ object Pushbullet {
 
   val base64icon: String = {
     val in = getClass.getResourceAsStream("/pushbullet-icon.jpg")
-    require(in != null, "Resource not found")
     val out = new ByteArrayOutputStream()
     new BASE64Encoder().encode(in, out)
     out.toString("UTF-8")

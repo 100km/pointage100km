@@ -4,7 +4,8 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Database
-import replicate.messaging.{FreeMobileSMS, Messaging, Pushbullet}
+import replicate.messaging.Message.{Severity, Administrativia}
+import replicate.messaging._
 import replicate.utils.Global
 
 import scala.concurrent.Future
@@ -16,8 +17,9 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   import Global.dispatcher
 
   override def preStart() = {
-    log.info("Starting alert service")
-    deliverAlert(officers, "Alert service starting", s"Delivering alerts to officers ${officers.mkString(", ")}", Global.configuration.map(_.adminLink)).foreach {
+    deliverAlert(officers, Message(Administrativia, Severity.Info, "Alert service starting",
+      s"Delivering alerts to officers ${officers.mkString(", ")}",
+      Global.configuration.map(_.adminLink))).foreach {
       _.foreach {
         case (messaging, status) =>
           log.info(s"Status delivery for $messaging: $status")
@@ -48,9 +50,9 @@ object Alerts {
     }
   }
 
-  def deliverAlert(recipients: Seq[Messaging], title: String, body: String, url: Option[String] = None): Future[Map[Messaging, Try[Option[String]]]] = {
+  def deliverAlert(recipients: Seq[Messaging], message: Message): Future[Map[Messaging, Try[Option[String]]]] = {
     Future.sequence(recipients.map { recipient =>
-      recipient.sendMessage(title, body, url).map(Success(_)).recover { case t => Failure(t) }.map(recipient -> _)
+      recipient.sendMessage(message).map(Success(_)).recover { case t => Failure(t) }.map(recipient -> _)
     }).map(_.toMap)
   }
 

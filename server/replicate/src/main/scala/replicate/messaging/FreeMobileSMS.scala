@@ -7,16 +7,15 @@ class FreeMobileSMS(override val officerId: String, user: String, password: Stri
 
   override val serviceName = "FreeMobileSMS"
 
-  override def sendMessage(title: String, body: String, url: Option[String] = None): Future[Option[String]] = {
-    val message = s"[$title] $body" + url.fold("")(l => s" ($l)")
+  override def sendMessage(message: Message): Future[Option[String]] = {
     Future {
       val response = Http("https://smsapi.free-mobile.fr/sendmsg").option(HttpOptions.allowUnsafeSSL)
-        .param("user", user).param("pass", password).param("msg", message).asString
+        .param("user", user).param("pass", password).param("msg", message.toString).asString
       if (response.isSuccess)
       // This backend does not support alteration of previously sent messages
         None
       else
-        sys.error( s"""unable to send message "$message" to $this:""")
+        sys.error(s"""unable to send message "$toString" to $this""")
     }
   }
 

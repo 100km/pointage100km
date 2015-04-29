@@ -11,13 +11,11 @@ trait Messaging {
   /**
    * Send a message to the intended recipient.
    *
-   * @param title the message title
-   * @param body the message body
-   * @param url the messagee link if any
+   * @param message the message to send
    * @return a future which will complete to an optional string allowing to cancel the delivery
    *         if it has been succesful, or a failure otherwise
    */
-  def sendMessage(title: String, body: String, url: Option[String] = None): Future[Option[String]]
+  def sendMessage(message: Message): Future[Option[String]]
 
   /**
    * Dismiss a previously sent message.

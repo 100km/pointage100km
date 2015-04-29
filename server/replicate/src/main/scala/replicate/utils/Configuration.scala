@@ -7,10 +7,10 @@ import play.api.libs.json.{Json, Reads}
 
 case class Configuration(dbname: String, tests_allowed: Boolean) {
 
-  lazy val adminLink: String =
+  lazy val adminLink: Uri =
     Uri().withScheme("http")
       .withHost(steenwerck.config.as[String]("steenwerck.master.host")).withPort(steenwerck.config.as[Int]("steenwerck.master.port"))
-      .withPath(Path("") / dbname / "_design" / "admin" / "admin.html").toString()
+      .withPath(Path("") / dbname / "_design" / "admin" / "admin.html")
 }
 
 object Configuration {
