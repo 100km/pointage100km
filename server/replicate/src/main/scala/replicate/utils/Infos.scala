@@ -21,7 +21,7 @@ case class Infos(cat_names: Array[String],
 object Infos {
   implicit val infosReads: Reads[Infos] = Json.reads[Infos]
 
-  class RaceInfo(raceId: Int, infos: Infos) {
+  class RaceInfo(val raceId: Int, infos: Infos) {
     val name = infos.races_names(raceId)
     val laps = infos.races_laps(raceId)
     val startTime = infos.start_times(raceId)

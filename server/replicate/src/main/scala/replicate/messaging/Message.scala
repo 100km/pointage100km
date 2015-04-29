@@ -5,7 +5,10 @@ import Message._
 import replicate.messaging.Message.Severity.Severity
 
 case class Message(category: Category, severity: Severity, title: String, body: String, url: Option[Uri]) {
-  override lazy val toString = s"[$title] $body${url.fold("")(l => s" ($l)")}"
+
+  override lazy val toString = s"[$titleWithSeverity] $body${url.fold("")(l => s" ($l)")}"
+
+  lazy val titleWithSeverity: String = if (severity >= Severity.Warning) s"$severity: $title" else title
 }
 
 object Message {
@@ -18,10 +21,11 @@ object Message {
   }
 
   case object Administrativia extends Category
+  case object CheckpointMessage extends Category
   case object Connectivity extends Category
   case object RaceInfo extends Category
 
-  val allCategories = Array(Administrativia, Connectivity, RaceInfo)
+  val allCategories = Array(Administrativia, CheckpointMessage, Connectivity, RaceInfo)
 
   object Severity extends Enumeration {
     type Severity = Value

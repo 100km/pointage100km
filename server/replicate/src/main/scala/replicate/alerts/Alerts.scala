@@ -4,25 +4,23 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Database
-import replicate.messaging.Message.{Severity, Administrativia}
+import replicate.messaging.Message.{Administrativia, Severity}
 import replicate.messaging._
 import replicate.utils.Global
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 class Alerts(database: Database) extends Actor with ActorLogging {
 
   import Alerts._
-  import Global.dispatcher
 
   override def preStart() = {
     deliverAlert(officers, Message(Administrativia, Severity.Info, "Alert service starting",
       s"Delivering alerts to ${officers.mkString(", ")}",
       Global.configuration.map(_.adminLink)))
-    for (infos <- Global.infos)
-      for (raceId <- infos.races.keys)
-        context.actorOf(Props(new RaceRanking(database, raceId)), s"race-ranking-$raceId")
+    for (infos <- Global.infos; raceInfo <- infos.races.values)
+      context.actorOf(Props(new RaceRanking(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
   }
 
   def receive = {
@@ -53,10 +51,10 @@ object Alerts {
       val failures = result.collect { case (officer, Failure(_)) => officer }
       if (failures.nonEmpty) {
         val remaining = recipients.diff(failures)
-        val errorRecipients = if (message.category == Administrativia || message.severity <= Severity.Warning) List(SystemLogger) else remaining
+        val errorRecipients = if (message.category == Administrativia || message.severity < Severity.Warning) List(SystemLogger) else remaining
         if (remaining.nonEmpty) {
           deliverAlert(errorRecipients, Message(Administrativia, Severity.Info, "Delivery issues",
-            s"Could not deliver alert to ${failures.mkString(", ")}", None))
+            s"Could not deliver previous alert (severity: ${message.severity}) to ${failures.mkString(", ")}", None))
         }
       }
     }

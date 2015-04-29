@@ -28,9 +28,10 @@ object Global {
 
   object RaceRanking {
     private val raceRankingConfig = replicateConfig.as[Config]("race-ranking")
-    val alertInterval: FiniteDuration = raceRankingConfig.as[FiniteDuration]("alert-interval")
+    val checkInterval: FiniteDuration = raceRankingConfig.as[FiniteDuration]("check-interval")
     val topRunners: Int = raceRankingConfig.as[Int]("top-runners")
-    val previousRanking: Int = raceRankingConfig.as[Int]("previous-ranking")
+    val headOfRace: Int = raceRankingConfig.as[Int]("head-of-race")
+    val suspiciousRankJump: Int = raceRankingConfig.as[Int]("suspicious-rank-jump")
   }
 
   var infos: Option[Infos] = None

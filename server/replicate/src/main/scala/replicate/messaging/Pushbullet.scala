@@ -35,7 +35,7 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Me
     send(api, _.method("DELETE"))
 
   override def sendMessage(message: Message): Future[Option[String]] = {
-    val basePayload = Json.obj("title" -> message.title, "body" -> message.body, "icon" -> base64icon)
+    val basePayload = Json.obj("title" -> message.titleWithSeverity, "body" -> message.body, "icon" -> base64icon)
     val payload = basePayload ++ message.url.fold(Json.obj("type" -> "note"))(l => Json.obj("type" -> "link", "url" -> l.toString))
     post("/pushes", payload)
       .transform(j => Some((j \ "iden").as[String]), _ => new RuntimeException(s"""unable to send message "$message" to $officerId"""))
