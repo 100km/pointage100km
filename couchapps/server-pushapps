@@ -5,7 +5,7 @@ cd `dirname $0`
 usage() {
   cat <<"EOF"
     usage: server-pushapps local|server [user passwd [dbname]]
-    user and passwd default to admin:admin
+    user and passwd default to no authentication
     dbname defaults to steenwerck100km in local, and to the currently used database on server
 EOF
 }
@@ -17,11 +17,14 @@ else
   usage
   exit 1
 fi
-user=${2:-admin}
-password=${3:-admin}
+if [ -z "$2" ]; then
+  auth=""
+else
+  auth="$2:$3@"
+fi
 if [ -z "$4" ]; then
   if [ "$1" = server ]; then
-    dbname=`curl -s http://$user:$password@steenwerck.rfc1149.net/steenwerck-config/configuration |
+    dbname=`curl -s http://$auth$host/steenwerck-config/configuration |
       sed -e 's/^.*dbname":"//' -e 's/".*//'`
   else
     dbname=steenwerck100km
@@ -30,6 +33,7 @@ else
   dbname="$4"
 fi
 
-full_name=http://$user:$password@$host/$dbname
+echo Pushing into $dbname at $host
+full_name=http://$auth$host/$dbname
 couchapp pushapps . $full_name
 couchapp pushdocs _docs $full_name
