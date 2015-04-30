@@ -3,54 +3,73 @@
 # Usage: couchsync dbdir
 #
 
-if [ $# != 1 ]; then
-  echo "Usage: couchsync [ <dbdir> | --init ]" >&2
-  exit 1
-fi
-
 #
 # Constants
 #
+
+# Local database
 couchurl=http://localhost:5984
+
+# Name of the docker container running the database
+dbdockername=steenwerck-replicate
+
+# Name of the docker image containing couchdb
+dockerimage=rfc1149/pointage100km
+
+# Path of the database files in containers created by $dockerimage
+dockerdbdir=/usr/local/var/lib/couchdb
+
+# Command to pass to the docker image to start only couchdb
+dockercommand=couchdb
 
 #
 # Helper functions
 #
 
-# Send a GET request
-get() {
-  urlfrag="$1"
-  shift
-  curl -s -S -X GET $couchurl/$urlfrag "$@"
+# Print program usage
+usage() {
+  cat >&2 <<EOF
+Usage: couchsync --init <usbkeypath>    Initialize a new USB key
+       couchsync --watch                Check for insertion of USB keys
+EOF
+  exit 1
 }
 
-# Send a PUT request
-put() {
-  urlfrag="$1"
-  shift
-  curl -s -S -X PUT $couchurl/$urlfrag "$@" > /dev/null
+# Send a request. Parameters: <method> <URI> <extra command line arguments>
+request() {
+  curl -s -S -X "$@"
 }
 
-# Send a POST request
-post() {
-  urlfrag="$1"
-  shift
-  curl -s -S -X POST $couchurl/$urlfrag "$@" > /dev/null
+# Replicate full database to another one (without filtering). Used for backups.
+backup_replicate() {
+  request POST $1/_replicate \
+    --data-binary "{\"source\":\"$2\",\"target\":\"$3\"}" \
+    -H "Content-Type: application/json" > /dev/null
 }
 
-# Replicate from a database to another one
+# Replicate from a database to another one. Args: <couch uri> <source> <target>
 replicate() {
-  post _replicate \
-    --data "{\"source\":\"$1\",\"target\":\"$2\",\"filter\":\"common/to-replicate\"}" \
-    -H "Content-Type: application/json"
+  request POST $1/_replicate \
+    --data-binary "{\"source\":\"$2\",\"target\":\"$3\",\"filter\":\"common/to-replicate\"}" \
+    -H "Content-Type: application/json" > /dev/null
+}
+
+# Compact a database. Arg: <db uri>
+compact() {
+  request POST $1/_compact -H "Content-Type: application/json" > /dev/null
+}
+
+# Wait for writes to be done. Arg: <db uri>
+ensure_full_commit() {
+  request POST $1/_ensure_full_commit -H "Content-Type: application/json" > /dev/null
 }
 
 # Send a message
 message() {
   echo $1
-  post steenwerck100km/_design/bib_input/_update/force-update/status \
+  request POST $couchurl/steenwerck100km/_design/bib_input/_update/force-update/status \
     --data-urlencode "json={\"type\":\"status\",\"scope\":\"local\",\"message\":\"$1\"}" \
-    -H "Content-Type: application/x-www-form-urlencoded"
+    -H "Content-Type: application/x-www-form-urlencoded" > /dev/null
 }
 
 step() {
@@ -58,108 +77,137 @@ step() {
 }
 
 getdbkey() {
-  echo $(get steenwerck100km/_design/common/_show/couchsync/couchsync)
+  echo $(request GET $couchurl/steenwerck100km/_design/common/_show/couchsync/couchsync)
+}
+
+#
+# Initialization
+#
+initialize() {
+  set -e
+  usbkeydir="$1"
+  if [ -e "$usbkeydir"/steenwerck -o -e "$usbkeydir"/databases ]; then
+    echo "Please remove files 'steenwerck' and 'databases' in $usbkeydir first" >&2
+    exit 1
+  fi
+  echo 'Creating authorization access file'
+  getdbkey > "$usbkeydir"/steenwerck
+  echo 'Creating directory for storing backup databases'
+  mkdir "$usbkeydir"/databases
+  chmod 777 "$usbkeydir"/databases
+  echo 'Performing the initial backup'
+  backup "$usbkeydir" true
+  message 'La clé est prête'
+  sleep 3
+  message ""
+}
+
+#
+# Backup. Args: <usb key directory> true/false (true if the database must be first created)
+#
+backup() {
+  usbkeydir="$1"
+  initial=$2
+  # Start a new database linked to the steenwerck-replicate one under
+  # the alias "pointage100km" (which will be installed in /etc/hosts) of
+  # the newly started docker.
+  step 'Démarrage de la base de sauvegarde'
+  container=$(docker run -d -v "$usbkeydir/databases":"$dockerdbdir" \
+		     --link $dbdockername:pointage100km -P $dockerimage $dockercommand)
+
+  # Commpute the base URL to address the backup database
+  backupcouchuri=http://$(docker port $container 5984 | sed -e 's/^0.0.0.0:/localhost:/')
+
+  # Choose the backup file database name on the key to prevent accidents.
+  syncdb=$(cat "$usbkeydir"/steenwerck | cut -c 1-16 | tr 'A-Z' 'a-z')
+
+  # Choose a unique name for a backup database (before the synchronization).
+  backupdb=backup-$$-$(date +%s)
+
+  # Name of the main database as seen by the container
+  maindbport=$(docker exec $container sh -c 'echo $POINTAGE100KM_PORT_5984_TCP_PORT')
+  maindburi=http://pointage100km:$maindbport/steenwerck100km
+
+  sleep 5
+  if $initial; then
+    # Create the sync DB and replicate it as a backup
+    step 'réplication initiale'
+    request PUT $backupcouchuri/$syncdb > /dev/null
+    backup_replicate $backupcouchuri $maindburi $syncdb
+  else
+    # Create the backup DB and synchronize the main db to it
+    step 'sauvegarde de sécurité préalable'
+    request PUT $backupcouchuri/$backupdb > /dev/null
+    backup_replicate $backupcouchuri $maindburi $backupdb
+    compact $backupcouchuri/$backupdb
+    ensure_full_commit $backupcouchuri/$backupdb
+  fi
+
+  # Synchronize the main DB with the sync one
+  step 'synchronisation 1/2'
+  replicate $backupcouchuri $maindburi $syncdb
+  step 'synchronisation 2/2'
+  replicate $backupcouchuri $syncdb $maindburi
+  step 'compaction de la sauvegarde'
+  compact $backupcouchuri/$syncdb
+
+  # Wait until the replicate is flushed to disk by asking CouchDB to sync.
+  step 'écriture sur disque'
+  ensure_full_commit $backupcouchuri/$syncdb
+
+  # Stop the database
+  step 'arrêt de la base de sauvegarde'
+  docker stop $container > /dev/null
+  docker rm $container > /dev/null
+}
+
+#
+# Watch
+#
+watch() {
+  while true; do
+
+    # Wait until a USB key appears, mounted under /media with a steenwerck file.
+    steenwerck_file=""
+    while [ "$steenwerck_file" = "" ]
+    do
+      sleep 1
+      steenwerck_file=$(find /media/ -maxdepth 3 -type f -name steenwerck -print -quit 2> /dev/null)
+    done
+
+    # Go into the USB key to block a possible umount.
+    usbkeydir=$(dirname $steenwerck_file)
+
+    # Check the credentials on the key against the ones in the database
+    step "Vérification de la validité de la clé USB"
+    dbkey="$(getdbkey)"
+    if [ x"$dbkey" = x"$(cat $usbkeydir/steenwerck)" ]; then
+      backup "$usbkeydir" false
+      endmsg="La clé USB peut être retirée"
+    else
+      endmsg="Authentification invalide - retirer la clé USB"
+    fi
+
+    # Umount USB key.
+    umount "$usbkeydir"
+    message "$endmsg"
+    sleep 3
+    message ""
+
+  done
 }
 
 #
 # Main program
 #
-
-if [ x"$1" == x--init ]; then
-  echo 'Put the following content into a "steenwerck" file in the root of an empty USB key'
-  echo
-  getdbkey
-  echo
-  echo 'It is strongly suggested to ensure that the key is empty, or at least that it'
-  echo 'does not contain a file ending in .backup'
+if [ x"$1" = x--init -a -n "$2" -a $# = 2 ]; then
+  initialize $2
   exit 0
 fi
 
-dbdir="$1"
-
-# Check that we can write to the database directory.
-probe=$dbdir/probe$$
-if touch $probe 2> /dev/null; then
-  rm $probe
-else
-  echo "error: $dbdir is not writable" >&2
-  exit 1
+if [ x"$1" = x--watch -a $# = 1 ]; then
+  watch
+  exit 0
 fi
 
-# Remember current directory
-prevdir=$(pwd)
-
-while true; do
-
-  # Wait until a USB key appears, mounted under /media with a steenwerck file.
-  steenwerck_file=$(find /media/ -maxdepth 3 -type f -name steenwerck -print -quit) 
-  while [ "$steenwerck_file" = "" ]
-  do
-    sleep 1
-    steenwerck_file=$(find /media/ -maxdepth 3 -type f -name steenwerck -print -quit) 
-  done
-
-  # Go into the USB key to block a possible umount.
-  usbkeydir=$(dirname $steenwerck_file)
-  cd "$usbkeydir"
-
-  # Check the credentials on the key against the ones in the database
-  step "Vérification de la validité de la clé USB"
-  dbkey="$(getdbkey)"
-  if [ x"$dbkey" = x"$(cat steenwerck)" ]; then
-
-    # Choose the backup file name on the key to prevent accidents
-    usbfile=$(echo $dbkey | cut -c 1-16).backup
-
-    # Choose a unique name for the database.
-    backupdb=backup-$$-$(date +%s)
-
-    # If the backup already exists on the USB key, copy it in place, otherwise
-    # create the database.
-    step "copie initiale"
-    if test -f $usbfile; then
-      full_backupdb="$dbdir"/$backupdb.couch
-      cp $usbfile $full_backupdb
-      user=$(stat -c "%U" "$dbdir")
-      group=$(stat -c "%G" "$dbdir")
-      chown "$user:$group" "$full_backupdb"
-      chmod 664 "$full_backupdb"
-    else
-      put $backupdb
-    fi
-
-    # Launch the replication in both directions, starting from the database to
-    # the backup to make sure the filter is copied as well. Also, compact as
-    # soon as the first synchronisation is over.
-    step "synchronisation 1/2"
-    replicate steenwerck100km $backupdb
-    step "synchronisation 2/2"
-    replicate $backupdb steenwerck100km
-
-    # Give some time to the compaction.
-    step "compaction de la sauvegarde"
-    post $backupdb/_compact -H "Content-Type: application/json"
-    sleep 5
-
-    # Wait until the replicate is flushed to disk by asking CouchDB to sync.
-    step "écriture sur disque"
-    post $backupdb/_ensure_full_commit -H "Content-Type: application/json"
-
-    # Copy the temporary database to the USB key and remove it from the filesystem.
-    step "recopie sur la clé"
-    mv "$dbdir"/$backupdb.couch $usbfile
-
-    endmsg="La clé USB peut être retirée"
-
-  else
-    endmsg="Authentification invalide - retirer la clé USB"
-  fi
-
-  # Leave USB key directory and umount it.
-  cd "$prevdir"
-  umount "$usbkeydir"
-  message "$endmsg"
-  sleep 3
-  message ""
-
-done
+usage
