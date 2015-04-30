@@ -21,7 +21,5 @@ ENTRYPOINT [ "/start.sh" ]
 
 # It is likely that you will want to extend this Dockerfile by adding a configuration
 # file with -v source:target when creating the container. Also, you might need to
-# create administrators by extending this Dockerfile and adding:
-#   RUN echo "sam =  -hashed-beda[REDACTED]05fc" >> /usr/local/etc/couchdb/local.ini
-# or if you don't care about cleartext passwords
-#   RUN echo "admin = admin" >> /usr/local/etc/couchdb/local.ini
+# create CouchDB administrators by extending this Dockerfile and adding new *.ini files
+# into /usr/local/etc/couchdb/local.d/.
