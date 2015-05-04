@@ -1,11 +1,11 @@
 package replicate.messaging
 
+import akka.actor.Actor
+
 import scala.concurrent.Future
 import scalaj.http.{Http, HttpOptions}
 
-class FreeMobileSMS(override val officerId: String, user: String, password: String) extends Messaging {
-
-  override val serviceName = "FreeMobileSMS"
+class FreeMobileSMS(override val officerId: String, user: String, password: String) extends Actor with Messaging {
 
   override def sendMessage(message: Message): Future[Option[String]] = {
     Future {
@@ -15,7 +15,7 @@ class FreeMobileSMS(override val officerId: String, user: String, password: Stri
       // This backend does not support alteration of previously sent messages
         None
       else
-        sys.error(s"""unable to send message "$toString" to $this""")
+        sys.error(response.statusLine)
     }
   }
 

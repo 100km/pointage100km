@@ -1,17 +1,13 @@
 package replicate.messaging
 
-import akka.event.Logging
+import akka.actor.{Actor, ActorLogging}
 import replicate.messaging.Message.Severity
-import replicate.utils.Global
 
 import scala.concurrent.Future
 
-object SystemLogger extends Messaging {
+class SystemLogger extends Actor with Messaging with ActorLogging {
 
   override val officerId: String = "system"
-  override val serviceName: String = "Logger"
-
-  private[this] var log = Logging(Global.system, "messaging")
 
   override def sendMessage(message: Message): Future[Option[String]] = {
     val strMessage = s"${message.category}/${message.severity.toString.toLowerCase} $message"

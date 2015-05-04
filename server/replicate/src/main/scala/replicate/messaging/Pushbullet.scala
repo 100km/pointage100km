@@ -2,17 +2,16 @@ package replicate.messaging
 
 import java.io.ByteArrayOutputStream
 
+import akka.actor.Actor
 import play.api.libs.json.{JsObject, JsValue, Json}
 import sun.misc.BASE64Encoder
 
 import scala.concurrent.Future
 import scalaj.http.{Http, HttpRequest}
 
-class Pushbullet(override val officerId: String, bearerToken: String) extends Messaging {
+class Pushbullet(override val officerId: String, bearerToken: String) extends Actor with Messaging {
 
   import Pushbullet._
-
-  override val serviceName = "Pushbullet"
 
   private[this] def send(api: String, request: HttpRequest => HttpRequest): Future[JsValue] = {
     Future {
@@ -40,9 +39,6 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Me
     post("/pushes", payload)
       .transform(j => Some((j \ "iden").as[String]), _ => new RuntimeException(s"""unable to send message "$message" to $officerId"""))
   }
-
-  override def dismissMessage(identifier: String): Future[Boolean] =
-    post(s"/pushed/$identifier", Json.obj("dismissed" -> true)).map(_ => true)
 
   override def cancelMessage(identifier: String): Future[Boolean] =
     delete(s"/pushes/$identifier").map(_ => true)

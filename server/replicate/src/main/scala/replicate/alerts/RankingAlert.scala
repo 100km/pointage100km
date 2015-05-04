@@ -3,9 +3,9 @@ package replicate.alerts
 import akka.stream.ActorFlowMaterializer
 import net.rfc1149.canape.Database
 import play.api.libs.json.JsString
+import replicate.messaging.Message
 import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{RaceInfo, Severity}
-import replicate.messaging.{Message, Messaging}
 import replicate.utils.Infos.RaceInfo
 import replicate.utils.{Global, PeriodicTaskActor}
 
@@ -22,10 +22,9 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
   // null means that there has been no update yet
   private[this] var currentHead: Seq[Int] = null
 
-  private[this] def alert(severity: Severity, rank: Int, message: String, addLink: Boolean): Future[Seq[(Messaging, String)]] = {
-    Alerts.deliverAlert(Alerts.officers, Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",
+  private[this] def alert(severity: Severity, rank: Int, message: String, addLink: Boolean): Unit =
+    Alerts.sendAlert(Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",
       body = message, url = if (addLink) Global.configuration.map(_.adminLink) else None))
-  }
 
   private[this] def contestantInfo(bib: Int): Future[String] =
     database(s"contestant-$bib") map { doc =>
@@ -40,19 +39,19 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
         Some(currentHead.indexOf(bib)).filterNot(_ == -1).map(_+1) match {
           // Someone gained many ranks at once
           case Some(previousRanking) if ranking < previousRanking && previousRanking - ranking >= Global.RankingAlerts.suspiciousRankJump =>
-            contestantInfo(bib).flatMap(name =>
+            contestantInfo(bib).map(name =>
               alert(Severity.Warning, ranking, s"$name gained ${previousRanking - ranking} ranks at once (was at rank $previousRanking)", addLink = true))
           // Someone did progress into the top-runners
           case Some(previousRanking) if isAtHead && ranking < previousRanking =>
             val suspicious = previousRanking >= Global.RankingAlerts.headOfRace
-            contestantInfo(bib).flatMap(name => alert(if (suspicious) Severity.Warning else Severity.Info, ranking,
+            contestantInfo(bib).map(name => alert(if (suspicious) Severity.Warning else Severity.Info, ranking,
               s"$name was previously at rank $previousRanking (${ranking-previousRanking})", addLink = suspicious))
           // Someone appeared at the head of the race while we did not know them previously and we know the top runners already
           case None if isAtHead && currentHead.size >= Global.RankingAlerts.topRunners =>
-            contestantInfo(bib).flatMap(name => alert(Severity.Critical, ranking, s"$name suddenly appeared to the head of the race", addLink = true))
+            contestantInfo(bib).map(name => alert(Severity.Critical, ranking, s"$name suddenly appeared to the head of the race", addLink = true))
           // Someone appeared at the head of the race, but we are still building the top runners list
           case None if isAtHead =>
-            contestantInfo(bib).flatMap(name => alert(Severity.Verbose, ranking, s"$name is at the head (initial ranking)", addLink = false))
+            contestantInfo(bib).map(name => alert(Severity.Verbose, ranking, s"$name is at the head (initial ranking)", addLink = false))
           case _ =>
             Future.successful(())
         }

@@ -1,12 +1,13 @@
 package replicate.alerts
 
+import java.util.UUID
+
 import net.rfc1149.canape.Database
+import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
-import replicate.messaging.{Message, Messaging}
 import replicate.utils.Infos.CheckpointInfo
 import replicate.utils.{Global, PeriodicTaskActor}
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends PeriodicTaskActor {
@@ -20,33 +21,30 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
 
   private[this] var currentState: State = Starting
 
-  private[this] var currentNotifications: Seq[(Messaging, String)] = Seq()
+  private[this] var currentNotification: Option[UUID] = None
 
-  private[this] def cancelPreviousNotifications(notifications: Seq[(Messaging, String)]): Future[Unit] =
-    Future.sequence(currentNotifications.map {
-      case (messaging, identifier) => messaging.cancelMessage(identifier)
-    }).map(_ => currentNotifications = Seq())
+  private[this] def cancelPreviousNotification(): Unit = {
+    currentNotification.foreach(Alerts.cancelAlert)
+    currentNotification = None
+  }
 
-  private[this] def alert(severity: Severity.Severity, message: String): Future[Unit] = {
-    cancelPreviousNotifications(currentNotifications)
-    Alerts.deliverAlert(Alerts.officers, Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
-      url = Some(checkpointInfo.coordinates.url)))
-      .map(currentNotifications = _)
+  private[this] def alert(severity: Severity.Severity, message: String): Unit = {
+    cancelPreviousNotification
+    currentNotification = Some(Alerts.sendAlert(Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
+      url = Some(checkpointInfo.coordinates.url))))
   }
 
   override def future =
-    Ping.lastPing(checkpointInfo.checkpointId, database).flatMap {
+    Ping.lastPing(checkpointInfo.checkpointId, database).map {
       case None =>
-        Future.successful(currentState = Inactive)
+        currentState = Inactive
       case Some(ts) =>
         val sinceLastSeen: FiniteDuration = FiniteDuration(System.currentTimeMillis() - ts, MILLISECONDS)
         val message: String = s"Site has been unresponsive for ${sinceLastSeen.toMinutes} minutes"
         val newState = timestampToState(sinceLastSeen)
-        ((currentState, newState) match {
+        (currentState, newState) match {
           case (before, after) if before == after =>
-            Future.successful(())
           case (Starting, _) =>
-            Future.successful(())
           case (Inactive, Up) =>
             alert(Severity.Verbose, "Site went up for the first time")
           case (_, Notice) =>
@@ -59,8 +57,8 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
             alert(Severity.Info, "Site is back up")
           case (_, _) =>
             log.error(s"Impossible checkpoint state transition from $currentState to $newState")
-            Future.successful(())
-        }).map(_ => currentState = newState)
+        }
+        currentState = newState
     }
 
 }

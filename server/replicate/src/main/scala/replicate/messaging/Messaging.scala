@@ -1,12 +1,22 @@
 package replicate.messaging
 
+import akka.actor.Actor
+import akka.pattern.pipe
 import replicate.utils.Global
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-trait Messaging {
+trait Messaging { this: Actor =>
 
   implicit val dispatcher = Global.system.dispatchers.lookup("https-messaging-dispatcher")
+
+  override val receive: Receive = {
+    case ('send, message: Message) =>
+      sendMessage(message) map(Success(_)) recover { case t => Failure(t) } map((officerId, _)) pipeTo sender()
+    case ('cancel, cancellationId: String) =>
+      cancelMessage(cancellationId)
+  }
 
   /**
    * Send a message to the intended recipient.
@@ -16,15 +26,6 @@ trait Messaging {
    *         if it has been succesful, or a failure otherwise
    */
   def sendMessage(message: Message): Future[Option[String]]
-
-  /**
-   * Dismiss a previously sent message.
-   *
-   * @param identifier the identifier returned by [[sendMessage]]
-   * @return a future which completes into the success value of the cancellation
-   */
-  def dismissMessage(identifier: String): Future[Boolean] =
-    sys.error("Current backend does not support message dismissal")
 
   /**
    * Cancel a previously sent message.
@@ -39,12 +40,5 @@ trait Messaging {
    * Unique id of the officer
    */
   def officerId: String
-
-  /**
-   * Identifier for the service
-   */
-  val serviceName: String
-
-  override def toString = s"$serviceName($officerId)"
 
 }
