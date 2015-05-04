@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Alerts</title>
+    <script src="../common/vendor/couchapp/loader.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $.getJSON("_view/alerts", function (data) {
+          var formatDate = function(ts) {
+            var date = new Date(ts);
+            return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+          };
+          var alerts = $("#alerts");
+          for (var i = 0; i < data.rows.length; i++) {
+            var row = data.rows[i].value;
+            var added = $("<td class='center'></td>").text(formatDate(row.addedTS));
+            var category = $("<td class='center'></td>").text(row.category);
+            var severity = $("<td class='center'></td>").text(row.severity);
+            var title = $("<td class='center'></td>").text(row.title);
+            var message = $("<td class='center'></td>").text(row.body);
+            var link = $("<td class='center'></td>").html(row.url ? ("<a href='" + row.url + "'>Link</a>") : "");
+            var targets = $("<td class='center'></td>").text(row.targets.join(", "));
+            var cancelled = $("<td class='center'></td>").text(row.cancelledTS ? formatDate(row.cancelledTS) : "");
+            $("<tr class='" + row.severity + (row.cancelledTS ? " cancelled" : "") + "'></tr>")
+              .append(added).append(category).append(severity).append(title).append(message).append(link)
+              .append(targets).append(cancelled).appendTo(alerts);
+          }
+        });
+        });
+    </script>
+    <style type="text/css">
+      .center { text-align: center; }
+      .cancelled { text-decoration: line-through; }
+      .error, .critical { background: red; }
+      .critical { font-weight: bold; }
+      .warning { background: orange; }
+      .verbose { font-style: italic; }
+      table { width: 100%; border-spacing: 0; }
+      td { padding: .2em; }
+      tr { border: solid 1px; }
+    </style>
+</head>
+<body>
+  <div>
+    <table>
+      <thead><tr><th>Time</th><th>Category</th><th>Severity</th><th>Title</th><th>Message</th><th>Link</th><th>Targets</th><th>Cancelled</th></tr></thead>
+      <tbody id="alerts">
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
