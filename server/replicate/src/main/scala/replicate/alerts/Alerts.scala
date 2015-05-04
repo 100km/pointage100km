@@ -11,9 +11,13 @@ import replicate.messaging.Message.{Administrativia, Severity}
 import replicate.messaging._
 import replicate.utils.Global
 
+import scala.concurrent.{ExecutionContext, Future}
+
 class Alerts(database: Database) extends Actor with ActorLogging {
 
   import Alerts._
+
+  import Global.dispatcher
 
   /**
    * Cache for alerts whose delivery actor is still alive and may be able to stop the diffusion
@@ -24,7 +28,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   lazy private[this] val officers: Map[String, ActorRef] =
     Global.replicateConfig.as[Map[String, Config]]("officers").collect {
       case (officerId, config) if config.as[Option[Boolean]]("disabled") != Some(true) => (officerId, startFromConfig(officerId, config))
-    }.toMap
+    }
 
   private[this] def startFromConfig(officerId: String, config: Config): ActorRef = {
     val service = config.as[String]("type")
@@ -39,6 +43,8 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   }
 
   override def preStart() = {
+    // Create officers documents asynchronously
+    createOfficerDocuments(database, officers.keys.toSeq)
     // Alert services
     for (infos <- Global.infos; raceInfo <- infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
@@ -99,5 +105,20 @@ object Alerts {
    */
   def cancelAlert(uuid: UUID): Unit =
     alertActor ! ('cancel, uuid)
+
+  /**
+   * Create the missing officer documents using a batch insert. The "system" officer will be set to use the debug
+   * severity level while the other ones will use warning. Existing documents with the same id will not be overriden.
+   *
+   * @param database the database in which the insertions are done
+   * @param officers the list of officer names for which a document must exist
+   * @param ec an execution context
+   * @return a future which will be completed once the insertions are done
+   */
+  private def createOfficerDocuments(database: Database, officers: Seq[String])(implicit ec: ExecutionContext): Future[Unit] = {
+    val docs = officers.map(officerId => Json.obj("_id" -> s"officer-$officerId", "type" -> "officer", "officer" -> officerId,
+      "log_levels" -> Json.obj("*" -> (if (officerId == "system") "debug" else "warning"))))
+    database.bulkDocs(docs, allOrNothing = false).map(_ => ())
+  }
 
 }

@@ -26,6 +26,8 @@ object Message {
     categories += toString -> this
   }
 
+  // Categories and severities must be kept synchronous with the admin/officers view
+
   case object Administrativia extends Category
   case object Broadcast extends Category
   case object Checkpoint extends Category

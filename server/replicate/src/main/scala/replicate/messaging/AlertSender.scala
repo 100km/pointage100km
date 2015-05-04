@@ -5,9 +5,10 @@ import java.util.UUID
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.pattern.pipe
 import net.rfc1149.canape.Database
-import play.api.libs.json.{JsArray, JsNumber, JsObject, Json}
+import play.api.libs.json._
 import replicate.utils.Global
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -32,17 +33,22 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
   /**
    * Number of (positive or negative) delivery confirmations still to arrive.
    */
-  private[this] var missingConfirmations: Int = officers.size
+  private[this] var missingConfirmations: Int = 0
 
   /**
    * Message delivery time.
    */
-  private[this] var addedTimestamp: Long = System.currentTimeMillis()
+  private[this] val addedTimestamp: Long = System.currentTimeMillis()
 
   /**
    * Message cancellation time if any. None means that the message has not been cancelled yet.
    */
   private[this] var cancelledTimestamp: Option[Long] = None
+
+  /**
+   * Targets of the message, to be saved in the document.
+   */
+  private[this] var targets: Seq[String] = Seq()
 
   /**
    * True if the information has been persisted in the database already. From this point on, cancellation
@@ -54,12 +60,21 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
 
   override def preStart() = {
     super.preStart()
-    officers.values.foreach(_ ! ('send, message))
-    if (missingConfirmations == 0)
-      self ! 'write
+    officersFor(database, message) map (('officers, _)) pipeTo self
   }
 
   override val receive: Receive = {
+    case ('officers, targetOfficers: Seq[String] @unchecked) =>
+      log.debug(s"Got targets for $message: $targetOfficers")
+      targets = targetOfficers.intersect(officers.keys.toSeq)
+      // Do not send the message if it has been cancelled already
+      if (!cancelled) {
+        missingConfirmations = targets.size
+        targets.foreach(officers(_) !('send, message))
+      }
+      if (missingConfirmations == 0)
+        self ! 'write
+
     case (officerId: String, response: Try[Option[String] @unchecked]) =>
       // Receive delivery information for an officer
       log.debug(s"confirmation for $officerId received ($response): $message")
@@ -85,7 +100,8 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
       val jsonCancellationIds = JsArray(cancellationIds.map {
         case (officerId, cancellationId) => Json.obj("officer" -> officerId, "cancellation" -> cancellationId)
       })
-      val doc = Json.obj("type" -> "alert", "addedTS" -> addedTimestamp, "cancellations" -> jsonCancellationIds) ++
+      val doc = Json.obj("type" -> "alert", "addedTS" -> addedTimestamp, "cancellations" -> jsonCancellationIds,
+        "targets" -> JsArray(targets.map(JsString))) ++
         Json.toJson(message).as[JsObject] ++
         JsObject(cancelledTimestamp.map(ts => ("deletedTS", JsNumber(ts))).toSeq)
       log.debug(s"writing to database with id ${uuidToId(uuid)}: $doc")
@@ -141,5 +157,10 @@ object AlertSender {
 
   private def cancelAlert(officer: ActorRef, cancellationId: String): Unit =
     officer ! ('cancel, cancellationId)
+
+  private def officersFor(database: Database, message: Message): Future[Seq[String]] = {
+    val key = Json.stringify(Json.arr(message.category.toString, message.severity.toString.toLowerCase))
+    database.view[JsValue, String]("admin", "officers", Seq("startkey" -> key, "endkey" -> key)).map(_.map(_._2))
+  }
 
 }
