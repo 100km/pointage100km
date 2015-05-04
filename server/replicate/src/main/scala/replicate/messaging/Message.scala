@@ -41,7 +41,7 @@ object Message {
     val Debug, Verbose, Info, Warning, Error, Critical = Value
   }
 
-  private[this] val severities: Map[String, Severity.Value] = Severity.values.map(severity => severity.toString -> severity).toMap
+  private[this] val severities: Map[String, Severity.Value] = Severity.values.map(severity => severity.toString.toLowerCase -> severity).toMap
 
   implicit val messageReads: Reads[Message] = (
     (JsPath \ "category").read[String].map(categories) and
@@ -52,7 +52,7 @@ object Message {
     )(Message.apply _)
 
   implicit val categoryWrites: Writes[Category] = Writes { category => JsString(category.toString) }
-  implicit val severityWrites: Writes[Severity.Severity] = Writes { severity => JsString(severity.toString) }
+  implicit val severityWrites: Writes[Severity.Severity] = Writes { severity => JsString(severity.toString.toLowerCase) }
   implicit val uriWrites: Writes[Uri] = Writes { uri => JsString(uri.toString) }
   implicit val messageWrites: Writes[Message] = (
     (JsPath \ "category").write[Category] and
