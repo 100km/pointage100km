@@ -54,7 +54,7 @@ class OnChanges(options: Options.Config, local: Database)
     nextRun = now + (5 seconds)
   }
 
-  context.actorOf(Props(new ChangesActor(self, local, Some("bib_input/race-related"))),
+  context.actorOf(Props(new ChangesActor(self, local, Some("bib_input/no-ping"))),
     "changes")
 
   override def preStart() =
