@@ -1,7 +1,7 @@
 function() {
     var app = $$(this).app;
     var form = $(this)[0];
-    var message_to_store = {};
+    var message_to_store = {type: "message"};
     var message_body = form["bib_admin_message"].value; 
     var message_target = form["bib_admin_message_target"].value;
 
