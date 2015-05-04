@@ -1,7 +1,6 @@
 package replicate.utils
 
-import akka.actor.{ActorRef, FSM}
-import akka.event.Logging
+import akka.actor.{ActorLogging, ActorRef, FSM}
 import akka.stream.ActorFlowMaterializer
 import akka.stream.actor.ActorSubscriberMessage.{OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, WatermarkRequestStrategy}
@@ -9,10 +8,12 @@ import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None) extends ActorSubscriber with FSM[ChangesActor.State, Unit] {
+class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None, params: Map[String, String] = Map())
+  extends ActorSubscriber with ActorLogging with FSM[ChangesActor.State, Unit] {
 
   implicit val system = context.system
 
@@ -20,29 +21,47 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   implicit val requestStrategy = WatermarkRequestStrategy(10)
 
-  implicit var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
+  private[this] var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
 
   import ChangesActor._
 
-  private[this] val log = Logging(context.system, this)
-
   private[this] implicit val materializer = ActorFlowMaterializer(None)
 
-  private[this] def requestChanges() =
-    database.status().foreach { s =>
-      val seqOption = Map("since" -> (s \ "update_seq").as[Int].toString, "heartbeat" -> Global.heartbeatInterval.toMillis.toString)
-      database.continuousChanges(seqOption ++ filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
+  private[this] var lastSeq: Option[Long] = None
+
+  private[this] def requestChanges() = {
+    for (since <- lastSeq match {
+      case Some(ls) =>
+        Future.successful(ls)
+      case None =>
+        database.status().map { status =>
+          val ls = (status \ "update_seq").as[Long]
+          lastSeq = Some(ls)
+          ls
+        }
+    }) {
+      val options = params ++ Map("since" -> since.toString, "heartbeat" -> Global.heartbeatInterval.toMillis.toString)
+      database.continuousChanges(options ++ filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
     }
+  }
 
   startWith(ChangesError, ())
 
   when(Processing) {
-    case Event(OnNext(value), _) =>
-      sendTo ! value
+    case Event(OnNext(value: JsObject), _) =>
       backoff = FiniteDuration(0, SECONDS)
+      (value \ "seq").asOpt[Long] match {
+        case Some(seq) =>
+          sendTo ! value
+          lastSeq = Some(seq)
+        case None =>
+          // We must have reached the end of the stream, we will receive OnComplete right after
+      }
       stay()
     case Event(OnError(t), _) =>
       log.warning("error when subscribing to changes stream: {}", t)
+      goto(ChangesError)
+    case Event(onComplete, _) =>
       goto(ChangesError)
   }
 
@@ -59,8 +78,9 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 }
 
 object ChangesActor {
-  sealed trait State
 
+  sealed trait State
   private case object Processing extends State
   private case object ChangesError extends State
+
 }
