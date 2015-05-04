@@ -1,9 +1,8 @@
 package replicate.utils
 
-import akka.actor.{ActorLogging, ActorRef, FSM}
+import akka.actor.Status.Failure
+import akka.actor.{Actor, ActorLogging, ActorRef, FSM}
 import akka.stream.ActorFlowMaterializer
-import akka.stream.actor.ActorSubscriberMessage.{OnError, OnNext}
-import akka.stream.actor.{ActorSubscriber, WatermarkRequestStrategy}
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
@@ -13,17 +12,12 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None, params: Map[String, String] = Map())
-  extends ActorSubscriber with ActorLogging with FSM[ChangesActor.State, Unit] {
-
-  implicit val system = context.system
-
-  implicit val dispatcher = system.dispatcher
-
-  implicit val requestStrategy = WatermarkRequestStrategy(10)
-
-  private[this] var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
+  extends Actor with ActorLogging with FSM[ChangesActor.State, Unit] {
 
   import ChangesActor._
+  import Global.dispatcher
+
+  private[this] var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
 
   private[this] implicit val materializer = ActorFlowMaterializer(None)
 
@@ -41,14 +35,14 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
         }
     }) {
       val options = params ++ Map("since" -> since.toString, "heartbeat" -> Global.heartbeatInterval.toMillis.toString)
-      database.continuousChanges(options ++ filter.map("filter" -> _).toMap).to(Sink(ActorSubscriber[JsObject](self))).run()
+      database.continuousChanges(options ++ filter.map("filter" -> _).toMap).to(Sink.actorRef(self, 'done)).run()
     }
   }
 
   startWith(ChangesError, ())
 
   when(Processing) {
-    case Event(OnNext(value: JsObject), _) =>
+    case Event(value: JsObject, _) =>
       backoff = FiniteDuration(0, SECONDS)
       (value \ "seq").asOpt[Long] match {
         case Some(seq) =>
@@ -58,14 +52,18 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
           // We must have reached the end of the stream, we will receive OnComplete right after
       }
       stay()
-    case Event(OnError(t), _) =>
-      log.warning("error when subscribing to changes stream: {}", t)
-      goto(ChangesError)
-    case Event(onComplete, _) =>
-      goto(ChangesError)
+    case Event(Failure(t), _) =>
+      log.warning(s"error in stream, reconnecting: $t")
+      goto(ChangesError) forMax(backoff)
+    case Event('done, _) =>
+      log.debug("stream closed, will reconnect")
+      goto(ChangesError) forMax(backoff)
+    case Event(e, _) =>
+      log.error(s"unknown event $e")
+      stay()
   }
 
-  when(ChangesError, stateTimeout = backoff) {
+  when(ChangesError, stateTimeout = 0.seconds) {
     case Event(StateTimeout, _) =>
       requestChanges()
       if (backoff < Global.maximumBackoffTime)
