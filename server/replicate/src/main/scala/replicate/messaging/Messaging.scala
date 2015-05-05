@@ -9,7 +9,7 @@ import scala.util.{Failure, Success}
 
 trait Messaging { this: Actor =>
 
-  implicit val dispatcher = Global.system.dispatchers.lookup("https-messaging-dispatcher")
+  implicit val dispatcher = Global.dispatcher
 
   override val receive: Receive = {
     case ('send, message: Message) =>

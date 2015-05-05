@@ -14,6 +14,7 @@ object Global {
   private[replicate] val replicateConfig = config.getConfig("replicate")
   implicit val system = ActorSystem("replicator", replicateConfig)
   implicit val dispatcher = system.dispatcher
+  val httpsDdispatcher = system.dispatchers.lookup("https-messaging-dispatcher")
   val log = Logging(system, "replicate")
 
   val backoffTimeIncrement: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.backoff-time-increment")

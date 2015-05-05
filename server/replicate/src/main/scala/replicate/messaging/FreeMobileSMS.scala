@@ -1,6 +1,7 @@
 package replicate.messaging
 
 import akka.actor.Actor
+import replicate.utils.Global
 
 import scala.concurrent.Future
 import scalaj.http.{Http, HttpOptions}
@@ -16,7 +17,7 @@ class FreeMobileSMS(override val officerId: String, user: String, password: Stri
         None
       else
         sys.error(response.statusLine)
-    }
+    } (Global.httpsDdispatcher)
   }
 
 }
