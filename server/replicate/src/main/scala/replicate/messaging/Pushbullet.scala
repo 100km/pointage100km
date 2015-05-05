@@ -1,17 +1,12 @@
 package replicate.messaging
 
-import java.io.ByteArrayOutputStream
-
 import akka.actor.Actor
 import play.api.libs.json.{JsObject, JsValue, Json}
-import sun.misc.BASE64Encoder
 
 import scala.concurrent.Future
 import scalaj.http.{Http, HttpRequest}
 
 class Pushbullet(override val officerId: String, bearerToken: String) extends Actor with Messaging {
-
-  import Pushbullet._
 
   private[this] def send(api: String, request: HttpRequest => HttpRequest): Future[JsValue] = {
     Future {
@@ -34,7 +29,7 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Ac
     send(api, _.method("DELETE"))
 
   override def sendMessage(message: Message): Future[Option[String]] = {
-    val basePayload = Json.obj("title" -> message.titleWithSeverity, "body" -> message.body, "icon" -> base64icon)
+    val basePayload = Json.obj("title" -> message.titleWithSeverity, "body" -> message.body)
     val payload = basePayload ++ message.url.fold(Json.obj("type" -> "note"))(l => Json.obj("type" -> "link", "url" -> l.toString))
     post("/pushes", payload)
       .transform(j => Some((j \ "iden").as[String]), _ => new RuntimeException(s"""unable to send message "$message" to $officerId"""))
@@ -44,13 +39,3 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Ac
     delete(s"/pushes/$identifier").map(_ => true)
 }
 
-object Pushbullet {
-
-  val base64icon: String = {
-    val in = getClass.getResourceAsStream("/pushbullet-icon.jpg")
-    val out = new ByteArrayOutputStream()
-    new BASE64Encoder().encode(in, out)
-    out.toString("UTF-8")
-  }
-
-}
