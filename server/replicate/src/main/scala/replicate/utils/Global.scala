@@ -2,7 +2,6 @@ package replicate.utils
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.stream.ActorFlowMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
 
