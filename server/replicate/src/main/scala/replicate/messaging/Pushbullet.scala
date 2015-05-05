@@ -14,7 +14,7 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Ac
   override def sendMessage(message: Message): Future[Option[String]] = {
     val basePayload = Json.obj("title" -> message.titleWithSeverity, "body" -> message.body)
     val payload = basePayload ++ message.url.fold(Json.obj("type" -> "note"))(l => Json.obj("type" -> "link", "url" -> l.toString))
-    push(bearerToken, payload)
+    post("/pushes", bearerToken, payload)
       .transform(j => Some((j \ "iden").as[String]), _ => new RuntimeException(s"""unable to send message "$message" to $officerId"""))
   }
 
@@ -42,9 +42,6 @@ object Pushbullet {
 
   private[messaging] def post(api: String, bearerToken: String, payload: JsObject): Future[JsValue] =
     send(api, bearerToken, _.postData(payload.toString()))
-
-  private[messaging] def push(bearerToken: String, payload: JsObject): Future[JsValue] =
-    post("/pushes", bearerToken, payload)
 
   private[messaging] def delete(api: String, bearerToken: String): Future[JsValue] =
     send(api, bearerToken, _.method("DELETE"))

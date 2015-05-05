@@ -42,6 +42,13 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     context.actorOf(props, if (service == officerId) service else s"$service-$officerId")
   }
 
+  private[this] def startPushbulletSMS(config: Config): Option[ActorRef] = {
+    for (bearerToken <- config.as[Option[String]]("sms.bearer-token");
+         userIden <- config.as[Option[String]]("sms.user-iden");
+         deviceIden <- config.as[Option[String]]("sms.device-iden"))
+      yield context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)), "pushbullet-sms")
+  }
+
   override def preStart() = {
     // Create officers documents asynchronously
     createOfficerDocuments(database, officers.keys.toSeq)
@@ -51,6 +58,12 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     for (infos <- Global.infos; checkpointInfo <- infos.checkpoints.values)
       context.actorOf(Props(new PingAlert(database, checkpointInfo)), s"checkpoint-${checkpointInfo.checkpointId}")
     context.actorOf(Props(new BroadcastAlert(database)), "broadcasts")
+    startPushbulletSMS(Global.replicateConfig) match {
+      case Some(_) =>
+        log.debug("started SMS service")
+      case None =>
+        log.warning("no SMS service defined")
+    }
     // Officers
     val officersStr = officers.keys.toSeq.sorted.mkString(", ")
     database.update("bib_input", "force-update", "officers", Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))

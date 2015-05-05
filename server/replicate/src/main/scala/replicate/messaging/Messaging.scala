@@ -42,3 +42,4 @@ trait Messaging { this: Actor =>
   def officerId: String
 
 }
+
