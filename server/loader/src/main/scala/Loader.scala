@@ -126,7 +126,7 @@ object Loader extends App {
               upToDate.incrementAndGet()
               Future.successful(Json.obj())
             } else {
-              db.insert(doc ++ Json.obj("_rev" -> original \ "_rev")) andThen {
+              db.insert(doc ++ Json.obj("_rev" -> original \ "_rev", "stalkers" -> original \ "stalkers")) andThen {
                 case _ =>
                   println(s"Updated existing $desc")
                   updated.incrementAndGet()
@@ -137,7 +137,7 @@ object Loader extends App {
               }
             }
           case None =>
-            db.insert(doc) andThen { case _ =>
+            db.insert(doc ++ Json.obj("stalkers" -> Json.arr())) andThen { case _ =>
               println(s"Inserted $desc")
               inserted.incrementAndGet()
             } recoverWith {

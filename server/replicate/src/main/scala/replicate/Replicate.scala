@@ -5,6 +5,7 @@ import net.rfc1149.canape._
 import play.api.libs.json.Json
 import replicate.alerts.Alerts
 import replicate.maintenance.{ReplicateRelaunch, RemoveObsoleteDocuments, Compaction}
+import replicate.stalking.Stalker
 import replicate.utils._
 import steenwerck._
 
@@ -154,6 +155,8 @@ class Replicate(options: Options.Config) {
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
     if (options.alerts)
       system.actorOf(Props(new Alerts(localDatabase)), "alerts")
+    if (options.stalking)
+      system.actorOf(Props(new Stalker(localDatabase)), "stalker")
   }
 
   private def exit(status: Int) {

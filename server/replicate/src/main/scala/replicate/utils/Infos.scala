@@ -21,6 +21,17 @@ case class Infos(cat_names: Array[String],
   val checkpoints: Map[Int, CheckpointInfo] =
     (0 until sites.length).map(id => id -> new CheckpointInfo(id, this)).toMap
 
+  /**
+   * Mapping of distances in kilometers from (siteId, lap)
+   */
+  val distances: Map[(Int, Int), Double] = {
+    var d: Map[(Int, Int), Double] = Map()
+    for (lap <- 1 to races_laps.max; siteId <- 0 until sites.length) {
+      d += (siteId, lap) -> ((kms_lap * (lap - 1)) + kms_offset(siteId))
+    }
+    d
+  }
+
 }
 
 object Infos {

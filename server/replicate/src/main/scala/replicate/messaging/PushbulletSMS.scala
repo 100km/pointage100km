@@ -1,8 +1,7 @@
 package replicate.messaging
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 import play.api.libs.json.{JsValue, Json}
-import replicate.utils.Global
 
 class PushbulletSMS(bearerToken: String, userIden: String, deviceIden: String) extends Actor with ActorLogging {
 
@@ -26,7 +25,7 @@ class PushbulletSMS(bearerToken: String, userIden: String, deviceIden: String) e
 
 object PushbulletSMS {
 
-  def sendSMS(recipient: String, message: String): Unit =
-    Global.system.actorSelection("/user/alerts/pushbullet-sms") ! (recipient, message)
+  def sendSMS(actorRef: ActorRef, recipient: String, message: String): Unit =
+    actorRef ! (recipient, message)
 
 }

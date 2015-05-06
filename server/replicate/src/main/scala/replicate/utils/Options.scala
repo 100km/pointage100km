@@ -12,6 +12,7 @@ object Options {
                     _obsolete: Boolean = true,
                     replicate: Boolean = true,
                     alerts: Boolean = false,
+                    stalking: Boolean = false,
                     siteId: Int = -1,
                     _ping: Boolean = true) {
 
@@ -41,6 +42,7 @@ object Options {
       po("run replication service", replicate, defaults.replicate)
       po("run ping service", ping, defaults.ping)
       po("run alerts service", alerts, defaults.alerts)
+      po("run stalking service", stalking, defaults.stalking)
       System.out.println("Computed values:")
       po("slave only", isSlave, defaults.isSlave)
       po("check onChanges feed", onChanges, defaults.onChanges)
@@ -54,7 +56,7 @@ object Options {
         c.copy(_fixConflicts = true) }
       opt[Unit]('f', "full") text("turn on every service but ping") action { (_, c) =>
         c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
-          replicate = true, _ping = false, alerts = true) }
+          replicate = true, _ping = false, alerts = true, stalking = true) }
       opt[Unit]('n', "dry-run") text("dump configuration and do not run") action { (_, c) =>
         c.copy(dryRun = true) }
       help("help") abbr("h") text("show this help")
@@ -83,6 +85,12 @@ object Options {
       }
       opt[Unit]("no-alerts") abbr("na") text("do not run alerts service") action { (_, c) =>
         c.copy(alerts = false)
+      }
+      opt[Unit]('s', "stalking") text("run stalking service") action { (_, c) =>
+        c.copy(stalking = true)
+      }
+      opt[Unit]("no-stalking") abbr("ns") text("do not run stalking service") action { (_, c) =>
+        c.copy(stalking = false)
       }
       arg[Int]("<site-id>") text("numerical id of the current site (999 for slave mode)") action { (x, c) =>
         c.copy(siteId = x)
