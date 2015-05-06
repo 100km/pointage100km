@@ -11,7 +11,18 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None, params: Map[String, String] = Map())
+/**
+ * Send changes occurring to a database using a changes stream continuously to another actor.
+ *
+ * @constructor Build a new changes actor.
+ * @param sendTo the actor to send the changes to
+ * @param database the database to query the changes from
+ * @param filter an optional filter to apply to the changes
+ * @param params the extra parameters to the query or the filter
+ * @param lastSeq the last sequence we are interested in, None meaning start from the current state
+ */
+class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] = None,
+                   params: Map[String, String] = Map(), private var lastSeq: Option[Long] = None)
   extends Actor with ActorLogging with FSM[ChangesActor.State, Unit] {
 
   import ChangesActor._
@@ -20,8 +31,6 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   private[this] var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
 
   private[this] implicit val materializer = ActorFlowMaterializer(None)
-
-  private[this] var lastSeq: Option[Long] = None
 
   private[this] def requestChanges() = {
     for (since <- lastSeq match {
