@@ -34,7 +34,7 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
   override def future =
     lastPing(checkpointInfo.checkpointId, database).map {
       case None =>
-        if (currentState != Inactive)
+        if (currentState != Inactive && currentState != Starting)
           alert(Severity.Error, "Liveness data for the site has disappeared from the database")
         currentState = Inactive
       case Some(ts) =>
