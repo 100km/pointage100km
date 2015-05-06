@@ -103,7 +103,6 @@ class Stalker(database: Database) extends Actor with ActorLogging {
   private[this] def sendInfo(bib: Long, pos: (Int, Long, Int, Int)): Unit = {
     val recipients = stalkers.getOrElse(bib, Seq())
     if (recipients.nonEmpty) {
-      log.info(s"Sending checkpoint information about ${name(bib)} to ${recipients.mkString(", ")}")
       pos match {
         case (siteId, timestamp, lap, rank) =>
           val infos = Global.infos.get
@@ -128,7 +127,6 @@ class Stalker(database: Database) extends Actor with ActorLogging {
   }
 
   private[this] def launchCheckpointChanges(fromSeq: Long): Unit = {
-    log.info(s"launching checkpoint change from $fromSeq with stage $stalkStage and stalkees $stalkers")
     val currentStage = stalkStage
     database.changesSource(Map("feed" -> "longpoll", "timeout" -> "60000", "filter" -> "admin/with-stalkers",
       "stalked" -> stalkers.keys.map(_.toString).mkString(","), "since" -> fromSeq.toString))
@@ -151,10 +149,8 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
     case ('checkpoint, doc: JsObject, stage: Long) =>
       if (stage == stalkStage) {
-        log.info(s"Checkpoint info: $doc")
         val docs = (doc \ "results").as[Array[JsObject]]
         for (doc <- docs) {
-          log.info(s"change in checkpoint for $doc")
           val bib = (doc \ "id").as[String].split("-")(2).toLong
           pipe(contestantInfo(bib).map(('ranking, bib, _))) to self
         }
