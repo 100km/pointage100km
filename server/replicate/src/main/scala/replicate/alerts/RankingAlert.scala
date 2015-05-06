@@ -1,17 +1,19 @@
 package replicate.alerts
 
-import akka.stream.ActorFlowMaterializer
-import net.rfc1149.canape.Database
-import play.api.libs.json.JsString
+import akka.stream.{ActorFlowMaterializer, FlowMaterializer}
+import net.rfc1149.canape.{Couch, Database}
+import play.api.libs.json.{JsString, JsValue, Json}
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{RaceInfo, Severity}
 import replicate.utils.Infos.RaceInfo
 import replicate.utils.{Global, PeriodicTaskActor}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskActor {
+
+  import RankingAlert._
 
   private[this] implicit val dispatcher = context.system.dispatcher
   private[this] implicit val fm = ActorFlowMaterializer()
@@ -59,7 +61,27 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
     Future.sequence(fs).map(_ => currentHead = runners)
   }
 
-  override def future = Ranking.headOfRace(raceInfo, database).flatMap(runners =>
+  override def future = headOfRace(raceInfo, database).flatMap(runners =>
     if (currentHead == null) Future { currentHead = runners } else checkForChange(runners))
+
+}
+
+object RankingAlert {
+
+  /**
+   * Return the ranking of a given race.
+   *
+   * @return a list of bibs ordered by rank
+   */
+  private def headOfRace(raceInfo: RaceInfo, database: Database)(implicit fm: FlowMaterializer, ec: ExecutionContext): Future[Seq[Int]] = {
+    val response = database.list("main_display", "global-ranking", "global-ranking",
+      Seq("startkey" -> Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" -> Json.stringify(Json.arr(raceInfo.raceId + 1))))
+    response.filter(_.status.isSuccess()).flatMap(r => Couch.jsonUnmarshaller[JsValue]().apply(r.entity)).map { result =>
+      (result \ "rows").as[Array[JsValue]].headOption.map(_ \ "contestants" \\ "id" map { id =>
+        // id is of the form checkpoints-CHECKPOINT-CONTESTANT
+        id.as[String].split('-').last.toInt
+      }).getOrElse(Seq())
+    }
+  }
 
 }

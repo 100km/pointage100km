@@ -3,12 +3,14 @@ package replicate.alerts
 import java.util.UUID
 
 import net.rfc1149.canape.Database
+import play.api.libs.json.JsObject
 import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.utils.Infos.CheckpointInfo
 import replicate.utils.{Global, PeriodicTaskActor}
 
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends PeriodicTaskActor {
 
@@ -23,19 +25,14 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
 
   private[this] var currentNotification: Option[UUID] = None
 
-  private[this] def cancelPreviousNotification(): Unit = {
-    currentNotification.foreach(Alerts.cancelAlert)
-    currentNotification = None
-  }
-
   private[this] def alert(severity: Severity.Severity, message: String): Unit = {
-    cancelPreviousNotification
+    currentNotification.foreach(Alerts.cancelAlert)
     currentNotification = Some(Alerts.sendAlert(Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
       url = Some(checkpointInfo.coordinates.url))))
   }
 
   override def future =
-    Ping.lastPing(checkpointInfo.checkpointId, database).map {
+    lastPing(checkpointInfo.checkpointId, database).map {
       case None =>
         currentState = Inactive
       case Some(ts) =>
@@ -55,6 +52,8 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
             alert(Severity.Critical, message)
           case (_, Up) =>
             alert(Severity.Info, "Site is back up")
+          case (_, Inactive) =>
+            alert(Severity.Error, "Liveness data for the site has disappeared from the database")
           case (_, _) =>
             log.error(s"Impossible checkpoint state transition from $currentState to $newState")
         }
@@ -83,5 +82,14 @@ object PingAlert {
     else
       Up
   }
+
+  /**
+   * Return the timestamp corresponding to the last proof of live of a site.
+   */
+  private def lastPing(siteId: Int, database: Database)(implicit ec: ExecutionContext): Future[Option[Long]] =
+    database.view[Int, JsObject]("admin", "alive",
+      Seq("startkey" -> siteId.toString, "endkey" -> siteId.toString, "group" -> "true")).map { rows =>
+        rows.headOption.map(row => (row._2 \ "max").as[Long])
+    }
 
 }
