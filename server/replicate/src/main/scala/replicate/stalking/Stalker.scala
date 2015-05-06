@@ -8,7 +8,7 @@ import akka.stream.ActorFlowMaterializer
 import akka.stream.scaladsl.Sink
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsValue, JsObject}
 import replicate.alerts.RankingAlert
 import replicate.messaging.PushbulletSMS
 import replicate.utils.{ChangesActor, Global}
@@ -118,16 +118,9 @@ class Stalker(database: Database) extends Actor with ActorLogging {
     }
   }
 
-  private[this] def initialStalkees(doc: JsObject): Long = {
-    (doc \ "results").as[Array[JsObject]].foreach(json => updateStalkees((json \ "doc").as[JsObject]))
-    (doc \ "last_seq").as[Long]
-  }
-
-  private[this] def launchInitialStalkersChanges(): Unit = {
-    database.changesSource(Map("filter" -> "admin/stalked", "include_docs" -> "true"))
-      .map(('initial, _))
-      .runWith(Sink.actorRef(self, 'closedInitial))
-  }
+  private[this] def launchInitialStalkersChanges(): Unit =
+    pipe(database.status().map(json => (json \ "update_seq").as[Long]).flatMap(lastSeq =>
+      database.view[JsValue, JsObject]("admin", "stalked").map(('initial, lastSeq, _)))) to self
 
   private[this] def launchStalkersChanges(fromSeq: Long): ActorRef = {
     context.actorOf(Props(new ChangesActor(self, database, filter = Some("admin/stalked"), params = Map("include_docs" -> "true"),
@@ -151,12 +144,10 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
   val receive: Receive = {
 
-    case ('initial, doc: JsObject) =>
-      val seq = initialStalkees(doc)
+    case ('initial, seq: Long, doc: Seq[(JsValue, JsObject)] @unchecked) =>
+      doc.map(_._2).foreach(updateStalkees)
       launchStalkersChanges(seq)
       launchCheckpointChanges(seq)
-
-    case 'closedInitial =>
 
     case ('checkpoint, doc: JsObject, stage: Long) =>
       if (stage == stalkStage) {
