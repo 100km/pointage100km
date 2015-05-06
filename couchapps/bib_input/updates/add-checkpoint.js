@@ -1,5 +1,5 @@
 function(doc, req) {
-  doc = doc || {_id: (req.id || req.uuid)};
+  doc = doc || {_id: (req.id || req.uuid), type: "checkpoint"};
   var ts = Number(req.form.ts);
   if (!doc.times) {
     doc.times = [ts];
