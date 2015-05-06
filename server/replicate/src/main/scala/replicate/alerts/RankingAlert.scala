@@ -24,45 +24,57 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
   // null means that there has been no update yet
   private[this] var currentHead: Seq[Int] = null
 
-  private[this] def alert(severity: Severity, rank: Int, message: String, addLink: Boolean): Unit =
-    Alerts.sendAlert(Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",
-      body = message, url = if (addLink) Global.configuration.map(_.adminLink) else None))
-
-  private[this] def contestantInfo(bib: Int): Future[String] =
-    database(s"contestant-$bib") map { doc =>
+  /**
+   * Send an alert after prepending the contestant name to the body.
+   */
+  private[this] def alert(severity: Severity, bib: Int, rank: Int, message: String, addLink: Boolean): Future[Unit] = {
+    val contestantInfo = database(s"contestant-$bib") map { doc =>
       val (JsString(firstName), JsString(lastName)) = (doc \ "first_name", doc \ "name")
       s"$firstName $lastName (bib $bib)"
     }
-
-  private[this] def checkForChange(runners: Seq[Int]): Future[Unit] = {
-    val fs = for ((bib, idx) <- runners.zipWithIndex; ranking = idx + 1)
-      yield {
-        val isAtHead = ranking <= Global.RankingAlerts.topRunners
-        Some(currentHead.indexOf(bib)).filterNot(_ == -1).map(_+1) match {
-          // Someone gained many ranks at once
-          case Some(previousRanking) if ranking < previousRanking && previousRanking - ranking >= Global.RankingAlerts.suspiciousRankJump =>
-            contestantInfo(bib).map(name =>
-              alert(Severity.Warning, ranking, s"$name gained ${previousRanking - ranking} ranks at once (was at rank $previousRanking)", addLink = true))
-          // Someone did progress into the top-runners
-          case Some(previousRanking) if isAtHead && ranking < previousRanking =>
-            val suspicious = previousRanking >= Global.RankingAlerts.headOfRace
-            contestantInfo(bib).map(name => alert(if (suspicious) Severity.Warning else Severity.Info, ranking,
-              s"$name was previously at rank $previousRanking (${ranking-previousRanking})", addLink = suspicious))
-          // Someone appeared at the head of the race while we did not know them previously and we know the top runners already
-          case None if isAtHead && currentHead.size >= Global.RankingAlerts.topRunners =>
-            contestantInfo(bib).map(name => alert(Severity.Critical, ranking, s"$name suddenly appeared to the head of the race", addLink = true))
-          // Someone appeared at the head of the race, but we are still building the top runners list
-          case None if isAtHead =>
-            contestantInfo(bib).map(name => alert(Severity.Verbose, ranking, s"$name is at the head (initial ranking)", addLink = false))
-          case _ =>
-            Future.successful(())
-        }
-      }
-    Future.sequence(fs).map(_ => currentHead = runners)
+    contestantInfo.map { name =>
+      Alerts.sendAlert(Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",
+        body = s"$name $message", url = if (addLink) Global.configuration.map(_.adminLink) else None))
+    }
   }
 
-  override def future = headOfRace(raceInfo, database).flatMap(runners =>
-    if (currentHead == null) Future { currentHead = runners } else checkForChange(runners))
+  private[this] def checkForChange(runners: Seq[Int]): Unit = {
+    for ((bib, idx) <- runners.zipWithIndex; ranking = idx + 1) {
+      val isAtHead = ranking <= Global.RankingAlerts.topRunners
+      Some(currentHead.indexOf(bib)).filterNot(_ == -1).map(_+1) match {
+        // Someone gained many ranks at once
+        case Some(previousRanking) =>
+          if (ranking < previousRanking && previousRanking - ranking >= Global.RankingAlerts.suspiciousRankJump) {
+            // Someone gained many ranks at once
+            alert(Severity.Warning, bib, ranking,
+              s"gained ${previousRanking - ranking} ranks at once (was at rank $previousRanking)", addLink = true)
+          } else if (isAtHead && ranking < previousRanking) {
+            // Someone did progress into the top-runners
+            val suspicious = previousRanking >= Global.RankingAlerts.headOfRace
+            alert(if (suspicious) Severity.Warning else Severity.Info, bib, ranking,
+              s"was previously at rank $previousRanking (${ranking - previousRanking})", addLink = suspicious)
+          }
+        case None if isAtHead =>
+          if (currentHead.size >= Global.RankingAlerts.topRunners) {
+            // Someone appeared at the head of the race while we did not know them previously and we know the top runners already
+            alert(Severity.Critical, bib, ranking, s"suddenly appeared to the head of the race", addLink = true)
+          } else {
+            // Someone appeared at the head of the race, but we are still building the top runners list
+            alert(Severity.Verbose, bib, ranking, s"is at the head (initial ranking)", addLink = false)
+          }
+        case _ =>
+          Future.successful(())
+      }
+    }
+    currentHead = runners
+  }
+
+  override def future = headOfRace(raceInfo, database).map { runners =>
+    if (currentHead == null)
+      currentHead = runners
+    else
+      checkForChange(runners)
+  }
 
 }
 
