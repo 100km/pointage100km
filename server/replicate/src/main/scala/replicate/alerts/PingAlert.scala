@@ -34,6 +34,8 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
   override def future =
     lastPing(checkpointInfo.checkpointId, database).map {
       case None =>
+        if (currentState != Inactive)
+          alert(Severity.Error, "Liveness data for the site has disappeared from the database")
         currentState = Inactive
       case Some(ts) =>
         val sinceLastSeen: FiniteDuration = FiniteDuration(System.currentTimeMillis() - ts, MILLISECONDS)
@@ -52,8 +54,6 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
             alert(Severity.Critical, message)
           case (_, Up) =>
             alert(Severity.Info, "Site is back up")
-          case (_, Inactive) =>
-            alert(Severity.Error, "Liveness data for the site has disappeared from the database")
           case (_, _) =>
             log.error(s"Impossible checkpoint state transition from $currentState to $newState")
         }
