@@ -128,8 +128,8 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
   private[this] def launchCheckpointChanges(fromSeq: Long): Unit = {
     val currentStage = stalkStage
-    database.changesSource(Map("feed" -> "longpoll", "timeout" -> "60000", "filter" -> "admin/with-stalkers",
-      "stalked" -> stalkers.keys.map(_.toString).mkString(","), "since" -> fromSeq.toString))
+    database.changesSource(Map("feed" -> "longpoll", "timeout" -> Global.stalkersObsoleteDuration.toMillis.toString,
+      "filter" -> "admin/with-stalkers", "stalked" -> stalkers.keys.map(_.toString).mkString(","), "since" -> fromSeq.toString))
       .map(('checkpoint, _, currentStage))
       .runWith(Sink.actorRef(self, 'closedCheckpoint))
   }
