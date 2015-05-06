@@ -4,7 +4,7 @@ import akka.actor.Actor
 
 import scalaj.http.{Http, HttpOptions}
 
-class FreeMobileSMS(override val officerId: String, user: String, password: String) extends Actor with Messaging {
+class FreeMobileSMS(user: String, password: String) extends Actor with Messaging {
 
   override def sendMessage(message: Message): Option[String] = {
     val response = Http("https://smsapi.free-mobile.fr/sendmsg").option(HttpOptions.allowUnsafeSSL)

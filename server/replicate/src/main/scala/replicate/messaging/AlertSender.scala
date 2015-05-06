@@ -70,12 +70,12 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
       // Do not send the message if it has been cancelled already
       if (!cancelled) {
         missingConfirmations = targets.size
-        targets.foreach(officers(_) !('send, message))
+        targets.foreach(officerId => officers(officerId) ! ('deliver, message, officerId))
       }
       if (missingConfirmations == 0)
         self ! 'write
 
-    case (officerId: String, response: Try[Option[String] @unchecked]) =>
+    case ('deliveryReceipt, response: Try[Option[String] @unchecked], officerId: String) =>
       // Receive delivery information for an officer
       log.debug(s"confirmation for $officerId received ($response): $message")
       response match {

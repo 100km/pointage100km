@@ -33,8 +33,8 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   private[this] def startFromConfig(officerId: String, config: Config): ActorRef = {
     val service = config.as[String]("type")
     val props = service match {
-      case "pushbullet"     => Props(new Pushbullet(officerId, config.as[String]("token"))).withDispatcher("https-messaging-dispatcher")
-      case "freemobile-sms" => Props(new FreeMobileSMS(officerId, config.as[String]("user"), config.as[String]("password"))).withDispatcher("https-messaging-dispatcher")
+      case "pushbullet"     => Props(new Pushbullet(config.as[String]("token"))).withDispatcher("https-messaging-dispatcher")
+      case "freemobile-sms" => Props(new FreeMobileSMS(config.as[String]("user"), config.as[String]("password"))).withDispatcher("https-messaging-dispatcher")
       case "system"         => Props(new SystemLogger)
       case s                => sys.error(s"Unknown officer type $s for officer $officerId")
     }

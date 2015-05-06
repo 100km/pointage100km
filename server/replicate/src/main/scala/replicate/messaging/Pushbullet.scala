@@ -6,7 +6,7 @@ import replicate.utils.Global
 
 import scalaj.http.{Http, HttpRequest}
 
-class Pushbullet(override val officerId: String, bearerToken: String) extends Actor with Messaging {
+class Pushbullet(bearerToken: String) extends Actor with Messaging {
 
   import Pushbullet._
 
@@ -16,7 +16,7 @@ class Pushbullet(override val officerId: String, bearerToken: String) extends Ac
     try {
       Some((post("/pushes", bearerToken, payload) \ "iden").as[String])
     } catch {
-      case _: Throwable => sys.error(s"""unable to send message "$message" to $officerId""")
+      case _: Throwable => sys.error(s"unable to send message")
     }
   }
 

@@ -5,8 +5,6 @@ import replicate.messaging.Message.Severity
 
 class SystemLogger extends Actor with Messaging with ActorLogging {
 
-  override val officerId: String = "system"
-
   override def sendMessage(message: Message): Option[String] = {
     val strMessage = s"${message.category}/${message.severity.toString.toLowerCase} $message"
     message.severity match {

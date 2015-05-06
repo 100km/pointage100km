@@ -10,8 +10,8 @@ trait Messaging { this: Actor =>
   implicit val dispatcher = Global.dispatcher
 
   override val receive: Receive = {
-    case ('send, message: Message) =>
-      sender() ! (officerId, Try(sendMessage(message)))
+    case ('deliver, message: Message, token) =>
+      sender() ! ('deliveryReceipt, Try(sendMessage(message)), token)
     case ('cancel, cancellationId: String) =>
       cancelMessage(cancellationId)
   }
@@ -33,11 +33,6 @@ trait Messaging { this: Actor =>
    */
   def cancelMessage(identifier: String): Boolean =
     sys.error("Current backend does not support message cancellation")
-
-  /**
-   * Unique id of the officer
-   */
-  def officerId: String
 
 }
 
