@@ -135,7 +135,11 @@
 
         var lookup = function() {
           var adder = $("#adder");
-          $.getJSON("../../contestant-" + adder.val(), addNewStalkee);
+          var bib = adder.val();
+          $.getJSON("../../contestant-" + bib, addNewStalkee)
+            .fail(function() {
+              alert("Unknown bib: " + bib);
+            });
           adder.val("");
         }
 
