@@ -1,6 +1,6 @@
 package replicate.stalking
 
-import java.util.Calendar
+import java.util.{Calendar, TimeZone}
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.pipe
@@ -8,7 +8,7 @@ import akka.stream.ActorFlowMaterializer
 import akka.stream.scaladsl.Sink
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
-import play.api.libs.json.{JsValue, JsObject}
+import play.api.libs.json.{JsObject, JsValue}
 import replicate.alerts.RankingAlert
 import replicate.messaging.PushbulletSMS
 import replicate.utils.{ChangesActor, Global}
@@ -108,6 +108,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
           val infos = Global.infos.get
           val date = Calendar.getInstance()
           date.setTimeInMillis(timestamp)
+          date.setTimeZone(TimeZone.getTimeZone(infos.timezone))
           val time = "%d:%02d".format(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE))
           val message = s"""${name(bib)} : dernier pointage au site "${infos.checkpoints(siteId).name}" à $time """ +
             s"(${infos.races(race(bib)).name}, tour $lap, ${infos.distances(siteId, lap)} kms, position $rank)"

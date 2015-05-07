@@ -11,7 +11,8 @@ case class Infos(cat_names: Array[String],
                  races_names: Array[String],
                  sites: Array[String],
                  sites_coordinates: Array[Infos.Coordinates],
-                 start_times: Array[Long]) {
+                 start_times: Array[Long],
+                 timezone: String) {
 
   import Infos._
 
