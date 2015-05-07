@@ -13,5 +13,6 @@
                      {"latitude": 50.701045, "longitude": 2.779363},
                      {"latitude": 50.675542, "longitude": 2.790285},
                      {"latitude": 50.682368, "longitude": 2.748249},
-                     {"latitude": 50.700161, "longitude": 2.779041}]
+                     {"latitude": 50.700161, "longitude": 2.779041}],
+"timezone": "Europe/Paris"
 }
