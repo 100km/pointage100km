@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Stalking service</title>
+    <script src="../common/vendor/couchapp/loader.js"></script>
+    <script type="text/javascript">
+
+      var addStalkee = function(doc) {
+        $("#stalkers").append(stalkeeDiv(doc));
+        addStalkers(doc.bib, doc.stalkers);
+      }
+
+      var normalizePhone = function(phone) {
+        phone = phone.replace(/ /g, "");
+        if (phone && phone.length > 2) {
+          if (phone[0] != '+') {
+            if (phone.substring(0, 2) == "00") {
+              return "+" . phone.substring(2);
+            } else if (phone[0] == '0') {
+              return "+33" + phone.substring(1);
+            } else {
+              return "+" + phone;
+            }
+          }
+        }
+        return phone;
+      }
+
+      var addNewStalkee = function(doc) {
+        if (doc.stalkers.length > 0) {
+          alert("Bib " + doc.bib + " already has stalkers");
+          return;
+        }
+        $("#stalkers").prepend(stalkeeDiv(doc));
+        if (doc.phone && doc.stalkers.indexOf(normalizePhone(doc.phone)) == -1) {
+          $("#adder-" + doc.bib).val(doc.phone);
+        }
+      }
+
+      var addNewStalker = function(bib, stalker) {
+        stalker = normalizePhone(stalker);
+        var validPhone = new RegExp("^\\+[0-9]{8,13}$");
+        if (!validPhone.test(stalker)) {
+          alert("Invalid phone number " + stalker);
+          return;
+        }
+        if (stalker.substring(0, 3) != "+33") {
+          alert("Message to foreign numbers are not supported: " + stalker);
+          return;
+        }
+        if (stalker[3] != '6' && stalker[3] != '7') {
+          alert("Messages to landlines are not supported: " + stalker);
+          return;
+        }
+        $.post("_update/change-stalker/contestant-" + bib,
+            JSON.stringify({operation: "add", stalker: stalker}),
+            function(stalkers) {
+              $("#stalkers-" + bib).remove();
+              addStalkers(bib, stalkers);
+            });
+      }
+
+      var stalkeeDiv = function(doc) {
+        var div = $("<div class='stalkee' id='bib-" + doc.bib + "'/>");
+        var name = doc.first_name + " " + doc.name + " (bib " + doc.bib + ")";
+        var phoneAdder = $("<input id='adder-" + doc.bib + "' type='text'/>");
+        var phoneSubmitter = $("<input type='button' value='Add stalker phone number'/>");
+        phoneSubmitter.click(function () {
+          addNewStalker(doc.bib, phoneAdder.val());
+          phoneAdder.val("");
+        });
+        phoneAdder.keypress(function (e) {
+          if (e.which == 13) {
+            phoneSubmitter.trigger('click');
+            return false;
+          }
+          return true;
+        });
+        var adderDiv = $("<div class='phoneAdder'>");
+        adderDiv.append(phoneAdder);
+        adderDiv.append(phoneSubmitter);
+        div.append("<div class='name'>" + name + "</div></div>");
+        div.append(adderDiv);
+        return div;
+      }
+
+      var stalkerid = function(bib, stalker) {
+        return "stalker-" + bib + "-" + ((stalker != "" && stalker[0] == "+") ? stalker.substring(1) : stalker);
+      }
+
+      var addStalker = function(bib, stalker) {
+        var div = $("<div class='stalker' id='" + stalkerid(bib, stalker) + "'/>");
+        var close = $("<img class='icon' src='close.png'/>");
+        div.append(close);
+        close.click(function() {
+          removeStalker(bib, stalker);
+        });
+        div.append("<span class='stalker'>" + stalker + "</span>");
+        $("#stalkers-" + bib).append(div);
+      }
+
+      var addStalkers = function(bib, stalkers) {
+        var div = $("<div id='stalkers-" + bib + "'/>");
+        $("#bib-" + bib).append(div);
+        for (var i = 0; i < stalkers.length; i++) {
+          addStalker(bib, stalkers[i]);
+        }
+      }
+
+      var removeStalker = function(bib, stalker) {
+        $.post("_update/change-stalker/contestant-" + bib,
+            JSON.stringify({operation: "remove", stalker: stalker}),
+            function(stalkers) {
+              if (stalkers.length > 0) {
+                var stalkerDiv = $("#" + stalkerid(bib, stalker));
+                stalkerDiv.fadeOut("fast", function() {
+                  stalkerDiv.remove();
+                });
+              } else {
+                var bibDiv = $("#bib-" + bib);
+                bibDiv.fadeOut("fast", function() {
+                  bibDiv.remove();
+                });
+              }
+            });
+      }
+
+      $(document).ready(function() {
+        $.getJSON("_view/stalked", function (data) {
+          for (var i = 0; i < data.rows.length; i++) {
+            addStalkee(data.rows[i].value);
+          }
+        });
+
+        var lookup = function() {
+          var adder = $("#adder");
+          $.getJSON("../../contestant-" + adder.val(), addNewStalkee);
+          adder.val("");
+        }
+
+        $("#lookup").click(lookup);
+        $("#adder").keypress(function (e) {
+          if (e.which == 13) {
+            $("#lookup").trigger('click');
+            return false;
+          }
+          return true;
+        });
+      });
+
+    </script>
+    <style type="text/css">
+      .center { text-align: center; }
+      .name { font-weight: bold; }
+      .stalkee { width: 100%; border: 1px solid black; padding: 0.2em; margin-top: 0.2em; margin-bottom: 0.2em; }
+      .stalker { vertical-align: middle; }
+      .icon { vertical-align: middle; margin-left: 0.1em; }
+    </style>
+</head>
+<body>
+  <div id="add">
+    Add stalker for bib
+    <input type="text" id="adder"/>
+    <input type="button" id="lookup" value="Add bib"/>
+
+  </div>
+  <div id="stalkers">
+  </div>
+</body>
+</html>
