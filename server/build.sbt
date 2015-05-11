@@ -47,7 +47,7 @@ lazy val replicate =
   Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2 ++ scalajHttp ++ Revolver.settings) dependsOn(canape, steenwerck)
 
 lazy val loader =
-  Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt) dependsOn(canape, steenwerck)
+  Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
 
 lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 

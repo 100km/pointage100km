@@ -23,7 +23,7 @@ object Loader extends App {
 
   private case class Options(year: Int = 0, host: String = "localhost",
 			     user: Option[String] = None, password: Option[String] = None,
-			     database: String = "100km")
+			     database: String = "100km", repeat: Option[Long] = None)
 
   private val parser = new OptionParser[Options]("loader") {
     help("help") text("show this help")
@@ -31,6 +31,7 @@ object Loader extends App {
     opt[String]('u', "user") text("Mysql user") action { (x, c) => c.copy(user = Some(x)) }
     opt[String]('p', "password") text("Mysql password") action { (x, c) => c.copy(password = Some(x)) }
     opt[String]('d', "database") text("Mysql database (default: 100km") action { (x, c) => c.copy(database = x) }
+    opt[Long]('r', "repeat") text("Minutes between relaunching (default: do not relaunch)") action { (x, c) => c.copy(repeat = Some(x)) }
     arg[Int]("<year>") text("Year to import") action { (x, c) => c.copy(year = x) }
   }
 
@@ -84,74 +85,81 @@ object Loader extends App {
     options.user.foreach(source.setUsername)
     options.password.foreach(source.setPassword)
 
-    val existing: Map[Long, JsObject] = db.view[Long, JsObject]("common", "all_contestants").execute().toMap
-    println(s"Contestants already in the CouchDB database: ${existing.size}")
+    do {
+      val existing: Map[Long, JsObject] = db.view[Long, JsObject]("common", "all_contestants").execute().toMap
+      println(s"Contestants already in the CouchDB database: ${existing.size}")
 
-    val run = new QueryRunner(source)
+      val run = new QueryRunner(source)
 
-    val teams = {
-      val t = run.query("SELECT * FROM teams WHERE year = ?",
-			new MapListHandler,
-			new java.lang.Integer(options.year))
-      (for (team <- t)
-        yield team("id").asInstanceOf[java.lang.Integer] -> team("name").asInstanceOf[String]).toMap
-    }
+      val teams = {
+        val t = run.query("SELECT * FROM teams WHERE year = ?",
+          new MapListHandler,
+          new java.lang.Integer(options.year))
+        (for (team <- t)
+          yield team("id").asInstanceOf[java.lang.Integer] -> team("name").asInstanceOf[String]).toMap
+      }
 
-    val upToDate = new AtomicInteger(0)
-    val inserted = new AtomicInteger(0)
-    val updated = new AtomicInteger(0)
-    val q = run.query("SELECT * FROM registrations WHERE year = ?",
-		      new MapListHandler,
-		      new java.lang.Integer(options.year))
-    println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
-    // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
-    // be overloaded and that we will encounter no timeouts.
-    for (r <- q.grouped(20)) {
-      val future = Future.traverse(r) { contestant =>
-        val bib = contestant("bib").asInstanceOf[java.lang.Long]
-        val id = "contestant-" + bib
-        val firstName = capitalize(contestant("first_name").asInstanceOf[String])
-        val name = contestant("name").asInstanceOf[String]
-        val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
-        val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
-          Json.obj("_id" -> id,
-            "type" -> "contestant",
-            "name" -> name,
-            "first_name" -> firstName) ++
-          (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
-        val desc = s"bib $bib ($firstName $name)"
-        existing.get(bib) match {
-          case Some(original) =>
-            if (containsAll(doc, original)) {
-              upToDate.incrementAndGet()
-              Future.successful(Json.obj())
-            } else {
-              db.insert(doc ++ Json.obj("_rev" -> original \ "_rev", "stalkers" -> original \ "stalkers")) andThen {
-                case _ =>
-                  println(s"Updated existing $desc")
-                  updated.incrementAndGet()
+      val upToDate = new AtomicInteger(0)
+      val inserted = new AtomicInteger(0)
+      val updated = new AtomicInteger(0)
+      val q = run.query("SELECT * FROM registrations WHERE year = ?",
+        new MapListHandler,
+        new java.lang.Integer(options.year))
+      println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
+      // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
+      // be overloaded and that we will encounter no timeouts.
+      for (r <- q.grouped(20)) {
+        val future = Future.traverse(r) { contestant =>
+          val bib = contestant("bib").asInstanceOf[java.lang.Long]
+          val id = "contestant-" + bib
+          val firstName = capitalize(contestant("first_name").asInstanceOf[String])
+          val name = contestant("name").asInstanceOf[String]
+          val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
+          val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
+            Json.obj("_id" -> id,
+              "type" -> "contestant",
+              "name" -> name,
+              "first_name" -> firstName) ++
+            (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
+          val desc = s"bib $bib ($firstName $name)"
+          existing.get(bib) match {
+            case Some(original) =>
+              if (containsAll(doc, original)) {
+                upToDate.incrementAndGet()
+                Future.successful(Json.obj())
+              } else {
+                db.insert(doc ++ Json.obj("_rev" -> original \ "_rev", "stalkers" -> original \ "stalkers")) andThen {
+                  case _ =>
+                    println(s"Updated existing $desc")
+                    updated.incrementAndGet()
+                } recoverWith {
+                  case t: Throwable =>
+                    println(s"Could not update existing $desc: $t")
+                    Future.successful(Json.obj())
+                }
+              }
+            case None =>
+              db.insert(doc ++ Json.obj("stalkers" -> Json.arr())) andThen { case _ =>
+                println(s"Inserted $desc")
+                inserted.incrementAndGet()
               } recoverWith {
                 case t: Throwable =>
-                  println(s"Could not update existing $desc: $t")
+                  println(s"Could not insert $desc: $t")
                   Future.successful(Json.obj())
               }
-            }
-          case None =>
-            db.insert(doc ++ Json.obj("stalkers" -> Json.arr())) andThen { case _ =>
-              println(s"Inserted $desc")
-              inserted.incrementAndGet()
-            } recoverWith {
-              case t: Throwable =>
-                println(s"Could not insert $desc: $t")
-                Future.successful(Json.obj())
-            }
+          }
         }
+        future.execute()
       }
-      future.execute()
-    }
-    println(s"Inserted documents: ${inserted.get()}")
-    println(s"Updated documents: ${updated.get()}")
-    println(s"Documents already up-to-date: ${upToDate.get()}")
+      println(s"Inserted documents: ${inserted.get()}")
+      println(s"Updated documents: ${updated.get()}")
+      println(s"Documents already up-to-date: ${upToDate.get()}")
+
+      options.repeat.foreach { minutes =>
+        println(s"Sleeping for $minutes minute${if (minutes > 1) "s" else ""}")
+        Thread.sleep(minutes * 60000)
+      }
+    } while (options.repeat.isDefined)
   } finally {
     db.couch.releaseExternalResources().execute()
     system.shutdown()
