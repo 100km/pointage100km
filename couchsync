@@ -201,7 +201,7 @@ watch() {
 # Main program
 #
 if [ x"$1" = x--init -a -n "$2" -a $# = 2 ]; then
-  initialize $2
+  initialize "$2"
   exit 0
 fi
 
