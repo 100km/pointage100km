@@ -176,12 +176,12 @@ watch() {
     done
 
     # Go into the USB key to block a possible umount.
-    usbkeydir=$(dirname $steenwerck_file)
+    usbkeydir=$(dirname "$steenwerck_file")
 
     # Check the credentials on the key against the ones in the database
     step "Vérification de la validité de la clé USB"
     dbkey="$(getdbkey)"
-    if [ x"$dbkey" = x"$(cat $usbkeydir/steenwerck)" ]; then
+    if [ x"$dbkey" = x"$(cat "$usbkeydir"/steenwerck)" ]; then
       backup "$usbkeydir" false
       endmsg="La clé USB peut être retirée"
     else
