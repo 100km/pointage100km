@@ -80,17 +80,16 @@ STEPS:
       - check that everything you are couchapp_pushing is committed and pushed to git (infos.json, JS, HTML, ...)
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
       - ensure couchdb is running on developper PC.
-      - launch replicate with site_id 0: ./bin/replicate 0
+      - launch replicate with site_id 0: ./bin/replicate -f 0
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
-      - launch loader with 100km_prod credentials (lookup website code): bin/loader -u 100km_prod -p XXXXXX -d 100km_prod YEAR
+      - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
   - foreach checkpoint pc X:
     - launch sudo rm -rf /var/lib/puppet
     - launch sudo puppet agent --test
     - open screen
-    - in screen, launch ./replicate X; Stick the post-it with X and the name on the pc;
-      - !! if X == 6, launch replicate --full !! 4
-    - in screen, launch `sudo ./couchsync /usr/local/var/lib/couchdb`
+    - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 replicate X`; Stick the post-it with X and the name on the pc;
+    - in screen, launch `./couchsync /usr/local/var/lib/couchdb`
     - in screen, launch the appropriate command for getting 3G Internet:
        - `pon SFR /dev/ttyUSB3` for SFR keys (white) 1, 2, 3, 5
        - `pon SFR /dev/ttyUSB0` for SFR key (white) 4
