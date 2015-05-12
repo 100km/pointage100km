@@ -119,7 +119,7 @@ backup() {
   backupcouchuri=http://$(docker port $container 5984 | sed -e 's/^0.0.0.0:/localhost:/')
 
   # Choose the backup file database name on the key to prevent accidents.
-  syncdb=$(cat "$usbkeydir"/steenwerck | cut -c 1-16 | tr 'A-Z' 'a-z')
+  syncdb=sync-$(md5sum "$usbkeydir"/steenwerck | awk '{print $1}')
 
   # Choose a unique name for a backup database (before the synchronization).
   backupdb=backup-$$-$(date +%s)
