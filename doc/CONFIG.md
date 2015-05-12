@@ -88,7 +88,7 @@ STEPS:
     - launch sudo rm -rf /var/lib/puppet
     - launch sudo puppet agent --test
     - open screen
-    - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 replicate X`; Stick the post-it with X and the name on the pc;
+    - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate X`; Stick the post-it with X and the name on the pc;
     - in screen, launch `./couchsync /usr/local/var/lib/couchdb`
     - in screen, launch the appropriate command for getting 3G Internet:
        - `pon SFR /dev/ttyUSB3` for SFR keys (white) 1, 2, 3, 5
