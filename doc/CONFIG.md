@@ -21,7 +21,6 @@ On the main server, you need:
    * a security configuration allowing the main user to read this database.
  * a database with the name indicated in "steenwerck-config" database containing the couchapp
 
-
 ##client configuration
 
 On each client, you need:
@@ -44,10 +43,24 @@ Similarly, a `local` section can be added in this file to override local databas
 application can be overridden in a `replicate` section.
 
 ##Launching a race
+On a dev pc:
+```
+$ bin/wipe login password
+$ couchapps/server-pushapps server login password
+$ bin/replicate --no-ping 0
+```
+
+$ /kvm/launch-steenwerck
+
+
+
 If a bib has been input in the bib_input couchapp before the contestant had been transfered from the website db to couchdb, (for example you forgot to run bin/loader, or a contestant registered after the begining of the race), you need to have a bin/replicate launched with the -I option to fix the checkpoint document
-TODO: describe the procedure to launch a race
 
 STEPS:
+-1. On the db server:
+```
+$ docker rm -f steenwerck-replicate
+```
 0. @race HQ (with internet); estimated time 1h
   - NEEDS: pen and post-its, 1 developper PC, 7 checkpoints PCs, 1 display PC with video projector.
   - On the developper pc:
@@ -76,11 +89,13 @@ STEPS:
         - polish pixel accurate display :-)
     - Really start the race:
       - launch ./wipe
-      - !!Check that the times of the start of the races are correct `echo $(($(date +%s --date="29 May 2014 06:00:00")*1000 + 15*60*1000))` !!
+      - !!Check that the times of the start of the races are correct
+        - `echo $(($(date +%s --date="28 May 2014 19:00:00")*1000))` !!
+        - `echo $(($(date +%s --date="29 May 2014 06:00:00")*1000))` !!
       - check that everything you are couchapp_pushing is committed and pushed to git (infos.json, JS, HTML, ...)
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
-      - ensure couchdb is running on developper PC.
-      - launch replicate with site_id 0: ./bin/replicate -f 0
+      - ensure couchdb and replicate are running on developper PC.
+        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate --no-ping 0`
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
@@ -89,7 +104,7 @@ STEPS:
     - launch sudo puppet agent --test
     - open screen
     - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate X`; Stick the post-it with X and the name on the pc;
-    - in screen, launch `./couchsync /usr/local/var/lib/couchdb`
+    - in screen, launch `./couchsync --watch`
     - in screen, launch the appropriate command for getting 3G Internet:
        - `pon SFR /dev/ttyUSB3` for SFR keys (white) 1, 2, 3, 5
        - `pon SFR /dev/ttyUSB0` for SFR key (white) 4
