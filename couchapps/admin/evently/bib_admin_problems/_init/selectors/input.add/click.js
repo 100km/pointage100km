@@ -28,8 +28,8 @@ function() {
           var time = (next_time - prev_time) / (next_km - prev_km) * (miss_km - prev_km) + prev_time;
 
           time = Math.round(time);
-          if (isNaN(time)) {
-            alert("Refusing to insert NaN in DB");
+          if (!isFinite(time)) {
+            alert("Refusing to insert non-finite time in DB");
             return;
           }
 
