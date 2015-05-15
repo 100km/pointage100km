@@ -35,15 +35,15 @@ function(head, req) {
       var lap = i;
 
       // Special case for teams... (order was 566, 564, 565) change race_id and lap...
-      if (row.value.bib >= 564 && row.value.bib <= 566)
-        race_id = race_id - 1;
-      if (row.value.bib == 564)
-        lap = 1;
-      if (row.value.bib == 565)
-        lap = 2;
+      //if (row.value.bib >= 564 && row.value.bib <= 566)
+      //  race_id = race_id - 1;
+      //if (row.value.bib == 564)
+      //  lap = 1;
+      //if (row.value.bib == 565)
+      //  lap = 2;
 
       // race_description is hard-coded
-      send("(" + [56 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
+      send("(" + [60 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
     }
   }
 
