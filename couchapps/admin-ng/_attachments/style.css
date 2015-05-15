@@ -1,0 +1,19 @@
+.liveness-alive { background: green; }
+.liveness-fresh { background: blue; }
+.liveness-old { background: orange; }
+.liveness-dead { background: red; }
+
+.row-same-height {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.col-xs-height {
+  display: table-cell;
+  float: none !important;
+}
+
+.col-middle {
+  vertical-align: middle;
+}
