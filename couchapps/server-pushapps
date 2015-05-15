@@ -33,6 +33,14 @@ else
   dbname="$4"
 fi
 
+echo Updating modules with bower
+for i in */_attachments; do
+  if [ -f "$i"/bower.json ]; then
+    echo "  - $i"
+    (cd "$i" && bower install)
+  fi
+done
+
 echo Pushing into $dbname at $host
 full_name=http://$auth$host/$dbname
 couchapp pushapps . $full_name

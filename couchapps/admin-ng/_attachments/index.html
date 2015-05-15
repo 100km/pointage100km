@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <title>Dashboard for pointage100km</title>
+
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="js/admin-ng.js"></script>
+</head>
+<body ng-app="app">
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Les 100 km de Steenwerck</a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Help</a></li>
+            </ul>
+            <form class="navbar-form navbar-right">
+                <input type="text" class="form-control" placeholder="Search...">
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div ng-controller="liveness" class="row row-same-height">
+            <div ng-repeat="site in infos.sites" class="col-middle col-xs-1 col-xs-height text-center btn-{{liveness[$index]}}">
+                <div>{{site}}</div>
+                <div ng-show="liveness[$index] !== 'default'">
+                    ({{times[$index] | date : "HH:mm:ss" : infos.timezone }})
+                </div>
+            </div>
+            <div class="col-sm-{{12 - infos.sites.length}}"></div>
+    </div>
+
+    <div ng-controller="reactiveChanges" class="row">Received messages:
+        <ul>
+            <li ng-repeat="message in messages">{{message}}</li>
+        </ul>
+    </div>
+</div>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
