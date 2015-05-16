@@ -1,0 +1,6 @@
+<div class="row">
+  <h1>{{infos.sites[siteId]}} (site {{siteId}})</h1>
+  <ul>
+    <li ng-repeat="checkpoint in checkpoints" class="time-{{checkpoint.time_type}} contestant-{{checkpoint.contestant_type}}">{{checkpoint.time | date : "HH:mm:ss" }} {{checkpoint | fullName}}</li>
+  </ul>
+</div>
