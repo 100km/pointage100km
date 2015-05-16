@@ -4,9 +4,9 @@
 .liveness-dead { background: red; }
 
 .row-same-height {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .col-xs-height {
@@ -16,4 +16,16 @@
 
 .col-middle {
   vertical-align: middle;
+}
+
+.time-artificial {
+  font-style: italic;
+}
+
+.time-deleted {
+  text-decoration: line-through;
+}
+
+.contestant-unknown {
+  color: red;
 }

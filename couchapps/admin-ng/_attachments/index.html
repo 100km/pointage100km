@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="style.css"/>
     <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-route/angular-route.min.js"></script>
     <script src="js/admin-ng.js"></script>
 </head>
 <body ng-app="app">
@@ -18,7 +19,7 @@
 <nav class="navbar navbar-inverse">
     <div class="container-fluid">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">Les 100 km de Steenwerck</a>
+          <a class="navbar-brand" href="#/">Les 100 km de Steenwerck</a>
         </div>
         <div>
             <ul class="nav navbar-nav navbar-right">
@@ -34,22 +35,19 @@
     </div>
 </nav>
 
-<div class="container-fluid">
-    <div ng-controller="liveness" class="row row-same-height">
-            <div ng-repeat="site in infos.sites" class="col-middle col-xs-1 col-xs-height text-center btn-{{liveness[$index]}}">
+<div class="container-fluid" ng-controller="infosCtrl">
+    <div ng-controller="livenessCtrl" class="row row-same-height">
+            <a ng-repeat="site in infos.sites" class="col-middle col-xs-1 col-xs-height text-center btn-{{liveness[$index]}}"
+                                               href="#/site/{{$index}}">
                 <div>{{site}}</div>
                 <div ng-show="liveness[$index] !== 'default'">
                     ({{times[$index] | date : "HH:mm:ss" : infos.timezone }})
                 </div>
-            </div>
+            </a>
             <div class="col-sm-{{12 - infos.sites.length}}"></div>
     </div>
 
-    <div ng-controller="reactiveChanges" class="row">Received messages:
-        <ul>
-            <li ng-repeat="message in messages">{{message}}</li>
-        </ul>
-    </div>
+    <div ng-view></div>
 </div>
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
