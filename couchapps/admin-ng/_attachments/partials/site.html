@@ -1,6 +1,13 @@
 <div class="row">
   <h1>{{infos.sites[siteId]}} (site {{siteId}})</h1>
-  <ul>
-    <li ng-repeat="checkpoint in checkpoints" class="time-{{checkpoint.time_type}} contestant-{{checkpoint.contestant_type}}">{{checkpoint.time | date : "HH:mm:ss" }} {{checkpoint | fullName}}</li>
-  </ul>
+  <table class="table-striped times">
+    <thead><tr><th>Time</th><th>Name</th><th>Race</th></tr></thead>
+    <tbody>
+      <tr ng-repeat="checkpoint in checkpoints" class="time-{{checkpoint.time_type}} contestant-{{checkpoint.contestant_type}}">
+        <td>{{checkpoint.time | date : "HH:mm:ss" }}</td>
+        <td>{{checkpoint | fullName}}</td>
+        <td>{{infos.races_names[checkpoint.race_id]}}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>

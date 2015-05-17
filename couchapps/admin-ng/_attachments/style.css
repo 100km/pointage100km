@@ -29,3 +29,11 @@
 .contestant-unknown {
   color: red;
 }
+
+table.times th {
+  text-align: center;
+}
+
+table.times td {
+  padding: 0.2em;
+}
