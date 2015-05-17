@@ -3,11 +3,24 @@ var app = angular.module("app", ["ngRoute"]);
 app.factory("onChangesService", ["database", "$httpParamSerializer", function(database, $httpParamSerializer) {
   return {
     onChanges: function(scope, params, callback) {
-      var p = angular.merge({feed: "eventsource"}, params);
-      var ev = new EventSource(database + "/_changes?" + $httpParamSerializer(p));
-      ev.onmessage = function(e) {
-        scope.$applyAsync(function() { callback(JSON.parse(e.data)); });
-      };
+      var ev;
+      var allParams = angular.merge({feed: "eventsource"}, params);
+
+      var reconnect = function() {
+        ev = new EventSource(database + "/_changes?" + $httpParamSerializer(allParams));
+        ev.onmessage = function(event) {
+          allParams.since = event.lastEventId;
+          scope.$applyAsync(function() { callback(JSON.parse(event.data)); });
+        };
+        ev.onerror = function(event) {
+          if (ev.readyState === EventSource.CLOSED) {
+            ev.close();
+            reconnect();
+          }
+        }
+      }
+
+      reconnect();
       scope.$on("$destroy", function() { ev.close(); });
     }
   };
@@ -71,11 +84,9 @@ app.controller("livenessCtrl", ["$scope", "$http", "database", "$interval", func
   });
 }]);
 
-app.controller("reactiveChangesCtrl", ["$scope", "onChangesService", function($scope, onChangesService) {
+app.controller("reactiveChangesCtrl", ["$scope", "globalChangesService", function($scope, onChangesService) {
   $scope.messages = [];
-  onChangesService.onChanges($scope, {heartbeat: 2000, since: 7030, filter: "bib_input/no_ping"}, function(e) {
-    $scope.messages.push(e);
-  });
+  $scope.$on("change", function(event, data) { $scope.messages.push(data); });
 }]);
 
 app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http", "database", "$interval",
@@ -98,7 +109,7 @@ app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http
                 if (latest.times.indexOf(latest.time) != -1)
                   latest.time_type = "regular";
                 else if ((latest.artificial_times || []).indexOf(latest.time) != -1)
-                  latest.time_type = "artificial"
+                  latest.time_type = "artificial";
                 else
                   latest.time_type = "deleted";
                 latest.contestant_type = "unknown";
