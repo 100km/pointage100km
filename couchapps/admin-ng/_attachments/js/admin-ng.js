@@ -5,12 +5,27 @@ app.factory("onChangesService", ["database", function(database) {
         onChanges: function(scope, params, callback) {
             var ev = new EventSource(database + "/_changes?feed=eventsource" + (params ? ("&" + params) : ""));
             ev.onmessage = function(e) {
-                scope.$apply(callback(e.data));
+                scope.$applyAsync(function() { callback(JSON.parse(e.data)); });
             };
             scope.$on("$destroy", function() { ev.close(); });
         }
     };
 }]);
+
+app.factory("globalChangesService", ["onChangesService", "$rootScope", "database", "$http",
+    function(onChangesService, $rootScope, database, $http) {
+      return {
+        start: function() {
+          $http.get(database).success(function(status) {
+            var sequence = status.update_seq;
+            onChangesService.onChanges($rootScope, "since=" + sequence + "&heartbeat=3000&include_docs=true",
+                function(change) {
+                  $rootScope.$broadcast("change", change);
+                });
+          });
+        }
+      };
+    }]);
 
 app.controller("infosCtrl", ["$scope", "$http", "database",
     function($scope, $http, database) {
@@ -69,7 +84,7 @@ app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http
       var startkey = JSON.stringify([$scope.siteId]);
       var endkey = JSON.stringify([$scope.siteId + 1]);
       // XXXXX Transform into a _changes notification
-      var regular = $interval(function() {
+      var load = function() {
         $http.get(database + "/_design/admin-ng/_view/last-checkpoints?startkey=" + startkey +
             "&endkey=" + endkey + "&limit=200&include_docs=true")
           .success(function(data) {
@@ -93,8 +108,12 @@ app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http
                 }
             });
           });
-      }, 5000);
-      $scope.$on("$destroy", function() { $interval.cancel(regular); });
+      };
+      $scope.$on("change", function(event, change) {
+        if (change.id.startsWith("checkpoints-" + $scope.siteId + "-"))
+          load();
+      });
+      load();
     }]);
 
 app.filter("fullName", function() {
@@ -106,7 +125,7 @@ app.filter("fullName", function() {
   };
 });
 
-app.constant("database", "http://localhost:5984/steenwerck100km");
+app.constant("database", "http://localhost:5984/backup");
 app.config(["$routeProvider",
     function($routeProvider) {
       $routeProvider.
@@ -122,4 +141,8 @@ app.config(["$routeProvider",
         otherwise({
           redirectTo: "/changes"
         });
+    }]);
+app.run(["globalChangesService",
+    function(globalChangesService) {
+      globalChangesService.start();
     }]);
