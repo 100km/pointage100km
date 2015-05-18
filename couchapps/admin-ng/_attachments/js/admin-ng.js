@@ -45,7 +45,6 @@ app.controller("infosCtrl", ["$scope", "$http", "database",
     function($scope, $http, database) {
       $http.get(database + "/infos").success(function(infos) {
         $scope.infos = infos;
-        $scope.$broadcast("infos", infos);
       });
     }]);
 
@@ -76,11 +75,13 @@ app.controller("livenessCtrl", ["$scope", "$http", "database", "$interval", func
         });
       })
   };
-  $scope.$on("infos", function() {
-    resetLiveness();
-    checkSites();
-    var checker = $interval(checkSites, 10000);
-    $scope.$on("$destroy", function() { $interval.cancel(checker); });
+  $scope.$watch("infos", function(infos) {
+    if (infos) {
+      resetLiveness();
+      checkSites();
+      var checker = $interval(checkSites, 10000);
+      $scope.$on("$destroy", function() { $interval.cancel(checker); });
+    }
   });
 }]);
 
@@ -93,12 +94,13 @@ app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http
     function($scope, $routeParams, onChangesService, $http, database, $interval) {
       $scope.siteId = Number($routeParams.siteId);
       $scope.checkpoints = [];
-      var startkey = JSON.stringify([$scope.siteId]);
-      var endkey = JSON.stringify([$scope.siteId + 1]);
+      var params = {startkey: JSON.stringify([$scope.siteId]), endkey: JSON.stringify([$scope.siteId + 1]), limit: 200,
+        include_docs: true, update_seq: true}
+      var latestSeq = 0
       var load = function() {
-        $http.get(database + "/_design/admin-ng/_view/last-checkpoints?startkey=" + startkey +
-            "&endkey=" + endkey + "&limit=200&include_docs=true")
+        $http.get(database + "/_design/admin-ng/_view/last-checkpoints", {params: params})
           .success(function(data) {
+            latestSeq = data.update_seq;
             $scope.checkpoints = [];
             var latest;
             angular.forEach(data.rows, function(row) {
@@ -120,8 +122,9 @@ app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http
             });
           });
       };
+      var checkpointPrefix = "checkpoints-" + $scope.siteId + "-";
       $scope.$on("change", function(event, change) {
-        if (change.id.startsWith("checkpoints-" + $scope.siteId + "-"))
+        if (change.seq > latestSeq && change.id.startsWith(checkpointPrefix))
           load();
       });
       load();
