@@ -1,13 +1,11 @@
-<div class="row">
-  <h1>{{infos.sites[siteId]}} (site {{siteId}})</h1>
-  <table class="table-striped times">
-    <thead><tr><th>Time</th><th>Name</th><th>Race</th></tr></thead>
-    <tbody>
-      <tr ng-repeat="checkpoint in checkpoints" class="time-{{checkpoint.time_type}} contestant-{{checkpoint.contestant_type}}">
-        <td>{{checkpoint.time | date : "HH:mm:ss" }}</td>
-        <td>{{checkpoint | fullName}}</td>
-        <td>{{infos.races_names[checkpoint.race_id]}}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<md-list>
+  <md-subheader class="md-sticky">{{infos.sites[siteId]}} (site {{siteId}})</md-subheader>
+  <md-list-item class="md-3-line" ng-repeat="checkpoint in checkpoints">
+    <img ng-src="{{checkpoint | gravatarUrl}}?d=blank&s=40" class="md-avatar" alt="{{checkpoint | fullName}}"/>
+    <div class="md-list-item-text">
+      <h3>{{checkpoint | fullName}}</h3>
+      <h4>{{infos.races_names[checkpoint.race_id]}}</h4>
+      <p>{{checkpoint.time | date : "HH:mm:ss" }}</p>
+    </div>
+  </md-list-item>
+</md-list>

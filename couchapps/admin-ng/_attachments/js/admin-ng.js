@@ -1,4 +1,4 @@
-var app = angular.module("app", ["ngRoute"]);
+var app = angular.module("app", ["ngRoute", "ngMaterial"]);
 
 app.factory("onChangesService", ["database", "$httpParamSerializer", function(database, $httpParamSerializer) {
   return {
@@ -41,12 +41,23 @@ app.factory("globalChangesService", ["onChangesService", "$rootScope", "database
       };
     }]);
 
-app.controller("infosCtrl", ["$scope", "$http", "database",
-    function($scope, $http, database) {
-      $http.get(database + "/infos").success(function(infos) {
-        $scope.infos = infos;
-      });
-    }]);
+app.controller("infosCtrl", ["$scope", "$http", "database", function($scope, $http, database) {
+  $http.get(database + "/infos").success(function(infos) { $scope.infos = infos; });
+}]);
+
+app.controller("appCtrl", ["$scope", "$timeout", "$mdSidenav", "$mdUtil", function($scope, $timeout, $mdSidenav, $mdUtil) {
+  $scope.toggleLeft = buildToggler('left');
+  function buildToggler(navID) {
+    var debounceFn =  $mdUtil.debounce(function(){
+      $mdSidenav(navID).toggle();
+    }, 300);
+    return debounceFn;
+  }
+}]);
+
+app.controller("leftCtrl", ["$scope", "$timeout", "$mdSidenav", function($scope, $timeout, $mdSidenav) {
+  $scope.close = $mdSidenav("left").close
+}]);
 
 app.controller("livenessCtrl", ["$scope", "$http", "database", "$interval", function($scope, $http, database, $interval) {
   $scope.liveness = [];
@@ -136,6 +147,12 @@ app.filter("fullName", function() {
       return doc.first_name + " " + doc.name + " (dossard " + doc.bib + ")";
     else
       return "Dossard " + doc.bib;
+  };
+});
+
+app.filter("gravatarUrl", function() {
+  return function(doc) {
+    return "http://www.gravatar.com/avatar/" + CryptoJS.MD5(angular.lowercase(doc.email));
   };
 });
 
