@@ -8,9 +8,14 @@
   "dependencies": {
     "angular": "~1.4.0-rc.2",
     "angular-route": "~1.4.0-rc.2",
+    "angular-animate": "~1.4.0-rc.2",
+    "angular-aria": "~1.4.0-rc.2",
+    "angular-material": "~0.9.4",
     "bootstrap": "~3.3.4"
   },
   "resolutions": {
-    "angular": "~1.4.0-rc.2"
+    "angular": "~1.4.0-rc.2",
+    "angular-animate": "~1.4.0-rc.2",
+    "angular-aria": "~1.4.0-rc.2"
   }
 }
