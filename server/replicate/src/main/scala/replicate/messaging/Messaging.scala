@@ -3,7 +3,7 @@ package replicate.messaging
 import akka.actor.Actor
 import replicate.utils.Global
 
-import scala.util.Try
+import scala.concurrent.Future
 
 trait Messaging { this: Actor =>
 
@@ -11,7 +11,8 @@ trait Messaging { this: Actor =>
 
   override val receive: Receive = {
     case ('deliver, message: Message, token) =>
-      sender() ! ('deliveryReceipt, Try(sendMessage(message)), token)
+      val s = sender()
+      sendMessage(message).onComplete(r => s ! ('deliveryReceipt, r, token))
     case ('cancel, cancellationId: String) =>
       cancelMessage(cancellationId)
   }
@@ -23,7 +24,7 @@ trait Messaging { this: Actor =>
    * @return a future which will complete to an optional string allowing to cancel the delivery
    *         if it has been succesful, or a failure otherwise
    */
-  def sendMessage(message: Message): Option[String]
+  def sendMessage(message: Message): Future[Option[String]]
 
   /**
    * Cancel a previously sent message.
@@ -31,7 +32,7 @@ trait Messaging { this: Actor =>
    * @param identifier the identifier returned by [[sendMessage]]
    * @return a future which completes into the success value of the cancellation
    */
-  def cancelMessage(identifier: String): Boolean =
+  def cancelMessage(identifier: String): Future[Boolean] =
     sys.error("Current backend does not support message cancellation")
 
 }

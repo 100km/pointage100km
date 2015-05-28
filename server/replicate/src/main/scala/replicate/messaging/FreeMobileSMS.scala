@@ -1,19 +1,22 @@
 package replicate.messaging
 
 import akka.actor.Actor
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{Uri, HttpRequest}
+import replicate.utils.Global
 
-import scalaj.http.{Http, HttpOptions}
+import scala.concurrent.Future
 
 class FreeMobileSMS(user: String, password: String) extends Actor with Messaging {
 
-  override def sendMessage(message: Message): Option[String] = {
-    val response = Http("https://smsapi.free-mobile.fr/sendmsg").option(HttpOptions.allowUnsafeSSL)
-      .param("user", user).param("pass", password).param("msg", message.toString).asString
-    if (response.isSuccess)
-    // This backend does not support alteration of previously sent messages
-      None
-    else
-      sys.error(response.statusLine)
+  import Global._
+
+  override def sendMessage(message: Message): Future[Option[String]] = {
+    val request = HttpRequest().withUri(Uri("https://smsapi.free-mobile.fr/sendmsg").withQuery("user" -> user, "pass" -> password, "msg" -> message.toString))
+    Http().singleRequest(request).map {
+      case r if r.status.isSuccess() => None
+      case r                         => sys.error(r.status.reason())
+    } (dispatcher)
   }
 
 }

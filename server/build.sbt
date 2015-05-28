@@ -6,6 +6,7 @@ lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.3.11",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.3.11",
                                   "com.typesafe.akka" %% "akka-stream-experimental" % "1.0-RC3",
+                                  "com.typesafe.akka" %% "akka-http-experimental" % "1.0-RC3",
                                   "net.ceedubs" %% "ficus" % "1.1.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.3"))
 
@@ -29,9 +30,6 @@ lazy val mysql =
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
                                   "mysql" % "mysql-connector-java" % "5.1.35"))
 
-lazy val scalajHttp =
-  Seq(libraryDependencies += "org.scalaj" %% "scalaj-http" % "1.1.4")
-
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.6",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
@@ -44,7 +42,7 @@ lazy val stats =
   Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val replicate =
-  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2 ++ scalajHttp ++ Revolver.settings) dependsOn(canape, steenwerck)
+  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2 ++ Revolver.settings) dependsOn(canape, steenwerck)
 
 lazy val loader =
   Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
