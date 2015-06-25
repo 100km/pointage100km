@@ -2,7 +2,7 @@ package replicate.utils
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.stream.ActorFlowMaterializer
+import akka.stream.ActorMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
 
@@ -14,7 +14,7 @@ object Global {
   private[replicate] val replicateConfig = config.getConfig("replicate")
   implicit val system = ActorSystem("replicator", replicateConfig)
   implicit val dispatcher = system.dispatcher
-  implicit val flowMaterializer = ActorFlowMaterializer()
+  implicit val flowMaterializer = ActorMaterializer()
   val log = Logging(system, "replicate")
 
   val backoffTimeIncrement: FiniteDuration = replicateConfig.as[FiniteDuration]("changes.backoff-time-increment")

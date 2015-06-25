@@ -2,7 +2,7 @@ package replicate.utils
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRef, FSM}
-import akka.stream.ActorFlowMaterializer
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
@@ -30,7 +30,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   private[this] var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
 
-  private[this] implicit val materializer = ActorFlowMaterializer(None)
+  private[this] implicit val materializer = ActorMaterializer(None)
 
   private[this] def requestChanges() = {
     for (since <- lastSeq match {
@@ -63,10 +63,10 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
       stay()
     case Event(Failure(t), _) =>
       log.warning(s"error in stream, reconnecting: $t")
-      goto(ChangesError) forMax(backoff)
+      goto(ChangesError) forMax backoff
     case Event('done, _) =>
       log.debug("stream closed, will reconnect")
-      goto(ChangesError) forMax(backoff)
+      goto(ChangesError) forMax backoff
     case Event(e, _) =>
       log.error(s"unknown event $e")
       stay()

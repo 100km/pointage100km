@@ -1,7 +1,7 @@
 package replicate.alerts
 
 import akka.http.scaladsl.model.HttpResponse
-import akka.stream.{ActorFlowMaterializer, FlowMaterializer}
+import akka.stream.{Materializer, ActorMaterializer}
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsString, JsValue, Json}
 import replicate.messaging.Message
@@ -17,7 +17,7 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
   import RankingAlert._
 
   private[this] implicit val dispatcher = context.system.dispatcher
-  private[this] implicit val fm = ActorFlowMaterializer()
+  private[this] implicit val fm = ActorMaterializer()
 
   override val period = Global.RankingAlerts.checkInterval
   override def immediateStart = true
@@ -90,7 +90,7 @@ object RankingAlert {
    *
    * @return a list of bibs ordered by rank
    */
-  private def headOfRace(raceInfo: RaceInfo, database: Database)(implicit fm: FlowMaterializer, ec: ExecutionContext): Future[Seq[Int]] = {
+  private def headOfRace(raceInfo: RaceInfo, database: Database)(implicit fm: Materializer, ec: ExecutionContext): Future[Seq[Int]] = {
     raceRanking(raceInfo, database).filter(_.status.isSuccess()).flatMap(r => Couch.jsonUnmarshaller[JsValue]().apply(r.entity)).map { result =>
       (result \ "rows").as[Array[JsValue]].headOption.map(_ \ "contestants" \\ "id" map { id =>
         // id is of the form checkpoints-CHECKPOINT-CONTESTANT

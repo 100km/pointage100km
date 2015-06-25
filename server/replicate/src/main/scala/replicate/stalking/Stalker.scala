@@ -4,7 +4,7 @@ import java.util.{Calendar, TimeZone}
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.pipe
-import akka.stream.ActorFlowMaterializer
+import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
@@ -19,7 +19,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
   import Global.dispatcher
 
-  private[this] implicit val fm = ActorFlowMaterializer()
+  private[this] implicit val fm = ActorMaterializer()
 
   private[this] var smsActorRef: ActorRef = _
 
