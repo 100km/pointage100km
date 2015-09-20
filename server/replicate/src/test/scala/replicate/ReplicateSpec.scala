@@ -9,6 +9,7 @@ import replicate.utils.Options
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReplicateSpec extends Specification with After {
 

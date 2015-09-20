@@ -22,13 +22,13 @@ lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3
 
 lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.3.9")
 
-lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "2.4.15" % "test",
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % "test",
                       fork in Test := true)
 
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
-                                  "mysql" % "mysql-connector-java" % "5.1.35"))
+                                  "mysql" % "mysql-connector-java" % "5.1.36"))
 
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.7",
