@@ -28,7 +28,7 @@ object Wipe extends App {
 
   val newName = try {
     val oldNameDoc = cfgDatabase("configuration").execute()
-    val JsString(oldName) = oldNameDoc \ "dbname"
+    val oldName = (oldNameDoc \ "dbname").as[String]
     val newCount = oldName.substring(11).toInt
     val newName = "steenwerck-" + (newCount + 1)
     cfgDatabase.insert(oldNameDoc - "dbname" ++ Json.obj("dbname" -> newName)).execute()

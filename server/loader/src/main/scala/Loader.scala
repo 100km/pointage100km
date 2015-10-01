@@ -73,7 +73,7 @@ object Loader extends App {
   }
 
   private def forceInsert(doc: JsObject): Future[JsValue] =
-    db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> olderDoc \ "_rev")) }
+    db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> (olderDoc \ "_rev").get)) }
 
   try {
 
@@ -128,7 +128,7 @@ object Loader extends App {
                 upToDate.incrementAndGet()
                 Future.successful(Json.obj())
               } else {
-                db.insert(doc ++ Json.obj("_rev" -> original \ "_rev", "stalkers" -> original \ "stalkers")) andThen {
+                db.insert(doc ++ Json.obj("_rev" -> (original \ "_rev").get, "stalkers" -> (original \ "stalkers").get)) andThen {
                   case _ =>
                     println(s"Updated existing $desc")
                     updated.incrementAndGet()

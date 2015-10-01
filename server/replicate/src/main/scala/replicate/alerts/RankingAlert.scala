@@ -30,7 +30,7 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
    */
   private[this] def alert(severity: Severity, bib: Int, rank: Int, message: String, addLink: Boolean): Future[Unit] = {
     val contestantInfo = database(s"contestant-$bib") map { doc =>
-      val (JsString(firstName), JsString(lastName)) = (doc \ "first_name", doc \ "name")
+      val (firstName, lastName) = ((doc \ "first_name").as[String], (doc \ "name").as[String])
       s"$firstName $lastName (bib $bib)"
     }
     contestantInfo.map { name =>

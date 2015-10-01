@@ -18,10 +18,10 @@ class RemoveObsoleteDocuments(db: Database) extends PeriodicTaskActor {
   override def future: Future[Seq[JsValue]] = {
     val deadline = System.currentTimeMillis - obsoleteMillisecons
     db.view[JsValue, JsObject]("admin", "transient-docs") flatMap { docs =>
-      val toDelete = docs map (_._2) filter {
-        _ \ "time" match {
-          case JsNumber(time) if time < deadline => true
-          case _ => false
+      val toDelete = docs map (_._2) filter { js =>
+        (js \ "time").asOpt[Long] match {
+          case Some(time) => time < deadline
+          case None       => false
         }
       }
       val future = Future.traverse(toDelete)(db.delete)

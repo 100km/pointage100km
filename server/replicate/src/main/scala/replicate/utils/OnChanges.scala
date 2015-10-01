@@ -3,7 +3,7 @@ package replicate.utils
 import akka.actor.{Actor, Cancellable, Props}
 import akka.event.Logging
 import net.rfc1149.canape._
-import play.api.libs.json.{JsObject, JsString}
+import play.api.libs.json.JsObject
 import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
 import replicate.utils.Global._
 
@@ -66,13 +66,12 @@ class OnChanges(options: Options.Config, local: Database)
 
   override def receive() = {
     case js: JsObject =>
-      if (!timer.isDefined)
+      if (timer.isEmpty)
         timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
           self,
           'trigger))
-      js \ "id" match {
-        case JsString(s) if s.startsWith(s"checkpoints-${options.siteId}-") =>
-          ping ! js
+      (js \ "id").asOpt[String] match {
+        case Some(s) if s.startsWith(s"checkpoints-${options.siteId}-") => ping ! js
         case _ =>
       }
     case 'trigger =>
