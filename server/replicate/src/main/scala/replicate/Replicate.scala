@@ -162,7 +162,7 @@ class Replicate(options: Options.Config) {
   private def exit(status: Int) {
     localCouch.releaseExternalResources().execute()
     hubCouch.releaseExternalResources().execute()
-    system.shutdown()
+    system.terminate()
     System.exit(status)
   }
 

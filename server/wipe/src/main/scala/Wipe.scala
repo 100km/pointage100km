@@ -68,6 +68,6 @@ object Wipe extends App {
   }
 
   hubCouch.releaseExternalResources().execute()
-  system.shutdown()
+  system.terminate()
 
 }

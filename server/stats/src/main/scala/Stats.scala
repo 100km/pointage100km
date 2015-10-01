@@ -74,7 +74,7 @@ object Stats extends App {
     }
   } finally {
     db.couch.releaseExternalResources().execute()
-    system.shutdown()
+    system.terminate()
   }
 
 }

@@ -162,6 +162,6 @@ object Loader extends App {
     } while (options.repeat.isDefined)
   } finally {
     db.couch.releaseExternalResources().execute()
-    system.shutdown()
+    system.terminate()
   }
 }

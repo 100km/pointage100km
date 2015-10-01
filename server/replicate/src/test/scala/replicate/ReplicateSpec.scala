@@ -21,7 +21,7 @@ class ReplicateSpec extends Specification with After {
   val db: Database = replicate.localDatabase
 
   override def after = {
-    // Global.system.shutdown
+    // Global.system.terminate
   }
 
   trait WithCleanup extends BeforeAfter {
