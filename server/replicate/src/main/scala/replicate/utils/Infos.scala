@@ -1,6 +1,7 @@
 package replicate.utils
 
 import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.Uri.Query
 import play.api.libs.json.{Json, Reads}
 
 case class Infos(cat_names: Array[String],
@@ -20,14 +21,14 @@ case class Infos(cat_names: Array[String],
     races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(id => id -> new RaceInfo(id, this)).toMap
 
   val checkpoints: Map[Int, CheckpointInfo] =
-    (0 until sites.length).map(id => id -> new CheckpointInfo(id, this)).toMap
+    sites.indices.map(id => id -> new CheckpointInfo(id, this)).toMap
 
   /**
    * Mapping of distances in kilometers from (siteId, lap)
    */
   val distances: Map[(Int, Int), Double] = {
     var d: Map[(Int, Int), Double] = Map()
-    for (lap <- 1 to races_laps.max; siteId <- 0 until sites.length) {
+    for (lap <- 1 to races_laps.max; siteId <- sites.indices) {
       d += (siteId, lap) -> ((kms_lap * (lap - 1)) + kms_offset(siteId))
     }
     d
@@ -38,7 +39,7 @@ case class Infos(cat_names: Array[String],
 object Infos {
 
   case class Coordinates(latitude: Double, longitude: Double) {
-    lazy val url = Uri("https://maps.google.com/maps").withQuery("q" -> s"loc:${latitude},${longitude}")
+    lazy val url = Uri("https://maps.google.com/maps").withQuery(Query("q" -> s"loc:$latitude,$longitude"))
   }
 
   implicit val coordinatesRead: Reads[Coordinates] = Json.reads[Coordinates]
