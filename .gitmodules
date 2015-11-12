@@ -4,4 +4,4 @@
 	branch = spray
 [submodule "server/libs/rxtelegram"]
 	path = server/libs/rxtelegram
-	url = git@github.com:samueltardieu/rxtelegram
+	url = https://github.com/samueltardieu/rxtelegram
