@@ -28,7 +28,7 @@ lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
-                                  "mysql" % "mysql-connector-java" % "5.1.37"))
+                                  "mysql" % "mysql-connector-java" % "5.1.38"))
 
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.7",
