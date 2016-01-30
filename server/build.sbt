@@ -5,8 +5,8 @@ import sbtassembly.AssemblyPlugin.autoImport._
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.1",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.4.1",
-                                  "com.typesafe.akka" %% "akka-stream-experimental" % "2.0-M2",
-                                  "com.typesafe.akka" %% "akka-http-experimental" % "2.0-M2",
+                                  "com.typesafe.akka" %% "akka-stream-experimental" % "2.0.3",
+                                  "com.typesafe.akka" %% "akka-http-experimental" % "2.0.3",
                                   "net.ceedubs" %% "ficus" % "1.1.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.3"))
 
@@ -20,7 +20,7 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")
 
-lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.3")
+lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.6")
 
 lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % "test",
                       fork in Test := true)

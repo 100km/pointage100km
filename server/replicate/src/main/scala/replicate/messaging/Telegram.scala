@@ -1,7 +1,7 @@
 package replicate.messaging
 
 import akka.actor.{Actor, ActorLogging, Props}
-import net.rfc1149.rxtelegram.Bot.{ParseModeMarkdown, ActionMessage, Send, To}
+import net.rfc1149.rxtelegram.Bot.{ActionMessage, ParseModeMarkdown, Targetted, To}
 import net.rfc1149.rxtelegram.{ActorBot, model}
 import replicate.utils.Global
 
@@ -9,7 +9,7 @@ import scala.concurrent.Future
 
 class Telegram(id: String) extends Actor with Messaging {
   override def sendMessage(message: Message): Future[Option[String]] = {
-    Telegram.bot ! Send(To(id), ActionMessage(s"**${message.titleWithSeverity}:** ${message.body}", parse_mode = ParseModeMarkdown))
+    Telegram.bot ! Targetted(To(id), ActionMessage(s"**${message.titleWithSeverity}:** ${message.body}", parse_mode = ParseModeMarkdown))
     Future.successful(None)
   }
 }
