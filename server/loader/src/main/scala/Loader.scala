@@ -72,7 +72,7 @@ object Loader extends App {
 
   private def containsAll(doc: JsObject, original: JsObject): Boolean = {
     doc.fields.forall {
-      case (k, v) if original \ k == v => true
+      case (k, v) if original \ k == JsDefined(v) => true
       case _ => false
     }
   }
