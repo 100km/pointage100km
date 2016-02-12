@@ -77,9 +77,6 @@ object Loader extends App {
     }
   }
 
-  private def forceInsert(doc: JsObject): Future[JsValue] =
-    db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> (olderDoc \ "_rev").get)) }
-
   try {
 
     val source = new BasicDataSource
