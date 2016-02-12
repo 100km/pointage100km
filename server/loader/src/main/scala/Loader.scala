@@ -26,13 +26,18 @@ object Loader extends App {
 			     database: String = "100km", repeat: Option[Long] = None)
 
   private val parser = new OptionParser[Options]("loader") {
-    help("help") text("show this help")
-    opt[String]('h', "host") text("Mysql host (default: localhost)") action { (x, c) => c.copy(host = x) }
-    opt[String]('u', "user") text("Mysql user") action { (x, c) => c.copy(user = Some(x)) }
-    opt[String]('p', "password") text("Mysql password") action { (x, c) => c.copy(password = Some(x)) }
-    opt[String]('d', "database") text("Mysql database (default: 100km") action { (x, c) => c.copy(database = x) }
-    opt[Long]('r', "repeat") text("Minutes between relaunching (default: do not relaunch)") action { (x, c) => c.copy(repeat = Some(x)) }
-    arg[Int]("<year>") text("Year to import") action { (x, c) => c.copy(year = x) }
+    help("help") text "show this help"
+    opt[String]('h', "host") text "Mysql host (default: localhost)" action { (x, c) => c.copy(host = x) }
+    opt[String]('u', "user") text "Mysql user" action { (x, c) => c.copy(user = Some(x)) }
+    opt[String]('p', "password") text "Mysql password" action { (x, c) => c.copy(password = Some(x)) }
+    opt[String]('d', "database") text "Mysql database (default: 100km" action { (x, c) => c.copy(database = x) }
+    opt[Long]('r', "repeat") text "Minutes between relaunching (default: do not relaunch)" action { (x, c) => c.copy(repeat = Some(x)) }
+    arg[Int]("<year>") text "Year to import" action { (x, c) => c.copy(year = x) }
+  }
+
+  private val options = parser.parse(args, Options()) getOrElse {
+    parser.showUsageAsError
+    sys.exit(1)
   }
 
   implicit class toCalendar(date: java.util.Date) {
@@ -76,8 +81,6 @@ object Loader extends App {
     db((doc \ "_id").as[String]).flatMap { olderDoc => db.insert(doc + ("_rev" -> (olderDoc \ "_rev").get)) }
 
   try {
-
-    val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
 
     val source = new BasicDataSource
     source.setDriverClassName("com.mysql.jdbc.Driver")
