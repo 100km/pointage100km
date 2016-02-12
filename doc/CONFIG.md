@@ -17,7 +17,8 @@ This file is a global file common to all sites. For the following we consider N 
 On the main server, you need:
  * couchdb running
  * a database steenwerck-config containing:
-   * one document with id "configuration", with a field "dbname", containing the database name used by all other programs
+   * one document with id "configuration", with a field "dbname", containing the database name used by all other programs and a field "test_allowed"
+   containing the boolean `false` which will be overridden in testable databases;
    * a security configuration allowing the main user to read this database.
  * a database with the name indicated in "steenwerck-config" database containing the couchapp
 
