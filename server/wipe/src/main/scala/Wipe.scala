@@ -15,12 +15,10 @@ object Wipe extends App {
     help("help") abbr "h" text "show this help"
     arg[String]("<login>") text "login to access the master database" action { (x, c) => c.copy(login = x) }
     arg[String]("<password>") text "password to access the master database" action { (x, c) => c.copy(password = x) }
+    override val showUsageOnError = true
   }
 
-  private val options = parser.parse(args, Options()) getOrElse {
-    parser.showUsageAsError
-    sys.exit(1)
-  }
+  private val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
 
   private implicit val system = ActorSystem()
   private implicit val dispatcher = system.dispatcher

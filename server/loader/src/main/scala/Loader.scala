@@ -33,12 +33,10 @@ object Loader extends App {
     opt[String]('d', "database") text "Mysql database (default: 100km" action { (x, c) => c.copy(database = x) }
     opt[Long]('r', "repeat") text "Minutes between relaunching (default: do not relaunch)" action { (x, c) => c.copy(repeat = Some(x)) }
     arg[Int]("<year>") text "Year to import" action { (x, c) => c.copy(year = x) }
+    override val showUsageOnError = true
   }
 
-  private val options = parser.parse(args, Options()) getOrElse {
-    parser.showUsageAsError
-    sys.exit(1)
-  }
+  private val options = parser.parse(args, Options()) getOrElse { sys.exit(1) }
 
   implicit class toCalendar(date: java.util.Date) {
     private val cal = Calendar.getInstance()
