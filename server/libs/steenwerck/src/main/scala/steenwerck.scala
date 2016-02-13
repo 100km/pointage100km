@@ -54,6 +54,7 @@ package object steenwerck {
   def couchFromConfig(basePath: String, actorSystem: ActorSystem, auth: Option[(String, String)] = None): Couch =
     new Couch(host = config.as[Option[String]](s"$basePath.host").getOrElse("localhost"),
               port = config.as[Option[Int]](s"$basePath.port").getOrElse(5984),
+              secure = config.as[Option[Boolean]](s"$basePath.secure").getOrElse(false),
               auth = auth orElse config.as[Option[String]](s"$basePath.user").flatMap(user =>
                 config.as[Option[String]](s"$basePath.password").map((user, _))))(actorSystem)
 
