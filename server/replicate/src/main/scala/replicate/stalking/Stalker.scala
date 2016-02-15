@@ -133,10 +133,9 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
   private[this] def launchCheckpointChanges(fromSeq: Long): Unit = {
     val currentStage = stalkStage
-    database.changesSource(Map("feed" -> "longpoll", "timeout" -> Global.stalkersObsoleteDuration.toMillis.toString,
-      "filter" -> "admin/with-stalkers", "stalked" -> stalkers.keys.map(_.toString).mkString(","), "since" -> fromSeq.toString))
-      .map(('checkpoint, _, currentStage))
-      .runWith(Sink.actorRef(self, 'closedCheckpoint))
+    for (changes <- database.changes(Map("feed" -> "longpoll", "timeout" -> Global.stalkersObsoleteDuration.toMillis.toString,
+      "filter" -> "admin/with-stalkers", "stalked" -> stalkers.keys.map(_.toString).mkString(","), "since" -> fromSeq.toString)))
+      self ! ('checkpoint, changes, currentStage)
   }
 
   // After having looked at the initial state of the stalkers, we look for changes
@@ -161,8 +160,6 @@ class Stalker(database: Database) extends Actor with ActorLogging {
         }
         launchCheckpointChanges((doc \ "last_seq").as[Long])
       }
-
-    case 'closedCheckpoint =>
 
     case ('ranking, bib: Long, pos: (Int, Long, Int, Int) @unchecked) =>
       if (stalkers.contains(bib)) {

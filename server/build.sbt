@@ -3,10 +3,10 @@ import Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val akka =
-  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.2-RC2",
-                                  "com.typesafe.akka" %% "akka-slf4j" % "2.4.2-RC2",
-                                  "com.typesafe.akka" %% "akka-stream" % "2.4.2-RC2",
-                                  "com.typesafe.akka" %% "akka-http-core" % "2.4.2-RC2",
+  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.2-RC3",
+                                  "com.typesafe.akka" %% "akka-slf4j" % "2.4.2-RC3",
+                                  "com.typesafe.akka" %% "akka-stream" % "2.4.2-RC3",
+                                  "com.typesafe.akka" %% "akka-http-core" % "2.4.2-RC3",
                                   "net.ceedubs" %% "ficus" % "1.1.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.3"))
 

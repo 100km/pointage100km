@@ -7,8 +7,10 @@ import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class Telegram(id: String) extends Actor with Messaging {
+class Telegram(id: String) extends Actor with ActorLogging with Messaging {
+  log.info(s"Creation of a Telegram with id $id")
   override def sendMessage(message: Message): Future[Option[String]] = {
+    log.info(s"Sending message through Telegram: $message")
     Telegram.bot ! Targetted(To(id), ActionMessage(s"**${message.titleWithSeverity}:** ${message.body}", parse_mode = ParseModeMarkdown))
     Future.successful(None)
   }
@@ -17,6 +19,19 @@ class Telegram(id: String) extends Actor with Messaging {
 object Telegram {
 
   private class TelegramBot extends ActorBot(Global.replicateConfig.getString("telegram.token")) with ActorLogging {
+
+    override def preStart() = {
+      log.info(s"Telegram bot started")
+    }
+
+    /*
+    override def receive = {
+      case x =>
+        log.info(s"received $x")
+        super.receive(x)
+    }
+    */
+
     override protected[this] def handleMessage(message: model.Message) = {
       log.info(s"received unknown message from ${message.from.fullName} (${message.from.id})")
     }
