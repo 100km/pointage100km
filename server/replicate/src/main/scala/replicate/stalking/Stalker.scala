@@ -5,7 +5,6 @@ import java.util.{Calendar, TimeZone}
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.pipe
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsObject, JsValue}

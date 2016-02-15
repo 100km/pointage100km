@@ -7,8 +7,8 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.4.2-RC3",
                                   "com.typesafe.akka" %% "akka-stream" % "2.4.2-RC3",
                                   "com.typesafe.akka" %% "akka-http-core" % "2.4.2-RC3",
-                                  "net.ceedubs" %% "ficus" % "1.1.2",
-                                  "ch.qos.logback" % "logback-classic" % "1.1.3"))
+                                  "com.iheart" %% "ficus" % "1.2.1",
+                                  "ch.qos.logback" % "logback-classic" % "1.1.5"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
 
@@ -20,13 +20,13 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.3.0")
 
-lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.4.6")
+lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.0-M2")
 
-lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.6.4" % "test",
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.7" % "test",
                       fork in Test := true)
 
 lazy val mysql =
-  Seq(libraryDependencies ++= Seq("commons-dbcp" % "commons-dbcp" % "1.4",
+  Seq(libraryDependencies ++= Seq("org.apache.commons" % "commons-dbcp2" % "2.1.1",
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
                                   "mysql" % "mysql-connector-java" % "5.1.38"))
 

@@ -1,7 +1,7 @@
 import akka.actor.ActorSystem
 import net.rfc1149.canape._
 import net.rfc1149.canape.implicits._
-import play.api.libs.json.{JsValue, Json, JsBoolean}
+import play.api.libs.json.{JsDefined, JsValue, Json, JsBoolean}
 import scala.concurrent.duration._
 import scala.util.Random._
 
@@ -32,7 +32,7 @@ object Stats extends App {
     val id = "checkpoints-" + checkpoint + "-" + bib
     val r = db.update("bib_input", "add-checkpoint", id,
 		      Map("ts" -> System.currentTimeMillis.toString)).execute()
-    if (r \ "need_more" == JsBoolean(true)) {
+    if ((r \ "need_more").asOpt[Boolean].getOrElse(false)) {
       val d = db(id).execute() ++ Json.obj("race_id" -> race, "bib" -> bib, "site_id" -> checkpoint)
       db.insert(d).execute()
     }

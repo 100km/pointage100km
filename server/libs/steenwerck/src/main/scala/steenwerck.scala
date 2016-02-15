@@ -3,7 +3,7 @@ import java.io.File
 import akka.actor.ActorSystem
 import com.typesafe.config.{ConfigParseOptions, ConfigException, Config, ConfigFactory}
 import net.rfc1149.canape._
-import play.api.libs.json.{JsBoolean, JsObject, JsValue, Json}
+import play.api.libs.json._
 
 import net.ceedubs.ficus.Ficus._
 
@@ -28,7 +28,7 @@ package object steenwerck {
     forceUpdate(db, "status", Json.obj("type" -> "status", "scope" -> "local", "message" -> msg))
 
   def testsAllowed(db: Database)(implicit context: ExecutionContext): Future[Boolean] =
-    db("configuration").map(d => (d \ "tests_allowed") == JsBoolean(true))
+    db("configuration").map(d => (d \ "tests_allowed").as[Boolean])
 
   def upper(levels: Int, baseName: String): String = levels match {
     case 0 => baseName
