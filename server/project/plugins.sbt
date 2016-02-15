@@ -1,5 +1,3 @@
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.13.0")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.2")
 
-addSbtPlugin("com.github.alexarchambault" %% "sbt-notebook" % "0.1.1")
-
-addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.2")
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0")
