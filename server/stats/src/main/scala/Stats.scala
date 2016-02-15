@@ -17,6 +17,7 @@ object Stats extends App {
     opt[Int]('s', "site_id") action { (x, c) =>
       c.copy(siteId = x) } text("Numerical id of the current site (default: random [0-2])")
     help("help") abbr("h") text("show this help")
+    override val showUsageOnError = true
   }
 
   private val options = parser.parse(args, Config()) getOrElse { sys.exit(1) }
