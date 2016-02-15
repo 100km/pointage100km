@@ -7,7 +7,7 @@ import play.api.libs.json.JsObject
 import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.utils.Infos.CheckpointInfo
-import replicate.utils.{Global, PeriodicTaskActor}
+import replicate.utils.{Glyphs, Global, PeriodicTaskActor}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,17 +25,17 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
 
   private[this] var currentNotification: Option[UUID] = None
 
-  private[this] def alert(severity: Severity.Severity, message: String): Unit = {
+  private[this] def alert(severity: Severity.Severity, message: String, icon: String): Unit = {
     currentNotification.foreach(Alerts.cancelAlert)
     currentNotification = Some(Alerts.sendAlert(Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
-      url = Some(checkpointInfo.coordinates.url))))
+      url = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
   }
 
   override def future =
     lastPing(checkpointInfo.checkpointId, database).map {
       case None =>
         if (currentState != Inactive && currentState != Starting)
-          alert(Severity.Error, "Liveness data for the site has disappeared from the database")
+          alert(Severity.Error, "Liveness data for the site has disappeared from the database", Glyphs.skullAndCrossbones)
         currentState = Inactive
       case Some(ts) =>
         val sinceLastSeen: FiniteDuration = FiniteDuration(System.currentTimeMillis() - ts, MILLISECONDS)
@@ -45,15 +45,15 @@ class PingAlert(database: Database, checkpointInfo: CheckpointInfo) extends Peri
           case (before, after) if before == after =>
           case (Starting, _) =>
           case (Inactive, Up) =>
-            alert(Severity.Verbose, "Site went up for the first time")
+            alert(Severity.Verbose, "Site went up for the first time", Glyphs.beatingHeart)
           case (_, Notice) =>
-            alert(Severity.Info, message)
+            alert(Severity.Info, message, Glyphs.brokenHeart)
           case (_, Warning) =>
-            alert(Severity.Warning, message)
+            alert(Severity.Warning, message, Glyphs.brokenHeart)
           case (_, Critical) =>
-            alert(Severity.Critical, message)
+            alert(Severity.Critical, message, Glyphs.brokenHeart)
           case (_, Up) =>
-            alert(Severity.Info, "Site is back up")
+            alert(Severity.Info, "Site is back up", Glyphs.growingHeart)
           case (_, _) =>
             log.error(s"Impossible checkpoint state transition from $currentState to $newState")
         }

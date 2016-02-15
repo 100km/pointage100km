@@ -5,12 +5,17 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import replicate.messaging.Message._
+import replicate.utils.Glyphs
 
-case class Message(category: Category, severity: Severity.Severity, title: String, body: String, url: Option[Uri]) {
+case class Message(category: Category, severity: Severity.Severity, title: String, body: String, url: Option[Uri] = None, icon: Option[String] = None) {
 
   override lazy val toString = s"[$titleWithSeverity] $body${url.fold("")(l => s" ($l)")}"
 
   lazy val titleWithSeverity: String = if (severity >= Severity.Warning) s"$severity: $title" else title
+
+  def severityIcon: Option[String] = Message.severityIcons(severity)
+
+  def severityOrMessageIcon: Option[String] = severityIcon orElse icon
 }
 
 object Message {
@@ -43,12 +48,22 @@ object Message {
 
   private[this] val severities: Map[String, Severity.Value] = Severity.values.map(severity => severity.toString.toLowerCase -> severity).toMap
 
+  private val severityIcons: Map[Severity.Value, Option[String]] = Map(
+    Severity.Debug -> None,
+    Severity.Verbose -> None,
+    Severity.Info -> None,
+    Severity.Warning -> Some(Glyphs.warningSign),
+    Severity.Error -> Some(Glyphs.bomb),
+    Severity.Critical -> Some(Glyphs.collisionSymbol)
+  )
+
   implicit val messageReads: Reads[Message] = (
     (JsPath \ "category").read[String].map(categories) and
       (JsPath \ "severity").read[String].map(severities) and
       (JsPath \ "title").read[String] and
       (JsPath \ "body").read[String] and
-      (JsPath \ "url").readNullable[String].map(_.map(Uri.apply))
+      (JsPath \ "url").readNullable[String].map(_.map(Uri.apply)) and
+      (JsPath \ "icon").readNullable[String]
     )(Message.apply _)
 
   implicit val categoryWrites: Writes[Category] = Writes { category => JsString(category.toString) }
@@ -59,6 +74,7 @@ object Message {
       (JsPath \ "severity").write[Severity.Severity] and
       (JsPath \ "title").write[String] and
       (JsPath \ "body").write[String] and
-      (JsPath \ "url").writeNullable[Uri]
+      (JsPath \ "url").writeNullable[Uri] and
+      (JsPath \ "icon").writeNullable[String]
   )(unlift(Message.unapply))
 }

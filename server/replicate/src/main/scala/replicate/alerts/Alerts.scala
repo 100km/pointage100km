@@ -9,7 +9,7 @@ import net.rfc1149.canape.Database
 import play.api.libs.json.Json
 import replicate.messaging.Message.{Administrativia, Severity}
 import replicate.messaging._
-import replicate.utils.Global
+import replicate.utils.{Glyphs, Global}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,7 +27,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
 
   lazy private[this] val officers: Map[String, ActorRef] =
     Global.replicateConfig.as[Map[String, Config]]("officers").collect {
-      case (officerId, config) if config.as[Option[Boolean]]("disabled") != Some(true) => (officerId, startFromConfig(officerId, config))
+      case (officerId, config) if !config.as[Option[Boolean]]("disabled").contains(true) => (officerId, startFromConfig(officerId, config))
     }
 
   private[this] def startFromConfig(officerId: String, config: Config): ActorRef = {
@@ -55,7 +55,8 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     // Officers
     val officersStr = officers.keys.toSeq.sorted.mkString(", ")
     database.update("bib_input", "force-update", "officers", Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))
-    sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr", None))
+    sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
+                      icon = Some(Glyphs.wrench)))
   }
 
   def receive = {

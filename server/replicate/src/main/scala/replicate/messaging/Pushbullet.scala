@@ -15,7 +15,8 @@ class Pushbullet(bearerToken: String) extends Actor with Messaging {
   import Pushbullet._
 
   override def sendMessage(message: Message): Future[Option[String]] = {
-    val basePayload = Json.obj("title" -> message.titleWithSeverity, "body" -> message.body)
+    val body = message.severityOrMessageIcon.fold("")(_ + ' ') + message.body
+    val basePayload = Json.obj("title" -> message.titleWithSeverity, "body" -> body)
     val payload = basePayload ++ message.url.fold(Json.obj("type" -> "note"))(l => Json.obj("type" -> "link", "url" -> l.toString))
     post("/pushes", bearerToken, payload).map(js => Some((js \ "iden").as[String]))
   }

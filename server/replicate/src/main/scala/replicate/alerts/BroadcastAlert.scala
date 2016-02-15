@@ -7,7 +7,7 @@ import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json, Reads}
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity
-import replicate.utils.{ChangesActor, Global}
+import replicate.utils.{Glyphs, ChangesActor, Global}
 
 class BroadcastAlert(database: Database) extends Actor {
 
@@ -45,7 +45,8 @@ object BroadcastAlert {
 
     lazy val toMessage: Message = {
       val title = target.fold("Broadcast message")(siteId => s"Message for ${Global.infos.get.checkpoints(siteId).name}")
-      Message(Message.Broadcast, Severity.Info, title = title, body = message, url = None)
+      val icon = if (target.isDefined) Glyphs.telephoneReceiver else Glyphs.publicAddressLoudspeaker
+      Message(Message.Broadcast, Severity.Info, title = title, body = message, url = None, icon = Some(icon))
     }
   }
 
