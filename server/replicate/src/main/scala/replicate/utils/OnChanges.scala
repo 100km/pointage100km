@@ -7,9 +7,9 @@ import play.api.libs.json.JsObject
 import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
 import replicate.utils.Global._
 
+import scala.concurrent.Future
 import scala.concurrent.duration.Deadline._
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 
 class OnChanges(options: Options.Config, local: Database)
@@ -34,7 +34,7 @@ class OnChanges(options: Options.Config, local: Database)
     withError(fixConflictingCheckpoints(local),
       "unable to get conflicting checkpoints")
 
-  private[this] def futures = {
+  private[this] def futures() = {
     val fc = if (options.fixConflicts) conflictingCheckpoints
 	     else Future.successful(true)
     val fi = if (options.fixIncomplete) incompleteCheckpoints
@@ -44,14 +44,13 @@ class OnChanges(options: Options.Config, local: Database)
 
   private[this] var nextRun = now
 
-  private[this] def trigger() {
-    try {
-      Await.ready(futures, Duration.Inf)
-    } catch {
+  private[this] def trigger() = {
+    val f = futures()
+    f.onFailure {
       case e: Exception =>
         log.warning("error when running onChanges task: " + e)
     }
-    nextRun = now + (5 seconds)
+    f.onComplete(_ => self ! 'reset)
   }
 
   context.actorOf(Props(new ChangesActor(self, local, Some("bib_input/no-ping"))),
@@ -70,13 +69,13 @@ class OnChanges(options: Options.Config, local: Database)
         timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
           self,
           'trigger))
-      (js \ "id").asOpt[String] match {
-        case Some(s) if s.startsWith(s"checkpoints-${options.siteId}-") => ping ! js
-        case _ =>
-      }
+      for (id <- (js \ "id").asOpt[String] if id.startsWith(s"checkpoints-${options.siteId}-"))
+        ping ! js
     case 'trigger =>
       trigger()
+    case 'reset =>
       timer = None
+      nextRun = now + 5.seconds
   }
 
 }

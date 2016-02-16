@@ -28,7 +28,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
   import ChangesActor._
   import Global.dispatcher
 
-  private[this] var backoff: FiniteDuration = FiniteDuration(0, SECONDS)
+  private[this] var backoff: FiniteDuration = 0.seconds
 
   private[this] implicit val materializer = ActorMaterializer(None)
 
@@ -52,7 +52,7 @@ class ChangesActor(sendTo: ActorRef, database: Database, filter: Option[String] 
 
   when(Processing) {
     case Event(value: JsObject, _) =>
-      backoff = FiniteDuration(0, SECONDS)
+      backoff = 0.seconds
       (value \ "seq").asOpt[Long] match {
         case Some(seq) =>
           sendTo ! value
