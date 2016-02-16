@@ -13,18 +13,11 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class OnChanges(options: Options.Config, local: Database)
-  extends Actor with IncompleteCheckpoints with ConflictsSolver {
+  extends Actor with IncompleteCheckpoints with ConflictsSolver with LoggingError {
 
   val log = Logging(context.system, this)
 
   private[this] val ping = context.actorOf(Props(new PingService(options, local)), "ping")
-
-  private[this] def withError[T](future: Future[T], message: String): Future[Any] = {
-    future onFailure {
-      case e: Exception => log.warning(message + ": " + e)
-    }
-    future
-  }
 
   private[this] def incompleteCheckpoints =
     withError(fixIncompleteCheckpoints(local),
