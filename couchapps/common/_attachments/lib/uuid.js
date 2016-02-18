@@ -237,5 +237,3 @@ UUIDjs['new'] = function() {
 UUIDjs.newTS = function() {
   return this.create(1);
 };
-
-module.exports = UUIDjs;
