@@ -1,9 +1,9 @@
 
 function couchapp_load(scripts) {
   for (var i=0; i < scripts.length; i++) {
-    document.write('<script src="'+scripts[i]+'"><\/script>')
-  };
-};
+    document.write('<script src="'+scripts[i]+'"><\/script>');
+  }
+}
 
 couchapp_load([
   "/_utils/script/sha1.js",
@@ -20,6 +20,7 @@ couchapp_load([
   "../common/lib/db_api/search.js",
   "../common/lib/db_api/teams.js",
   "../common/lib/utils.js",
+  "../common/lib/uuid.js",
   "../common/lib/underscore-min.js",
   "../common/vendor/couchapp/jquery.couch.app.js",
   "../common/vendor/couchapp/jquery.couch.app.util.js",
