@@ -156,7 +156,7 @@ app.filter("gravatarUrl", function() {
   };
 });
 
-app.constant("database", "http://localhost:5984/backup");
+app.constant("database", "../../");
 app.config(["$routeProvider",
     function($routeProvider) {
       $routeProvider.
