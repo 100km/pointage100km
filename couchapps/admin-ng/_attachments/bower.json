@@ -6,16 +6,11 @@
   "license": "GPL",
   "private": true,
   "dependencies": {
-    "angular": "~1.4.0-rc.2",
-    "angular-route": "~1.4.0-rc.2",
-    "angular-animate": "~1.4.0-rc.2",
-    "angular-aria": "~1.4.0-rc.2",
-    "angular-material": "~0.9.4",
-    "bootstrap": "~3.3.4"
-  },
-  "resolutions": {
-    "angular": "~1.4.0-rc.2",
-    "angular-animate": "~1.4.0-rc.2",
-    "angular-aria": "~1.4.0-rc.2"
+    "angular": "~1.5.0",
+    "angular-route": "~1.5.0",
+    "angular-animate": "~1.5.0",
+    "angular-aria": "~1.5.0",
+    "angular-material": "~1.0.5",
+    "bootstrap": "~3.3.6"
   }
 }
