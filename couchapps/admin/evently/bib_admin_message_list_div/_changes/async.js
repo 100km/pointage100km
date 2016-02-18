@@ -1,8 +1,6 @@
 function(cb) {
     var app = $$(this).app;
 
-    $.log("here!");
-
     function _unwrap_messages(data) {
 	return data.rows.map(function(row) {
 	    //$.log("rows: " + row.value);
