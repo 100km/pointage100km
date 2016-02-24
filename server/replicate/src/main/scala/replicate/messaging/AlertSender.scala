@@ -103,7 +103,7 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
       val doc = Json.obj("type" -> "alert", "addedTS" -> addedTimestamp, "cancellations" -> jsonCancellationIds,
         "targets" -> JsArray(targets.map(JsString))) ++
         Json.toJson(message).as[JsObject] ++
-        JsObject(cancelledTimestamp.map(ts => ("deletedTS", JsNumber(ts))).toSeq)
+        JsObject(cancelledTimestamp.map(ts => ("cancelledTS", JsNumber(ts))).toSeq)
       log.debug(s"writing to database with id ${uuidToId(uuid)}: $doc")
       pipe(database.insert(doc, uuidToId(uuid)).map(_ => 'persisted)) to self
 
