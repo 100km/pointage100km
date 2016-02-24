@@ -1,6 +1,9 @@
+import java.time.Year
+
 import akka.actor.ActorSystem
 import net.rfc1149.canape._
 import play.api.libs.json._
+
 import scala.concurrent.duration._
 import scopt.OptionParser
 
@@ -27,11 +30,19 @@ object Wipe extends App {
 
   val cfgDatabase = hubCouch.db("steenwerck-config")
 
+  val currentYear = Year.now().getValue
+
+  def dbOccurrence(n: Int) = s"steenwerck-$currentYear-$n"
+
   val newName = try {
     val oldNameDoc = cfgDatabase("configuration").execute()
     val oldName = (oldNameDoc \ "dbname").as[String]
-    val newCount = oldName.substring(11).toInt
-    val newName = "steenwerck-" + (newCount + 1)
+    val pattern = """steenwerck-(\d+)-(\d+)""".r
+    val newCount = oldName match {
+      case pattern(year, count) if year.toInt == currentYear => count.toInt + 1
+      case _                                                 => 1
+    }
+    val newName = dbOccurrence(newCount)
     cfgDatabase.insert(oldNameDoc - "dbname" ++ Json.obj("dbname" -> newName)).execute()
     newName
   } catch {
@@ -42,8 +53,9 @@ object Wipe extends App {
         case e: Exception =>
           println("Cannot create configuration database: " + e)
       }
-      cfgDatabase.insert(Json.obj("dbname" -> "steenwerck-0", "tests_allowed" -> false), "configuration").execute()
-      "steenwerck-0"
+      val newName = dbOccurrence(1)
+      cfgDatabase.insert(Json.obj("dbname" -> newName, "tests_allowed" -> false), "configuration").execute()
+      newName
   }
 
   val hubDatabase = hubCouch.db(newName)
