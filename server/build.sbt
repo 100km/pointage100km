@@ -7,7 +7,7 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.4.2",
                                   "com.typesafe.akka" %% "akka-stream" % "2.4.2",
                                   "com.typesafe.akka" %% "akka-http-core" % "2.4.2",
-                                  "com.iheart" %% "ficus" % "1.2.1",
+                                  "com.iheart" %% "ficus" % "1.2.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.5"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
@@ -33,7 +33,7 @@ lazy val mysql =
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.7",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
-      resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/")
+      resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo))
 
 lazy val root =
   Project("root", file(".")) aggregate(replicate, wipe, stats, loader)
