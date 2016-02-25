@@ -83,7 +83,8 @@ object RankingAlert {
 
   def raceRanking(raceInfo: RaceInfo, database: Database): Future[HttpResponse] =
     database.list("main_display", "global-ranking", "global-ranking",
-      Seq("startkey" -> Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" -> Json.stringify(Json.arr(raceInfo.raceId + 1))))
+      Seq("startkey" -> Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" -> Json.stringify(Json.arr(raceInfo.raceId + 1)),
+        "inclusive_end" -> "false"))
 
   /**
    * Return the ranking of a given race.
