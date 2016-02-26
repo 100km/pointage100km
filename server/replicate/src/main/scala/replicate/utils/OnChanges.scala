@@ -19,8 +19,6 @@ class OnChanges(options: Options.Config, local: Database)
 
   val log = Logging(context.system, this)
 
-  private[this] val ping = context.actorOf(Props(new PingService(options, local)), "ping")
-
   private[this] def incompleteCheckpoints =
     withError(fixIncompleteCheckpoints(local),
       "unable to get incomplete checkpoints")
@@ -49,6 +47,8 @@ class OnChanges(options: Options.Config, local: Database)
   }
 
   override def preStart() =
+    if (options.ping)
+      PingService.launchPingService(options.siteId, local)
     local.changesSource(Map("filter" -> "bib_input/no-ping"))
       .throttle(100, 1.second, 100, ThrottleMode.Shaping)
       .runWith(Sink.actorRef(self, 'ignored))
@@ -66,10 +66,6 @@ class OnChanges(options: Options.Config, local: Database)
         timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
           self,
           'trigger))
-      // For every object containing an id (XXXXX can some objects not contain an id?)
-      // send it to the ping service so that it can decide whether or not a ping is needed.
-      for (id <- (js \ "id").asOpt[String] if id.startsWith(s"checkpoints-${options.siteId}-"))
-        ping ! js
     case 'trigger =>
       trigger()
     case 'reset =>

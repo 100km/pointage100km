@@ -23,6 +23,7 @@ object Global {
   val obsoleteRemoveInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-remove-interval")
   val obsoleteAge: FiniteDuration = replicateConfig.as[FiniteDuration]("obsolete-age")
   val initialReplicationTimeout: FiniteDuration = replicateConfig.as[FiniteDuration]("initial-replication-timeout")
+  val pingTimeout: FiniteDuration = replicateConfig.as[FiniteDuration]("ping-timeout")
   val stalkersObsoleteDuration: FiniteDuration = replicateConfig.as[FiniteDuration]("stalkers-obsolete-duration")
 
   object RankingAlerts {

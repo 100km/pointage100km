@@ -1,33 +1,34 @@
 package replicate.maintenance
 
-import akka.actor.{Actor, FSM}
+import akka.Done
 import akka.event.Logging
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
+import akka.stream.{ActorAttributes, Materializer, Supervision}
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
-import replicate.utils.{LoggingError, Options}
+import replicate.utils.{Global, LoggingError}
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class PingService(options: Options.Config, db: Database) extends Actor with FSM[Int, Unit] with LoggingError {
+object PingService extends LoggingError {
 
-  override val log = Logging(context.system, this)
+  override val log = Logging(Global.system, "pingService")
 
-  startWith(0, ())
-
-  when(0, stateTimeout = 30 seconds) {
-
-    case Event(StateTimeout, _) =>
-      if (options.ping)
-
-        withError(steenwerck.ping(db, options.siteId), "cannot ping database")
-      stay()
-
-    case Event(js: JsObject, _) =>
-      stay()
-
+  def pingService(siteId: Int, db: Database): Sink[JsObject, Future[Done]] = {
+    val prefix = s"checkpoints-$siteId-"
+    Flow[JsObject]
+      .filter(js => (js \ "id").as[String].startsWith(prefix)).map(_ => false)
+      .keepAlive(Global.pingTimeout, () => true)
+      .filter(identity).prepend(Source.single(true))
+      .mapAsync(1)(_ =>  withError(steenwerck.ping(db, siteId), "cannot ping database"))
+      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
+      .toMat(Sink.ignore)(Keep.right)
   }
 
-  initialize()
+  def launchPingService(siteId: Int, db: Database)(implicit materializer: Materializer): Future[Done] = {
+    db.changesSource(Map("filter" -> "bib_input/no-ping")).toMat(pingService(siteId, db))(Keep.right).run()
+  }
 
 }
