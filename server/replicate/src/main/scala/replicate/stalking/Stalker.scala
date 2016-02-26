@@ -2,17 +2,20 @@ package replicate.stalking
 
 import java.util.{Calendar, TimeZone}
 
+import akka.NotUsed
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.pipe
-import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
+import akka.stream.{ActorMaterializer, ThrottleMode}
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsObject, JsValue}
 import replicate.alerts.RankingAlert
 import replicate.messaging.PushbulletSMS
-import replicate.utils.{ChangesActor, Global}
+import replicate.utils.Global
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class Stalker(database: Database) extends Actor with ActorLogging {
 
@@ -125,9 +128,10 @@ class Stalker(database: Database) extends Actor with ActorLogging {
     pipe(database.status().map(json => (json \ "update_seq").as[Long]).flatMap(lastSeq =>
       database.view[JsValue, JsObject]("admin", "stalked").map(('initial, lastSeq, _)))) to self
 
-  private[this] def launchStalkersChanges(fromSeq: Long): ActorRef = {
-    context.actorOf(Props(new ChangesActor(self, database, filter = Some("admin/stalked"), params = Map("include_docs" -> "true"),
-      lastSeq = Some(0))), "stalkers-changes")
+  private[this] def launchStalkersChanges(fromSeq: Long): NotUsed = {
+    database.changesSource(Map("filter" -> "admin/stalked", "include_docs" -> "true"), sinceSeq = 0)
+      .throttle(50, 1.second, 50, ThrottleMode.Shaping)
+      .runWith(Sink.actorRef(self, 'ignored))
   }
 
   private[this] def launchCheckpointChanges(fromSeq: Long): Unit = {

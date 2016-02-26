@@ -2,6 +2,8 @@ package replicate.utils
 
 import akka.actor.{Actor, Cancellable, Props}
 import akka.event.Logging
+import akka.stream.ThrottleMode
+import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
 import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
@@ -46,10 +48,10 @@ class OnChanges(options: Options.Config, local: Database)
     f.onComplete(_ => self ! 'reset)
   }
 
-  context.actorOf(Props(new ChangesActor(self, local, Some("bib_input/no-ping"))),
-    "changes")
-
   override def preStart() =
+    local.changesSource(Map("filter" -> "bib_input/no-ping"))
+      .throttle(100, 1.second, 100, ThrottleMode.Shaping)
+      .runWith(Sink.actorRef(self, 'ignored))
     self ! 'trigger
 
   override def postRestart(reason: Throwable) = {}
@@ -59,9 +61,13 @@ class OnChanges(options: Options.Config, local: Database)
   override def receive() = {
     case js: JsObject =>
       if (timer.isEmpty)
+        // We do not want to start the conflicts and incomplete checkpoints resolution
+        // more than once every 5 seconds (rate limiting).
         timer = Some(context.system.scheduler.scheduleOnce(nextRun - now,
           self,
           'trigger))
+      // For every object containing an id (XXXXX can some objects not contain an id?)
+      // send it to the ping service so that it can decide whether or not a ping is needed.
       for (id <- (js \ "id").asOpt[String] if id.startsWith(s"checkpoints-${options.siteId}-"))
         ping ! js
     case 'trigger =>
@@ -72,3 +78,4 @@ class OnChanges(options: Options.Config, local: Database)
   }
 
 }
+
