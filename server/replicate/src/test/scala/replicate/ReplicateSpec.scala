@@ -54,7 +54,7 @@ class ReplicateSpec extends Specification with After {
 
     override def before = {
       if (!waitForResult(steenwerck.testsAllowed(db))) {
-        failure("Tests are not allowed in this database (configuration/tests_allowed must be true)")
+        skipped("Skipping: tests are not allowed in this database (configuration/tests_allowed must be true)")
       }
     }
 
