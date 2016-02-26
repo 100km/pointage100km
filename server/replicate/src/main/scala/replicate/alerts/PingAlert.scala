@@ -7,7 +7,7 @@ import play.api.libs.json.JsObject
 import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.utils.Infos.CheckpointInfo
-import replicate.utils.{Glyphs, Global, PeriodicTaskActor}
+import replicate.utils.{Global, Glyphs, PeriodicTaskActor}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}

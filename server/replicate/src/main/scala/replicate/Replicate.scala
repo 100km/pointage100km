@@ -1,10 +1,11 @@
 package replicate
 
 import akka.actor.Props
+import akka.event.Logging
 import net.rfc1149.canape._
 import play.api.libs.json.Json
 import replicate.alerts.Alerts
-import replicate.maintenance.{ReplicateRelaunch, RemoveObsoleteDocuments, Compaction}
+import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.stalking.Stalker
 import replicate.utils._
 import steenwerck._
@@ -24,13 +25,14 @@ object Replicate extends App {
   new Replicate(options)
 }
 
-class Replicate(options: Options.Config) {
+class Replicate(options: Options.Config) extends LoggingError {
 
   import implicits._
+  import Global._
+
+  override val log = Logging(Global.system, "Replicate")
 
   private implicit val timeout: Duration = (5, SECONDS)
-
-  import Global._
 
   private val localInfo = Json.obj("type" -> "site-info", "scope" -> "local", "site-id" -> options.siteId)
 
@@ -143,14 +145,28 @@ class Replicate(options: Options.Config) {
     localDatabase.ensureFullCommit()
     exit(0)
   } else {
-    if (options.replicate)
-      system.actorOf(Props(new ReplicateRelaunch(options.isSlave, localDatabase, hubDatabase)), "replicate-relaunch")
+    if (options.replicate) {
+      val replicateOptions = Json.obj("continuous" -> true, "filter" -> "common/to-replicate")
+      system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
+        withError(localDatabase.replicateFrom(hubDatabase, replicateOptions), "cannot start remote to local replication")
+        if (!options.isSlave) {
+          withError(localDatabase.replicateTo(hubDatabase, replicateOptions), "cannot start local to remote replication")
+        }
+      }
+    }
     if (options.compactLocal)
-      system.actorOf(Props(new Compaction(localDatabase, localCompactionInterval)), "compact-local")
+      system.scheduler.schedule(localCompactionInterval, localCompactionInterval) {
+        withError(localDatabase.compact(), "cannot start local database compaction")
+      }
     if (options.compactMaster)
-      system.actorOf(Props(new Compaction(hubDatabase, masterCompactionInterval)), "compact-master")
+      system.scheduler.schedule(localCompactionInterval, localCompactionInterval) {
+        withError(hubDatabase.compact(), "cannot start master database compaction")
+      }
     if (options.obsolete)
-      system.actorOf(Props(new RemoveObsoleteDocuments(localDatabase)), "obsolete")
+      system.scheduler.schedule(obsoleteRemoveInterval, obsoleteRemoveInterval) {
+        withError(RemoveObsoleteDocuments.removeObsoleteDocuments(localDatabase, log),
+          "cannot remove obsolete documents")
+      }
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
     if (options.alerts)

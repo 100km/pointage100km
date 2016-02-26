@@ -1,21 +1,18 @@
 package replicate.maintenance
 
+import akka.event.LoggingAdapter
 import net.rfc1149.canape._
-import play.api.libs.json.{JsNumber, JsObject, JsValue}
-import replicate.utils.{Global, PeriodicTaskActor}
+import play.api.libs.json.{JsObject, JsValue}
+import replicate.utils.Global
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class RemoveObsoleteDocuments(db: Database) extends PeriodicTaskActor {
+object RemoveObsoleteDocuments {
 
-  import Global._
+  private[this] val obsoleteMillisecons = Global.obsoleteAge.toMillis
 
-  override val period = obsoleteRemoveInterval
-
-  private[this] val obsoleteMillisecons = obsoleteAge.toMillis
-
-  override def future: Future[Seq[JsValue]] = {
+  def removeObsoleteDocuments(db: Database, log: LoggingAdapter)(implicit ec: ExecutionContext): Future[Seq[JsValue]] = {
     val deadline = System.currentTimeMillis - obsoleteMillisecons
     db.view[JsValue, JsObject]("admin", "transient-docs") flatMap { docs =>
       val toDelete = docs map (_._2) filter { js =>
