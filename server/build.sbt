@@ -35,8 +35,8 @@ lazy val common = Project.defaultSettings ++ assemble ++
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
       resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo))
 
-lazy val root =
-  Project("root", file(".")) aggregate(replicate, wipe, stats, loader)
+lazy val pointage100km =
+  Project("pointage100km", file(".")) aggregate(replicate, wipe, stats, loader)
 
 lazy val stats =
   Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
