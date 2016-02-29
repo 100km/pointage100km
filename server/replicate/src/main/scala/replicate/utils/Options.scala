@@ -9,11 +9,12 @@ object Options {
                     dryRun: Boolean = false,
                     _fixConflicts: Boolean = false,
                     _fixIncomplete: Boolean = false,
-                    _obsolete: Boolean = true,
+                    _obsolete: Boolean = false,
                     replicate: Boolean = true,
                     alerts: Boolean = false,
                     stalking: Boolean = false,
                     siteId: Int = -1,
+                    modes: List[String] = Nil,
                     _ping: Boolean = true) {
 
     def fixConflicts: Boolean = _fixConflicts && !isSlave
@@ -22,78 +23,82 @@ object Options {
     def ping: Boolean = _ping && !isSlave
 
     def onChanges = fixConflicts || fixIncomplete || ping
-    def initOnly = !onChanges && !(compactLocal || compactMaster || replicate)
 
-    def isSlave = siteId == 999
+    def mode = modes.head
+    def isSlave = mode == "slave"
+    def initOnly = mode == "init"
 
     def dump() = {
-      def po(opt: String, current: Any, default: Any) = {
-        val defaultString = if (current != default && default != null) " (default: %s)".format(default) else ""
-        System.out.println("  - %s: %s%s".format(opt, current, defaultString))
+      def po(opt: String, current: Any) = {
+        System.out.println(s"  - $opt: $current")
       }
-      val defaults = Config()
-      System.out.println("Current configuration:")
-      po("site id", siteId, null)
-      po("compact local database regularly", compactLocal, defaults.compactLocal)
-      po("compact master database regularly", compactMaster, defaults.compactMaster)
-      po("fix conflicts", fixConflicts, defaults.fixConflicts)
-      po("fix incomplete checkpoints", fixIncomplete, defaults.fixIncomplete)
-      po("remove obsolete documents", obsolete, defaults.obsolete)
-      po("run replication service", replicate, defaults.replicate)
-      po("run ping service", ping, defaults.ping)
-      po("run alerts service", alerts, defaults.alerts)
-      po("run stalking service", stalking, defaults.stalking)
+      System.out.println(s"Current configuration ($mode mode):")
+      if (siteId != -1)
+        po("site id", siteId)
+      po("compact local database regularly", compactLocal)
+      po("compact master database regularly", compactMaster)
+      po("fix conflicts", fixConflicts)
+      po("fix incomplete checkpoints", fixIncomplete)
+      po("remove obsolete documents", obsolete)
+      po("run replication service", replicate)
+      po("run ping service", ping)
+      po("run alerts service", alerts)
+      po("run stalking service", stalking)
       System.out.println("Computed values:")
-      po("slave only", isSlave, defaults.isSlave)
-      po("check onChanges feed", onChanges, defaults.onChanges)
-      po("init only", initOnly, defaults.initOnly)
+      po("slave only", isSlave)
+      po("check onChanges feed", onChanges)
+      po("init only", initOnly)
     }
   }
 
   def parse(args: Array[String]) = {
     val parser = new OptionParser[Config]("replicate") {
       help("help") abbr "h" text "show this help"
-      opt[Unit]('c', "conflicts") text "fix conflicts as they appear" action { (_, c) =>
-        c.copy(_fixConflicts = true) }
-      opt[Unit]('f', "full") text "turn on every service but ping" action { (_, c) =>
-        c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
-          replicate = true, _ping = false, alerts = true, stalking = true) }
       opt[Unit]('n', "dry-run") text "dump configuration and do not run" action { (_, c) =>
         c.copy(dryRun = true) }
-      opt[Unit]('i', "init-only") text "turn off every service" action { (_, c) =>
-        c.copy(compactLocal = false, compactMaster = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
-          replicate = false, _ping = false) }
-      opt[Unit]('I', "incomplete") text "fix incomplete checkpoints" action { (_, c) =>
-        c.copy(_fixIncomplete = true) }
       opt[Unit]("no-compact") abbr "nc" text "do not compact local database regularly" action { (_, c) =>
         c.copy(compactLocal = false)
-      }
-      opt[Unit]("compact-master") abbr "cm" text "compact master database regularly" action { (_, c) =>
-        c.copy(compactMaster = true)
-      }
-      opt[Unit]("no-obsolete") abbr "no" text "do not remove obsolete documents" action { (_, c) =>
-        c.copy(_obsolete = false)
       }
       opt[Unit]("no-replicate") abbr "nr" text "do not start replication" action { (_, c) =>
         c.copy(replicate = false)
       }
-      opt[Unit]("no-ping") abbr "np" text "do not start ping" action { (_, c) =>
-        c.copy(_ping = false)
+      cmd("checkpoint") text "run checkpoint" action { (_, c) => c.copy(modes = "checkpoint" +: c.modes) } children {
+        opt[Unit]("no-ping") abbr "np" text "do not start ping" action { (_, c) =>
+          c.copy(_ping = false) }
+        arg[Int]("<site-id>") text "numerical id of the current site" action { (x, c) =>
+          c.copy(siteId = x) }
+        }
+      cmd("init") text "checkpoint initialization" action { (_, c) =>
+        c.copy(compactLocal = false, compactMaster = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
+          replicate = false, _ping = false, modes = "init" +: c.modes) } children {
+        arg[Int]("<site-id>") text "numerical id of the current site" action { (x, c) =>
+          c.copy(siteId = x) }
       }
-      opt[Unit]('a', "alerts") text "run alerts service" action { (_, c) =>
-        c.copy(alerts = true)
+      cmd("master") text "main server procedures" action { (_, c) =>
+        c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
+          replicate = true, _ping = false, alerts = true, stalking = true, modes = "master" +: c.modes)
+      } text "turn on every service but ping" children {
+          opt[Unit]("no-conflicts") abbr "nc" text "do not fix conflicts as they appear" action { (_, c) =>
+            c.copy(_fixConflicts = false) }
+          opt[Unit]("no-incomplete") abbr "nI" text "do not fix incomplete checkpoints" action { (_, c) =>
+            c.copy(_fixIncomplete = true) }
+          opt[Unit]("no-compact-master") abbr "ncm" text "do not compact master database regularly" action { (_, c) =>
+            c.copy(compactMaster = false) }
+          opt[Unit]("no-obsolete") abbr "no" text "do not remove obsolete documents" action { (_, c) =>
+            c.copy(_obsolete = false) }
+          opt[Unit]("no-alerts") abbr "na" text "do not run alerts service" action { (_, c) =>
+            c.copy(alerts = false) }
+          opt[Unit]("no-stalking") abbr "ns" text "do not run stalking service" action { (_, c) =>
+            c.copy(stalking = false) }
+        }
+      cmd("slave") text "slave mode (no modifications propagated to the server)" action { (_, c) =>
+        c.copy(modes = "slave" +: c.modes)
       }
-      opt[Unit]("no-alerts") abbr "na" text "do not run alerts service" action { (_, c) =>
-        c.copy(alerts = false)
-      }
-      opt[Unit]('s', "stalking") text "run stalking service" action { (_, c) =>
-        c.copy(stalking = true)
-      }
-      opt[Unit]("no-stalking") abbr "ns" text "do not run stalking service" action { (_, c) =>
-        c.copy(stalking = false)
-      }
-      arg[Int]("<site-id>") text "numerical id of the current site (999 for slave mode)" action { (x, c) =>
-        c.copy(siteId = x)
+      checkConfig { c =>
+        if (c.modes.isEmpty || c.modes.size > 1)
+          failure("exactly one of the modes (checkpoint, init, master, or slave) must be chosen")
+        else
+          success
       }
       override val showUsageOnError = true
     }
