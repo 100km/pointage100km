@@ -48,14 +48,14 @@ On a dev pc:
 ```
 $ bin/wipe login password
 $ couchapps/server-pushapps server login password
-$ bin/replicate --no-ping 0
+$ bin/replicate checkpoint --no-ping 0
 ```
 
 $ /kvm/launch-steenwerck
 
 
 
-If a bib has been input in the bib_input couchapp before the contestant had been transfered from the website db to couchdb, (for example you forgot to run bin/loader, or a contestant registered after the begining of the race), you need to have a bin/replicate launched with the -I option to fix the checkpoint document
+If a bib has been input in the bib_input couchapp before the contestant had been transfered from the website db to couchdb, (for example you forgot to run bin/loader, or a contestant registered after the begining of the race), you need to have a bin/replicate launched in master mode to fix the checkpoint document
 
 STEPS:
 -1. On the db server:
@@ -74,7 +74,7 @@ $ docker rm -f steenwerck-replicate
         - set the start times of the races to now + 10 minutes: in couchapps/_docs/infos.json, put the value of `echo $(($(date +%s)*1000 + 10*60*1000))`
         - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
         - ensure couchdb is running on developper PC.
-        - launch replicate 0
+        - launch replicate checkpoint --no-ping 0
         - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
         - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p PASSWD -d 100km_prod 2014`
         - insert a few bibs
@@ -83,7 +83,7 @@ $ docker rm -f steenwerck-replicate
       - On the display PC
         - launch sudo rm -rf /var/lib/puppet
         - launch sudo puppet agent --test
-        - launch replicate 0
+        - launch replicate slave
         - see that bibs appear in http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html
         - see that rankings appear without morning race @ http://localhost:5984/steenwerck100km/_design/main_display/classement.html
         - see that rankings appear with morning race @ http://localhost:5984/steenwerck100km/_design/main_display/classement.html
@@ -96,7 +96,7 @@ $ docker rm -f steenwerck-replicate
       - check that everything you are couchapp_pushing is committed and pushed to git (infos.json, JS, HTML, ...)
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
       - ensure couchdb and replicate are running on developper PC.
-        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate --no-ping 0`
+        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate checkpoint --no-ping 0`
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
@@ -104,7 +104,7 @@ $ docker rm -f steenwerck-replicate
     - launch sudo rm -rf /var/lib/puppet
     - launch sudo puppet agent --test
     - open screen
-    - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate X`; Stick the post-it with X and the name on the pc;
+    - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate checkpoint X`; Stick the post-it with X and the name on the pc;
     - in screen, launch `./couchsync --watch`
     - in screen, launch the appropriate command for getting 3G Internet:
        - `pon SFR /dev/ttyUSB3` for SFR keys (white) 1, 2, 3, 5
