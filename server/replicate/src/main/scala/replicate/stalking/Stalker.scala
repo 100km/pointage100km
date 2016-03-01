@@ -52,7 +52,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
     for (bearerToken <- config.as[Option[String]]("sms.bearer-token");
          userIden <- config.as[Option[String]]("sms.user-iden");
          deviceIden <- config.as[Option[String]]("sms.device-iden"))
-      yield context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)).withDispatcher("https-messaging-dispatcher"), "pushbullet-sms")
+      yield context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)))
   }
 
   override def preStart(): Unit = {
