@@ -19,7 +19,7 @@ package object steenwerck {
   private def makePing(siteId: Int, time: Long) =
     Json.obj("type" -> "ping", "site_id" -> siteId, "time" -> time)
 
-  private def pingId(siteId: Int) = s"ping-site$siteId-$uuid"
+  private def pingId(siteId: Int) = s"ping-$siteId-$uuid"
 
   def ping(db: Database, siteId: Int): Future[JsValue] =
     forceUpdate(db, pingId(siteId), makePing(siteId, System.currentTimeMillis))
