@@ -40,6 +40,8 @@ object Global {
     val noticeDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("notice-delay")
     val warningDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("warning-delay")
     val criticalDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("critical-delay")
+    assert(warningDelay > noticeDelay)
+    assert(criticalDelay > warningDelay)
   }
 
   object BroadcastAlerts {
