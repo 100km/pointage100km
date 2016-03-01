@@ -36,7 +36,6 @@ object Global {
 
   object CheckpointAlerts {
     private val checkpointAlertsConfig = replicateConfig.as[Config]("checkpoint-alerts")
-    val checkInterval: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("check-interval")
     val noticeDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("notice-delay")
     val warningDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("warning-delay")
     val criticalDelay: FiniteDuration = checkpointAlertsConfig.as[FiniteDuration]("critical-delay")

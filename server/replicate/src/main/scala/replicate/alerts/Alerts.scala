@@ -3,19 +3,22 @@ package replicate.alerts
 import java.util.UUID
 
 import akka.actor._
+import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Database
 import play.api.libs.json.Json
 import replicate.messaging.Message.{Administrativia, Severity}
 import replicate.messaging._
-import replicate.utils.{Glyphs, Global}
+import replicate.utils.{Global, Glyphs}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class Alerts(database: Database) extends Actor with ActorLogging {
 
   import Alerts._
+
+  implicit val materializer = ActorMaterializer.create(context)
 
   import Global.dispatcher
 
@@ -49,8 +52,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     // Alert services
     for (infos <- Global.infos; raceInfo <- infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
-    for (infos <- Global.infos; checkpointInfo <- infos.checkpoints.values)
-      context.actorOf(Props(new PingAlert(database, checkpointInfo)), s"checkpoint-${checkpointInfo.checkpointId}")
+    PingAlert.runPingAlerts(database)
     context.actorOf(Props(new BroadcastAlert(database)), "broadcasts")
     // Officers
     val officersStr = officers.keys.toSeq.sorted.mkString(", ")
