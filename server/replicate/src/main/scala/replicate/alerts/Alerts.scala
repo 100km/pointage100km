@@ -47,18 +47,18 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   }
 
   override def preStart() = {
-    // Create officers documents asynchronously
-    createOfficerDocuments(database, officers.keys.toSeq)
+    val officersStr = officers.keys.toSeq.sorted.mkString(", ")
+    // Create officers documents asynchronously then send starting message
+    createOfficerDocuments(database, officers.keys.toSeq).andThen {
+      case _ => sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
+        icon = Some(Glyphs.wrench)))
+    }
+    database.update("bib_input", "force-update", "officers", Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))
     // Alert services
     for (infos <- Global.infos; raceInfo <- infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
     PingAlert.runPingAlerts(database)
     context.actorOf(Props(new BroadcastAlert(database)), "broadcasts")
-    // Officers
-    val officersStr = officers.keys.toSeq.sorted.mkString(", ")
-    database.update("bib_input", "force-update", "officers", Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))
-    sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
-                      icon = Some(Glyphs.wrench)))
   }
 
   def receive = {
