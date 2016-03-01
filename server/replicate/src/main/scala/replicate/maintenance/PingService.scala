@@ -9,7 +9,6 @@ import play.api.libs.json.JsObject
 import replicate.utils.{Global, LoggingError}
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 object PingService extends LoggingError {
