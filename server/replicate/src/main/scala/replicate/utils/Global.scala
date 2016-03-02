@@ -48,6 +48,18 @@ object Global {
     val checkInterval: FiniteDuration = broadcastAlertsConfig.as[FiniteDuration]("check-interval")
   }
 
+  object TextMessages {
+    private val textMessagesConfig = replicateConfig.as[Config]("text-messages")
+    object TopUp {
+      private val topUpConfig = textMessagesConfig.as[Config]("top-up")
+      val noticeAmount: Double = topUpConfig.as[Double]("notice-amount")
+      val warningAmount: Double = topUpConfig.as[Double]("warning-amount")
+      val criticalAmount: Double = topUpConfig.as[Double]("critical-amount")
+      assert(warningAmount > noticeAmount)
+      assert(criticalAmount > warningAmount)
+    }
+  }
+
   var infos: Option[Infos] = None
   var configuration: Option[Configuration] = None
 }

@@ -11,7 +11,7 @@ import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsObject, JsValue}
 import replicate.alerts.RankingAlert
-import replicate.messaging.PushbulletSMS
+import replicate.messaging.{NexmoSMS, PushbulletSMS}
 import replicate.utils.Global
 
 import scala.concurrent.Future
@@ -55,6 +55,12 @@ class Stalker(database: Database) extends Actor with ActorLogging {
         val userIden = config.as[String]("pushbullet-sms.user-iden")
         val deviceIden = config.as[String]("pushbullet-sms.device-iden")
         Some(context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)), "pushbullet-sms"))
+
+      case Some("nexmo") =>
+        val apiKey = config.as[String]("nexmo.api-key")
+        val apiSecret = config.as[String]("nexmo.api-secret")
+        val senderId = config.as[String]("nexmo.sender-id")
+        Some(context.actorOf(Props(new NexmoSMS(senderId, apiKey, apiSecret)), "nexmo"))
 
       case Some(provider) =>
         log.error(s"Unknown SMS provider $provider configured")

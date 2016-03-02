@@ -38,6 +38,7 @@ object Message {
   case object Checkpoint extends Category
   case object Connectivity extends Category
   case object RaceInfo extends Category
+  case object TextMessage extends Category
 
   val allCategories: Seq[Category] = categories.values.toSeq
 
