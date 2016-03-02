@@ -7,6 +7,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
 import akka.stream.{ActorMaterializer, ThrottleMode}
+import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsObject, JsValue}
@@ -48,8 +49,8 @@ class Stalker(database: Database) extends Actor with ActorLogging {
   private[this] var stalkStage: Long = 0
 
   private[this] def startTextService(): Option[ActorRef] = {
-    val config = Global.replicateConfig
-    config.as[Option[String]]("text-messages.provider") match {
+    val config = Global.replicateConfig.as[Config]("text-messages")
+    config.as[Option[String]]("provider") match {
       case Some("pushbullet-sms") =>
         val bearerToken = config.as[String]("pushbullet-sms.bearer-token")
         val userIden = config.as[String]("pushbullet-sms.user-iden")
