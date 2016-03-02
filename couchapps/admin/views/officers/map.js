@@ -1,6 +1,6 @@
 function(doc) {
   // Categories and severities must be kept synchronous with Replicate.
-  var categories = ["administrativia", "broadcast", "checkpoint", "connectivity", "race_info"];
+  var categories = ["administrativia", "broadcast", "checkpoint", "connectivity", "race_info", "text_message"];
   var severities = ["debug", "verbose", "info", "warning", "error", "critical"];
   if (doc.type == "officer" && doc.disabled != true) {
     var levels = doc.log_levels || {"*": "warning"}
