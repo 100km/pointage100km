@@ -58,7 +58,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     for (infos <- Global.infos; raceInfo <- infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
     PingAlert.runPingAlerts(database)
-    context.actorOf(Props(new BroadcastAlert(database)), "broadcasts")
+    BroadcastAlert.runBroadcastAlerts(database)
   }
 
   def receive = {
