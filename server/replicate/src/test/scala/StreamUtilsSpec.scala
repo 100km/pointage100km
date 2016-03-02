@@ -1,6 +1,7 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.testkit.scaladsl.{TestSink, TestSource}
 import org.specs2.mutable._
 import replicate.utils.StreamUtils._
 
@@ -61,62 +62,71 @@ class StreamUtilsSpec extends Specification {
   "pairDifferent()" should {
 
     "return successive differences in pairs" in new withActorSystem {
-      val result = Source(List("one", "two", "two", "two", "three")).via(pairDifferent).runFold[List[(String, String)]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo List(("one", "two"), ("two", "three"))
+      val downstream = Source(List("one", "two", "two", "two", "three")).via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(3).expectNext(("one", "two"), ("two", "three")).expectComplete()
     }
 
     "work with an empty stream" in new withActorSystem {
-      val result = Source.empty[String].via(pairDifferent).runFold[List[(String, String)]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo Nil
+      val downstream = Source.empty[String].via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(1).expectComplete()
     }
 
     "return an empty stream for an one-element stream" in new withActorSystem {
-      val result = Source.single("one").via(pairDifferent).runFold[List[(String, String)]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo Nil
+      val downstream = Source.single("one").via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(1).expectComplete()
     }
 
     "return an empty stream for a constant stream of elements" in new withActorSystem {
-      val result = Source.repeat("constant").take(5).via(pairDifferent).runFold[List[(String, String)]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo Nil
+      val downstream = Source.repeat("constant").take(5).via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(1).expectComplete()
+    }
+
+    "propagate an error" in new withActorSystem {
+      val (upstream, downstream) = TestSource.probe[Int].via(pairDifferent).toMat(TestSink.probe)(Keep.both).run()
+      // downstream.request(1)
+      upstream.sendNext(1).sendNext(2).sendNext(3)
+      downstream.request(3).expectNext((1, 2), (2, 3))
+      upstream.sendError(new RuntimeException)
+      downstream.expectError()
     }
   }
 
   "onlyIncreasing" should {
 
     "filter out non-increasing elements" in new withActorSystem {
-      val result = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)).runFold[List[Int]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo List(1, 2, 3, 4, 5)
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(6).expectNext(1, 2, 3, 4, 5).expectComplete()
     }
 
     "support specifying an alternate ordering" in new withActorSystem {
       val ordering = new Ordering[Int] {
         override def compare(x: Int, y: Int) = implicitly[Ordering[Int]].compare(y, x)
       }
-      val result = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)(ordering)).runFold[List[Int]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo List(1, 0, -4, -5)
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)(ordering)).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(5).expectNext(1, 0, -4, -5).expectComplete()
     }
 
     "keep duplicates in non-strict mode" in new withActorSystem {
-      val result = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)).runFold[List[Int]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo List(1, 2, 3, 4, 5, 5)
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(7).expectNext(1, 2, 3, 4, 5, 5).expectComplete()
     }
 
     "keep duplicates in non-strict mode with alternate ordering" in new withActorSystem {
       val ordering = new Ordering[Int] {
         override def compare(x: Int, y: Int) = implicitly[Ordering[Int]].compare(y, x)
       }
-      val result = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)(ordering)).runFold[List[Int]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo List(1, 0, 0, -4, -5)
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)(ordering)).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(6).expectNext(1, 0, 0, -4, -5).expectComplete()
     }
 
     "transform an empty stream into an empty stream" in new withActorSystem {
-      val result = Source.empty[Int].via(onlyIncreasing(strict = true)).runFold[List[Int]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo Nil
+      val downstream = Source.empty[Int].via(onlyIncreasing(strict = true)).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(1).expectComplete()
     }
 
     "transform a one-element stream into a one-element stream" in new withActorSystem {
-      val result = Source.single(42).via(onlyIncreasing(strict = true)).runFold[List[Int]](Nil)(_ :+ _)
-      Await.result(result, 2.seconds) must be equalTo List(42)
+      val downstream = Source.single(42).via(onlyIncreasing(strict = true)).toMat(TestSink.probe)(Keep.right).run()
+      downstream.request(2).expectNext(42).expectComplete()
     }
   }
 
