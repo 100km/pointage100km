@@ -62,22 +62,22 @@ class StreamUtilsSpec extends Specification {
   "pairDifferent()" should {
 
     "return successive differences in pairs" in new withActorSystem {
-      val downstream = Source(List("one", "two", "two", "two", "three")).via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source(List("one", "two", "two", "two", "three")).via(pairDifferent).runWith(TestSink.probe)
       downstream.request(3).expectNext(("one", "two"), ("two", "three")).expectComplete()
     }
 
     "work with an empty stream" in new withActorSystem {
-      val downstream = Source.empty[String].via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source.empty[String].via(pairDifferent).runWith(TestSink.probe)
       downstream.request(1).expectComplete()
     }
 
     "return an empty stream for an one-element stream" in new withActorSystem {
-      val downstream = Source.single("one").via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source.single("one").via(pairDifferent).runWith(TestSink.probe)
       downstream.request(1).expectComplete()
     }
 
     "return an empty stream for a constant stream of elements" in new withActorSystem {
-      val downstream = Source.repeat("constant").take(5).via(pairDifferent).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source.repeat("constant").take(5).via(pairDifferent).runWith(TestSink.probe)
       downstream.request(1).expectComplete()
     }
 
@@ -94,7 +94,7 @@ class StreamUtilsSpec extends Specification {
   "onlyIncreasing" should {
 
     "filter out non-increasing elements" in new withActorSystem {
-      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)).runWith(TestSink.probe)
       downstream.request(6).expectNext(1, 2, 3, 4, 5).expectComplete()
     }
 
@@ -102,12 +102,12 @@ class StreamUtilsSpec extends Specification {
       val ordering = new Ordering[Int] {
         override def compare(x: Int, y: Int) = implicitly[Ordering[Int]].compare(y, x)
       }
-      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)(ordering)).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = true)(ordering)).runWith(TestSink.probe)
       downstream.request(5).expectNext(1, 0, -4, -5).expectComplete()
     }
 
     "keep duplicates in non-strict mode" in new withActorSystem {
-      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)).runWith(TestSink.probe)
       downstream.request(7).expectNext(1, 2, 3, 4, 5, 5).expectComplete()
     }
 
@@ -115,17 +115,17 @@ class StreamUtilsSpec extends Specification {
       val ordering = new Ordering[Int] {
         override def compare(x: Int, y: Int) = implicitly[Ordering[Int]].compare(y, x)
       }
-      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)(ordering)).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source(List(1, 2, 3, 0, 0, 4, -4, 5, 5, -5, 4, 3)).via(onlyIncreasing(strict = false)(ordering)).runWith(TestSink.probe)
       downstream.request(6).expectNext(1, 0, 0, -4, -5).expectComplete()
     }
 
     "transform an empty stream into an empty stream" in new withActorSystem {
-      val downstream = Source.empty[Int].via(onlyIncreasing(strict = true)).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source.empty[Int].via(onlyIncreasing(strict = true)).runWith(TestSink.probe)
       downstream.request(1).expectComplete()
     }
 
     "transform a one-element stream into a one-element stream" in new withActorSystem {
-      val downstream = Source.single(42).via(onlyIncreasing(strict = true)).toMat(TestSink.probe)(Keep.right).run()
+      val downstream = Source.single(42).via(onlyIncreasing(strict = true)).runWith(TestSink.probe)
       downstream.request(2).expectNext(42).expectComplete()
     }
   }
