@@ -47,16 +47,27 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
   private[this] var stalkStage: Long = 0
 
-  private[this] def startPushbulletSMS(): Option[ActorRef] = {
+  private[this] def startTextService(): Option[ActorRef] = {
     val config = Global.replicateConfig
-    for (bearerToken <- config.as[Option[String]]("sms.bearer-token");
-         userIden <- config.as[Option[String]]("sms.user-iden");
-         deviceIden <- config.as[Option[String]]("sms.device-iden"))
-      yield context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)))
+    config.as[Option[String]]("text-messages.provider") match {
+      case Some("pushbullet-sms") =>
+        val bearerToken = config.as[String]("pushbullet-sms.bearer-token")
+        val userIden = config.as[String]("pushbullet-sms.user-iden")
+        val deviceIden = config.as[String]("pushbullet-sms.device-iden")
+        Some(context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)), "pushbullet-sms"))
+
+      case Some(provider) =>
+        log.error(s"Unknown SMS provider $provider configured")
+        None
+
+      case None =>
+        log.info("No SMS service configured")
+        None
+    }
   }
 
   override def preStart(): Unit = {
-    startPushbulletSMS() match {
+    startTextService() match {
       case Some(actorRef: ActorRef) =>
         log.debug("SMS service started")
         smsActorRef = actorRef
@@ -117,7 +128,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
             val message = s"""${name(bib)} : dernier pointage au site "${infos.checkpoints(siteId).name}" à $time """ +
               s"(${raceInfo.name}, tour $lap, ${"%.2f".format(infos.distances(siteId, lap))} kms, position $rank)"
             for (recipient <- recipients)
-              PushbulletSMS.sendSMS(smsActorRef, recipient, message)
+              smsActorRef ! (recipient, message)
           } else
             log.warning(s"Bib $bib pointed at lap $lap while race ${raceInfo.name} only has ${raceInfo.laps}")
       }
