@@ -1,6 +1,6 @@
 package replicate.utils
 
-import akka.actor.{Actor, Cancellable, Props}
+import akka.actor.{Actor, Cancellable}
 import akka.event.Logging
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.Sink
