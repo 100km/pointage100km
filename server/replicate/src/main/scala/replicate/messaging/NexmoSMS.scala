@@ -73,7 +73,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
           val (newStatus, limit) = amountToStatus(remaining)
           if (currentStatus != newStatus) {
             latestAlert.foreach(Alerts.cancelAlert)
-            val subject = if (newStatus == Ok) "Nexmo balance restored" else s"Your Nexmo balance reached (${"%.2f€".format(limit)})"
+            val subject = if (newStatus == Ok) "Nexmo balance restored" else s"Your Nexmo balance is below ${"%.2f€".format(limit)}"
             val body = s"Your current balance is ${"%.2f€".format(remaining)}"
             val msg = Msg(TextMessage, severities(newStatus), subject, body, icon = Some(Glyphs.telephoneReceiver))
             latestAlert = Some(Alerts.sendAlert(msg))
@@ -101,11 +101,11 @@ object NexmoSMS {
 
   private def amountToStatus(amount: Double): (Status, Double) = {
     import replicate.utils.Global.TextMessages.TopUp._
-    if (amount >= criticalAmount)
+    if (amount < criticalAmount)
       (Critical, criticalAmount)
-    else if (amount >= warningAmount)
+    else if (amount < warningAmount)
       (Warning, warningAmount)
-    else if (amount >= noticeAmount)
+    else if (amount < noticeAmount)
       (Notice, noticeAmount)
     else
       (Ok, 0)

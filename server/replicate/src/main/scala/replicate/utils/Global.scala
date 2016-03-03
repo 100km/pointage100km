@@ -55,8 +55,8 @@ object Global {
       val noticeAmount: Double = topUpConfig.as[Double]("notice-amount")
       val warningAmount: Double = topUpConfig.as[Double]("warning-amount")
       val criticalAmount: Double = topUpConfig.as[Double]("critical-amount")
-      assert(warningAmount > noticeAmount)
-      assert(criticalAmount > warningAmount)
+      assert(warningAmount < noticeAmount)
+      assert(criticalAmount < warningAmount)
     }
   }
 
