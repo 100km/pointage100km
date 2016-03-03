@@ -9,7 +9,7 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.2" % "test",
                                   "com.typesafe.akka" %% "akka-http-core" % "2.4.2",
                                   "com.iheart" %% "ficus" % "1.2.2",
-                                  "ch.qos.logback" % "logback-classic" % "1.1.5"))
+                                  "ch.qos.logback" % "logback-classic" % "1.1.6"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
 
