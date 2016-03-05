@@ -46,7 +46,7 @@ lazy val stats =
 
 lazy val replicate =
   Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2 ++
-    csv ++ Revolver.settings) dependsOn(canape, steenwerck, rxtelegram)
+    csv ++ Revolver.settings) dependsOn(canape, steenwerck, rxtelegram, octopush)
 
 lazy val loader =
   Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
@@ -54,6 +54,8 @@ lazy val loader =
 lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val canape = Project("canape", file("libs/canape"), settings = common)
+
+lazy val octopush = Project("octopush-akka", file("libs/octopush-akka"), settings = common)
 
 lazy val steenwerck = Project("steenwerck", file("libs/steenwerck"), settings = common ++ json ++ akka) dependsOn(canape)
 

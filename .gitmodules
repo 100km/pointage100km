@@ -5,3 +5,7 @@
 [submodule "server/libs/rxtelegram"]
 	path = server/libs/rxtelegram
 	url = https://github.com/samueltardieu/rxtelegram
+[submodule "server/libs/octopush-akka"]
+	path = server/libs/octopush-akka
+	url = https://github.com/samueltardieu/octopush-akka
+	branch = master
