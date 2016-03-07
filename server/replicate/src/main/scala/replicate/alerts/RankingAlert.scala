@@ -1,9 +1,10 @@
 package replicate.alerts
 
 import akka.http.scaladsl.model.HttpResponse
-import akka.stream.{Materializer, ActorMaterializer}
+import akka.http.scaladsl.util.FastFuture
+import akka.stream.{ActorMaterializer, Materializer}
 import net.rfc1149.canape.{Couch, Database}
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{RaceInfo, Severity}
@@ -64,7 +65,7 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
             alert(Severity.Verbose, bib, ranking, s"is at the head (initial ranking)", addLink = false)
           }
         case _ =>
-          Future.successful(())
+          FastFuture.successful(())
       }
     }
     currentHead = runners

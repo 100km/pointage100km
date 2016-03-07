@@ -2,6 +2,7 @@ package replicate.utils
 
 import akka.actor.{Actor, Cancellable}
 import akka.event.Logging
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
@@ -29,9 +30,9 @@ class OnChanges(options: Options.Config, local: Database)
 
   private[this] def futures() = {
     val fc = if (options.fixConflicts) conflictingCheckpoints
-	     else Future.successful(true)
+	     else FastFuture.successful(true)
     val fi = if (options.fixIncomplete) incompleteCheckpoints
-	     else Future.successful(true)
+	     else FastFuture.successful(true)
     Future.sequence(List(fc, fi))
   }
 

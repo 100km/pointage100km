@@ -1,6 +1,7 @@
 package replicate.messaging
 
 import akka.actor.{Actor, ActorLogging}
+import akka.http.scaladsl.util.FastFuture
 import replicate.messaging.Message.Severity
 
 import scala.concurrent.Future
@@ -14,7 +15,7 @@ class SystemLogger extends Actor with Messaging with ActorLogging {
            Severity.Info  | Severity.Warning  => log.info(strMessage)
       case Severity.Error | Severity.Critical => log.warning(strMessage)
     }
-    Future.successful(None)
+    FastFuture.successful(None)
   }
 
 }

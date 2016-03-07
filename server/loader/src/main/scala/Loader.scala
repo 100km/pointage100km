@@ -2,6 +2,7 @@ import java.util.Calendar
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.util.FastFuture
 import net.rfc1149.canape._
 import org.apache.commons.dbcp2.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
@@ -124,7 +125,7 @@ object Loader extends App {
             case Some(original) =>
               if (containsAll(doc, original)) {
                 upToDate.incrementAndGet()
-                Future.successful(Json.obj())
+                FastFuture.successful(Json.obj())
               } else {
                 db.insert(doc ++ Json.obj("_rev" -> (original \ "_rev").get, "stalkers" -> (original \ "stalkers").get)) andThen {
                   case _ =>
@@ -133,7 +134,7 @@ object Loader extends App {
                 } recoverWith {
                   case t: Throwable =>
                     println(s"Could not update existing $desc: $t")
-                    Future.successful(Json.obj())
+                    FastFuture.successful(Json.obj())
                 }
               }
             case None =>
@@ -143,7 +144,7 @@ object Loader extends App {
               } recoverWith {
                 case t: Throwable =>
                   println(s"Could not insert $desc: $t")
-                  Future.successful(Json.obj())
+                  FastFuture.successful(Json.obj())
               }
           }
         }

@@ -1,9 +1,9 @@
 package replicate.maintenance
 
 import akka.event.LoggingAdapter
+import akka.http.scaladsl.util.FastFuture
 import net.rfc1149.canape._
 import play.api.libs.json._
-import replicate.utils.Global
 import replicate.utils.Global._
 
 import scala.concurrent.Future
@@ -34,7 +34,7 @@ trait IncompleteCheckpoints {
                 JsUndefined
             }
           } else
-            Future.successful(JsUndefined)
+            FastFuture.successful(JsUndefined)
       } recover {
         case Couch.StatusError(404, _, _) =>
           log.debug("no information available for contestant " + bib)
