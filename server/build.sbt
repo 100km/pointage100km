@@ -21,7 +21,7 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.4.0")
 
-lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.0-RC2")
+lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.0")
 
 lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.7" % "test",
                       fork in Test := true)
