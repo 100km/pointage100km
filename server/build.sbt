@@ -34,7 +34,7 @@ lazy val mysql =
                                   "mysql" % "mysql-connector-java" % "5.1.38"))
 
 lazy val common = Project.defaultSettings ++ assemble ++
-  Seq(scalaVersion := "2.11.7",
+  Seq(scalaVersion := "2.11.8",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
       resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo))
 
