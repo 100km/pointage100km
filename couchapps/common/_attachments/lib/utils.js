@@ -164,16 +164,18 @@ function change_li(li, app) {
 }
 
 function deal_with_key(ev, app) {
-  key = ev.which?ev.which:window.event.keyCode;
-
-  if ((key >= 48) && (key <=57)) { //figures
+  var key = ev.which?ev.which:window.event.keyCode;
+  var is_number = ((key >= 48) && (key <=57));
+  var is_keypad_number = ((key >= 96) && (key <=105));
+  if ( is_number || is_keypad_number ) {
     // If bib_input already has focus, return
     if ($("#bib_input").find("input")[0] == document.activeElement)
       return false;
 
     $("#bib_input").find("input")[0].focus();
     // TODO find a better way to put the key here
-    $("#bib_input").find("input")[0].value += (key-48);
+    var key_value = is_number ? (key-48) : (key-96);
+    $("#bib_input").find("input")[0].value += key_value;
   } else if (key == 40) { // down arrow
     change_li($('#items li.selected').next(), app)
   } else if (key == 38) { // up arrow
