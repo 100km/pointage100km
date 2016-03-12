@@ -1,8 +1,10 @@
 package replicate.alerts
 
 import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.{ActorMaterializer, Materializer}
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsValue, Json}
 import replicate.messaging.Message
@@ -80,7 +82,7 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
 
 }
 
-object RankingAlert {
+object RankingAlert extends PlayJsonSupport {
 
   def raceRanking(raceInfo: RaceInfo, database: Database): Future[HttpResponse] =
     database.list("main_display", "global-ranking", "global-ranking",
@@ -93,7 +95,7 @@ object RankingAlert {
    * @return a list of bibs ordered by rank
    */
   private def headOfRace(raceInfo: RaceInfo, database: Database)(implicit fm: Materializer, ec: ExecutionContext): Future[Seq[Int]] = {
-    raceRanking(raceInfo, database).filter(_.status.isSuccess()).flatMap(r => Couch.jsonUnmarshaller[JsValue]().apply(r.entity)).map { result =>
+    raceRanking(raceInfo, database).filter(_.status.isSuccess()).flatMap(r => Unmarshal(r.entity).to[JsValue]).map { result =>
       (result \ "rows").as[Array[JsValue]].headOption.map(_ \ "contestants" \\ "id" map { id =>
         // id is of the form checkpoints-CHECKPOINT-CONTESTANT
         id.as[String].split('-').last.toInt

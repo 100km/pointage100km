@@ -2,8 +2,10 @@ package replicate.messaging
 
 import akka.actor.Actor
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers._
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MediaTypes}
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MediaTypes, RequestEntity}
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.canape.Couch
 import play.api.libs.json.{JsObject, Json}
 import replicate.utils.Global
@@ -25,7 +27,7 @@ class Pushbullet(bearerToken: String) extends Actor with Messaging {
     delete(s"/pushes/$identifier", bearerToken).map(_ => true)
 }
 
-object Pushbullet {
+object Pushbullet extends PlayJsonSupport {
 
   import Global._
 
@@ -36,7 +38,7 @@ object Pushbullet {
   }
 
   private[messaging] def post(api: String, bearerToken: String, payload: JsObject): Future[JsObject] =
-    send(api, bearerToken, _.withMethod(HttpMethods.POST).withEntity(Couch.jsonToEntity(payload)))
+    Marshal(payload).to[RequestEntity].flatMap(e => send(api, bearerToken, _.withMethod(HttpMethods.POST).withEntity(e)))
 
   private[messaging] def delete(api: String, bearerToken: String): Future[JsObject] =
     send(api, bearerToken, _.withMethod(HttpMethods.DELETE))

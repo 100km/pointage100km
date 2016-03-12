@@ -21,8 +21,6 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.4.0")
 
-lazy val json = Seq(libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.0")
-
 lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.7" % "test",
                       fork in Test := true)
 
@@ -45,11 +43,11 @@ lazy val stats =
   Project("stats", file("stats"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val replicate =
-  Project("replicate", file("replicate"), settings = common ++ akka ++ json ++ scopt ++ specs2 ++
+  Project("replicate", file("replicate"), settings = common ++ akka ++ scopt ++ specs2 ++
     csv ++ Revolver.settings) dependsOn(canape, steenwerck, rxtelegram, octopush)
 
 lazy val loader =
-  Project("loader", file("loader"), settings = common ++ akka ++ json ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
+  Project("loader", file("loader"), settings = common ++ akka ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
 
 lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
@@ -57,6 +55,6 @@ lazy val canape = Project("canape", file("libs/canape"), settings = common)
 
 lazy val octopush = Project("octopush-akka", file("libs/octopush-akka"), settings = common)
 
-lazy val steenwerck = Project("steenwerck", file("libs/steenwerck"), settings = common ++ json ++ akka) dependsOn(canape)
+lazy val steenwerck = Project("steenwerck", file("libs/steenwerck"), settings = common ++ akka) dependsOn(canape)
 
 lazy val rxtelegram = Project("rxtelegram", file("libs/rxtelegram"), settings = common)
