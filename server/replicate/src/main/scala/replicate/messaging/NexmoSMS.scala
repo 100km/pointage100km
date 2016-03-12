@@ -1,7 +1,5 @@
 package replicate.messaging
 
-import java.util.UUID
-
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.Http
@@ -15,23 +13,20 @@ import net.rfc1149.canape.Couch
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Reads}
 import replicate.alerts.Alerts
-import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.messaging.{Message => Msg}
 import replicate.utils.{Glyphs, Networks}
 
 import scala.concurrent.Future
 
-class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Actor with ActorLogging {
+class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Actor with ActorLogging with BalanceTracker {
 
   import NexmoSMS._
 
   private[this] implicit val system = context.system
   private[this] implicit val executionContext = system.dispatcher
   private[this] implicit val materializer = ActorMaterializer.create(context)
-
-  private[this] var currentStatus: Status = Ok
-  private[this] var latestAlert: Option[UUID] = None
+  val messageTitle = "Nexmo"
 
   private[this] def sendSMS(recipient: String, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(SMSEndpoint,
@@ -48,7 +43,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
   override def preStart =
     log.debug("NexmoSMS service started")
     checkBalance().flatMap(Couch.checkResponse[JsObject]).map(js => (js \ "value").as[Double])
-      .transform(BalanceReport, BalanceError)
+      .transform(Balance, BalanceError)
       .pipeTo(self)
 
   def receive = {
@@ -80,57 +75,23 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
             Alerts.sendAlert(msg)
           }
         }
-        if (remaining != Double.MaxValue) {
-          actOnBalance(remaining)
-        }
+        if (remaining != Double.MaxValue)
+          trackBalance(remaining)
       }
 
     case Failure(DeliveryError(recipient, text, t)) =>
       log.error(t, s"Error when sending SMS to $recipient through Nexmo: $text")
 
-    case BalanceReport(remaining) =>
-      actOnBalance(remaining)
+    case Balance(balance) =>
+      trackBalance(balance)
 
-    case Failure(BalanceError(t)) =>
-      log.error(t, s"Unable to check Nexmo balance")
+    case Failure(BalanceError(failure)) =>
+      balanceError(failure)
   }
 
-  private[this] def actOnBalance(remaining: Double): Unit = {
-    log.debug(s"Your balance is ${"%.2f€".format(remaining)}")
-    val (newStatus, limit) = amountToStatus(remaining)
-    if (currentStatus != newStatus) {
-      latestAlert.foreach(Alerts.cancelAlert)
-      val subject = if (newStatus == Ok) "Nexmo balance ok" else s"Your Nexmo balance is below ${"%.2f€".format(limit)}"
-      val body = s"Your current balance is ${"%.2f€".format(remaining)}"
-      val msg = Msg(TextMessage, severities(newStatus), subject, body, icon = Some(Glyphs.telephoneReceiver))
-      latestAlert = Some(Alerts.sendAlert(msg))
-      currentStatus = newStatus
-    }
-  }
 }
 
 object NexmoSMS {
-
-  private sealed trait Status
-  private case object Ok extends Status
-  private case object Notice extends Status
-  private case object Warning extends Status
-  private case object Critical extends Status
-
-  private val severities: Map[Status, Severity] =
-    Map(Ok -> Severity.Info, Notice -> Severity.Info, Warning -> Severity.Warning, Critical -> Severity.Critical)
-
-  private def amountToStatus(amount: Double): (Status, Double) = {
-    import replicate.utils.Global.TextMessages.TopUp._
-    if (amount < criticalAmount)
-      (Critical, criticalAmount)
-    else if (amount < warningAmount)
-      (Warning, warningAmount)
-    else if (amount < noticeAmount)
-      (Notice, noticeAmount)
-    else
-      (Ok, 0)
-  }
 
   private case class Message(_status: String, errorText: Option[String], _remainingBalance: Option[String],
                              _messagePrice: Option[String], network: Option[String], to: Option[String]) {
@@ -156,9 +117,6 @@ object NexmoSMS {
 
   private case class DeliveryReport(recipient: String, text: String, response: Response)
   private case class DeliveryError(recipient: String, text: String, throwable: Throwable) extends Exception
-
-  private case class BalanceReport(balance: Double)
-  private case class BalanceError(throwable: Throwable) extends Exception
 
   private val SMSEndpoint = "https://rest.nexmo.com/sms/json"
   private val accountEndpoint = "https://rest.nexmo.com/account/"
