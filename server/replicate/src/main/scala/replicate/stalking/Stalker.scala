@@ -137,9 +137,9 @@ class Stalker(database: Database) extends Actor with ActorLogging {
             val date = Calendar.getInstance()
             date.setTimeInMillis(timestamp)
             date.setTimeZone(TimeZone.getTimeZone(infos.timezone))
-            val time = "%d:%02d".format(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE))
+            val time = "%dh%02d".format(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE))
             val message = s"""${name(bib)} : dernier pointage au site "${infos.checkpoints(siteId).name}" à $time """ +
-              s"(${raceInfo.name}, tour $lap, ${"%.2f".format(infos.distances(siteId, lap))} kms, position $rank)"
+              s"(${raceInfo.name}, tour $lap, ${"%.2f".format(infos.distances(siteId, lap))} kms)"
             for (recipient <- recipients)
               smsActorRef ! (recipient, message)
           } else

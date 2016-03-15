@@ -21,15 +21,15 @@ class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) ext
   def receive = {
     case (recipient: String, message: String) =>
       log.info(s"Sending SMS to $recipient: $message")
-      val sms = SMS(smsRecipients = List(recipient), smsText = message, smsType = PremiumFrance, smsSender = sender)
+      val sms = SMS(smsRecipients = List(recipient), smsText = message, smsType = PremiumFrance, smsSender = sender, transactional = true)
       pipe(octopush.sms(sms).transform(SendOk(sms, _), SendError(sms, _))).to(self)
 
     case SendOk(sms, result) =>
-      log.debug(s"SMS to ${sms.smsRecipients.head} sent succesfully: ${sms.smsText}")
+      log.debug(s"SMS to ${sms.smsRecipients.head} sent succesfully with ${result.numberOfSendings} SMS (cost: ${"%.2f€".format(result.cost)}: ${sms.smsText}")
       self ! Balance(result.balance)
 
     case Failure(SendError(sms, failure)) =>
-      log.error(failure, s"SMS to ${sms.smsRecipients.head} (${sms.smsText}}) failed")
+      log.error(failure, s"SMS to ${sms.smsRecipients.head} (${sms.smsText}) failed")
 
     case Balance(balance) =>
       trackBalance(balance)
