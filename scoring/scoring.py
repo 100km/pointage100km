@@ -50,13 +50,13 @@ class Contestant:
         elif age <= 39:
             return "senior"
         elif age <= 49:
-            return "veteran 1"
+            return "master 1"
         elif age <= 59:
-            return "veteran 2"
+            return "master 2"
         elif age <= 69:
-            return "veteran 3"
+            return "master 3"
         else:
-            return "veteran 4"
+            return "master 4"
 
     def race_time(self):
         if self.checkpoints:

@@ -335,13 +335,13 @@ function cat_from_year(year, is_woman) {
   else if (age <= 39)
     return 7; // senior
   else if (age <= 49)
-    return 8; // veteran 1
+    return 8; // master 1
   else if (age <= 59)
-    return 9; // veteran 2
+    return 9; // master 2
   else if (age <= 69)
-    return 10; // veteran 3
+    return 10; // master 3
   else
-    return 11; // veteran 4
+    return 11; // master 4
 }
 
 
