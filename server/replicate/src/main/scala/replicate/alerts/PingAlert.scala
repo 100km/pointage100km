@@ -78,7 +78,7 @@ object PingAlert {
           case (_, Inactive) =>
             alert(Severity.Critical, "Site info has disappeared from database", Glyphs.skullAndCrossbones)
           case (_, _) =>
-            log.error(s"Impossible checkpoint state transition from $oldState to $currentState")
+            log.error("Impossible checkpoint state transition from {} to {}", oldState, currentState)
         }
         currentState match {
           case Up => scheduleRecheck(noticeDelay, elapsed)
@@ -103,11 +103,11 @@ object PingAlert {
           checkTimestamp(ts)
 
       case Complete =>
-        log.error("CheckpointWatcher for site $siteId has terminated on complete")
+        log.error("CheckpointWatcher for site {} has terminated on complete", siteId)
         context.stop(self)
 
       case Failure(t) =>
-        log.error(t, "CheckpointWatcher for site $siteId has terminated on failure")
+        log.error(t, "CheckpointWatcher for site {} has terminated on failure", siteId)
         context.stop(self)
     }
 

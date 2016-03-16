@@ -80,7 +80,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
       }
 
     case Failure(DeliveryError(recipient, text, t)) =>
-      log.error(t, s"Error when sending SMS to $recipient through Nexmo: $text")
+      log.error(t, "Error when sending SMS to {} through Nexmo: {}", recipient, text)
 
     case Balance(balance) =>
       trackBalance(balance)

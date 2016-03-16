@@ -39,11 +39,11 @@ trait ConflictsSolver {
           docs => docs.tail.foldLeft(docs.head)(mergeInto)
         } map {
           result =>
-            log.info("solved conflicts for " + id + " (" + revs.size + " documents)")
+            log.info("solved conflicts for {} ({} documents)", id, revs.size)
             result
         }
         f onFailure {
-          case e: Exception => log.warning("unable to solve conflicts for " + id + " (" + revs.size + " documents): " + e)
+          case e: Exception => log.error(e, "unable to solve conflicts for {} ({} documents)", id, revs.size)
         }
         f
     }

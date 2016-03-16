@@ -22,7 +22,7 @@ object Telegram {
   private class TelegramBot extends ActorBot(Global.replicateConfig.getString("telegram.token")) with ActorLogging {
 
     override protected[this] def handleMessage(message: model.Message) = {
-      log.info(s"received unknown message from ${message.from.fullName} (${message.from.id})")
+      log.info("received unknown message from {} ({})", message.from.fullName, message.from.id)
     }
   }
 

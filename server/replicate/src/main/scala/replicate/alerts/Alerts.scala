@@ -42,7 +42,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
       case "telegram"       => Props(new Telegram(config.as[String]("id")))
       case s                => sys.error(s"Unknown officer type $s for officer $officerId")
     }
-    log.debug(s"starting actor for $officerId")
+    log.debug("starting actor for {}", officerId)
     context.actorOf(props, if (service == officerId) service else s"$service-$officerId")
   }
 
@@ -64,13 +64,13 @@ class Alerts(database: Database) extends Actor with ActorLogging {
   def receive = {
     case ('message, message: Message, uuid: UUID) =>
       // Deliver a new message through a dedicated actor
-      log.debug(s"sending message $message with UUID $uuid")
+      log.debug("sending message {} with UUID {}", message, uuid)
       deliveryInProgress += uuid -> context.actorOf(Props(new AlertSender(database, message, uuid, officers)))
 
     case ('cancel, uuid: UUID) =>
       // Cancel a message either through its delivery actor if it is still active, or using stored information
       // in the database otherwise.
-      log.debug(s"cancelling message with UUID $uuid")
+      log.debug("cancelling message with UUID {}", uuid)
       if (deliveryInProgress.contains(uuid))
         deliveryInProgress(uuid) ! 'cancel
       else
@@ -79,7 +79,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     case ('persisted, uuid: UUID) =>
       // When delivery and cancellation information has been persisted into the database, the delivery actor may
       // be stopped. Cancellation information will be pulled up from the database if needed later.
-      log.debug(s"message with UUID $uuid persisted, removing from cache and stopping actor")
+      log.debug("message with UUID {} persisted, removing from cache and stopping actor", uuid)
       deliveryInProgress -= uuid
       sender() ! PoisonPill
   }

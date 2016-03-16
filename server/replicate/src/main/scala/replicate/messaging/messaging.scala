@@ -43,7 +43,7 @@ package object messaging {
 
     def trackBalance(balance: Double) = {
       val (status, limit) = amountToStatus(balance)
-      log.debug(s"Balance for $messageTitle is ${amountToCurrency(balance)}")
+      log.debug("Balance for {} is {}", messageTitle, amountToCurrency(balance))
       if (status != currentStatus) {
         val current = amountToCurrency(balance)
         val message = (currentStatus, status) match {
@@ -58,7 +58,7 @@ package object messaging {
     }
 
     def balanceError(failure: Throwable) = {
-      log.error(failure, s"Unable to get balance for $messageTitle")
+      log.error(failure, "Unable to get balance for {}", messageTitle)
       latestAlert.foreach(Alerts.cancelAlert)
       latestAlert = Some(Alerts.sendAlert(Message(TextMessage, Severity.Critical, messageTitle, s"Unable to get balance", icon = icon)))
     }

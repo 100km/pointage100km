@@ -26,18 +26,18 @@ trait IncompleteCheckpoints {
             val inserter = db.insert(newDoc)
             inserter onSuccess {
               case _ =>
-                log.info(s"successfully fixed incomplete race information for $contestant")
+                log.info("successfully fixed incomplete race information for {}", contestant)
             }
             inserter recover {
               case e: Exception =>
-                log.warning(s"unable to fix incomplete race information for $contestant: $e")
+                log.error(e, "unable to fix incomplete race information for {}", contestant)
                 JsUndefined
             }
           } else
             FastFuture.successful(JsUndefined)
       } recover {
         case Couch.StatusError(404, _, _) =>
-          log.debug("no information available for contestant " + bib)
+          log.debug("no information available for contestant {}", bib)
           JsUndefined
       }
     }).map(_ => ())

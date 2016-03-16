@@ -23,7 +23,7 @@ object RemoveObsoleteDocuments {
       }
       val future = Future.traverse(toDelete)(db.delete)
       future.onSuccess {
-        case _ => if (toDelete.nonEmpty) log.info("successfully deleted obsolete transient documents (" + toDelete.size + ")")
+        case _ => if (toDelete.nonEmpty) log.info("successfully deleted obsolete transient documents ({})", toDelete.size)
       }
       future
     }

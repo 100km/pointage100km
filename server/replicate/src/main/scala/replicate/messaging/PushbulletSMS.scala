@@ -21,9 +21,9 @@ class PushbulletSMS(bearerToken: String, userIden: String, deviceIden: String) e
     case (recipient: String, message: String) =>
       sendSMS(recipient, message).onComplete {
         case Success(_) =>
-          log.info(s"sent message to $recipient: $message")
+          log.info("sent message to {}: {}", recipient, message)
         case Failure(t) =>
-          log.warning( s"""could not send message "$message" to $recipient: $t")""")
+          log.error(t, """could not send message {} to {}""", message, recipient)
       } (context.system.dispatcher)
   }
 

@@ -1,7 +1,9 @@
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.testkit.scaladsl.{TestSink, TestSource}
+import com.typesafe.config.ConfigFactory
 import org.specs2.mutable._
 import replicate.utils.StreamUtils._
 
@@ -11,8 +13,13 @@ import scala.concurrent.duration._
 class StreamUtilsSpec extends Specification {
 
   trait withActorSystem extends After {
-    implicit val system = ActorSystem()
-    implicit val materializer = ActorMaterializer.create(system)
+    val config = ConfigFactory.parseString(
+      """
+        | akka.stream.materializer.debug.fuzzing-mode = on
+        | akka.stream.secret-test-fuzzing-warning-disable = on
+      """.stripMargin)
+    implicit val system = ActorSystem("test-system", config)
+    implicit val materializer = ActorMaterializer()
 
     override def after() = system.terminate()
   }
@@ -53,9 +60,10 @@ class StreamUtilsSpec extends Specification {
     }
 
     "trigger exactly once per alert period" in new withActorSystem {
-      val result = Source.tick(0.second, 50.milliseconds, 1).via(idleAlert[Int](10.milliseconds, 100))
+      val result = Source.tick(0.second, 1.second, NotUsed).zip(Source.fromIterator(() => Iterator.from(0))).map(_._2)
+        .via(idleAlert[Int](200.milliseconds, 100))
         .take(5).runWith(Sink.fold(List[Int]())(_ :+ _))
-      Await.result(result, 2.seconds) must be equalTo List(1, 100, 1, 100, 1)
+      Await.result(result, 5.seconds) must be equalTo List(0, 100, 1, 100, 2)
     }
   }
 

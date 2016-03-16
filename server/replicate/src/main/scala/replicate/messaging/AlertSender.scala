@@ -65,7 +65,7 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
 
   override val receive: Receive = {
     case ('officers, targetOfficers: Seq[String] @unchecked) =>
-      log.debug(s"Got targets for $message: $targetOfficers")
+      log.debug("Got targets for {}: {}", message, targetOfficers)
       targets = targetOfficers.intersect(officers.keys.toSeq)
       // Do not send the message if it has been cancelled already
       if (!cancelled) {
@@ -77,10 +77,10 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
 
     case ('deliveryReceipt, response: Try[Option[String] @unchecked], officerId: String) =>
       // Receive delivery information for an officer
-      log.debug(s"confirmation for $officerId received ($response): $message")
+      log.debug("confirmation for {} received ({}): {}", officerId, response, message)
       response match {
         case Failure(t) =>
-          log.warning(s"cannot send to $officerId: $message")
+          log.warning("cannot send to {}: {}", officerId, message)
         case Success(Some(cancellationId)) =>
           if (cancelled)
             // Cancel delivery immediately as the message has been cancelled
@@ -104,7 +104,7 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
         "targets" -> JsArray(targets.map(JsString))) ++
         Json.toJson(message).as[JsObject] ++
         JsObject(cancelledTimestamp.map(ts => ("cancelledTS", JsNumber(ts))).toSeq)
-      log.debug(s"writing to database with id ${uuidToId(uuid)}: $doc")
+      log.debug("writing to database with id {}: {}", uuidToId(uuid), doc)
       pipe(database.insert(doc, uuidToId(uuid)).map(_ => 'persisted)) to self
 
     case 'persisted =>
@@ -117,7 +117,7 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
         cancelPersisted(database, officers, uuid)
 
     case 'cancel =>
-      log.debug(s"cancelling $message")
+      log.debug("cancelling {}", message)
       cancelledTimestamp = Some(System.currentTimeMillis())
       if (persisted)
         // The message is persisted already, start a database-based cancellation

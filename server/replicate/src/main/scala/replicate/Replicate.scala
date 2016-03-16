@@ -46,7 +46,7 @@ class Replicate(options: Options.Config) extends LoggingError {
           forceUpdate(db, name, localInfo).execute()
         } catch {
           case t: Exception =>
-            log.warning("cannot force-update, hoping it is right: " + t)
+            log.error(t, "cannot force-update, hoping it is right")
         }
     }
   }
@@ -82,7 +82,7 @@ class Replicate(options: Options.Config) extends LoggingError {
       Some(localDatabase("configuration").execute()(timeout).as[Configuration].dbname)
     } catch {
       case t: Exception =>
-        log.info("cannot retrieve previous database name: " + t)
+        log.info("cannot retrieve previous database name: {}", t.getMessage)
         None
     }
 
@@ -95,7 +95,7 @@ class Replicate(options: Options.Config) extends LoggingError {
         localDatabase.delete().execute()
       } catch {
         case t: Exception =>
-          log.error("deletion failed: " + t)
+          log.error(t, "deletion failed")
       }
     }
   }
@@ -107,7 +107,7 @@ class Replicate(options: Options.Config) extends LoggingError {
     case Couch.StatusError(412, _, _) =>
       log.info("database already exists")
     case t: Exception =>
-      log.error("cannot create database: " + t)
+      log.error(t, "cannot create database")
       exit(1)
   }
 
@@ -132,12 +132,12 @@ class Replicate(options: Options.Config) extends LoggingError {
         loadInfos.execute()
       } catch {
         case t: Exception =>
-          log.error("initial replication failed: " + t)
+          log.error(t, "initial replication failed")
       }
     }
   } catch {
     case t: Exception =>
-      log.error("cannot create local information: " + t)
+      log.error(t, "cannot create local information")
       exit(1)
   }
 

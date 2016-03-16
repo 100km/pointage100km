@@ -42,7 +42,7 @@ class OnChanges(options: Options.Config, local: Database)
     val f = futures()
     f.onFailure {
       case e: Exception =>
-        log.warning("error when running onChanges task: " + e)
+        log.error(e, "error when running onChanges task")
     }
     f.onComplete(_ => self ! 'reset)
   }

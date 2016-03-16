@@ -70,7 +70,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
         Some(context.actorOf(Props(new OctopushSMS(userLogin, apiKey, sender))))
 
       case Some(provider) =>
-        log.error(s"Unknown SMS provider $provider configured")
+        log.error("Unknown SMS provider {} configured", provider)
         None
 
       case None =>
@@ -143,7 +143,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
             for (recipient <- recipients)
               smsActorRef ! (recipient, message)
           } else
-            log.warning(s"Bib $bib pointed at lap $lap while race ${raceInfo.name} only has ${raceInfo.laps}")
+            log.warning("Bib {} pointed at lap {} while race {} only has {}", bib, lap, raceInfo.name, raceInfo.laps)
       }
     }
   }
