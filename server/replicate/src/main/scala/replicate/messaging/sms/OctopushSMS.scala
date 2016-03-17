@@ -1,4 +1,4 @@
-package replicate.messaging
+package replicate.messaging.sms
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging}
@@ -7,6 +7,7 @@ import net.rfc1149.octopush.Octopush
 import net.rfc1149.octopush.Octopush.{PremiumFrance, SMS, SMSResult}
 import replicate.alerts.Alerts
 import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.messaging._
 import replicate.utils.Glyphs
 
 class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) extends Actor with ActorLogging with BalanceTracker {

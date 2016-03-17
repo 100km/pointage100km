@@ -3,28 +3,25 @@ package replicate.stalking
 import java.util.{Calendar, TimeZone}
 
 import akka.NotUsed
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Terminated}
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
 import akka.stream.{ActorMaterializer, ThrottleMode}
-import com.typesafe.config.Config
-import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json.{JsObject, JsValue}
-import replicate.alerts.RankingAlert
-import replicate.messaging.{NexmoSMS, OctopushSMS, PushbulletSMS}
-import replicate.utils.Global
+import replicate.alerts.{Alerts, RankingAlert}
+import replicate.messaging.Message
+import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.utils.{Global, Glyphs}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class Stalker(database: Database) extends Actor with ActorLogging {
+class Stalker(database: Database, textService: ActorRef) extends Actor with ActorLogging {
 
   import Global.dispatcher
 
   private[this] implicit val fm = ActorMaterializer()
-
-  private[this] var smsActorRef: ActorRef = _
 
   /**
    * Stalker phone numbers by bib.
@@ -48,47 +45,9 @@ class Stalker(database: Database) extends Actor with ActorLogging {
 
   private[this] var stalkStage: Long = 0
 
-  private[this] def startTextService(): Option[ActorRef] = {
-    val config = Global.replicateConfig.as[Config]("text-messages")
-    config.as[Option[String]]("provider") match {
-      case Some("pushbullet-sms") =>
-        val bearerToken = config.as[String]("pushbullet-sms.bearer-token")
-        val userIden = config.as[String]("pushbullet-sms.user-iden")
-        val deviceIden = config.as[String]("pushbullet-sms.device-iden")
-        Some(context.actorOf(Props(new PushbulletSMS(bearerToken, userIden, deviceIden)), "pushbullet-sms"))
-
-      case Some("nexmo") =>
-        val apiKey = config.as[String]("nexmo.api-key")
-        val apiSecret = config.as[String]("nexmo.api-secret")
-        val senderId = config.as[String]("nexmo.sender-id")
-        Some(context.actorOf(Props(new NexmoSMS(senderId, apiKey, apiSecret)), "nexmo"))
-
-      case Some("octopush") =>
-        val userLogin = config.as[String]("octopush.user-login")
-        val apiKey = config.as[String]("octopush.api-key")
-        val sender = config.as[Option[String]]("octopush.sender-id")
-        Some(context.actorOf(Props(new OctopushSMS(userLogin, apiKey, sender)), "octopush"))
-
-      case Some(provider) =>
-        log.error("Unknown SMS provider {} configured", provider)
-        None
-
-      case None =>
-        log.info("No SMS service configured")
-        None
-    }
-  }
-
   override def preStart(): Unit = {
-    startTextService() match {
-      case Some(actorRef: ActorRef) =>
-        log.debug("SMS service started")
-        smsActorRef = actorRef
-        launchInitialStalkersChanges()
-      case None =>
-        log.warning("no SMS service")
-        context.stop(self)
-    }
+    context.watch(textService)
+    launchInitialStalkersChanges()
   }
 
   private[this] def updateStalkees(doc: JsObject): Boolean = {
@@ -141,7 +100,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
             val message = s"""${name(bib)} : dernier pointage au site "${infos.checkpoints(siteId).name}" à $time """ +
               s"(${raceInfo.name}, tour $lap, ${"%.2f".format(infos.distances(siteId, lap))} kms)"
             for (recipient <- recipients)
-              smsActorRef ! (recipient, message)
+              textService ! (recipient, message)
           } else
             log.warning("Bib {} pointed at lap {} while race {} only has {}", bib, lap, raceInfo.name, raceInfo.laps)
       }
@@ -203,6 +162,12 @@ class Stalker(database: Database) extends Actor with ActorLogging {
         stalkStage += 1
         launchCheckpointChanges((json \ "seq").as[Long])
       }
+
+    case Terminated(`textService`) =>
+      Alerts.sendAlert(Message(TextMessage, Severity.Critical, "No stalker service",
+        "Text service actor has terminated, stalker service will not run", icon = Some(Glyphs.telephoneReceiver)))
+      log.error("No text service is available, stopping Stalker actor")
+      context.stop(self)
 
   }
 

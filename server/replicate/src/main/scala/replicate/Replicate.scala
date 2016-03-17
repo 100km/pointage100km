@@ -6,6 +6,7 @@ import net.rfc1149.canape._
 import play.api.libs.json.Json
 import replicate.alerts.Alerts
 import replicate.maintenance.RemoveObsoleteDocuments
+import replicate.messaging.sms.TextService
 import replicate.stalking.Stalker
 import replicate.utils._
 import steenwerck._
@@ -62,7 +63,7 @@ class Replicate(options: Options.Config) extends LoggingError {
   private lazy val remoteDbName: String = {
     var dbName: Option[String] = None
     if (options.replicate) {
-      while (!dbName.isDefined) {
+      while (dbName.isEmpty) {
         try {
           Global.configuration = Some(cfgDatabase("configuration").execute()(timeout).as[Configuration])
           dbName = Global.configuration.map(_.dbname)
@@ -89,7 +90,7 @@ class Replicate(options: Options.Config) extends LoggingError {
   private lazy val hubDatabase = hubCouch.db(remoteDbName)
 
   if (options.replicate) {
-    if (previousDbName != Some(remoteDbName)) {
+    if (!previousDbName.contains(remoteDbName)) {
       log.info("deleting previous database")
       try {
         localDatabase.delete().execute()
@@ -171,8 +172,10 @@ class Replicate(options: Options.Config) extends LoggingError {
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
     if (options.alerts)
       system.actorOf(Props(new Alerts(localDatabase)), "alerts")
-    if (options.stalking)
-      system.actorOf(Props(new Stalker(localDatabase)), "stalker")
+    if (options.stalking) {
+      val textService = system.actorOf(Props(new TextService), "textService")
+      system.actorOf(Props(new Stalker(localDatabase, textService)), "stalker")
+    }
   }
 
   private def exit(status: Int) {

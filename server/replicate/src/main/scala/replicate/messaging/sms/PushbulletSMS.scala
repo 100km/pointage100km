@@ -1,7 +1,8 @@
-package replicate.messaging
+package replicate.messaging.sms
 
 import akka.actor.{Actor, ActorLogging}
 import play.api.libs.json.{JsObject, Json}
+import replicate.messaging.Pushbullet
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}

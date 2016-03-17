@@ -1,4 +1,4 @@
-package replicate.messaging
+package replicate.messaging.sms
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging}
@@ -14,7 +14,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Reads}
 import replicate.alerts.Alerts
 import replicate.messaging.Message.{Severity, TextMessage}
-import replicate.messaging.{Message => Msg}
+import replicate.messaging.{Balance, BalanceError, BalanceTracker, Message => Msg}
 import replicate.utils.{Glyphs, Networks}
 
 import scala.concurrent.Future
