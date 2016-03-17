@@ -67,7 +67,7 @@ class Stalker(database: Database) extends Actor with ActorLogging {
         val userLogin = config.as[String]("octopush.user-login")
         val apiKey = config.as[String]("octopush.api-key")
         val sender = config.as[Option[String]]("octopush.sender-id")
-        Some(context.actorOf(Props(new OctopushSMS(userLogin, apiKey, sender))))
+        Some(context.actorOf(Props(new OctopushSMS(userLogin, apiKey, sender)), "octopush"))
 
       case Some(provider) =>
         log.error("Unknown SMS provider {} configured", provider)
