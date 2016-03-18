@@ -30,7 +30,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
   private[this] implicit val materializer = ActorMaterializer.create(context)
   val messageTitle = "Nexmo"
 
-  private[this] val apiPool = Http().newHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
+  private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
 
   private[this] def sendSMS(recipient: String, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(SMSEndpoint,

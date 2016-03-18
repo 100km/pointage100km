@@ -33,7 +33,7 @@ object Pushbullet extends PlayJsonSupport {
 
   import Global._
 
-  private[this] val apiPool = Http().newHostConnectionPoolHttps[NotUsed]("api.pushbullet.com")
+  private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("api.pushbullet.com")
 
   private[this] def send(api: String, bearerToken: String, request: HttpRequest => HttpRequest): Future[JsObject] = {
     val partialRequest = HttpRequest().withUri(s"/v2$api")

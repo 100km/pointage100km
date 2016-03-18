@@ -15,7 +15,7 @@ class FreeMobileSMS(user: String, password: String) extends Actor with Messaging
 
   import Global._
 
-  private[this] val apiPool = Http().newHostConnectionPoolHttps[NotUsed]("smsapi.free-mobile.fr")
+  private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("smsapi.free-mobile.fr")
 
   override def sendMessage(message: Message): Future[Option[String]] = {
     val request = HttpRequest().withUri(Uri("/sendmsg").withQuery(Query("user" -> user, "pass" -> password, "msg" -> message.toString)))
