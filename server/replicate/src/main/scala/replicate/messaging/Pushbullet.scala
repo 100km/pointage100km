@@ -1,10 +1,12 @@
 package replicate.messaging
 
+import akka.NotUsed
 import akka.actor.Actor
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MediaTypes, RequestEntity}
+import akka.stream.scaladsl.{Sink, Source}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.canape.Couch
 import play.api.libs.json.{JsObject, Json}
@@ -31,10 +33,12 @@ object Pushbullet extends PlayJsonSupport {
 
   import Global._
 
+  private[this] val apiPool = Http().newHostConnectionPoolHttps[NotUsed]("api.pushbullet.com")
+
   private[this] def send(api: String, bearerToken: String, request: HttpRequest => HttpRequest): Future[JsObject] = {
-    val partialRequest = HttpRequest().withUri(s"https://api.pushbullet.com/v2$api")
+    val partialRequest = HttpRequest().withUri(s"/v2$api")
       .withHeaders(List(`Accept`(MediaTypes.`application/json`), `Authorization`(OAuth2BearerToken(bearerToken))))
-    Http().singleRequest(request(partialRequest)).flatMap(Couch.checkResponse[JsObject])
+    Source.single((request(partialRequest), NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get).flatMap(Couch.checkResponse[JsObject])
   }
 
   private[messaging] def post(api: String, bearerToken: String, payload: JsObject): Future[JsObject] =

@@ -1,5 +1,6 @@
 package replicate.messaging.sms
 
+import akka.NotUsed
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.Http
@@ -9,6 +10,7 @@ import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.{FormData, HttpResponse, MediaTypes, Uri}
 import akka.pattern.pipe
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Sink, Source}
 import net.rfc1149.canape.Couch
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Reads}
@@ -28,16 +30,18 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
   private[this] implicit val materializer = ActorMaterializer.create(context)
   val messageTitle = "Nexmo"
 
+  private[this] val apiPool = Http().newHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
+
   private[this] def sendSMS(recipient: String, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(SMSEndpoint,
       FormData("from" -> senderId, "to" -> recipient.stripPrefix("+"),
                "text" -> message, "api_key" -> apiKey, "api_secret" -> apiSecret)).addHeader(Accept(MediaTypes.`application/json`))
-    Http().singleRequest(request)
+    Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
 
   private[this] def checkBalance(): Future[HttpResponse] = {
     val uri = Uri(accountEndpoint + "get-balance").withQuery(Query("api_key" -> apiKey, "api_secret" -> apiSecret))
-    Http().singleRequest(RequestBuilding.Get(uri))
+    Source.single((RequestBuilding.Get(uri), NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
 
   override def preStart =
@@ -118,7 +122,7 @@ object NexmoSMS {
   private case class DeliveryReport(recipient: String, text: String, response: Response)
   private case class DeliveryError(recipient: String, text: String, throwable: Throwable) extends Exception
 
-  private val SMSEndpoint = "https://rest.nexmo.com/sms/json"
-  private val accountEndpoint = "https://rest.nexmo.com/account/"
+  private val SMSEndpoint = "/sms/json"
+  private val accountEndpoint = "/account/"
 
 }
