@@ -357,7 +357,7 @@ function get_ping(app, ping, callback) {
     success: function(view) {
       callback(view.rows.length > 0
         ? view.rows[0].value.max
-        : new Date(0));
+        : 0);
     },
     error: function() { callback(); }
   });
