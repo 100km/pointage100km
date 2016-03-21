@@ -325,7 +325,6 @@ function get_site_bib_times(check, times, i, bib) {
     }
   });
 
-  var current_bib = 0;
   var times = [];
   var deleted_times = [];
   var artificial_times = [];
@@ -333,6 +332,11 @@ function get_site_bib_times(check, times, i, bib) {
   var res = { pings: pings, pbs: [] };
 
   var row = getRow();
+  var current_bib = -1;
+
+  if (row) {
+    current_bib = row.key[0];
+  }
   while (row) {
     var bib = row.key[0];
 
@@ -357,8 +361,10 @@ function get_site_bib_times(check, times, i, bib) {
     row = getRow();
   }
 
-  // Do the check for the last bib.
-  do_check_times(res, current_bib, times, deleted_times, artificial_times, pings);
+  if (current_bib != -1) {
+    // Do the check for the last bib.
+    do_check_times(res, current_bib, times, deleted_times, artificial_times, pings);
+  }
 
   // Return the data.
   return JSON.stringify(res);
