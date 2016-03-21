@@ -329,7 +329,7 @@ function get_site_bib_times(check, times, i, bib) {
   var times = [];
   var deleted_times = [];
   var artificial_times = [];
-  var pings = req.query.pings;
+  var pings = JSON.parse(req.query.pings);
   var res = { pings: pings, pbs: [] };
 
   var row = getRow();
