@@ -3,6 +3,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.util.FastFuture
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Source
 import net.rfc1149.canape._
 import org.apache.commons.dbcp2.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
@@ -11,7 +13,7 @@ import play.api.libs.json._
 import scopt.OptionParser
 
 import scala.collection.JavaConversions._
-import scala.concurrent.Future
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
 
@@ -23,8 +25,8 @@ object Loader extends App {
   implicit val timeout: Duration = 1 minute
 
   private case class Options(year: Int = 0, host: String = "localhost",
-			     user: Option[String] = None, password: Option[String] = None,
-			     database: String = "100km", repeat: Option[Long] = None)
+                             user: Option[String] = None, password: Option[String] = None,
+                             database: String = "100km", repeat: Option[Long] = None)
 
   private val parser = new OptionParser[Options]("loader") {
     help("help") text "show this help"
@@ -47,6 +49,7 @@ object Loader extends App {
 
   implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
+  implicit val materializer = ActorMaterializer()
 
   val db = steenwerck.localCouch.db(steenwerck.localDbName)
 
@@ -103,55 +106,69 @@ object Loader extends App {
       val updated = new AtomicInteger(0)
       val q = run.query("SELECT * FROM registrations WHERE year = ?",
         new MapListHandler,
-        new java.lang.Integer(options.year))
+        new java.lang.Integer(options.year)).toList
       println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
       // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
       // be overloaded and that we will encounter no timeouts.
-      for (r <- q.grouped(20)) {
-        val future = Future.traverse(r) { contestant =>
-          val bib = contestant("bib").asInstanceOf[java.lang.Long]
-          val id = "contestant-" + bib
-          val firstName = capitalize(contestant("first_name").asInstanceOf[String])
-          val name = contestant("name").asInstanceOf[String]
-          val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
-          val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
-            Json.obj("_id" -> id,
-              "type" -> "contestant",
-              "name" -> name,
-              "first_name" -> firstName) ++
-            (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
-          val desc = s"bib $bib ($firstName $name)"
-          existing.get(bib) match {
-            case Some(original) =>
-              if (containsAll(doc, original)) {
-                upToDate.incrementAndGet()
-                FastFuture.successful(Json.obj())
-              } else {
-                db.insert(doc ++ Json.obj("_rev" -> (original \ "_rev").get, "stalkers" -> (original \ "stalkers").get)) andThen {
-                  case _ =>
-                    println(s"Updated existing $desc")
-                    updated.incrementAndGet()
-                } recoverWith {
-                  case t: Throwable =>
-                    println(s"Could not update existing $desc: $t")
-                    FastFuture.successful(Json.obj())
-                }
-              }
-            case None =>
-              db.insert(doc ++ Json.obj("stalkers" -> Json.arr())) andThen { case _ =>
-                println(s"Inserted $desc")
-                inserted.incrementAndGet()
-              } recoverWith {
+      val dbops = Source(q).mapAsyncUnordered(20) { contestant =>
+        val bib = contestant("bib").asInstanceOf[java.lang.Long]
+        val id = "contestant-" + bib
+        val firstName = capitalize(contestant("first_name").asInstanceOf[String])
+        val name = contestant("name").asInstanceOf[String]
+        val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
+        val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
+          Json.obj("_id" -> id,
+            "type" -> "contestant",
+            "name" -> name,
+            "first_name" -> firstName) ++
+          (if (teamId != null) Json.obj("team_name" -> teams(teamId)) else Json.obj())
+        val desc = s"bib $bib ($firstName $name)"
+        existing.get(bib) match {
+          case Some(original) =>
+            if (containsAll(doc, original)) {
+              upToDate.incrementAndGet()
+              FastFuture.successful(bib)
+            } else {
+              db.insert(doc ++ Json.obj("_rev" -> (original \ "_rev").get, "stalkers" -> (original \ "stalkers").get)) andThen {
+                case _ =>
+                  println(s"Updated existing $desc")
+                  updated.incrementAndGet()
+              } recover {
                 case t: Throwable =>
-                  println(s"Could not insert $desc: $t")
-                  FastFuture.successful(Json.obj())
-              }
-          }
+                  println(s"Could not update existing $desc: $t")
+                  system.log.error(t, s"Could not update existing $desc")
+                  Json.obj()
+              } map { _ => bib }
+            }
+          case None =>
+            db.insert(doc ++ Json.obj("stalkers" -> Json.arr())) andThen { case _ =>
+              println(s"Inserted $desc")
+              inserted.incrementAndGet()
+            } recover {
+              case t: Throwable =>
+                println(s"Could not insert $desc: $t")
+                Json.obj()
+            } map { _ => bib }
         }
-        future.execute()
-      }
+      }.runFold(Set[Long]()) { case (set, bib) => set + bib }
+      val bibs = Await.result(dbops, 1.minute)
+      val removeops = Source(existing.keySet.diff(bibs)).mapAsyncUnordered(20) { bib =>
+        val contestant = existing(bib)
+        val firstName = (contestant \ "first_name").asOpt[String].getOrElse("John")
+        val lastName = (contestant \ "name").asOpt[String].getOrElse("Doe")
+        db.delete(contestant) map { case _ =>
+          println(s"Remove contestant $bib ($firstName $lastName)")
+            1
+        } recover {
+          case t: Throwable =>
+            println(s"Could not remove contestant $bib ($firstName $lastName)")
+            0
+        }
+      }.runFold(0)(_ + _)
+      val removed = Await.result(removeops, 1.minute)
       println(s"Inserted documents: ${inserted.get()}")
       println(s"Updated documents: ${updated.get()}")
+      println(s"Removed documents: $removed")
       println(s"Documents already up-to-date: ${upToDate.get()}")
 
       options.repeat.foreach { minutes =>
