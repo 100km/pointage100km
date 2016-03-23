@@ -5,6 +5,8 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
+import com.typesafe.config.{Config, ConfigFactory}
+import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape._
 import org.apache.commons.dbcp2.BasicDataSource
 import org.apache.commons.dbutils.QueryRunner
@@ -24,16 +26,17 @@ object Loader extends App {
   import implicits._
   implicit val timeout: Duration = 1 minute
 
-  private case class Options(year: Int = 0, host: String = "localhost",
+  private case class Options(year: Int = 0, host: Option[String] = None, port: Option[Int] = None,
                              user: Option[String] = None, password: Option[String] = None,
-                             database: String = "100km", repeat: Option[Long] = None)
+                             database: Option[String] = None, repeat: Option[Long] = None)
 
   private val parser = new OptionParser[Options]("loader") {
     help("help") text "show this help"
-    opt[String]('h', "host") text "Mysql host (default: localhost)" action { (x, c) => c.copy(host = x) }
+    opt[String]('h', "host") text "Mysql host" action { (x, c) => c.copy(host = Some(x)) }
+    opt[Int]('P', "port") text "Mysql port" action { (x, c) => c.copy(port = Some(x)) }
     opt[String]('u', "user") text "Mysql user" action { (x, c) => c.copy(user = Some(x)) }
     opt[String]('p', "password") text "Mysql password" action { (x, c) => c.copy(password = Some(x)) }
-    opt[String]('d', "database") text "Mysql database (default: 100km" action { (x, c) => c.copy(database = x) }
+    opt[String]('d', "database") text "Mysql database" action { (x, c) => c.copy(database = Some(x)) }
     opt[Long]('r', "repeat") text "Minutes between relaunching (default: do not relaunch)" action { (x, c) => c.copy(repeat = Some(x)) }
     arg[Int]("<year>") text "Year to import" action { (x, c) => c.copy(year = x) }
     override val showUsageOnError = true
@@ -50,7 +53,7 @@ object Loader extends App {
   implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
   implicit val materializer = ActorMaterializer()
-
+  val config = steenwerck.config.withFallback(ConfigFactory.load()).as[Config]("loader")
   val db = steenwerck.localCouch.db(steenwerck.localDbName)
 
   private def capitalize(name: String) = {
@@ -83,9 +86,12 @@ object Loader extends App {
 
     val source = new BasicDataSource
     source.setDriverClassName("com.mysql.jdbc.Driver")
-    source.setUrl("jdbc:mysql://" + options.host + "/" + options.database)
-    options.user.foreach(source.setUsername)
-    options.password.foreach(source.setPassword)
+    val host = options.host.orElse(config.as[Option[String]]("mysql-host")).getOrElse("localhost")
+    val port = options.port.orElse(config.as[Option[Int]]("mysql-port")).getOrElse(3306)
+    val database = options.database.getOrElse(config.getString("mysql-database"))
+    source.setUrl(s"jdbc:mysql://$host:$port/$database")
+    options.user.orElse(config.as[Option[String]]("mysql-user")).foreach(source.setUsername)
+    options.password.orElse(config.as[Option[String]]("mysql-password")).foreach(source.setPassword)
 
     do {
       val existing: Map[Long, JsObject] = db.view[Long, JsObject]("common", "all_contestants").execute().toMap
