@@ -12,7 +12,7 @@ object RemoveObsoleteDocuments {
 
   private[this] val obsoleteMillisecons = Global.obsoleteAge.toMillis
 
-  def removeObsoleteDocuments(db: Database, log: LoggingAdapter)(implicit ec: ExecutionContext): Future[Seq[JsValue]] = {
+  def removeObsoleteDocuments(db: Database, log: LoggingAdapter)(implicit ec: ExecutionContext): Future[Seq[String]] = {
     val deadline = System.currentTimeMillis - obsoleteMillisecons
     db.view[JsValue, JsObject]("admin", "transient-docs") flatMap { docs =>
       val toDelete = docs map (_._2) filter { js =>

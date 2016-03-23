@@ -30,13 +30,13 @@ class ReplicateSpec extends Specification with After {
 
     def get(doc: JsObject): Future[JsObject] = db((doc \ "_id").as[String])
 
-    def delete(id: String): Future[Seq[JsValue]] = {
+    def delete(id: String): Future[Seq[String]] = {
       helpers.getRevs(db, id).map(_.filterNot(_.keys.contains("_deleted"))).flatMap(ds => Future.sequence(ds.map(db.delete)))
     }
 
-    def delete(doc: JsObject): Future[Seq[JsValue]] = delete((doc \ "_id").as[String])
+    def delete(doc: JsObject): Future[Seq[String]] = delete((doc \ "_id").as[String])
 
-    def bulkDelete(ids: Seq[String]): Future[Seq[JsValue]] = Future.sequence(ids.map(delete)).map(_.flatten)
+    def bulkDelete(ids: Seq[String]): Future[Seq[String]] = Future.sequence(ids.map(delete)).map(_.flatten)
 
     def delInsert(doc: JsObject): Future[JsValue] = {
       val id = (doc \ "_id").as[String]
