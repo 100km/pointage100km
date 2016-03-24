@@ -1,13 +1,17 @@
 package replicate
 
+import akka.NotUsed
+import akka.http.scaladsl.util.FastFuture
 import org.specs2.mutable._
 import org.specs2.specification.Scope
+import play.api.libs.json.Json
 import replicate.state.RankingState
 import replicate.state.RankingState.RaceRanking
 import replicate.utils.Global
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.io.Source
 
 class RankingStateSpec extends Specification {
 
@@ -78,4 +82,36 @@ class RankingStateSpec extends Specification {
     }
   }
 
+  "a full simulation" should {
+
+    import Global.dispatcher
+
+    "load a full race information in a reasonable time" in {
+      val loader = Future.sequence({
+        for (line <- Source.fromInputStream(classOf[ClassLoader].getResourceAsStream("/dummy-timings.txt"), "utf-8").getLines.toList) yield {
+          val json = Json.parse(line)
+          val contestantId = (json \ "bib").as[Int]
+          val raceId = (json \ "race_id").as[Int]
+          val siteId = (json \ "site_id").as[Int]
+          val timestamps = (json \ "times").as[List[Long]].take(if (raceId == 3) 1 else 3)
+          if (raceId > 0)
+            RankingState.updateTimestamps(contestantId, raceId, siteId, timestamps).map(_ => NotUsed)
+          else
+            FastFuture.successful(NotUsed)
+        }
+      })
+      Await.ready(loader, 5.seconds)
+      success
+    }
+
+    "get the right ranking information" in {
+      // 456 did not run the loops in the right order, so they got artificially ahead
+      val ranks = Await.result(RankingState.ranks(), 1.second)
+      ranks(1).take(11) should be equalTo List(456, 688, 24, 201, 719, 522, 242, 241, 110, 314, 217)
+      ranks(2).take(10) should be equalTo List(393, 491, 56, 490, 71, 91, 287, 670, 933, 560)
+      ranks(3).take(10) should be equalTo List(879, 867, 738, 498, 280, 735, 788, 790, 701, 759)
+    }
+  }
+
 }
+

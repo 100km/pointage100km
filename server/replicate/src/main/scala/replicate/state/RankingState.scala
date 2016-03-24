@@ -113,4 +113,7 @@ object RankingState {
   def pointsAndRank(contestantId: Int, raceId: Int): Future[Option[(Seq[Point], Int)]] =
     rankingState.future.map(_.get(raceId).flatMap(_.pointsAndRank(contestantId)))
 
+  def ranks(): Future[Map[Int, Seq[Int]]] =
+    rankingState.future.map(_.mapValues(_.contestants.map(_.contestantId)))
+
 }
