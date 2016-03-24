@@ -34,6 +34,7 @@ object SortUtils {
   }
 
   implicit class WithInsert[T, Repr](data: Repr) {
+
     def insert(element: T)(implicit ord: Ordering[T], bf: CanBuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeqLike[T, Repr]): Repr =
       insertInto[T, Repr](element, data)
 
