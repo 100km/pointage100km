@@ -6,7 +6,7 @@ import org.specs2.mutable._
 import org.specs2.specification.Scope
 import play.api.libs.json.Json
 import replicate.state.RankingState
-import replicate.state.RankingState.RaceRanking
+import replicate.state.RankingState.{Point, RaceRanking}
 import replicate.utils.Global
 
 import scala.concurrent.duration._
@@ -79,6 +79,33 @@ class RankingStateSpec extends Specification {
 
     "acknowledge the absence of information about a contestant" in new CleanRanking {
       Await.result(RankingState.pointsAndRank(42, 1), 1.second) should beNone
+    }
+  }
+
+  "ranks()" should {
+
+    "return the ranks in all races" in new CleanRanking {
+      Await.ready(RankingState.updateTimestamps(44, 1, 0, List(1050, 1350)), 1.second)
+      Await.ready(RankingState.updateTimestamps(44, 1, 1, List(1250, 1450)), 1.second)
+      Await.ready(RankingState.updateTimestamps(42, 1, 0, List(1000, 1300)), 1.second)
+      Await.ready(RankingState.updateTimestamps(42, 1, 1, List(1200, 1400)), 1.second)
+      Await.ready(RankingState.updateTimestamps(55, 2, 1, List(1400, 1600)), 1.second)
+      Await.ready(RankingState.updateTimestamps(55, 2, 0, List(1300, 1500)), 1.second)
+      val result = Await.result(RankingState.ranks(), 1.second)
+      result must be equalTo Map(1 -> Seq(42, 44), 2 -> Seq(55))
+    }
+  }
+
+  "raceData()" should {
+
+    "return the full checkpoints" in new CleanRanking {
+      Await.ready(RankingState.updateTimestamps(42, 1, 0, List(1000, 1300)), 1.second)
+      Await.ready(RankingState.updateTimestamps(42, 1, 1, List(1200, 1400)), 1.second)
+      Await.ready(RankingState.updateTimestamps(55, 2, 1, List(1400, 1600)), 1.second)
+      Await.ready(RankingState.updateTimestamps(55, 2, 0, List(1300, 1500)), 1.second)
+      val result = Await.result(RankingState.raceData(), 1.second)
+      result must be equalTo Map((42, 1) -> Seq(Point(0, 1000, 1), Point(1, 1200, 1), Point(0, 1300, 2), Point(1, 1400, 2)),
+        (55, 2) -> Seq(Point(0, 1300, 1), Point(1, 1400, 1), Point(0, 1500, 2), Point(1, 1600, 2)))
     }
   }
 

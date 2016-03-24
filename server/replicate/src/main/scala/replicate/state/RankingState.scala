@@ -113,7 +113,22 @@ object RankingState {
   def pointsAndRank(contestantId: Int, raceId: Int): Future[Option[(Seq[Point], Int)]] =
     rankingState.future.map(_.get(raceId).flatMap(_.pointsAndRank(contestantId)))
 
+  /**
+    * Ordered list of contestants for every race knwon so far.
+    *
+    * @return a dictionary corresponding to the contestants in every race
+    */
   def ranks(): Future[Map[Int, Seq[Int]]] =
     rankingState.future.map(_.mapValues(_.contestants.map(_.contestantId)))
+
+  /**
+    * List of all the points for all the contestants in all the races.
+    *
+    * @return a map whose keys are a pair of contestant bib, race id, and values are the ordered list of points
+    */
+  def raceData(): Future[Map[(Int, Int), Seq[Point]]] =
+    rankingState.future.map(_.flatMap { case (raceId, raceRanking) =>
+      raceRanking.contestants.map(contestantPoints => (contestantPoints.contestantId, raceId) -> contestantPoints.points)
+    }.toMap)
 
 }
