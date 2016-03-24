@@ -24,7 +24,7 @@ object Options {
 
     def onChanges = fixConflicts || fixIncomplete || ping
 
-    def mode = modes.head
+    def mode = modes.headOption.getOrElse("tests")
     def isSlave = mode == "slave"
     def initOnly = mode == "init"
 
