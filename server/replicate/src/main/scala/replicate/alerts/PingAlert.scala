@@ -12,6 +12,7 @@ import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
 import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
+import replicate.state.PingState
 import replicate.utils.Global.CheckpointAlerts._
 import replicate.utils._
 
@@ -86,6 +87,10 @@ object PingAlert {
           case Warning => scheduleRecheck(criticalDelay, elapsed)
           case _ =>
         }
+        if (currentState == Inactive)
+          PingState.removePing(siteId)
+        else
+          PingState.setLastPing(siteId, ts)
 
       }
     }
