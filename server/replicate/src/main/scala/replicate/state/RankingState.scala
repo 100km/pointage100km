@@ -1,6 +1,8 @@
 package replicate.state
 
+import akka.NotUsed
 import akka.agent.Agent
+import replicate.utils.RaceUtils
 
 import scala.concurrent.Future
 import replicate.utils.SortUtils._
@@ -14,14 +16,7 @@ object RankingState {
 
     def updatePoints(siteId: Int, timestamps: Seq[Long]): ContestantPoints = {
       val withoutSite = points.filterNot(_.siteId == siteId).map(p => (p.siteId, p.timestamp))
-      var currentLap = 0
-      var latestSiteId = Int.MaxValue
-      val newPoints = for ((siteId, timestamp) <- (withoutSite ++ timestamps.map((siteId, _))).sortBy(_._2)) yield {
-        if (siteId <= latestSiteId)
-          currentLap += 1
-        latestSiteId = siteId
-        Point(siteId, timestamp, currentLap)
-      }
+      val newPoints = RaceUtils.addLaps((withoutSite ++ timestamps.map((siteId, _))).sortBy(_._2))
       ContestantPoints(contestantId, newPoints)
     }
 
@@ -79,19 +74,18 @@ object RankingState {
   // private[replicate] to allow testing
   private[replicate] val rankingState = Agent(Map[Int, RaceRanking]())
 
+  case class CheckpointData(contestantId: Int, raceId: Int, siteId: Int, timestamps: Seq[Long])
+
+  case class RankInformation(previousRank: Option[Int], rank: Option[Int], points: Seq[Point])
+
   /**
     * Update the timestamps at a given checkpoint for a contestant and retrieve information about their progression.
     *
-    * @param contestantId the contestant bib
-    * @param raceId the race id, which must be strictly positive
-    * @param siteId the site id
-    * @param timestamps the list of ordered timestamps at this site id
-    * @return a Future containing a pair. The first element is the previous rank of the contestant, if known, and the
-    *         second one is a pair with an ordered list of Point for this contestant as long as its new rank. The second
-    *         element can be empty if the contestant has no longer any checkpoint information, for example because it had
-    *         been entered by mistake then removed.
+    * @param checkpointData the updated checkpoint data
+    * @return the rank progression
     */
-  def updateTimestamps(contestantId: Int, raceId: Int, siteId: Int, timestamps: Seq[Long]): Future[(Option[Int], Option[(Seq[Point], Int)])] = {
+  def updateTimestamps(checkpointData: CheckpointData): Future[RankInformation] = {
+    val (contestantId, raceId, siteId, timestamps) = CheckpointData.unapply(checkpointData).get
     require(raceId > 0, "raceId must be strictly positive")
     for {
       previousState <- rankingState.future
@@ -100,7 +94,8 @@ object RankingState {
         val ranking = rankings.getOrElse(raceId, RaceRanking(Vector())).updatePoints(contestantId, siteId, timestamps)
         rankings + (raceId -> ranking)
       }
-    } yield (previousRank, newState(raceId).pointsAndRank(contestantId))
+      (points, rank) = newState(raceId).pointsAndRank(contestantId).fold[(Seq[Point], Option[Int])]((Seq(), None))(par => (par._1, Some(par._2)))
+    } yield RankInformation(previousRank, rank, points)
   }
 
   /**
@@ -110,8 +105,11 @@ object RankingState {
     * @param raceId the race id
     * @return a Future containing, if known, the ordered points of this contestant and its rank in the corresponding race
     */
-  def pointsAndRank(contestantId: Int, raceId: Int): Future[Option[(Seq[Point], Int)]] =
-    rankingState.future.map(_.get(raceId).flatMap(_.pointsAndRank(contestantId)))
+  def pointsAndRank(contestantId: Int, raceId: Int): Future[RankInformation] =
+    rankingState.future.map(_.get(raceId).flatMap(_.pointsAndRank(contestantId))).map {
+      case Some((points, rank)) => RankInformation(None, Some(rank), points)
+      case None                 => RankInformation(None, None, Seq())
+    }
 
   /**
     * Ordered list of contestants for every race knwon so far.
@@ -130,5 +128,8 @@ object RankingState {
     rankingState.future.map(_.flatMap { case (raceId, raceRanking) =>
       raceRanking.contestants.map(contestantPoints => (contestantPoints.contestantId, raceId) -> contestantPoints.points)
     }.toMap)
+
+  private[replicate] def reset(): Future[NotUsed] =
+    rankingState.alter(Map[Int, RaceRanking]()).map(_ => NotUsed)
 
 }

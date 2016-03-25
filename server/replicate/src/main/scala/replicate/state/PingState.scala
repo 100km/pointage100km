@@ -9,7 +9,7 @@ object PingState {
 
   import replicate.utils.Global.dispatcher
 
-  private val lastPings: Agent[Map[Int, Long]] = Agent(Map())
+  val lastPings: Agent[Map[Int, Long]] = Agent(Map())
 
   /**
     * Set the timestamp of the last ping seen for a given site.

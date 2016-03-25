@@ -795,7 +795,7 @@
 {"race_id": 1, "type": "checkpoint", "bib": 877, "_rev": "3-79e73f771693b51618c44e4f3c47dcb2", "_id": "checkpoints-0-877", "site_id": 0, "times": [1431541437241, 1431561718148]}
 {"race_id": 3, "type": "checkpoint", "bib": 878, "_rev": "2-22a852695298a03f8ff3e1798ba58fbd", "_id": "checkpoints-0-878", "site_id": 0, "times": [1431540252139]}
 {"race_id": 3, "type": "checkpoint", "bib": 879, "_rev": "3-1e8b06f29a152556e3042f35bdd5adaa", "_id": "checkpoints-0-879", "site_id": 0, "times": [1431538951192]}
-{"bib": 88, "_rev": "7-ed4c9de8966be92fd183818d5a76a6b9", "site_id": 0, "times": [1431540239705, 1431557668820, 1431578763255], "deleted_times": [1431540883746, null], "race_id": 1, "_id": "checkpoints-0-88", "type": "checkpoint"}
+{"bib": 88, "_rev": "7-ed4c9de8966be92fd183818d5a76a6b9", "site_id": 0, "times": [1431540239705, 1431557668820, 1431578763255], "deleted_times": [1431540883746], "race_id": 1, "_id": "checkpoints-0-88", "type": "checkpoint"}
 {"race_id": 3, "type": "checkpoint", "bib": 880, "_rev": "2-83a5d5a5e4ddbb44acddbd40e53d8ef8", "_id": "checkpoints-0-880", "site_id": 0, "times": [1431540254375]}
 {"bib": 881, "_rev": "4-ca7236025a29c0186b12dd61d5534fa8", "site_id": 0, "times": [1431543724378], "deleted_times": [1431544244286], "race_id": 3, "_id": "checkpoints-0-881", "type": "checkpoint"}
 {"bib": 882, "_rev": "3-bbf8bd61fde009761769a6bf0166e722", "site_id": 0, "times": [1431540294649, 1431557886159], "deleted_times": [], "artificial_times": [1431540294649], "race_id": 1, "_id": "checkpoints-0-882", "type": "checkpoint"}

@@ -13,6 +13,7 @@ object Options {
                     replicate: Boolean = true,
                     alerts: Boolean = false,
                     stalking: Boolean = false,
+                    resetSiteId: Boolean = true,
                     siteId: Int = -1,
                     modes: List[String] = Nil,
                     _ping: Boolean = true) {
@@ -44,6 +45,7 @@ object Options {
       po("run ping service", ping)
       po("run alerts service", alerts)
       po("run stalking service", stalking)
+      po("reset site id", resetSiteId)
       System.out.println("Computed values:")
       po("slave only", isSlave)
       po("check onChanges feed", onChanges)
@@ -90,6 +92,8 @@ object Options {
             c.copy(alerts = false) }
           opt[Unit]("no-stalking") abbr "ns" text "do not run stalking service" action { (_, c) =>
             c.copy(stalking = false) }
+          opt[Unit]("no-reset") abbr "nR" text "do not reset site id (test)" action { (_, c) =>
+            c.copy(resetSiteId = false) }
         }
       cmd("slave") text "slave mode (no modifications propagated to the server)" action { (_, c) =>
         c.copy(modes = "slave" +: c.modes)

@@ -7,6 +7,7 @@ import play.api.libs.json.Json
 import replicate.alerts.Alerts
 import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
+import replicate.scrutineer.CheckpointScrutineer
 import replicate.stalking.Stalker
 import replicate.utils._
 import steenwerck._
@@ -28,8 +29,8 @@ object Replicate extends App {
 
 class Replicate(options: Options.Config) extends LoggingError {
 
-  import implicits._
   import Global._
+  import implicits._
 
   override val log = Logging(Global.system, "Replicate")
 
@@ -40,7 +41,8 @@ class Replicate(options: Options.Config) extends LoggingError {
   private def createLocalInfo(db: Database) {
     val name = "site-info"
     try {
-      db.insert(localInfo, name).execute()
+      if (options.resetSiteId)
+        db.insert(localInfo, name).execute()
     } catch {
       case Couch.StatusError(409, _, _) =>
         try {
@@ -170,8 +172,10 @@ class Replicate(options: Options.Config) extends LoggingError {
       }
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
-    if (options.alerts)
+    if (options.alerts) {
+      system.actorOf(Props(new CheckpointScrutineer(localDatabase)), "checkpoints-scrutineer")
       system.actorOf(Props(new Alerts(localDatabase)), "alerts")
+    }
     if (options.stalking) {
       val textService = system.actorOf(Props(new TextService), "textService")
       system.actorOf(Props(new Stalker(localDatabase, textService)), "stalker")

@@ -29,10 +29,12 @@ case class Infos(cat_names: Array[String],
   val distances: Map[(Int, Int), Double] = {
     var d: Map[(Int, Int), Double] = Map()
     for (lap <- 1 to races_laps.max; siteId <- sites.indices) {
-      d += (siteId, lap) -> ((kms_lap * (lap - 1)) + kms_offset(siteId))
+      d += (siteId, lap) -> distance(siteId, lap)
     }
     d
   }
+
+  def distance(siteId: Int, lap: Int): Double = kms_lap * (lap - 1) + kms_offset(siteId)
 
 }
 
