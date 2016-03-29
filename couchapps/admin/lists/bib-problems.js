@@ -329,7 +329,7 @@ function get_site_bib_times(check, times, i, bib) {
   var deleted_times = [];
   var artificial_times = [];
   var pings = JSON.parse(req.query.pings);
-  var res = { pings: pings, pbs: [] };
+  var res = { pbs: [] };
 
   var row = getRow();
   var current_bib = -1;
