@@ -313,3 +313,10 @@ function highlight_search(row) {
     value: value
   };
 }
+
+function isTimestampValid(timestamp) {
+  return ((typeof timestamp) == "number") &&
+    ($.isNumeric(timestamp)) &&
+    (timestamp > 0) &&
+    (timestamp % 1) === 0;
+}

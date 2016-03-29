@@ -28,8 +28,8 @@ function() {
           var time = (next_time - prev_time) / (next_km - prev_km) * (miss_km - prev_km) + prev_time;
 
           time = Math.round(time);
-          if ((!$.isNumeric(time)) || (time == 0) || ((typeof time) != "number")) {
-            alert("Refusing to insert non-numeric or null or non-number time in DB: " + time);
+          if (!isTimestampValid(time)) {
+            alert("Refusing to insert invalid timestamp in DB: " + time);
             return;
           }
 
