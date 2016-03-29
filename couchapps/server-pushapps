@@ -9,6 +9,9 @@ usage() {
     dbname defaults to steenwerck100km in local, and to the currently used database on server
 EOF
 }
+
+which curl 2>&1 > /dev/null || { echo "This script needs curl. Please install it." ; exit 1 ; }
+
 if [ "$1" = local ]; then
   host=localhost:5984
 elif [ "$1" = server ]; then

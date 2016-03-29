@@ -1,7 +1,7 @@
 {
   "env" : {
     "default" : {
-      "db" : "http://admin:admin@localhost:5984/test_db"
+      "db" : "http://localhost:5984/steenwerck100km"
     }
 }
 }

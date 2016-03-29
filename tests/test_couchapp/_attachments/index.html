@@ -10,14 +10,9 @@
 <script src="../common/vendor/sp4ce/lcs.js"></script>
 <script src="../common/lib/utils.js"></script>
 <script type="text/javascript" charset="utf-8">
-//specifying the db to ensure our tests
-//run only on this db
 $.couch.app(function(app) {
-  test_bib_input(app);
-}, {db: "test_db"});
-$.couch.app(function(app) {
-  test_admin(app);
-}, {db: "test_db"});
+  test_couchapps(app);
+});
 </script>
 </head>
 <body>
