@@ -127,7 +127,7 @@ function check_times(times, pings, site_number) {
     input += sites[i].site;
 
     // Be sure that the current time is ok with the last ping of the expected site.
-    while (sites[i].time > pings[expected_site]) {
+    while ((i != expected_site) && (sites[i].time > pings[expected_site])) {
       expected_site = (expected_site + 1) % site_number;
     }
 
