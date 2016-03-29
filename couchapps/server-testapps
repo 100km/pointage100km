@@ -1,0 +1,56 @@
+#! /bin/sh
+
+cd `dirname $0`
+
+usage() {
+  cat <<"EOF"
+    usage: server-testapps local|server [user passwd [dbname]]
+    user and passwd default to no authentication
+    dbname defaults to steenwerck100km-test
+EOF
+}
+
+pad_head() {
+  n=$1
+  while read l; do
+    for i in `seq $n`; do
+      echo -n ">"
+    done
+    echo -n " "
+    echo $l;
+  done
+  echo
+}
+
+which curl 2>&1 > /dev/null || { echo "This script needs curl. Please install it." ; exit 1 ; }
+
+if [ "$1" = local ]; then
+  host=localhost:5984
+elif [ "$1" = server ]; then
+  host=steenwerck.rfc1149.net
+else
+  usage
+  exit 1
+fi
+if [ -z "$2" ]; then
+  auth=""
+else
+  auth="$2:$3@"
+fi
+if [ -z "$4" ]; then
+  dbname=steenwerck100km-test
+else
+  dbname="$4"
+fi
+
+full_name=http://$auth$host/$dbname
+
+echo "Deleting previous test database $full_name ..."
+curl -s -X DELETE "$full_name" -H "Content-Type: application/json" 2>&1 | pad_head 2
+
+echo "Pushing all the couch apps..."
+(./server-pushapps "$1" "$2" "$3" $dbname) 2>&1 | pad_head 2
+
+echo "Pushing test couchapp. Launch the tests at the following URL"
+test_couchapp_dir="../tests/test_couchapp"
+(cd "$test_couchapp_dir" && couchapp push $full_name) 2>&1 | pad_head 2

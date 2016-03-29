@@ -170,7 +170,26 @@ function test_global(app, checkpoints, expected, race_id) {
     }, race_id);
   });
 }
-function test_bib_input(app) {
+
+function test_checktimes(app, checkpoints, pings, expected, race_id) {
+  expect(1);
+  with_temp_checkpoints_and_start(app, checkpoints, function(cb) {
+    app.db.list('admin/bib-problems', "bib-problems", {
+      pings: JSON.stringify(pings),
+    }, {
+      success: function(data) {
+        deepEqual(data, expected);
+        cb();
+      },
+      error: function(status, req, e) {
+        ok(false, "error in bib-problems list:" + status
+                  + "," +req+ "," + e);
+        cb();
+      },
+    });
+  });
+}
+function test_couchapps(app) {
   db_app_data(app, function() {
     module("setup");
     test("setup ok", function() {
@@ -316,102 +335,179 @@ function test_bib_input(app) {
         { bib: 0, ts: 5000, site_id:0 },
       ], { race_id:1, bibs:[1, 0]}, 1);
     });
+
+    module("check_time");
+    asyncTest("missing first checkpoint", function() {
+      test_checktimes(app, [
+        { bib: 13, ts: 10, site_id:1 }, //must be a new bib because we don't test delete_times
+      ], [50, 50, 50, 50, 50, 50, 50], { "pbs": [{
+        bib: 13,
+        site_id : 0,
+        type : "Manque un passage",
+        lap : 1,
+        "next_site": 1,
+        "next_time": 10,
+        "sites": [
+          {
+            "id": 0,
+            "bib": 13,
+            "times": [
+              {
+                "add": true,
+                "lap": 0,
+                "bib": 13,
+                "site_id": 0,
+                "next_site": 1,
+                "next_time": 10
+              }
+            ],
+            "deleted_times": [],
+            "artificial_times": []
+          },
+          {
+            "id": 1,
+            "bib": 13,
+            "times": [
+              {
+                "val": "01/01/1970 00:00:00",
+                "lap": 0,
+                "bib": 13,
+                "site_id": 1,
+                "remove": false
+              }
+            ],
+            "deleted_times": [],
+            "artificial_times": []
+          },
+          {
+            "id": 2,
+            "bib": 13,
+            "times": [],
+            "deleted_times": [],
+            "artificial_times": []
+          },
+          {
+            "id": 3,
+            "bib": 13,
+            "times": [],
+            "deleted_times": [],
+            "artificial_times": []
+          },
+          {
+            "id": 4,
+            "bib": 13,
+            "times": [],
+            "deleted_times": [],
+            "artificial_times": []
+          },
+          {
+            "id": 5,
+            "bib": 13,
+            "times": [],
+            "deleted_times": [],
+            "artificial_times": []
+          },
+          {
+            "id": 6,
+            "bib": 13,
+            "times": [],
+            "deleted_times": [],
+            "artificial_times": []
+          }
+        ]}]}, 1);
+    });
+
+    asyncTest("Ok one time", function() {
+      test_checktimes(app, [
+        { bib: 1, ts: 10, site_id:0 },
+      ], [50, 50, 50, 50, 50, 50, 50], { "pbs": [] }, 1);
+    });
+
+    asyncTest("Ok 10 times", function() {
+      test_checktimes(app, [
+        { bib: 1, ts: 10, site_id:0 },
+        { bib: 1, ts: 11, site_id:1 },
+        { bib: 1, ts: 12, site_id:2 },
+        { bib: 1, ts: 13, site_id:3 },
+        { bib: 1, ts: 14, site_id:4 },
+        { bib: 1, ts: 15, site_id:5 },
+        { bib: 1, ts: 16, site_id:6 },
+        { bib: 1, ts: 17, site_id:0 },
+        { bib: 1, ts: 18, site_id:1 },
+        { bib: 1, ts: 19, site_id:2 },
+      ], [50, 50, 50, 50, 50, 50, 50], { "pbs": [] }, 1);
+    });
+
+    asyncTest("Ok all times", function() {
+      test_checktimes(app, [
+        { bib: 1, ts: 10, site_id:0 },
+        { bib: 1, ts: 11, site_id:1 },
+        { bib: 1, ts: 12, site_id:2 },
+        { bib: 1, ts: 13, site_id:3 },
+        { bib: 1, ts: 14, site_id:4 },
+        { bib: 1, ts: 15, site_id:5 },
+        { bib: 1, ts: 16, site_id:6 },
+        { bib: 1, ts: 20, site_id:0 },
+        { bib: 1, ts: 21, site_id:1 },
+        { bib: 1, ts: 22, site_id:2 },
+        { bib: 1, ts: 23, site_id:3 },
+        { bib: 1, ts: 24, site_id:4 },
+        { bib: 1, ts: 25, site_id:5 },
+        { bib: 1, ts: 26, site_id:6 },
+        { bib: 1, ts: 30, site_id:0 },
+        { bib: 1, ts: 31, site_id:1 },
+        { bib: 1, ts: 32, site_id:2 },
+        { bib: 1, ts: 33, site_id:3 },
+        { bib: 1, ts: 34, site_id:4 },
+        { bib: 1, ts: 35, site_id:5 },
+        { bib: 1, ts: 36, site_id:6 },
+      ], [50, 50, 50, 50, 50, 50, 50], { "pbs": [] }, 1);
+    });
+
+    asyncTest("Ok all times but 1 site", function() {
+      test_checktimes(app, [
+        { bib: 1, ts: 10, site_id:0 },
+        { bib: 1, ts: 11, site_id:1 },
+        { bib: 1, ts: 12, site_id:2 },
+        { bib: 1, ts: 13, site_id:3 },
+        { bib: 1, ts: 14, site_id:4 },
+        { bib: 1, ts: 15, site_id:5 },
+        { bib: 1, ts: 16, site_id:6 },
+        { bib: 1, ts: 20, site_id:0 },
+        { bib: 1, ts: 22, site_id:2 },
+        { bib: 1, ts: 23, site_id:3 },
+        { bib: 1, ts: 24, site_id:4 },
+        { bib: 1, ts: 25, site_id:5 },
+        { bib: 1, ts: 26, site_id:6 },
+        { bib: 1, ts: 30, site_id:0 },
+        { bib: 1, ts: 32, site_id:2 },
+        { bib: 1, ts: 33, site_id:3 },
+        { bib: 1, ts: 34, site_id:4 },
+        { bib: 1, ts: 35, site_id:5 },
+        { bib: 1, ts: 36, site_id:6 },
+      ], [50, 12, 50, 50, 50, 50, 50], { "pbs": [] }, 1);
+    });
+
+    asyncTest("Ok all times but 2 sites", function() {
+      test_checktimes(app, [
+        { bib: 1, ts: 10, site_id:0 },
+        { bib: 1, ts: 11, site_id:1 },
+        { bib: 1, ts: 12, site_id:2 },
+        { bib: 1, ts: 13, site_id:3 },
+        { bib: 1, ts: 14, site_id:4 },
+        { bib: 1, ts: 15, site_id:5 },
+        { bib: 1, ts: 16, site_id:6 },
+        { bib: 1, ts: 21, site_id:1 },
+        { bib: 1, ts: 22, site_id:2 },
+        { bib: 1, ts: 23, site_id:3 },
+        { bib: 1, ts: 24, site_id:4 },
+        { bib: 1, ts: 25, site_id:5 },
+        { bib: 1, ts: 31, site_id:1 },
+        { bib: 1, ts: 32, site_id:2 },
+        { bib: 1, ts: 33, site_id:3 },
+        { bib: 1, ts: 34, site_id:4 },
+        { bib: 1, ts: 35, site_id:5 },
+      ], [19, 50, 50, 50, 50, 50, 19 ], { "pbs": [] }, 1);
+    });
   });
-};
-
-function test_admin(app) {
-  module("check_time");
-  test("missing first checkpoint", function() {
-    expect(1);
-
-    var times = [];
-    times[0] = [];
-    times[1] = [10];
-    times[2] = [];
-    result = check_times(times, [50, 50, 50]);
-
-    expected = {
-      site_id : 0,
-      type : "Manque un passage",
-      lap : 1,
-      "next_site": 1,
-      "next_time": 10,
-      "prev_site": undefined,
-      "prev_time": undefined
-    };
-
-    deepEqual(result, expected, "Should return missing first statement.");
-  });
-
-
-  test("Ok one time", function() {
-    expect(1);
-
-    var times = [];
-    times[0] = [10];
-    times[1] = [];
-    times[2] = [];
-    result = check_times(times, [50, 50, 50]);
-
-    expected = undefined;
-
-    deepEqual(result, expected, "Should return nothing.");
-  });
-
-  test("Ok 5 times", function() {
-    expect(1);
-
-    var times = [];
-    times[0] = [10, 13];
-    times[1] = [11, 14];
-    times[2] = [12];
-    result = check_times(times, [50, 50, 50]);
-
-    expected = undefined;
-
-    deepEqual(result, expected, "Should return nothing.");
-  });
-
-  test("Ok all times", function() {
-    expect(1);
-    var times = [];
-
-    times[0] = [10, 13, 16, 19, 22];
-    times[1] = [11, 14, 17, 20, 23];
-    times[2] = [12, 15, 18, 21, 24];
-    result = check_times(times, [50, 50, 50]);
-
-    expected = undefined;
-
-    deepEqual(result, expected, "Should return nothing.");
-  });
-
-  test("Ok all times but 1 site", function() {
-    expect(1);
-
-    var times = [];
-    times[0] = [10, 13, 16, 19, 22];
-    times[1] = [11];
-    times[2] = [12, 15, 18, 21, 24];
-    result = check_times(times, [50, 12, 50]);
-
-    expected = undefined;
-
-    deepEqual(result, expected, "Should return nothing.");
-  });
-
-  test("Ok all times but 2 sites", function() {
-    expect(1);
-
-    var times = [];
-    times[0] = [10, 13];
-    times[1] = [11, 14, 17, 20, 23];
-    times[2] = [12, 15, 18];
-    result = check_times(times, [15, 50, 20]);
-
-    expected = undefined;
-
-    deepEqual(result, expected, "Should return nothing.");
-  });
-
 }
