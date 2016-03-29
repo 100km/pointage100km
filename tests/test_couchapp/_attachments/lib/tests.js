@@ -190,6 +190,25 @@ function test_checktimes(app, checkpoints, pings, expected, race_id) {
   });
 }
 function test_couchapps(app) {
+  module("timestamp validation");
+  test("valid timestamps", function() {
+      expect(2);
+      ok(isTimestampValid(1), "1");
+      ok(isTimestampValid(1458913668744), "1458913668744");
+  });
+  test("invalid timestamps", function() {
+      expect(10);
+      ok(!isTimestampValid(0), "0");
+      ok(!isTimestampValid("1"), "\"1\"");
+      ok(!isTimestampValid([]), "[]");
+      ok(!isTimestampValid({}), "{}");
+      ok(!isTimestampValid(1.5), "1.5");
+      ok(!isTimestampValid(null), "null");
+      ok(!isTimestampValid(undefined), "undefined");
+      ok(!isTimestampValid(+Infinity), "+Infinity");
+      ok(!isTimestampValid(-Infinity), "-Infinity");
+      ok(!isTimestampValid(NaN), "NaN");
+  });
   db_app_data(app, function() {
     module("setup");
     test("setup ok", function() {
