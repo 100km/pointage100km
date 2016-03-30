@@ -1,11 +1,11 @@
 package replicate.state
 
-import akka.NotUsed
+import akka.Done
 import akka.agent.Agent
 import replicate.utils.RaceUtils
+import replicate.utils.SortUtils._
 
 import scala.concurrent.Future
-import replicate.utils.SortUtils._
 
 object RankingState {
 
@@ -132,7 +132,7 @@ object RankingState {
         raceRanking.contestants.map(contestantPoints ⇒ (contestantPoints.contestantId, raceId) → contestantPoints.points)
     }.toMap)
 
-  private[replicate] def reset(): Future[NotUsed] =
-    rankingState.alter(Map[Int, RaceRanking]()).map(_ ⇒ NotUsed)
+  private[replicate] def reset(): Future[Done] =
+    rankingState.alter(Map[Int, RaceRanking]()).map(_ ⇒ Done)
 
 }

@@ -1,6 +1,6 @@
 package replicate.state
 
-import akka.NotUsed
+import akka.Done
 import akka.agent.Agent
 
 import scala.concurrent.Future
@@ -18,8 +18,8 @@ object PingState {
    * @param timestamp the latest timestamp for this site
    * @return a future completed when the write has been performed
    */
-  def setLastPing(siteId: Int, timestamp: Long): Future[NotUsed] =
-    lastPings.alter(_ + (siteId → timestamp)).map(_ ⇒ NotUsed)
+  def setLastPing(siteId: Int, timestamp: Long): Future[Done] =
+    lastPings.alter(_ + (siteId → timestamp)).map(_ ⇒ Done)
 
   /**
    * Remove the timestamp associated to a site.
@@ -27,8 +27,8 @@ object PingState {
    * @param siteId the site id
    * @return a future completed when the removal has been performed
    */
-  def removePing(siteId: Int): Future[NotUsed] =
-    lastPings.alter(_ - siteId).map(_ ⇒ NotUsed)
+  def removePing(siteId: Int): Future[Done] =
+    lastPings.alter(_ - siteId).map(_ ⇒ Done)
 
   /**
    * Get the latest timestamp for a site.

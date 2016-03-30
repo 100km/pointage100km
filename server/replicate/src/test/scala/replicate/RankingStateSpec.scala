@@ -1,11 +1,11 @@
 package replicate
 
-import akka.NotUsed
+import akka.Done
 import akka.http.scaladsl.util.FastFuture
 import org.specs2.mutable._
 import org.specs2.specification.Scope
-import play.api.libs.json.{JsPath, Json, Reads}
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Json, Reads}
 import replicate.state.RankingState
 import replicate.state.RankingState.{CheckpointData, Point}
 import replicate.utils.{Global, Infos}
@@ -162,11 +162,11 @@ object RankingStateSpec {
   def installSoleContestant(contestantId: Int, data: Seq[CheckpointEntry]): Unit = {
     Await.ready(for (
       _ ← RankingState.reset();
-      _ ← Future.sequence(data.filter(_.contestantId == contestantId).map(e ⇒ RankingState.updateTimestamps(e.checkpointData))).map(_ ⇒ NotUsed)
-    ) yield NotUsed, 5.seconds)
+      _ ← Future.sequence(data.filter(_.contestantId == contestantId).map(e ⇒ RankingState.updateTimestamps(e.checkpointData))).map(_ ⇒ Done)
+    ) yield Done, 5.seconds)
   }
 
-  def installFullRace(): Future[NotUsed] = {
+  def installFullRace(): Future[Done] = {
     val infos = loadInfos
     RankingState.reset()
     Future.sequence(for (entry ← loadRaceData) yield {
@@ -174,8 +174,8 @@ object RankingStateSpec {
         val checkpointData = entry.checkpointData
         RankingState.updateTimestamps(checkpointData.copy(timestamps = checkpointData.timestamps.take(infos.races_laps(checkpointData.raceId))))
       } else
-        FastFuture.successful(NotUsed)
-    }).map(_ ⇒ NotUsed)
+        FastFuture.successful(Done)
+    }).map(_ ⇒ Done)
   }
 
 }
