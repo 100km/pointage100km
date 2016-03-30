@@ -45,7 +45,7 @@ object PingAlert {
     private[this] def alert(severity: Severity.Severity, message: String, icon: String): Unit = {
       currentNotification.foreach(Alerts.cancelAlert)
       currentNotification = Some(Alerts.sendAlert(Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
-        url = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
+        url   = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
     }
 
     private[this] def alertDuration(severity: Severity.Severity, duration: FiniteDuration, icon: String): Unit =
@@ -53,8 +53,10 @@ object PingAlert {
 
     private[this] def scheduleRecheck(nextDuration: FiniteDuration, currentDuration: FiniteDuration): Unit = {
       currentRecheckTimer.foreach(_.cancel())
-      currentRecheckTimer = Some(context.system.scheduler.scheduleOnce(nextDuration - currentDuration,
-        self, Recheck(currentTimestamp)))
+      currentRecheckTimer = Some(context.system.scheduler.scheduleOnce(
+        nextDuration - currentDuration,
+        self, Recheck(currentTimestamp)
+      ))
     }
 
     private[this] def checkTimestamp(ts: Long): Unit = {
@@ -64,28 +66,28 @@ object PingAlert {
         currentState = if (ts == -1) Inactive else timestampToState(elapsed)
         currentTimestamp = ts
         (oldState, currentState) match {
-          case (before, after) if before == after =>
-          case (Starting, _) =>
-          case (Inactive, Up) =>
+          case (before, after) if before == after ⇒
+          case (Starting, _)                      ⇒
+          case (Inactive, Up) ⇒
             alert(Severity.Verbose, "Site went up for the first time", Glyphs.beatingHeart)
-          case (_, Notice) =>
+          case (_, Notice) ⇒
             alertDuration(Severity.Info, noticeDelay, Glyphs.brokenHeart)
-          case (_, Warning) =>
+          case (_, Warning) ⇒
             alertDuration(Severity.Warning, warningDelay, Glyphs.brokenHeart)
-          case (_, Critical) =>
+          case (_, Critical) ⇒
             alertDuration(Severity.Critical, criticalDelay, Glyphs.brokenHeart)
-          case (_, Up) =>
+          case (_, Up) ⇒
             alert(Severity.Info, "Site is back up", Glyphs.growingHeart)
-          case (_, Inactive) =>
+          case (_, Inactive) ⇒
             alert(Severity.Critical, "Site info has disappeared from database", Glyphs.skullAndCrossbones)
-          case (_, _) =>
+          case (_, _) ⇒
             log.error("Impossible checkpoint state transition from {} to {}", oldState, currentState)
         }
         currentState match {
-          case Up => scheduleRecheck(noticeDelay, elapsed)
-          case Notice => scheduleRecheck(warningDelay, elapsed)
-          case Warning => scheduleRecheck(criticalDelay, elapsed)
-          case _ =>
+          case Up      ⇒ scheduleRecheck(noticeDelay, elapsed)
+          case Notice  ⇒ scheduleRecheck(warningDelay, elapsed)
+          case Warning ⇒ scheduleRecheck(criticalDelay, elapsed)
+          case _       ⇒
         }
         if (currentState == Inactive)
           PingState.removePing(siteId)
@@ -96,22 +98,22 @@ object PingAlert {
     }
 
     def receive = {
-      case Initial =>
+      case Initial ⇒
         sender() ! Ack
 
-      case ts: Long =>
+      case ts: Long ⇒
         checkTimestamp(ts)
         sender() ! Ack
 
-      case Recheck(ts) =>
+      case Recheck(ts) ⇒
         if (ts == currentTimestamp)
           checkTimestamp(ts)
 
-      case Complete =>
+      case Complete ⇒
         log.error("CheckpointWatcher for site {} has terminated on complete", siteId)
         context.stop(self)
 
-      case Failure(t) =>
+      case Failure(t) ⇒
         log.error(t, "CheckpointWatcher for site {} has terminated on failure", siteId)
         context.stop(self)
     }
@@ -136,13 +138,13 @@ object PingAlert {
   }
 
   /**
-    * Return the timestamp corresponding to the last proof of live of a site.
-    */
+   * Return the timestamp corresponding to the last proof of live of a site.
+   */
   private def lastPing(siteId: Int, database: Database)(implicit ec: ExecutionContext): Future[Option[Long]] =
     database.view[Int, JsObject]("admin", "alive",
-      Seq("startkey" -> siteId.toString, "endkey" -> siteId.toString, "group" -> "true")).map { rows =>
-      rows.headOption.map(row => (row._2 \ "max").as[Long])
-    }
+      Seq("startkey" → siteId.toString, "endkey" → siteId.toString, "group" → "true")).map { rows ⇒
+        rows.headOption.map(row ⇒ (row._2 \ "max").as[Long])
+      }
 
   private val siteRegex = """(checkpoints|ping)-(\d+)-.*""".r
 
@@ -156,33 +158,33 @@ object PingAlert {
   // Flow[T].buffer(1, OverflowStrategy.dropHead).throttle(1, duration, 1, ThrottleMode.Shaping)
 
   private def docToMaxTimestamp(siteId: Int, database: Database): Flow[JsObject, Long, NotUsed] =
-    Flow[JsObject].flatMapConcat { doc =>
+    Flow[JsObject].flatMapConcat { doc ⇒
       if ((doc \ "_deleted").asOpt[Boolean].contains(true)) {
         Source.fromFuture(lastPing(siteId, database).map(_.getOrElse(-1)))
       } else {
         (doc \ "times").asOpt[List[Long]] match {
-          case None => Source.single((doc \ "time").as[Long])
-          case Some(Nil) => Source.empty[Long]
-          case Some(l) => Source.single(l.max)
+          case None      ⇒ Source.single((doc \ "time").as[Long])
+          case Some(Nil) ⇒ Source.empty[Long]
+          case Some(l)   ⇒ Source.single(l.max)
         }
       }
     }
 
-  private def pingAlerts(database: Database)(implicit context: ActorRefFactory) = RunnableGraph.fromGraph(GraphDSL.create() { implicit b =>
+  private def pingAlerts(database: Database)(implicit context: ActorRefFactory) = RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
     import CheckpointWatcher._
     import GraphDSL.Implicits._
 
     val sites = checkpoints.size
-    val in = database.changesSource(Map("filter" -> "admin/liveness-info", "include_docs" -> "true"))
+    val in = database.changesSource(Map("filter" → "admin/liveness-info", "include_docs" → "true"))
     val partition = b.add(Partition[JsObject](sites + 1, docToSite(_) match {
-      case Some(n) => n
-      case None    => sites
+      case Some(n) ⇒ n
+      case None    ⇒ sites
     }))
 
-    in ~> Flow[JsObject].map(js => (js \ "doc").as[JsObject]) ~> partition
-    for (siteId <- 0 until sites) {
+    in ~> Flow[JsObject].map(js ⇒ (js \ "doc").as[JsObject]) ~> partition
+    for (siteId ← 0 until sites) {
       val actorRef = context.actorOf(Props(new CheckpointWatcher(siteId, database)))
-      partition.out(siteId) ~> Flow[JsObject].prepend(Source.single(Json.obj("_deleted" -> true))) ~>
+      partition.out(siteId) ~> Flow[JsObject].prepend(Source.single(Json.obj("_deleted" → true))) ~>
         throttleLast[JsObject](noticeDelay / 2) ~>
         docToMaxTimestamp(siteId, database) ~> Sink.actorRefWithAck[Long](actorRef, Initial, Ack, Complete)
     }

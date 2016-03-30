@@ -1,6 +1,11 @@
 import sbt._
 import Keys._
 import sbtassembly.AssemblyPlugin.autoImport._
+import scalariform.formatter.preferences._
+import com.typesafe.sbt.SbtScalariform
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+
+SbtScalariform.scalariformSettings
 
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.2",
@@ -35,7 +40,14 @@ lazy val mysql =
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.8",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
-      resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo))
+      resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo),
+      ScalariformKeys.preferences := ScalariformKeys.preferences.value
+        .setPreference(AlignArguments, true)
+        .setPreference(AlignSingleLineCaseStatements, true)
+        .setPreference(DoubleIndentClassDeclaration, true)
+        .setPreference(RewriteArrowSymbols, true)
+        .setPreference(SpacesWithinPatternBinders, false)
+        .setPreference(SpacesAroundMultiImports, false))
 
 lazy val pointage100km =
   Project("pointage100km", file(".")) aggregate(replicate, wipe, stats, loader)

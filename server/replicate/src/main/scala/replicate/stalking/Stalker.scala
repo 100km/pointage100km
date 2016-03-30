@@ -55,9 +55,9 @@ class Stalker(database: Database, textService: ActorRef) extends Actor with Acto
     val newStalkers = (doc \ "stalkers").as[Seq[String]]
     if (newStalkers != stalkers.getOrElse(bib, Seq())) {
       if (newStalkers.nonEmpty) {
-        stalkers += bib -> newStalkers
-        name += bib -> s"${(doc \ "first_name").as[String]} ${(doc \ "name").as[String]} (dossard $bib)"
-        race += bib -> (doc \ "race").as[Int]
+        stalkers += bib → newStalkers
+        name += bib → s"${(doc \ "first_name").as[String]} ${(doc \ "name").as[String]} (dossard $bib)"
+        race += bib → (doc \ "race").as[Int]
       } else {
         stalkers -= bib
         name -= bib
@@ -71,25 +71,26 @@ class Stalker(database: Database, textService: ActorRef) extends Actor with Acto
 
   private[this] def contestantInfo(bib: Long): Future[(Int, Long, Int, Int)] = {
     val raceInfo = Global.infos.get.races(race(bib))
-    for (ranking <- RankingAlert.raceRanking(raceInfo, database).flatMap(Couch.checkResponse[JsObject])
-      .map(json => json \\ "value"))
-      yield {
-        val index = ranking.indexWhere(json => (json \ "bib").as[Long] == bib)
-        val doc = ranking(index)
-        val siteId = (doc \ "_id").as[String].split("-")(1).toInt
-        val times = (doc \ "times").as[Array[Long]]
-        val date = times.last
-        val lap = times.length
-        val rank = index + 1
-        (siteId, date, lap, rank)
-      }
+    for (
+      ranking ← RankingAlert.raceRanking(raceInfo, database).flatMap(Couch.checkResponse[JsObject])
+        .map(json ⇒ json \\ "value")
+    ) yield {
+      val index = ranking.indexWhere(json ⇒ (json \ "bib").as[Long] == bib)
+      val doc = ranking(index)
+      val siteId = (doc \ "_id").as[String].split("-")(1).toInt
+      val times = (doc \ "times").as[Array[Long]]
+      val date = times.last
+      val lap = times.length
+      val rank = index + 1
+      (siteId, date, lap, rank)
+    }
   }
 
   private[this] def sendInfo(bib: Long, pos: (Int, Long, Int, Int)): Unit = {
     val recipients = stalkers.getOrElse(bib, Seq())
     if (recipients.nonEmpty) {
       pos match {
-        case (siteId, timestamp, lap, rank) =>
+        case (siteId, timestamp, lap, rank) ⇒
           val infos = Global.infos.get
           val raceInfo = infos.races(race(bib))
           if (lap <= raceInfo.laps) {
@@ -99,7 +100,7 @@ class Stalker(database: Database, textService: ActorRef) extends Actor with Acto
             val time = "%dh%02d".format(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE))
             val message = s"""${name(bib)} : dernier pointage au site "${infos.checkpoints(siteId).name}" à $time """ +
               s"(${raceInfo.name}, tour $lap, ${"%.2f".format(infos.distances(siteId, lap))} kms)"
-            for (recipient <- recipients)
+            for (recipient ← recipients)
               textService ! (recipient, message)
           } else
             log.warning("Bib {} pointed at lap {} while race {} only has {}", bib, lap, raceInfo.name, raceInfo.laps)
@@ -108,20 +109,21 @@ class Stalker(database: Database, textService: ActorRef) extends Actor with Acto
   }
 
   private[this] def launchInitialStalkersChanges(): Unit =
-    pipe(database.status().map(json => (json \ "update_seq").as[Long]).flatMap(lastSeq =>
+    pipe(database.status().map(json ⇒ (json \ "update_seq").as[Long]).flatMap(lastSeq ⇒
       database.view[JsValue, JsObject]("admin", "stalked").map(('initial, lastSeq, _)))) to self
 
   private[this] def launchStalkersChanges(fromSeq: Long): NotUsed = {
-    database.changesSource(Map("filter" -> "admin/stalked", "include_docs" -> "true"), sinceSeq = 0)
+    database.changesSource(Map("filter" → "admin/stalked", "include_docs" → "true"), sinceSeq = 0)
       .throttle(50, 1.second, 50, ThrottleMode.Shaping)
       .runWith(Sink.actorRef(self, 'ignored))
   }
 
   private[this] def launchCheckpointChanges(fromSeq: Long): Unit = {
     val currentStage = stalkStage
-    for (changes <- database.changes(Map("feed" -> "longpoll", "timeout" -> Global.stalkersObsoleteDuration.toMillis.toString,
-      "filter" -> "admin/with-stalkers", "stalked" -> stalkers.keys.map(_.toString).mkString(","), "since" -> fromSeq.toString)))
-      self ! ('checkpoint, changes, currentStage)
+    for (
+      changes ← database.changes(Map("feed" → "longpoll", "timeout" → Global.stalkersObsoleteDuration.toMillis.toString,
+        "filter" → "admin/with-stalkers", "stalked" → stalkers.keys.map(_.toString).mkString(","), "since" → fromSeq.toString))
+    ) self ! ('checkpoint, changes, currentStage)
   }
 
   // After having looked at the initial state of the stalkers, we look for changes
@@ -132,38 +134,38 @@ class Stalker(database: Database, textService: ActorRef) extends Actor with Acto
 
   val receive: Receive = {
 
-    case ('initial, seq: Long, doc: Seq[(JsValue, JsObject)] @unchecked) =>
+    case ('initial, seq: Long, doc: Seq[(JsValue, JsObject)] @unchecked) ⇒
       doc.map(_._2).foreach(updateStalkees)
       launchStalkersChanges(seq)
       launchCheckpointChanges(seq)
 
-    case ('checkpoint, doc: JsObject, stage: Long) =>
+    case ('checkpoint, doc: JsObject, stage: Long) ⇒
       if (stage == stalkStage) {
         val docs = (doc \ "results").as[Array[JsObject]]
-        for (doc <- docs) {
+        for (doc ← docs) {
           val bib = (doc \ "id").as[String].split("-")(2).toLong
           pipe(contestantInfo(bib).map(('ranking, bib, _))) to self
         }
         launchCheckpointChanges((doc \ "last_seq").as[Long])
       }
 
-    case ('ranking, bib: Long, pos: (Int, Long, Int, Int) @unchecked) =>
+    case ('ranking, bib: Long, pos: (Int, Long, Int, Int) @unchecked) ⇒
       if (stalkers.contains(bib)) {
         position.get(bib) match {
-          case Some(oldPos) if oldPos == pos =>
-          case _ =>
-            position += bib -> pos
+          case Some(oldPos) if oldPos == pos ⇒
+          case _ ⇒
+            position += bib → pos
             sendInfo(bib, pos)
         }
       }
 
-    case json: JsObject =>
+    case json: JsObject ⇒
       if (updateStalkees((json \ "doc").as[JsObject])) {
         stalkStage += 1
         launchCheckpointChanges((json \ "seq").as[Long])
       }
 
-    case Terminated(`textService`) =>
+    case Terminated(`textService`) ⇒
       Alerts.sendAlert(Message(TextMessage, Severity.Critical, "No stalker service",
         "Text service actor has terminated, stalker service will not run", icon = Some(Glyphs.telephoneReceiver)))
       log.error("No text service is available, stopping Stalker actor")

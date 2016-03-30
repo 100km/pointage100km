@@ -60,8 +60,9 @@ class RankingStateSpec extends Specification {
 
     "correctly compute the number of laps" in new CleanRanking {
       val sites = List(0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2)
-      Await.ready(Future.sequence(sites.zipWithIndex.groupBy(_._1).mapValues(_.map(_._2.toLong)).map { case (siteId, timestamps) =>
-        RankingState.updateTimestamps(CheckpointData(42, 1, siteId, timestamps))
+      Await.ready(Future.sequence(sites.zipWithIndex.groupBy(_._1).mapValues(_.map(_._2.toLong)).map {
+        case (siteId, timestamps) ⇒
+          RankingState.updateTimestamps(CheckpointData(42, 1, siteId, timestamps))
       }), 1.second)
       val result = Await.result(RankingState.pointsAndRank(42, 1), 1.second)
       result.points.map(_.lap) should be equalTo Seq(1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3)
@@ -69,8 +70,9 @@ class RankingStateSpec extends Specification {
 
     "correctly compute the number of laps with partial data" in new CleanRanking {
       val sites = List(0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 2)
-      Await.ready(Future.sequence(sites.zipWithIndex.groupBy(_._1).mapValues(_.map(_._2.toLong)).map { case (siteId, timestamps) =>
-        RankingState.updateTimestamps(CheckpointData(42, 1, siteId, timestamps))
+      Await.ready(Future.sequence(sites.zipWithIndex.groupBy(_._1).mapValues(_.map(_._2.toLong)).map {
+        case (siteId, timestamps) ⇒
+          RankingState.updateTimestamps(CheckpointData(42, 1, siteId, timestamps))
       }), 1.second)
       val result = Await.result(RankingState.pointsAndRank(42, 1), 1.second)
       result.points.map(_.lap) should be equalTo Seq(1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4)
@@ -97,7 +99,7 @@ class RankingStateSpec extends Specification {
       Await.ready(RankingState.updateTimestamps(CheckpointData(55, 2, 1, List(1400, 1600))), 1.second)
       Await.ready(RankingState.updateTimestamps(CheckpointData(55, 2, 0, List(1300, 1500))), 1.second)
       val result = Await.result(RankingState.ranks(), 1.second)
-      result must be equalTo Map(1 -> Seq(42, 44), 2 -> Seq(55))
+      result must be equalTo Map(1 → Seq(42, 44), 2 → Seq(55))
     }
   }
 
@@ -109,8 +111,10 @@ class RankingStateSpec extends Specification {
       Await.ready(RankingState.updateTimestamps(CheckpointData(55, 2, 1, List(1400, 1600))), 1.second)
       Await.ready(RankingState.updateTimestamps(CheckpointData(55, 2, 0, List(1300, 1500))), 1.second)
       val result = Await.result(RankingState.raceData(), 1.second)
-      result must be equalTo Map((42, 1) -> Seq(Point(0, 1000, 1), Point(1, 1200, 1), Point(0, 1300, 2), Point(1, 1400, 2)),
-        (55, 2) -> Seq(Point(0, 1300, 1), Point(1, 1400, 1), Point(0, 1500, 2), Point(1, 1600, 2)))
+      result must be equalTo Map(
+        (42, 1) → Seq(Point(0, 1000, 1), Point(1, 1200, 1), Point(0, 1300, 2), Point(1, 1400, 2)),
+        (55, 2) → Seq(Point(0, 1300, 1), Point(1, 1400, 1), Point(0, 1500, 2), Point(1, 1600, 2))
+      )
     }
   }
 
@@ -137,7 +141,7 @@ object RankingStateSpec {
   implicit val dispatcher = Global.dispatcher
 
   case class CheckpointEntry(contestantId: Int, raceId: Int, siteId: Int, times: Seq[Long],
-    deletedTimes: Option[Seq[Long]], artificialTimes: Option[Seq[Long]]) {
+      deletedTimes: Option[Seq[Long]], artificialTimes: Option[Seq[Long]]) {
     def checkpointData = CheckpointData(contestantId, raceId, siteId, times)
   }
 
@@ -147,29 +151,31 @@ object RankingStateSpec {
     (JsPath \ "site_id").read[Int] and
     (JsPath \ "times").read[Seq[Long]] and
     (JsPath \ "deleted_times").readNullable[Seq[Long]] and
-    (JsPath \ "artificial_times").readNullable[Seq[Long]])(CheckpointEntry.apply _)
+    (JsPath \ "artificial_times").readNullable[Seq[Long]]
+  )(CheckpointEntry.apply _)
 
   def loadRaceData: Iterator[CheckpointEntry] =
-   Source.fromInputStream(classOf[ClassLoader].getResourceAsStream("/dummy-timings.txt"), "utf-8").getLines.map(Json.parse(_).as[CheckpointEntry])
+    Source.fromInputStream(classOf[ClassLoader].getResourceAsStream("/dummy-timings.txt"), "utf-8").getLines.map(Json.parse(_).as[CheckpointEntry])
 
   def loadInfos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
 
   def installSoleContestant(contestantId: Int, data: Seq[CheckpointEntry]): Unit = {
-    Await.ready(for (_ <- RankingState.reset();
-                     _ <- Future.sequence(data.filter(_.contestantId == contestantId).map(e => RankingState.updateTimestamps(e.checkpointData))).map(_ => NotUsed))
-      yield NotUsed, 5.seconds)
+    Await.ready(for (
+      _ ← RankingState.reset();
+      _ ← Future.sequence(data.filter(_.contestantId == contestantId).map(e ⇒ RankingState.updateTimestamps(e.checkpointData))).map(_ ⇒ NotUsed)
+    ) yield NotUsed, 5.seconds)
   }
 
   def installFullRace(): Future[NotUsed] = {
     val infos = loadInfos
     RankingState.reset()
-    Future.sequence(for (entry <- loadRaceData) yield {
+    Future.sequence(for (entry ← loadRaceData) yield {
       if (entry.raceId > 0) {
         val checkpointData = entry.checkpointData
         RankingState.updateTimestamps(checkpointData.copy(timestamps = checkpointData.timestamps.take(infos.races_laps(checkpointData.raceId))))
       } else
         FastFuture.successful(NotUsed)
-    }).map(_ => NotUsed)
+    }).map(_ ⇒ NotUsed)
   }
 
 }

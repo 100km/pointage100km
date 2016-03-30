@@ -5,15 +5,15 @@ import replicate.utils.Global
 
 import scala.concurrent.Future
 
-trait Messaging { this: Actor =>
+trait Messaging { this: Actor ⇒
 
   implicit val dispatcher = Global.dispatcher
 
   override val receive: Receive = {
-    case ('deliver, message: Message, token) =>
+    case ('deliver, message: Message, token) ⇒
       val s = sender()
-      sendMessage(message).onComplete(r => s ! ('deliveryReceipt, r, token))
-    case ('cancel, cancellationId: String) =>
+      sendMessage(message).onComplete(r ⇒ s ! ('deliveryReceipt, r, token))
+    case ('cancel, cancellationId: String) ⇒
       cancelMessage(cancellationId)
   }
 

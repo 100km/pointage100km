@@ -26,15 +26,16 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
     log.info("Starting the checkpoint scrutineer")
     // Load the initial values from the databases and rebuild the list of problems
     val sendInitialData =
-      for (_ <- RankingState.reset();
-           (lastSeq, checkpoints) <- database.viewWithUpdateSeq[Int, JsObject]("replicate", "checkpoint", Seq("include_docs" -> "true")))
-        yield {
-          checkpoints.groupBy(_._1).mapValues(_.map(_._2)).foreach { case (contestantId, docs) => self ! InitialData(contestantId, docs) }
-          // The ReadyToStart message will only be received after all the problems above have been handled
-          startChangesStream(lastSeq)
-        }
+      for (
+        _ ← RankingState.reset();
+        (lastSeq, checkpoints) ← database.viewWithUpdateSeq[Int, JsObject]("replicate", "checkpoint", Seq("include_docs" → "true"))
+      ) yield {
+        checkpoints.groupBy(_._1).mapValues(_.map(_._2)).foreach { case (contestantId, docs) ⇒ self ! InitialData(contestantId, docs) }
+        // The ReadyToStart message will only be received after all the problems above have been handled
+        startChangesStream(lastSeq)
+      }
     sendInitialData.recover {
-      case throwable: Throwable =>
+      case throwable: Throwable ⇒
         log.error(throwable, "unable to initialize checkpoint scrutineer")
         self ! Suicide(throwable)
     }
@@ -42,57 +43,62 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
 
   def receive = {
 
-    case Suicide(t) =>
+    case Suicide(t) ⇒
       throw t
 
-    case ReadyToStart =>
+    case ReadyToStart ⇒
       log.info("Answering ready to start")
       sender ! Ack
 
-    case InitialData(contestantId, docs) =>
+    case InitialData(contestantId, docs) ⇒
       try {
         val allData = docs.map(parseCheckpointDoc)
         val zeroSites = allData.filter(_.raceId == 0).map(_.siteId).sorted.mkString(", ")
         if (zeroSites.nonEmpty) {
-          log.warning("ignoring some initial checkpoint information for bib {} because race_id is unknown on site list {}: {}",
-            contestantId, zeroSites, docs)
+          log.warning(
+            "ignoring some initial checkpoint information for bib {} because race_id is unknown on site list {}: {}",
+            contestantId, zeroSites, docs
+          )
         }
         val data = allData.filterNot(_.raceId == 0)
         val problemFuture =
-          for (_ <- Future.sequence(data.dropRight(1).map(RankingState.updateTimestamps));
-               analysis <- data.headOption.fold(FastFuture.successful[Option[ContestantAnalysis]](None))(updateAndAnalyze(_).map(Some(_))))
-            yield analysis.foreach(problemService ! _)
+          for (
+            _ ← Future.sequence(data.dropRight(1).map(RankingState.updateTimestamps));
+            analysis ← data.headOption.fold(FastFuture.successful[Option[ContestantAnalysis]](None))(updateAndAnalyze(_).map(Some(_)))
+          ) yield analysis.foreach(problemService ! _)
         problemFuture.recover {
-          case t: Throwable =>
+          case t: Throwable ⇒
             log.error(t, "error during analysis of initial data for bib {}: {}", contestantId, docs)
         }
       } catch {
-        case t: Throwable =>
+        case t: Throwable ⇒
           log.error(t, "unable to analyze initial data for bib {}: {}", contestantId, docs)
       }
 
-    case Data(doc) =>
+    case Data(doc) ⇒
       sender ! Ack
       try {
         val data = parseCheckpointDoc(doc)
         if (data.raceId == 0)
-          log.warning("ignoring checkpoint information for bib {} at site {} because race_id is unknown: {}",
-            data.contestantId, data.siteId, doc)
+          log.warning(
+            "ignoring checkpoint information for bib {} at site {} because race_id is unknown: {}",
+            data.contestantId, data.siteId, doc
+          )
         else
           updateAndAnalyze(data).map(problemService ! _).recover {
-            case t: Throwable =>
+            case t: Throwable ⇒
               log.error(t, "error during analysis of bib {} at checkpoint {}: {}", data.contestantId, data.siteId)
           }
       } catch {
-        case t: Throwable =>
+        case t: Throwable ⇒
           log.error(t, "unable to analyze document {}", doc)
       }
 
-    case Failure(t) =>
+    case Failure(t) ⇒
       log.error(t, "Received a failure")
       throw t
 
-    case other =>
+    case other ⇒
       log.error(s"Received an unknown message: $other")
       throw new IllegalStateException
 
@@ -108,12 +114,12 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
   }
 
   private[this] def updateAndAnalyze(checkpointData: CheckpointData): Future[ContestantAnalysis] =
-    RankingState.updateTimestamps(checkpointData).map(rankInfo => Analyzer.analyze(checkpointData.contestantId, checkpointData.raceId, rankInfo))
+    RankingState.updateTimestamps(checkpointData).map(rankInfo ⇒ Analyzer.analyze(checkpointData.contestantId, checkpointData.raceId, rankInfo))
 
   private[this] def startChangesStream(lastSeq: Long) =
-    database.changesSource(Map("filter" -> "_view", "view" -> "replicate/checkpoint", "include_docs" -> "true"), sinceSeq = lastSeq)
-        .map(js => Data((js \ "doc").as[JsObject]))
-        .runWith(Sink.actorRefWithAck(self, ReadyToStart, Ack, ChangesComplete))
+    database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
+      .map(js ⇒ Data((js \ "doc").as[JsObject]))
+      .runWith(Sink.actorRefWithAck(self, ReadyToStart, Ack, ChangesComplete))
 
 }
 

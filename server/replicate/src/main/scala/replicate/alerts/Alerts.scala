@@ -30,17 +30,17 @@ class Alerts(database: Database) extends Actor with ActorLogging {
 
   lazy private[this] val officers: Map[String, ActorRef] =
     Global.replicateConfig.as[Map[String, Config]]("officers").collect {
-      case (officerId, config) if !config.as[Option[Boolean]]("disabled").contains(true) => (officerId, startFromConfig(officerId, config))
+      case (officerId, config) if !config.as[Option[Boolean]]("disabled").contains(true) ⇒ (officerId, startFromConfig(officerId, config))
     }
 
   private[this] def startFromConfig(officerId: String, config: Config): ActorRef = {
     val service = config.as[String]("type")
     val props = service match {
-      case "freemobile-sms" => Props(new FreeMobileSMS(config.as[String]("user"), config.as[String]("password")))
-      case "pushbullet"     => Props(new Pushbullet(config.as[String]("token")))
-      case "system"         => Props(new SystemLogger)
-      case "telegram"       => Props(new Telegram(config.as[String]("id")))
-      case s                => sys.error(s"Unknown officer type $s for officer $officerId")
+      case "freemobile-sms" ⇒ Props(new FreeMobileSMS(config.as[String]("user"), config.as[String]("password")))
+      case "pushbullet"     ⇒ Props(new Pushbullet(config.as[String]("token")))
+      case "system"         ⇒ Props(new SystemLogger)
+      case "telegram"       ⇒ Props(new Telegram(config.as[String]("id")))
+      case s                ⇒ sys.error(s"Unknown officer type $s for officer $officerId")
     }
     log.debug("starting actor for {}", officerId)
     context.actorOf(props, if (service == officerId) service else s"$service-$officerId")
@@ -50,24 +50,24 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     val officersStr = officers.keys.toSeq.sorted.mkString(", ")
     // Create officers documents asynchronously then send starting message
     createOfficerDocuments(database, officers.keys.toSeq).andThen {
-      case _ => sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
+      case _ ⇒ sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
         icon = Some(Glyphs.wrench)))
     }
-    database.update("bib_input", "force-update", "officers", Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))
+    database.update("bib_input", "force-update", "officers", Map("json" → Json.stringify(Json.obj("officers" → officersStr))))
     // Alert services
-    for (infos <- Global.infos; raceInfo <- infos.races.values)
+    for (infos ← Global.infos; raceInfo ← infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
     PingAlert.runPingAlerts(database)
     BroadcastAlert.runBroadcastAlerts(database)
   }
 
   def receive = {
-    case ('message, message: Message, uuid: UUID) =>
+    case ('message, message: Message, uuid: UUID) ⇒
       // Deliver a new message through a dedicated actor
       log.debug("sending message {} with UUID {}", message, uuid)
-      deliveryInProgress += uuid -> context.actorOf(Props(new AlertSender(database, message, uuid, officers)))
+      deliveryInProgress += uuid → context.actorOf(Props(new AlertSender(database, message, uuid, officers)))
 
-    case ('cancel, uuid: UUID) =>
+    case ('cancel, uuid: UUID) ⇒
       // Cancel a message either through its delivery actor if it is still active, or using stored information
       // in the database otherwise.
       log.debug("cancelling message with UUID {}", uuid)
@@ -76,7 +76,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
       else
         AlertSender.cancelPersisted(database, officers, uuid)
 
-    case ('persisted, uuid: UUID) =>
+    case ('persisted, uuid: UUID) ⇒
       // When delivery and cancellation information has been persisted into the database, the delivery actor may
       // be stopped. Cancellation information will be pulled up from the database if needed later.
       log.debug("message with UUID {} persisted, removing from cache and stopping actor", uuid)
@@ -120,9 +120,9 @@ object Alerts {
    * @return a future which will be completed once the insertions are done
    */
   private def createOfficerDocuments(database: Database, officers: Seq[String])(implicit ec: ExecutionContext): Future[Unit] = {
-    val docs = officers.map(officerId => Json.obj("_id" -> s"officer-$officerId", "type" -> "officer", "officer" -> officerId,
-      "log_levels" -> Json.obj("*" -> (if (officerId == "system") "debug" else "warning"))))
-    database.bulkDocs(docs, allOrNothing = false).map(_ => ())
+    val docs = officers.map(officerId ⇒ Json.obj("_id" → s"officer-$officerId", "type" → "officer", "officer" → officerId,
+      "log_levels" → Json.obj("*" → (if (officerId == "system") "debug" else "warning"))))
+    database.bulkDocs(docs, allOrNothing = false).map(_ ⇒ ())
   }
 
 }

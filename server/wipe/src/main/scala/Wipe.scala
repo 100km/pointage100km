@@ -16,8 +16,8 @@ object Wipe extends App {
 
   private val parser = new OptionParser[Options]("wipe") {
     help("help") abbr "h" text "show this help"
-    arg[String]("<login>") text "login to access the master database" action { (x, c) => c.copy(login = x) }
-    arg[String]("<password>") text "password to access the master database" action { (x, c) => c.copy(password = x) }
+    arg[String]("<login>") text "login to access the master database" action { (x, c) ⇒ c.copy(login = x) }
+    arg[String]("<password>") text "password to access the master database" action { (x, c) ⇒ c.copy(password = x) }
     override val showUsageOnError = true
   }
 
@@ -39,22 +39,22 @@ object Wipe extends App {
     val oldName = (oldNameDoc \ "dbname").as[String]
     val pattern = """steenwerck-(\d+)-(\d+)""".r
     val newCount = oldName match {
-      case pattern(year, count) if year.toInt == currentYear => count.toInt + 1
-      case _                                                 => 1
+      case pattern(year, count) if year.toInt == currentYear ⇒ count.toInt + 1
+      case _ ⇒ 1
     }
     val newName = dbOccurrence(newCount)
-    cfgDatabase.insert(oldNameDoc - "dbname" ++ Json.obj("dbname" -> newName)).execute()
+    cfgDatabase.insert(oldNameDoc - "dbname" ++ Json.obj("dbname" → newName)).execute()
     newName
   } catch {
-    case _: Exception =>
+    case _: Exception ⇒
       try {
         cfgDatabase.create()
       } catch {
-        case e: Exception =>
+        case e: Exception ⇒
           println("Cannot create configuration database: " + e)
       }
       val newName = dbOccurrence(1)
-      cfgDatabase.insert(Json.obj("dbname" -> newName, "tests_allowed" -> false), "configuration").execute()
+      cfgDatabase.insert(Json.obj("dbname" → newName, "tests_allowed" → false), "configuration").execute()
       newName
   }
 
@@ -65,19 +65,19 @@ object Wipe extends App {
     println("Copying security document")
     hubDatabase.insert(cfgDatabase("_security").execute(), "_security").execute()
     println("Inserting configuration document")
-    hubDatabase.insert(Json.obj("dbname" -> newName, "tests_allowed" -> false), "configuration").execute()
+    hubDatabase.insert(Json.obj("dbname" → newName, "tests_allowed" → false), "configuration").execute()
     println("Generating random identification for couchsync")
     val key = new Array[Byte](256)
     scala.util.Random.nextBytes(key)
     val md = java.security.MessageDigest.getInstance("SHA-1")
     val ha = new sun.misc.BASE64Encoder().encode(md.digest(key))
-    hubDatabase.insert(Json.obj("key" -> ha), "couchsync").execute()
+    hubDatabase.insert(Json.obj("key" → ha), "couchsync").execute()
     println("All things done")
   } catch {
-      case Couch.StatusError(401, _, _) =>
-        println("You are not authorized to perform this operation")
-      case t: Exception =>
-        println("Exception caught: " + t)
+    case Couch.StatusError(401, _, _) ⇒
+      println("You are not authorized to perform this operation")
+    case t: Exception ⇒
+      println("Exception caught: " + t)
   }
 
   hubCouch.releaseExternalResources().execute()

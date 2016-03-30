@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 class Telegram(id: String) extends Actor with ActorLogging with Messaging {
   override def sendMessage(message: Message): Future[Option[String]] = {
-    val mdUrl = message.url.fold("")(uri => s" [(link)]($uri)")
+    val mdUrl = message.url.fold("")(uri ⇒ s" [(link)]($uri)")
     val mdMsg = message.severityOrMessageIcon.fold("")(_ + ' ') + s"*[${message.title}]* ${message.body} $mdUrl"
     Telegram.bot ! Targetted(To(id), ActionMessage(mdMsg, parse_mode = ParseModeMarkdown))
     FastFuture.successful(None)

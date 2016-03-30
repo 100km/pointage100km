@@ -32,22 +32,22 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
    * Send an alert after prepending the contestant name to the body.
    */
   private[this] def alert(severity: Severity, bib: Int, rank: Int, message: String, addLink: Boolean): Future[Unit] = {
-    val contestantInfo = database(s"contestant-$bib") map { doc =>
+    val contestantInfo = database(s"contestant-$bib") map { doc ⇒
       val (firstName, lastName) = ((doc \ "first_name").as[String], (doc \ "name").as[String])
       s"$firstName $lastName (bib $bib)"
     }
-    contestantInfo.map { name =>
+    contestantInfo.map { name ⇒
       Alerts.sendAlert(Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",
-        body = s"$name $message", url = if (addLink) Global.configuration.map(_.adminLink) else None))
+        body  = s"$name $message", url = if (addLink) Global.configuration.map(_.adminLink) else None))
     }
   }
 
   private[this] def checkForChange(runners: Seq[Int]): Unit = {
-    for ((bib, idx) <- runners.zipWithIndex; ranking = idx + 1) {
+    for ((bib, idx) ← runners.zipWithIndex; ranking = idx + 1) {
       val isAtHead = ranking <= Global.RankingAlerts.topRunners
-      Some(currentHead.indexOf(bib)).filterNot(_ == -1).map(_+1) match {
+      Some(currentHead.indexOf(bib)).filterNot(_ == -1).map(_ + 1) match {
         // Someone gained many ranks at once
-        case Some(previousRanking) =>
+        case Some(previousRanking) ⇒
           if (ranking < previousRanking && previousRanking - ranking >= Global.RankingAlerts.suspiciousRankJump) {
             // Someone gained many ranks at once
             alert(Severity.Warning, bib, ranking,
@@ -58,7 +58,7 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
             alert(if (suspicious) Severity.Warning else Severity.Info, bib, ranking,
               s"was previously at rank $previousRanking (${ranking - previousRanking})", addLink = suspicious)
           }
-        case None if isAtHead =>
+        case None if isAtHead ⇒
           if (currentHead.size >= Global.RankingAlerts.topRunners) {
             // Someone appeared at the head of the race while we did not know them previously and we know the top runners already
             alert(Severity.Critical, bib, ranking, s"suddenly appeared to the head of the race", addLink = true)
@@ -66,14 +66,14 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
             // Someone appeared at the head of the race, but we are still building the top runners list
             alert(Severity.Verbose, bib, ranking, s"is at the head (initial ranking)", addLink = false)
           }
-        case _ =>
+        case _ ⇒
           FastFuture.successful(())
       }
     }
     currentHead = runners
   }
 
-  override def future = headOfRace(raceInfo, database).map { runners =>
+  override def future = headOfRace(raceInfo, database).map { runners ⇒
     if (currentHead == null)
       currentHead = runners
     else
@@ -86,8 +86,8 @@ object RankingAlert extends PlayJsonSupport {
 
   def raceRanking(raceInfo: RaceInfo, database: Database): Future[HttpResponse] =
     database.list("main_display", "global-ranking", "global-ranking",
-      Seq("startkey" -> Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" -> Json.stringify(Json.arr(raceInfo.raceId + 1)),
-        "inclusive_end" -> "false"))
+      Seq("startkey" → Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" → Json.stringify(Json.arr(raceInfo.raceId + 1)),
+        "inclusive_end" → "false"))
 
   /**
    * Return the ranking of a given race.
@@ -95,8 +95,8 @@ object RankingAlert extends PlayJsonSupport {
    * @return a list of bibs ordered by rank
    */
   private def headOfRace(raceInfo: RaceInfo, database: Database)(implicit fm: Materializer, ec: ExecutionContext): Future[Seq[Int]] = {
-    raceRanking(raceInfo, database).filter(_.status.isSuccess()).flatMap(r => Unmarshal(r.entity).to[JsValue]).map { result =>
-      (result \ "rows").as[Array[JsValue]].headOption.map(_ \ "contestants" \\ "id" map { id =>
+    raceRanking(raceInfo, database).filter(_.status.isSuccess()).flatMap(r ⇒ Unmarshal(r.entity).to[JsValue]).map { result ⇒
+      (result \ "rows").as[Array[JsValue]].headOption.map(_ \ "contestants" \\ "id" map { id ⇒
         // id is of the form checkpoints-CHECKPOINT-CONTESTANT
         id.as[String].split('-').last.toInt
       }).getOrElse(Seq())

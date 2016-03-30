@@ -31,20 +31,20 @@ class StreamUtilsSpec extends Specification {
   "sample()" should {
 
     "filter the right number of elements" in new withActorSystem {
-      val source = Source.tick(0.second, 100.milliseconds, 1).zipWith(Source(1 to 100)) { case (_, n) => n }
+      val source = Source.tick(0.second, 100.milliseconds, 1).zipWith(Source(1 to 100)) { case (_, n) ⇒ n }
       // This will get the samples at 0, 200, 300, and 040 milliseconds, namely 1, 3, 5, and 7
-      val result = source.via(sample(140.milliseconds)).take(4).runWith(Sink.reduce[Int](_+_))
+      val result = source.via(sample(140.milliseconds)).take(4).runWith(Sink.reduce[Int](_ + _))
       Await.result(result, 1.second) must be equalTo 16
     }
 
     "propagate an upstream completion without delay" in new withActorSystem {
-      val result = Source.single(1).via(sample(1.second)).runWith(Sink.reduce[Int](_+_))
+      val result = Source.single(1).via(sample(1.second)).runWith(Sink.reduce[Int](_ + _))
       Await.result(result, 100.milliseconds) must be equalTo 1
     }
 
     "propagate an upstream error without delay" in new withActorSystem {
       val source = Source.single(1) ++ Source.failed(new RuntimeException("marker"))
-      val result = source.via(sample(1.second)).runWith(Sink.reduce[Int](_+_))
+      val result = source.via(sample(1.second)).runWith(Sink.reduce[Int](_ + _))
       Await.result(result, 100.milliseconds) must throwA[RuntimeException]("marker")
     }
 
@@ -59,12 +59,12 @@ class StreamUtilsSpec extends Specification {
 
     "not trigger when upstream progresses fast enough" in new withActorSystem {
       val result = Source.tick(0.second, 50.milliseconds, 1).via(idleAlert[Int](100.milliseconds, 100))
-        .take(5).runWith(Sink.reduce[Int](_+_))
+        .take(5).runWith(Sink.reduce[Int](_ + _))
       Await.result(result, 2.seconds) must be equalTo 5
     }
 
     "trigger exactly once per alert period" in new withActorSystem {
-      val result = Source.tick(0.second, 1.second, NotUsed).zip(Source.fromIterator(() => Iterator.from(0))).map(_._2)
+      val result = Source.tick(0.second, 1.second, NotUsed).zip(Source.fromIterator(() ⇒ Iterator.from(0))).map(_._2)
         .via(idleAlert[Int](200.milliseconds, 100))
         .take(5).runWith(Sink.fold(List[Int]())(_ :+ _))
       Await.result(result, 5.seconds) must be equalTo List(0, 100, 1, 100, 2)

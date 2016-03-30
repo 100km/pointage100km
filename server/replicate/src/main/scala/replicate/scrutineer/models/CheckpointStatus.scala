@@ -10,32 +10,32 @@ sealed abstract class CheckpointStatus {
 object CheckpointStatus {
 
   case class Ok(speed: Double) extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "ok", "speed" -> speed)
+    def toJson = Json.obj("type" → "ok", "speed" → speed)
     override val isOk: Boolean = true
   }
 
   case class Suspicious(speed: Double) extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "suspicious", "speed" -> speed)
+    def toJson = Json.obj("type" → "suspicious", "speed" → speed)
   }
 
   case object Missing extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "missing")
+    def toJson = Json.obj("type" → "missing")
   }
 
   case object Down extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "down")
+    def toJson = Json.obj("type" → "down")
   }
 
   case object TooEarly extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "early")
+    def toJson = Json.obj("type" → "early")
   }
 
   case object TooLate extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "late")
+    def toJson = Json.obj("type" → "late")
   }
 
   case object TooLong extends CheckpointStatus {
-    def toJson = Json.obj("type" -> "long")
+    def toJson = Json.obj("type" → "long")
   }
 
 }

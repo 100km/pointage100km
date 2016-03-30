@@ -17,7 +17,7 @@ package object messaging {
   private[messaging] case object Critical extends Status
 
   private[messaging] val severities: Map[Status, Severity] =
-    Map(Ok -> Severity.Info, Notice -> Severity.Info, Warning -> Severity.Warning, Critical -> Severity.Critical)
+    Map(Ok → Severity.Info, Notice → Severity.Info, Warning → Severity.Warning, Critical → Severity.Critical)
 
   private[messaging] def amountToStatus(amount: Double): (Status, Double) = {
     import replicate.utils.Global.TextMessages.TopUp._
@@ -47,9 +47,9 @@ package object messaging {
       if (status != currentStatus) {
         val current = amountToCurrency(balance)
         val message = (currentStatus, status) match {
-          case (Ok, null) => s"Current balance is $current"
-          case (Ok, _) => s"Balance has been restored to $current"
-          case _ => s"Balance is $current, below the limit of ${amountToCurrency(limit)}"
+          case (Ok, null) ⇒ s"Current balance is $current"
+          case (Ok, _)    ⇒ s"Balance has been restored to $current"
+          case _          ⇒ s"Balance is $current, below the limit of ${amountToCurrency(limit)}"
         }
         currentStatus = status
         latestAlert.foreach(Alerts.cancelAlert)

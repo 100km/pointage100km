@@ -12,7 +12,7 @@ trait LoggingError {
 
   def withError[T](future: Future[T], message: String): Future[Any] = {
     future onFailure {
-      case e: Exception => log.error(e, message)
+      case e: Exception ⇒ log.error(e, message)
     }
     future
   }

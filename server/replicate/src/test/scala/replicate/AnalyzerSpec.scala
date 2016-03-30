@@ -68,7 +68,7 @@ class AnalyzerSpec extends Specification {
       RankingStateSpec.installSoleContestant(201, raceData)
       val rankingInfo = Await.result(RankingState.pointsAndRank(201, 1), 1.second)
       rankingInfo.points.size must be equalTo 21
-      for (partial <- 1 to rankingInfo.points.size) {
+      for (partial ← 1 to rankingInfo.points.size) {
         val result = Analyzer.analyze(201, 1, rankingInfo.copy(points = rankingInfo.points.take(partial)))
         result.checkpoints.size must be equalTo partial
         result.checkpoints.count(_.status.isInstanceOf[Ok]) must be equalTo partial

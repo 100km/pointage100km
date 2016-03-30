@@ -36,7 +36,7 @@ class Replicate(options: Options.Config) extends LoggingError {
 
   private implicit val timeout: Duration = (5, SECONDS)
 
-  private val localInfo = Json.obj("type" -> "site-info", "scope" -> "local", "site-id" -> options.siteId)
+  private val localInfo = Json.obj("type" → "site-info", "scope" → "local", "site-id" → options.siteId)
 
   private def createLocalInfo(db: Database) {
     val name = "site-info"
@@ -44,11 +44,11 @@ class Replicate(options: Options.Config) extends LoggingError {
       if (options.resetSiteId)
         db.insert(localInfo, name).execute()
     } catch {
-      case Couch.StatusError(409, _, _) =>
+      case Couch.StatusError(409, _, _) ⇒
         try {
           forceUpdate(db, name, localInfo).execute()
         } catch {
-          case t: Exception =>
+          case t: Exception ⇒
             log.error(t, "cannot force-update, hoping it is right")
         }
     }
@@ -71,7 +71,7 @@ class Replicate(options: Options.Config) extends LoggingError {
           dbName = Global.configuration.map(_.dbname)
           dbName.foreach(log.info("server database name is {}", _))
         } catch {
-          case t: Throwable =>
+          case t: Throwable ⇒
             log.error(t, "cannot retrieve database name")
             Thread.sleep(5000)
         }
@@ -84,7 +84,7 @@ class Replicate(options: Options.Config) extends LoggingError {
     try {
       Some(localDatabase("configuration").execute()(timeout).as[Configuration].dbname)
     } catch {
-      case t: Exception =>
+      case t: Exception ⇒
         log.info("cannot retrieve previous database name: {}", t.getMessage)
         None
     }
@@ -97,7 +97,7 @@ class Replicate(options: Options.Config) extends LoggingError {
       try {
         localDatabase.delete().execute()
       } catch {
-        case t: Exception =>
+        case t: Exception ⇒
           log.error(t, "deletion failed")
       }
     }
@@ -107,9 +107,9 @@ class Replicate(options: Options.Config) extends LoggingError {
     localDatabase.create().execute()
     log.info("database created")
   } catch {
-    case Couch.StatusError(412, _, _) =>
+    case Couch.StatusError(412, _, _) ⇒
       log.info("database already exists")
-    case t: Exception =>
+    case t: Exception ⇒
       log.error(t, "cannot create database")
       exit(1)
   }
@@ -125,21 +125,21 @@ class Replicate(options: Options.Config) extends LoggingError {
       try {
         localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()(initialReplicationTimeout)
         log.info("initial replication done")
-        val loadInfos = localDatabase("infos") map(_.as[Infos]) andThen {
-          case Success(infos) =>
+        val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
+          case Success(infos) ⇒
             Global.infos = Some(infos)
             log.info("race information loaded from database")
-          case Failure(t)     =>
+          case Failure(t) ⇒
             log.error(t, "unable to read race information from database")
         }
         loadInfos.execute()
       } catch {
-        case t: Exception =>
+        case t: Exception ⇒
           log.error(t, "initial replication failed")
       }
     }
   } catch {
-    case t: Exception =>
+    case t: Exception ⇒
       log.error(t, "cannot create local information")
       exit(1)
   }
@@ -149,7 +149,7 @@ class Replicate(options: Options.Config) extends LoggingError {
     exit(0)
   } else {
     if (options.replicate) {
-      val replicateOptions = Json.obj("continuous" -> true, "filter" -> "common/to-replicate")
+      val replicateOptions = Json.obj("continuous" → true, "filter" → "common/to-replicate")
       system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
         withError(localDatabase.replicateFrom(hubDatabase, replicateOptions), "cannot start remote to local replication")
         if (!options.isSlave) {
@@ -167,8 +167,10 @@ class Replicate(options: Options.Config) extends LoggingError {
       }
     if (options.obsolete)
       system.scheduler.schedule(obsoleteRemoveInterval, obsoleteRemoveInterval) {
-        withError(RemoveObsoleteDocuments.removeObsoleteDocuments(localDatabase, log),
-          "cannot remove obsolete documents")
+        withError(
+          RemoveObsoleteDocuments.removeObsoleteDocuments(localDatabase, log),
+          "cannot remove obsolete documents"
+        )
       }
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")

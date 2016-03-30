@@ -16,13 +16,13 @@ trait ConflictsSolver {
 
   private implicit class TimesAccessor(from: JsObject) {
     def getTimes(name: String): List[BigDecimal] = from.validate((__ \ name).json.pick[JsArray]) match {
-      case JsSuccess(l, _) => l.as[List[BigDecimal]]
-      case _: JsError      => Nil
+      case JsSuccess(l, _) ⇒ l.as[List[BigDecimal]]
+      case _: JsError      ⇒ Nil
     }
     def times = getTimes("times")
     def deletedTimes = getTimes("deleted_times")
     def artificialTimes = getTimes("artificial_times")
-    def setTimes(name: String, times: List[BigDecimal]): JsObject = from - name ++ Json.obj(name -> times)
+    def setTimes(name: String, times: List[BigDecimal]): JsObject = from - name ++ Json.obj(name → times)
   }
 
   private def mergeInto(ref: JsObject, conflicting: JsObject): JsObject = {
@@ -34,24 +34,24 @@ trait ConflictsSolver {
 
   private def solveConflicts(db: Database, id: String, revs: List[String]): Future[Seq[JsObject]] =
     getRevs(db, id, revs) flatMap {
-      docs =>
+      docs ⇒
         val f = solve(db, docs) {
-          docs => docs.tail.foldLeft(docs.head)(mergeInto)
+          docs ⇒ docs.tail.foldLeft(docs.head)(mergeInto)
         } map {
-          result =>
+          result ⇒
             log.info("solved conflicts for {} ({} documents)", id, revs.size)
             result
         }
         f onFailure {
-          case e: Exception => log.error(e, "unable to solve conflicts for {} ({} documents)", id, revs.size)
+          case e: Exception ⇒ log.error(e, "unable to solve conflicts for {} ({} documents)", id, revs.size)
         }
         f
     }
 
   def fixConflictingCheckpoints(db: Database): Future[Iterable[Seq[JsObject]]] =
-    db.mapOnly("common", "conflicting-checkpoints") flatMap { r =>
-        Future.sequence(for ((id, _, value) <- r.items[JsValue, List[String]])
-          yield solveConflicts(db, id, value))
+    db.mapOnly("common", "conflicting-checkpoints") flatMap { r ⇒
+      Future.sequence(for ((id, _, value) ← r.items[JsValue, List[String]])
+        yield solveConflicts(db, id, value))
     }
 
 }

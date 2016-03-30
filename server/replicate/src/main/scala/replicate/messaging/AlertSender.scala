@@ -64,59 +64,59 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
   }
 
   override val receive: Receive = {
-    case ('officers, targetOfficers: Seq[String] @unchecked) =>
+    case ('officers, targetOfficers: Seq[String] @unchecked) ⇒
       log.debug("Got targets for {}: {}", message, targetOfficers)
       targets = targetOfficers.intersect(officers.keys.toSeq)
       // Do not send the message if it has been cancelled already
       if (!cancelled) {
         missingConfirmations = targets.size
-        targets.foreach(officerId => officers(officerId) ! ('deliver, message, officerId))
+        targets.foreach(officerId ⇒ officers(officerId) ! ('deliver, message, officerId))
       }
       if (missingConfirmations == 0)
         self ! 'write
 
-    case ('deliveryReceipt, response: Try[Option[String] @unchecked], officerId: String) =>
+    case ('deliveryReceipt, response: Try[Option[String] @unchecked], officerId: String) ⇒
       // Receive delivery information for an officer
       log.debug("confirmation for {} received ({}): {}", officerId, response, message)
       response match {
-        case Failure(t) =>
+        case Failure(t) ⇒
           log.warning("cannot send to {}: {}", officerId, message)
-        case Success(Some(cancellationId)) =>
+        case Success(Some(cancellationId)) ⇒
           if (cancelled)
             // Cancel delivery immediately as the message has been cancelled
             cancelAlert(sender(), cancellationId)
           else
             // Store cancellation information for later
             cancellationIds :+= (officerId, cancellationId)
-        case Success(None) =>
-          // Do nothing, the transport does not allow cancellation
+        case Success(None) ⇒
+        // Do nothing, the transport does not allow cancellation
       }
       missingConfirmations -= 1
       if (missingConfirmations == 0)
         self ! 'write
 
-    case 'write =>
+    case 'write ⇒
       // The documentation with the delivery and cancellation information can be persisted to the database.
       val jsonCancellationIds = JsArray(cancellationIds.map {
-        case (officerId, cancellationId) => Json.obj("officer" -> officerId, "cancellation" -> cancellationId)
+        case (officerId, cancellationId) ⇒ Json.obj("officer" → officerId, "cancellation" → cancellationId)
       })
-      val doc = Json.obj("type" -> "alert", "addedTS" -> addedTimestamp, "cancellations" -> jsonCancellationIds,
-        "targets" -> JsArray(targets.map(JsString))) ++
+      val doc = Json.obj("type" → "alert", "addedTS" → addedTimestamp, "cancellations" → jsonCancellationIds,
+        "targets" → JsArray(targets.map(JsString))) ++
         Json.toJson(message).as[JsObject] ++
-        JsObject(cancelledTimestamp.map(ts => ("cancelledTS", JsNumber(ts))).toSeq)
+        JsObject(cancelledTimestamp.map(ts ⇒ ("cancelledTS", JsNumber(ts))).toSeq)
       log.debug("writing to database with id {}: {}", uuidToId(uuid), doc)
-      pipe(database.insert(doc, uuidToId(uuid)).map(_ => 'persisted)) to self
+      pipe(database.insert(doc, uuidToId(uuid)).map(_ ⇒ 'persisted)) to self
 
-    case 'persisted =>
+    case 'persisted ⇒
       persisted = true
-      context.parent !('persisted, uuid)
+      context.parent ! ('persisted, uuid)
       // The document has been persisted. If a cancellation has happened between the write and the persisted phases,
       // we will start a database-based cancellation even though the cancellation ids are available since we need
       // to update the document in the database.
       if (cancelled && cancellationIds.nonEmpty)
         cancelPersisted(database, officers, uuid)
 
-    case 'cancel =>
+    case 'cancel ⇒
       log.debug("cancelling {}", message)
       cancelledTimestamp = Some(System.currentTimeMillis())
       if (persisted)
@@ -125,7 +125,7 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
       else if (missingConfirmations > 0) {
         // The message is not yet being written into the database as we are still waiting on confirmations. We will
         // cancel the already sent deliveries, others will be cancelled as the confirmations arrive.
-        cancellationIds.foreach { case (officerId, cancellationId) => cancelAlert(officers(officerId), cancellationId) }
+        cancellationIds.foreach { case (officerId, cancellationId) ⇒ cancelAlert(officers(officerId), cancellationId) }
         cancellationIds = Seq()
       }
   }
@@ -146,12 +146,13 @@ object AlertSender {
    * @param uuid the unique identifier of the message to cancel
    */
   def cancelPersisted(database: Database, officers: Map[String, ActorRef], uuid: UUID): Unit = {
-    for (doc <- database(uuidToId(uuid))) {
-      for (cancellation <- (doc \ "cancellations").asOpt[Array[JsObject]].getOrElse(Array());
-           officerId = (cancellation \ "officer").as[String];
-           cancellationId = (cancellation \ "cancellation").as[String])
-        cancelAlert(officers(officerId), cancellationId)
-      database.insert(doc - "cancellations" ++ Json.obj("cancelledTS" -> System.currentTimeMillis()))
+    for (doc ← database(uuidToId(uuid))) {
+      for (
+        cancellation ← (doc \ "cancellations").asOpt[Array[JsObject]].getOrElse(Array());
+        officerId = (cancellation \ "officer").as[String];
+        cancellationId = (cancellation \ "cancellation").as[String]
+      ) cancelAlert(officers(officerId), cancellationId)
+      database.insert(doc - "cancellations" ++ Json.obj("cancelledTS" → System.currentTimeMillis()))
     }
   }
 
@@ -160,7 +161,7 @@ object AlertSender {
 
   private def officersFor(database: Database, message: Message): Future[Seq[String]] = {
     val key = Json.stringify(Json.arr(message.category.toString, message.severity.toString.toLowerCase))
-    database.view[JsValue, String]("admin", "officers", Seq("startkey" -> key, "endkey" -> key)).map(_.map(_._2))
+    database.view[JsValue, String]("admin", "officers", Seq("startkey" → key, "endkey" → key)).map(_.map(_._2))
   }
 
 }

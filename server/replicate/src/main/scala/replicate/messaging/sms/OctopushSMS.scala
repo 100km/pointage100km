@@ -23,25 +23,27 @@ class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) ext
     pipe(octopush.credit().transform(Balance, BalanceError)).to(self)
 
   def receive = {
-    case (recipient: String, message: String) =>
+    case (recipient: String, message: String) ⇒
       log.info("Sending SMS to {}: {}", recipient, message)
       val sms = SMS(smsRecipients = List(recipient), smsText = message, smsType = PremiumFrance, smsSender = sender, transactional = true)
       pipe(octopush.sms(sms).transform(SendOk(sms, _), SendError(sms, _))).to(self)
 
-    case SendOk(sms, result) =>
-      log.debug("SMS to {} sent succesfully with {} SMS (cost: {}): {}"  ,
-        sms.smsRecipients.head, result.numberOfSendings, "%.2f€".format(result.cost), sms.smsText)
+    case SendOk(sms, result) ⇒
+      log.debug(
+        "SMS to {} sent succesfully with {} SMS (cost: {}): {}",
+        sms.smsRecipients.head, result.numberOfSendings, "%.2f€".format(result.cost), sms.smsText
+      )
       self ! Balance(result.balance)
 
-    case Failure(SendError(sms, failure)) =>
+    case Failure(SendError(sms, failure)) ⇒
       log.error(failure, "SMS to {} ({}) failed", sms.smsRecipients.head, sms.smsText)
       Alerts.sendAlert(Message(TextMessage, Severity.Error, s"Unable to send SMS to ${sms.smsRecipients.head}",
         s"${failure.getMessage}", icon = Some(Glyphs.telephoneReceiver)))
 
-    case Balance(balance) =>
+    case Balance(balance) ⇒
       trackBalance(balance)
 
-    case Failure(BalanceError(failure)) =>
+    case Failure(BalanceError(failure)) ⇒
       balanceError(failure)
   }
 
