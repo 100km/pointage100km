@@ -50,7 +50,7 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
 
     case InitialData(contestantId, docs) ⇒
       try {
-        val allData = docs.map(parseCheckpointDoc)
+        val allData = docs.map(_.as[CheckpointData])
         val zeroSites = allData.filter(_.raceId == 0).map(_.siteId).sorted.mkString(", ")
         if (zeroSites.nonEmpty) {
           log.warning(
@@ -73,7 +73,7 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
     case Data(doc) ⇒
       sender ! Ack
       try {
-        val data = parseCheckpointDoc(doc)
+        val data = doc.as[CheckpointData]
         if (data.raceId == 0)
           log.warning(
             "ignoring checkpoint information for bib {} at site {} because race_id is unknown: {}",
@@ -98,15 +98,6 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
       log.error(s"Received an unknown message: $other")
       throw new IllegalStateException
 
-  }
-
-  // Can throw if the checkpoint contains invalid data or is incomplete
-  private[this] def parseCheckpointDoc(doc: JsObject): CheckpointData = {
-    val raceId = (doc \ "race_id").as[Int]
-    val contestantId = (doc \ "bib").as[Int]
-    val siteId = (doc \ "site_id").as[Int]
-    val timestamps = (doc \ "times").as[Seq[Long]]
-    CheckpointData(raceId, contestantId, siteId, timestamps)
   }
 
   private[this] def startChangesStream(lastSeq: Long) =

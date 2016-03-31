@@ -2,6 +2,7 @@ package replicate.state
 
 import akka.Done
 import akka.agent.Agent
+import play.api.libs.json.{JsError, JsSuccess, Reads}
 import replicate.utils.Global
 
 import scala.concurrent.Future
@@ -10,8 +11,24 @@ object CheckpointsState {
 
   import Global.dispatcher
 
-  case class Point(siteId: Int, timestamp: Long)
   case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamps: Seq[Long])
+
+  object CheckpointData {
+    implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js =>
+      try {
+        val raceId = (js \ "race_id").as[Int]
+        val contestantId = (js \ "bib").as[Int]
+        val siteId = (js \ "site_id").as[Int]
+        val timestamps = (js \ "times").as[Seq[Long]]
+        JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps))
+      } catch {
+        case t: Throwable => JsError(t.getMessage)
+      }
+    }
+  }
+
+  case class Point(siteId: Int, timestamp: Long)
+
   type ContestantTimes = Map[Int, Seq[Long]]
   type Race = Map[Int, ContestantTimes]
 

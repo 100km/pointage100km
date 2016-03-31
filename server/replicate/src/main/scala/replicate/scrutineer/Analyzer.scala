@@ -172,11 +172,11 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
       // Remove this point with a meaningful error message
       (excessiveSpeedBefore.contains(toRemove), excessiveSpeedAfter.contains(toRemove), successor) match {
         case (true, false, _) ⇒
-          Some(RemovePoint(toRemove.point, s"Excessive speed before this checkpoint: ${formatSpeed(toRemove.speed)}"))
+          Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed before this checkpoint: ${formatSpeed(toRemove.speed)}"))
         case (false, true, next) ⇒
-          Some(RemovePoint(toRemove.point, s"Excessive speed after this checkpoint: ${formatSpeed(next.speed)}"))
+          Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed after this checkpoint: ${formatSpeed(next.speed)}"))
         case (true, true, next) ⇒
-          Some(RemovePoint(toRemove.point, s"Excessive speed around this checkpoint: ${formatSpeed(toRemove.speed)} and ${formatSpeed(next.speed)}"))
+          Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed around this checkpoint: ${formatSpeed(toRemove.speed)} before and ${formatSpeed(next.speed)} after"))
         case _ ⇒
           // This can never happen
           None
