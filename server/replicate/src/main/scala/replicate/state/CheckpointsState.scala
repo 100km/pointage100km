@@ -14,7 +14,7 @@ object CheckpointsState {
   case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamps: Seq[Long])
 
   object CheckpointData {
-    implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js =>
+    implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js ⇒
       try {
         val raceId = (js \ "race_id").as[Int]
         val contestantId = (js \ "bib").as[Int]
@@ -22,7 +22,7 @@ object CheckpointsState {
         val timestamps = (js \ "times").as[Seq[Long]]
         JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps))
       } catch {
-        case t: Throwable => JsError(t.getMessage)
+        case t: Throwable ⇒ JsError(t.getMessage)
       }
     }
   }

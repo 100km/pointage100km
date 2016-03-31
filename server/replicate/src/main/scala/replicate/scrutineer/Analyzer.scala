@@ -22,7 +22,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private def analyze(points: Seq[Point]): ContestantAnalysis = {
     val analyzed = analyzePoints(points)
     val before = enrichPoints(points)
-    val after = enrichPoints(analyzed.collect { case p: KeepPoint => p.point })
+    val after = enrichPoints(analyzed.collect { case p: KeepPoint ⇒ p.point })
     ContestantAnalysis(contestantId, raceInfo.raceId, analyzePoints(points), before, after)
   }
 
@@ -33,14 +33,14 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
       dropWhile(findMinVarianceExtraPoint(absoluteMaxSpeed)) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     // We compute the acceptable speed as 200% more than the median speed excluding the first leg (as it might
     // be lower than in reality if the contestant started late).
-    val maxSpeed = if (firstKept.size >= 5) absoluteMaxSpeed.min(3 * median(firstKept.tail.map(_.speed))) else absoluteMaxSpeed
+    val maxSpeed = if (firstKept.size >= 5) absoluteMaxSpeed.min(medianSpeedFactor * median(firstKept.tail.map(_.speed))) else absoluteMaxSpeed
     val (kept, removed) = (
       if (maxSpeed < absoluteMaxSpeed)
         // Rerun the checks with the new maximum speed
         (firstKept, firstRemoved) >> dropSuspiciousStart(maxSpeed) >> dropWhile(findMinVarianceExtraPoint(maxSpeed))
       else
         (firstKept, firstRemoved)
-      ) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
+    ) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     val added = missingPoints(kept)
     val result = kept.map(p ⇒ CorrectPoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
     result.sortBy(_.point.timestamp)
@@ -215,6 +215,9 @@ object Analyzer {
 
   private val config = Global.replicateConfig.as[Config]("analyzer")
   private val absoluteMaxSpeed = config.as[Double]("max-acceptable-speed")
+  private val medianSpeedFactor = config.as[Double]("median-speed-factor")
+  private val maxAnomalies = config.as[Int]("max-anomalies")
+  private val maxConsecutiveAnomalies = config.as[Int]("max-consecutive-anomalies")
 
   def analyze(raceId: Int, contestantId: Int, points: Seq[Point]): ContestantAnalysis = {
     val raceInfo = Global.infos.get.races(raceId)
@@ -229,9 +232,9 @@ object Analyzer {
   }
 
   case object EnrichedPoint {
-    implicit val enrichedPointWrites: Writes[EnrichedPoint] = Writes { p =>
-      Json.obj("site_id" -> p.point.siteId, "time" -> p.point.timestamp,
-        "lap" -> p.lap, "distance" -> p.distance, "speed" -> p.speed)
+    implicit val enrichedPointWrites: Writes[EnrichedPoint] = Writes { p ⇒
+      Json.obj("site_id" → p.point.siteId, "time" → p.point.timestamp,
+        "lap" → p.lap, "distance" → p.distance, "speed" → p.speed)
     }
   }
 
@@ -253,13 +256,15 @@ object Analyzer {
 
   sealed trait KeepPoint extends AnalyzedPoint
 
-  sealed trait ExtraPoint extends AnalyzedPoint with KeepPoint
+  sealed trait Anomaly extends AnalyzedPoint
+
+  sealed trait ExtraPoint extends AnalyzedPoint with KeepPoint with Anomaly
 
   final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo with KeepPoint {
     override def toJson = super.toJson ++ Json.obj("type" → "correct")
   }
 
-  final case class RemovePoint(point: Point, reason: String) extends AnalyzedPoint {
+  final case class RemovePoint(point: Point, reason: String) extends AnalyzedPoint with Anomaly {
     override def toJson = super.toJson ++ Json.obj("type" → "remove", "reason" → reason, "action" → "remove")
   }
 
@@ -274,16 +279,23 @@ object Analyzer {
   }
 
   case class ContestantAnalysis(contestantId: Int, raceId: Int, checkpoints: Seq[AnalyzedPoint],
-                                before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
+      before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
     def isOk = checkpoints.forall(_.isInstanceOf[CorrectPoint])
     def id = s"problem-$contestantId"
+    val anomalies = checkpoints.count(_.isInstanceOf[Anomaly])
+    val valid = anomalies < maxAnomalies && !hasTooManyConsecutiveAnomalies
+
+    private def hasTooManyConsecutiveAnomalies =
+      checkpoints.size > maxConsecutiveAnomalies && anomalies >= maxConsecutiveAnomalies &&
+        checkpoints.sliding(maxConsecutiveAnomalies).exists(_.forall(_.isInstanceOf[Anomaly]))
   }
 
   object ContestantAnalysis {
     implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis ⇒
       Json.obj("type" → "problem", "bib" → analysis.contestantId, "race_id" → analysis.raceId,
-        "checkpoints" → analysis.checkpoints, "_id" → s"problem-${analysis.contestantId}",
-      "before" -> analysis.before, "after" -> analysis.after)
+        "valid" → analysis.valid, "anomalies" → analysis.anomalies,
+        "checkpoints" → analysis.checkpoints, "before" → analysis.before, "after" → analysis.after,
+        "_id" → analysis.id)
     }
   }
 
