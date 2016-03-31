@@ -19,8 +19,12 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private[this] val checkpoints = infos.checkpoints.size
   private[this] val startingPoint = EnrichedPoint(Point(checkpoints - 1, raceInfo.startTime), 0, 0, 0)
 
-  private def analyze(points: Seq[Point]): ContestantAnalysis =
-    ContestantAnalysis(contestantId, raceInfo.raceId, analyzePoints(points))
+  private def analyze(points: Seq[Point]): ContestantAnalysis = {
+    val analyzed = analyzePoints(points)
+    val before = enrichPoints(points)
+    val after = enrichPoints(analyzed.collect { case p: KeepPoint => p.point })
+    ContestantAnalysis(contestantId, raceInfo.raceId, analyzePoints(points), before, after)
+  }
 
   private[this] def analyzePoints(original: Seq[Point]): Seq[AnalyzedPoint] = {
     val enriched = enrichPoints(original)
@@ -224,6 +228,13 @@ object Analyzer {
     assert(timestamp >= 0, s"timestamp must be non-negative, currently $timestamp")
   }
 
+  case object EnrichedPoint {
+    implicit val enrichedPointWrites: Writes[EnrichedPoint] = Writes { p =>
+      Json.obj("site_id" -> p.point.siteId, "time" -> p.point.timestamp,
+        "lap" -> p.lap, "distance" -> p.distance, "speed" -> p.speed)
+    }
+  }
+
   sealed trait AnalyzedPoint {
     def point: Point
     def toJson: JsObject = Json.obj("site_id" → point.siteId, "time" → point.timestamp)
@@ -240,9 +251,11 @@ object Analyzer {
     override def toJson = super.toJson ++ Json.obj("lap" → lap, "distance" → distance, "speed" → speed)
   }
 
-  sealed trait ExtraPoint extends AnalyzedPoint
+  sealed trait KeepPoint extends AnalyzedPoint
 
-  final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo {
+  sealed trait ExtraPoint extends AnalyzedPoint with KeepPoint
+
+  final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo with KeepPoint {
     override def toJson = super.toJson ++ Json.obj("type" → "correct")
   }
 
@@ -260,7 +273,8 @@ object Analyzer {
     override def toJson = super.toJson ++ Json.obj("type" → "down", "reason" → reason)
   }
 
-  case class ContestantAnalysis(contestantId: Int, raceId: Int, checkpoints: Seq[AnalyzedPoint]) {
+  case class ContestantAnalysis(contestantId: Int, raceId: Int, checkpoints: Seq[AnalyzedPoint],
+                                before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
     def isOk = checkpoints.forall(_.isInstanceOf[CorrectPoint])
     def id = s"problem-$contestantId"
   }
@@ -268,7 +282,8 @@ object Analyzer {
   object ContestantAnalysis {
     implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis ⇒
       Json.obj("type" → "problem", "bib" → analysis.contestantId, "race_id" → analysis.raceId,
-        "checkpoints" → analysis.checkpoints, "_id" → s"problem-${analysis.contestantId}")
+        "checkpoints" → analysis.checkpoints, "_id" → s"problem-${analysis.contestantId}",
+      "before" -> analysis.before, "after" -> analysis.after)
     }
   }
 
