@@ -20,10 +20,28 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private[this] val startingPoint = EnrichedPoint(Point(checkpoints - 1, raceInfo.startTime), 0, 0, 0)
 
   private def analyze(points: Seq[Point]): ContestantAnalysis = {
-    val analyzed = analyzePoints(points)
+    val analyzed = analyzeRace(points)
     val before = enrichPoints(points)
     val after = enrichPoints(analyzed.collect { case p: KeepPoint ⇒ p.point })
-    ContestantAnalysis(contestantId, raceInfo.raceId, analyzePoints(points), before, after)
+    ContestantAnalysis(contestantId, raceInfo.raceId, analyzeRace(points), before, after)
+  }
+
+  private[this] def analyzeRace(original: Seq[Point]): Seq[AnalyzedPoint] = {
+    val points = analyzePoints(original)
+    val removalCandidate = points.sliding(surroundedByMissing + 1).collectFirst {
+      case pts if pts.head.isInstanceOf[MissingPoint] && pts.last.isInstanceOf[MissingPoint] &&
+        pts.count(_.isInstanceOf[MissingPoint]) == surroundedByMissing &&
+        pts.exists(_.isInstanceOf[CorrectPoint]) ⇒
+        pts.find(_.isInstanceOf[CorrectPoint]).get
+    }
+    removalCandidate match {
+      case Some(point) ⇒
+        val reanalyzed = analyzeRace(original.filterNot(_ == point.point))
+        (RemovePoint(point.point, s"Checkpoint surrounded by at least $surroundedByMissing missing checkpoints") +: reanalyzed).sortBy(_.point.timestamp)
+      case None ⇒
+        points
+    }
+
   }
 
   private[this] def analyzePoints(original: Seq[Point]): Seq[AnalyzedPoint] = {
@@ -218,6 +236,7 @@ object Analyzer {
   private val medianSpeedFactor = config.as[Double]("median-speed-factor")
   private val maxAnomalies = config.as[Int]("max-anomalies")
   private val maxConsecutiveAnomalies = config.as[Int]("max-consecutive-anomalies")
+  private val surroundedByMissing = config.as[Int]("surrounded-by-missing")
 
   def analyze(raceId: Int, contestantId: Int, points: Seq[Point]): ContestantAnalysis = {
     val raceInfo = Global.infos.get.races(raceId)
