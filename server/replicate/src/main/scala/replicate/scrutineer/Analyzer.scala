@@ -25,8 +25,18 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private[this] def analyzePoints(original: Seq[Point]): Seq[AnalyzedPoint] = {
     val enriched = enrichPoints(original)
     // Apply remove filters
-    val (kept, removed) = (enriched, Seq()) >> dropEarly >> dropLate >> dropSuspiciousStart >>
-      dropWhile(findMinVarianceExtraPoint) >> dropLong >> dropSuspiciousEnd
+    val (firstKept, firstRemoved) = (enriched, Seq()) >> dropEarly >> dropLate >> dropSuspiciousStart(absoluteMaxSpeed) >>
+      dropWhile(findMinVarianceExtraPoint(absoluteMaxSpeed)) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
+    // We compute the acceptable speed as 200% more than the median speed excluding the first leg (as it might
+    // be lower than in reality if the contestant started late).
+    val maxSpeed = if (firstKept.size >= 5) absoluteMaxSpeed.min(3 * median(firstKept.tail.map(_.speed))) else absoluteMaxSpeed
+    val (kept, removed) = (
+      if (maxSpeed < absoluteMaxSpeed)
+        // Rerun the checks with the new maximum speed
+        (firstKept, firstRemoved) >> dropSuspiciousStart(maxSpeed) >> dropWhile(findMinVarianceExtraPoint(maxSpeed))
+      else
+        (firstKept, firstRemoved)
+      ) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     val added = missingPoints(kept)
     val result = kept.map(p ⇒ CorrectPoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
     result.sortBy(_.point.timestamp)
@@ -50,19 +60,19 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
 
   // Speeds exceeding the maximum allowed speed at the start cannot be a mistake due to
   // a later checkpoint. We can remove those points to work on the rest.
-  private[this] def dropSuspiciousStart: KeepRemoveFilter = { points ⇒
-    val suspicious = points.takeWhile(_.speed > maxSpeed).map(p ⇒ RemovePoint(p.point, s"Suspicious initial speed: ${formatSpeed(p.speed)}"))
+  private[this] def dropSuspiciousStart(maxSpeed: Double): KeepRemoveFilter = { points ⇒
+    val suspicious = points.takeWhile(_.speed > maxSpeed).map(p ⇒ RemovePoint(p.point, s"${q(maxSpeed)} initial speed: ${formatSpeed(p.speed)}"))
     (reenrichPoints(points.drop(suspicious.size)), suspicious)
   }
 
-  private[this] def dropSuspiciousEnd: KeepRemoveFilter = { points ⇒
+  private[this] def dropSuspiciousEnd(maxSpeed: Double): KeepRemoveFilter = { points ⇒
     points.takeRight(3) match {
       case Seq(a, b, end) if b.speed <= maxSpeed && end.speed > maxSpeed ⇒
         val previousSpeed = speedBetween(a.distance, end.distance, a.timestamp, end.timestamp)
         if (previousSpeed > maxSpeed)
           (points.dropRight(1), Seq(RemovePoint(
             points.last.point,
-            s"Excessive speed on the last section (${formatSpeed(end.speed)}) and the two last sections (${formatSpeed(previousSpeed)})"
+            s"${q(maxSpeed)} speed on the last section (${formatSpeed(end.speed)}) and the two last sections (${formatSpeed(previousSpeed)})"
           )))
         else
           (points, Seq())
@@ -70,6 +80,8 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
         (points, Seq())
     }
   }
+
+  private[this] def q(maxSpeed: Double) = if (maxSpeed < absoluteMaxSpeed) "Suspicious" else "Excessive"
 
   private[this] def missingPoints(points: Seq[EnrichedPoint]): Seq[ExtraPoint] = {
     (startingPoint +: points).sliding(2).flatMap {
@@ -140,7 +152,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
     (kept, extra)
   }
 
-  private[this] def findMinVarianceExtraPoint(points: Seq[EnrichedPoint]): Option[RemovePoint] = {
+  private[this] def findMinVarianceExtraPoint(maxSpeed: Double)(points: Seq[EnrichedPoint]): Option[RemovePoint] = {
     // Compute the points at either end of a segment where the speed is out of range. The latest point
     // is never considered for removal.
     val excessiveSpeedBefore = points.dropRight(1).filter(_.speed > maxSpeed).toSet
@@ -198,7 +210,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
 object Analyzer {
 
   private val config = Global.replicateConfig.as[Config]("analyzer")
-  private val maxSpeed = config.as[Double]("max-acceptable-speed")
+  private val absoluteMaxSpeed = config.as[Double]("max-acceptable-speed")
 
   def analyze(raceId: Int, contestantId: Int, points: Seq[Point]): ContestantAnalysis = {
     val raceInfo = Global.infos.get.races(raceId)
@@ -291,6 +303,19 @@ object Analyzer {
     val speeds = points.map(_.speed)
     val mean = speeds.sum / speeds.size
     speeds.fold(0.0)((a, e) ⇒ a + math.pow(e - mean, 2)) / speeds.size
+  }
+
+  def median(data: Seq[Double]): Double = {
+    val size = data.size
+    val halfSize = size / 2
+    assert(size > 0)
+    val sorted = data.sorted
+    if (size % 2 == 1)
+      sorted(halfSize)
+    else {
+      val (a, b) = (sorted(halfSize - 1), sorted(halfSize))
+      (a + b) / 2
+    }
   }
 
 }
