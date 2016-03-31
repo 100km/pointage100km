@@ -17,7 +17,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private[this] val infos = Global.infos.get
   private[this] val pings = PingState.lastPings()
   private[this] val checkpoints = infos.checkpoints.size
-  private[this] val startingPoint = EnrichedPoint(Point(checkpoints - 1, raceInfo.startTime), -1, 0, 0)
+  private[this] val startingPoint = EnrichedPoint(Point(checkpoints - 1, raceInfo.startTime), 0, 0, 0)
 
   private def analyze(points: Seq[Point]): ContestantAnalysis =
     ContestantAnalysis(contestantId, raceInfo.raceId, analyzePoints(points))
@@ -25,7 +25,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private[this] def analyzePoints(original: Seq[Point]): Seq[AnalyzedPoint] = {
     val enriched = enrichPoints(original)
     // Apply remove filters
-    val (kept, removed) = enriched >> dropEarly >> dropLate >> dropSuspiciousStart >>
+    val (kept, removed) = (enriched, Seq()) >> dropEarly >> dropLate >> dropSuspiciousStart >>
       dropWhile(findMinVarianceExtraPoint) >> dropLong >> dropSuspiciousEnd
     val added = missingPoints(kept)
     val result = kept.map(p ⇒ CorrectPoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
@@ -75,6 +75,9 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
     (startingPoint +: points).sliding(2).flatMap {
       case Seq(before, after) ⇒
         for (index ← toIndex(before) + 1 until toIndex(after)) yield intermediatePoint(before, after, index)
+      case _ ⇒
+        // Less than 2 points
+        Seq()
     }.toSeq
   }
 
@@ -110,8 +113,11 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
     assert(index >= 0, s"index must be positive, currently $index")
     val (siteId, lap) = fromIndex(index)
     val distance = infos.distance(siteId, lap)
-    val distanceRatio = distance / (after.distance - before.distance)
+    val distanceRatio = (distance - before.distance) / (after.distance - before.distance)
+    assert(distanceRatio > 0)
     val timestamp = (before.timestamp + (after.timestamp - before.timestamp) * distanceRatio).round
+    assert(timestamp > before.timestamp)
+    assert(timestamp < after.timestamp)
     val point = Point(siteId, timestamp)
     val lastPing = pings.get(siteId)
     if (lastPing.exists(_ >= after.timestamp))
@@ -171,7 +177,6 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   private[this] def enrichPoints(points: Seq[Point]): Seq[EnrichedPoint] = {
     points.scanLeft((startingPoint.point, 0, 0.0, 0.0)) {
       case ((prevPoint, prevLap, prevDistance, prevSpeed), point@Point(siteId, timestamp)) ⇒
-        assert(prevPoint.timestamp < timestamp)
         val lap = if (siteId <= prevPoint.siteId) prevLap + 1 else prevLap
         val distance = infos.distance(siteId, lap)
         val speed = speedBetween(prevDistance, distance, prevPoint.timestamp, timestamp)
@@ -251,7 +256,7 @@ object Analyzer {
   object ContestantAnalysis {
     implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis ⇒
       Json.obj("type" → "problem", "bib" → analysis.contestantId, "race_id" → analysis.raceId,
-        "checkpoints" → analysis.checkpoints)
+        "checkpoints" → analysis.checkpoints, "_id" → s"problem-${analysis.contestantId}")
     }
   }
 
@@ -274,11 +279,7 @@ object Analyzer {
   type KeptRemoved = (Seq[EnrichedPoint], Seq[RemovePoint])
   type KeepRemoveFilter = Seq[EnrichedPoint] ⇒ KeptRemoved
 
-  implicit class Check1(data: Seq[EnrichedPoint]) {
-    def >>(f: KeepRemoveFilter): KeptRemoved = f(data)
-  }
-
-  private implicit class Check2(data: KeptRemoved) {
+  private implicit class Check(data: KeptRemoved) {
     def >>(f: KeepRemoveFilter): KeptRemoved = {
       val (kept, removed) = f(data._1)
       (kept, removed ++ data._2)

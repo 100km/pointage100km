@@ -62,19 +62,24 @@ class ProblemService(database: Database) extends Actor with Stash with ActorLogg
     case analysis: ContestantAnalysis ⇒
       val contestantId = analysis.contestantId
       val currentRev = knownProblemRevs.get(contestantId)
-      // We will do a database operation, so suspend handling messages until this is done as to not confuse
-      // ourselves about the version currently in the database.
-      if (currentRev.isDefined)
-        context.become(waitForReady)
+      // If we have to do a database operation, will wil suspend handling messages until this is done as to not confuse
+      // ourselves about the version currently in the database. Also, this will prevent exceeding the max-connections
+      // setting with multiple database connections at the same time.
       if (analysis.isOk)
         currentRev.foreach { rev ⇒
+          context.become(waitForReady)
           knownProblemRevs -= analysis.contestantId
           database.delete(analysis.id, rev).map(_ ⇒ Ready).recover { case _ ⇒ Ready }.pipeTo(self)
         }
       else {
         val base: JsObject = ContestantAnalysis.contestantAnalysisWrites.writes(analysis).as[JsObject]
         val doc = currentRev.fold(base)(rev ⇒ base ++ Json.obj("_rev" → rev))
-        database.insert(doc).map(js ⇒ Written(contestantId, (js \ "rev").as[String])).recover { case _ ⇒ Ready }.pipeTo(self)
+        context.become(waitForReady)
+        database.insert(doc).map(js ⇒ Written(contestantId, (js \ "rev").as[String])).recover {
+          case r: Throwable ⇒
+            log.error(r, s"unable to insert problem for contestant $contestantId in database")
+            Ready
+        }.pipeTo(self)
       }
   }
 

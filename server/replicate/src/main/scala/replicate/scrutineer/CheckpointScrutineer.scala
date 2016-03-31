@@ -21,7 +21,7 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
   private[this] val problemService = context.actorOf(Props(new ProblemService(database)), "problem-service")
 
   override def preStart() = {
-    log.info("Starting the checkpoint scrutineer")
+    log.info("Loading existing data")
     // Load the initial values from the databases and rebuild the list of problems
     val sendInitialData =
       for (
@@ -45,7 +45,7 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
       throw t
 
     case ReadyToStart ⇒
-      log.info("Answering ready to start")
+      log.info("Switching to live mode")
       sender ! Ack
 
     case InitialData(contestantId, docs) ⇒

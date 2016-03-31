@@ -3,7 +3,7 @@ package replicate
 import org.specs2.mutable._
 import play.api.libs.json.Json
 import replicate.scrutineer.Analyzer
-import replicate.scrutineer.Analyzer.{CorrectPoint, MissingPoint}
+import replicate.scrutineer.Analyzer.{CorrectPoint, MissingPoint, RemovePoint}
 import replicate.state.{CheckpointsState, PingState}
 import replicate.utils.{Global, Infos}
 
@@ -37,6 +37,7 @@ class AnalyzerSpec extends Specification {
       result.checkpoints.size must be equalTo 22
       result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 20
       result.checkpoints.count(_.isInstanceOf[MissingPoint]) must be equalTo 1
+      result.checkpoints.count(_.isInstanceOf[RemovePoint]) must be equalTo 1
       infos.checkpoints(result.checkpoints.filter(_.isInstanceOf[MissingPoint]).head.point.siteId).name must be equalTo "La salle des sports, boucle 1"
     }
 
@@ -49,6 +50,7 @@ class AnalyzerSpec extends Specification {
       result.checkpoints.size must be equalTo 22
       result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 20
       result.checkpoints.count(_.isInstanceOf[MissingPoint]) must be equalTo 1
+      result.checkpoints.count(_.isInstanceOf[RemovePoint]) must be equalTo 1
       infos.checkpoints(result.checkpoints.filter(_.isInstanceOf[MissingPoint]).head.point.siteId).name must be equalTo "La salle des sports, boucle 1"
     }
 
