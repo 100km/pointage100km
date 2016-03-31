@@ -6,8 +6,8 @@ import akka.actor.{Actor, ActorLogging, Stash}
 import akka.http.scaladsl.util.FastFuture
 import akka.pattern.pipe
 import net.rfc1149.canape.Database
-import play.api.libs.json.Json
-import replicate.scrutineer.models.ContestantAnalysis
+import play.api.libs.json.{JsObject, Json}
+import replicate.scrutineer.Analyzer.ContestantAnalysis
 
 /**
  * This class is in charge of keeping the analysis for every problematic concurrent
@@ -72,7 +72,7 @@ class ProblemService(database: Database) extends Actor with Stash with ActorLogg
           database.delete(analysis.id, rev).map(_ ⇒ Ready).recover { case _ ⇒ Ready }.pipeTo(self)
         }
       else {
-        val base = analysis.toJson
+        val base: JsObject = ContestantAnalysis.contestantAnalysisWrites.writes(analysis).as[JsObject]
         val doc = currentRev.fold(base)(rev ⇒ base ++ Json.obj("_rev" → rev))
         database.insert(doc).map(js ⇒ Written(contestantId, (js \ "rev").as[String])).recover { case _ ⇒ Ready }.pipeTo(self)
       }

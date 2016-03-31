@@ -3,8 +3,8 @@ package replicate
 import org.specs2.mutable._
 import play.api.libs.json.Json
 import replicate.scrutineer.Analyzer
-import replicate.scrutineer.models.CheckpointStatus.{Missing, Ok}
-import replicate.state.{PingState, CheckpointsState}
+import replicate.scrutineer.Analyzer.{CorrectPoint, MissingPoint}
+import replicate.state.{CheckpointsState, PingState}
 import replicate.utils.{Global, Infos}
 
 import scala.concurrent.Await
@@ -35,9 +35,9 @@ class AnalyzerSpec extends Specification {
       points.size must be equalTo 21
       val result = Analyzer.analyze(1, 688, points)
       result.checkpoints.size must be equalTo 22
-      result.checkpoints.count(_.status.isInstanceOf[Ok]) must be equalTo 20
-      result.checkpoints.count(_.status == Missing) must be equalTo 1
-      infos.checkpoints(result.checkpoints.filter(_.status == Missing).head.siteId).name must be equalTo "La salle des sports, boucle 1"
+      result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 20
+      result.checkpoints.count(_.isInstanceOf[MissingPoint]) must be equalTo 1
+      infos.checkpoints(result.checkpoints.filter(_.isInstanceOf[MissingPoint]).head.point.siteId).name must be equalTo "La salle des sports, boucle 1"
     }
 
     "fix a suspicious checkpoint (contestant 24)" in {
@@ -47,9 +47,9 @@ class AnalyzerSpec extends Specification {
       points.size must be equalTo 21
       val result = Analyzer.analyze(1, 24, points)
       result.checkpoints.size must be equalTo 22
-      result.checkpoints.count(_.status.isInstanceOf[Ok]) must be equalTo 20
-      result.checkpoints.count(_.status == Missing) must be equalTo 1
-      infos.checkpoints(result.checkpoints.filter(_.status == Missing).head.siteId).name must be equalTo "La salle des sports, boucle 1"
+      result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 20
+      result.checkpoints.count(_.isInstanceOf[MissingPoint]) must be equalTo 1
+      infos.checkpoints(result.checkpoints.filter(_.isInstanceOf[MissingPoint]).head.point.siteId).name must be equalTo "La salle des sports, boucle 1"
     }
 
     "let a consistent race untouched (contestant 201)" in {
@@ -57,7 +57,7 @@ class AnalyzerSpec extends Specification {
       points.size must be equalTo 21
       val result = Analyzer.analyze(1, 201, points)
       result.checkpoints.size must be equalTo 21
-      result.checkpoints.count(_.status.isInstanceOf[Ok]) must be equalTo 21
+      result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 21
     }
 
     "never suggest a change in a consistent race (contestant 201)" in {
@@ -66,7 +66,7 @@ class AnalyzerSpec extends Specification {
       for (partial ← 1 to points.size) {
         val result = Analyzer.analyze(1, 201, points.take(partial))
         result.checkpoints.size must be equalTo partial
-        result.checkpoints.count(_.status.isInstanceOf[Ok]) must be equalTo partial
+        result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo partial
       }
       success
     }
