@@ -36,7 +36,7 @@ class AnalyzerSpec extends Specification {
       Analyzer.median(List(20, 10)) should be equalTo 15
     }
 
-    "return the correct value for a list with an odd numbere of elements" in {
+    "return the correct value for a list with an odd number of elements" in {
       Analyzer.median(List(10, 22, 30)) should be equalTo 22
     }
 

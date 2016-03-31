@@ -28,22 +28,57 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
 
   private[this] def analyzeRace(original: Seq[Point]): Seq[AnalyzedPoint] = {
     val points = analyzePoints(original)
-    val removalCandidate = points.sliding(surroundedByMissing + 1).collectFirst {
-      case pts if pts.head.isInstanceOf[MissingPoint] && pts.last.isInstanceOf[MissingPoint] &&
-        pts.count(_.isInstanceOf[MissingPoint]) == surroundedByMissing &&
-        pts.exists(_.isInstanceOf[CorrectPoint]) ⇒
-        pts.find(_.isInstanceOf[CorrectPoint]).get
-    }
-    removalCandidate match {
-      case Some(point) ⇒
-        val reanalyzed = analyzeRace(original.filterNot(_ == point.point))
-        (RemovePoint(point.point, s"Checkpoint surrounded by at least $surroundedByMissing missing checkpoints") +: reanalyzed).sortBy(_.point.timestamp)
-      case None ⇒
-        points
+    val initialAnomalies = points.count(_.isInstanceOf[Anomaly])
+    var anomalies = initialAnomalies
+    var currentBest = points
+
+    // We will try different strategies to reduce the score.
+    def retryWithout(removalMessage: String)(point: AnalyzedPoint) = {
+      val reanalyzed = analyzeRace(original.filterNot(_ == point.point))
+      val reanalyzedAnomalies = countAnomalies(reanalyzed) + 1
+      if (reanalyzedAnomalies < anomalies) {
+        currentBest = (RemovePoint(point.point, removalMessage) +: reanalyzed).sortBy(_.point.timestamp)
+        anomalies = reanalyzedAnomalies
+      }
     }
 
+    // Try to remove points surrounded by missing ones.
+    if (initialAnomalies >= surroundedByMissing)
+      findSurroundedByMissing(points).foreach(retryWithout(s"Checkpoint surrounded by at least $surroundedByMissing missing checkpoints"))
+
+    // Try to remove points which are at an extremity of a long strike of missing points.
+    if (initialAnomalies >= maxConsecutiveMissing) {
+      val candidates = findEnclosingMissing(points)
+      candidates.foreach(retryWithout(s"Checkpoint enclosing at least $maxConsecutiveMissing missing checkpoints"))
+    }
+
+    // Return the best solution.
+    currentBest
   }
 
+  private[this] def findSurroundedByMissing(points: Seq[AnalyzedPoint]): Seq[AnalyzedPoint] = {
+    points.filterNot(_.isInstanceOf[RemovePoint]).sliding(surroundedByMissing + 1)
+      .filter(pts ⇒ pts.count(_.isInstanceOf[MissingPoint]) == surroundedByMissing &&
+        pts.head.isInstanceOf[MissingPoint] && pts.last.isInstanceOf[MissingPoint])
+      .flatMap(_.find(_.isInstanceOf[CorrectPoint])).toSeq
+  }
+
+  private[this] def findEnclosingMissing(points: Seq[AnalyzedPoint]): Seq[AnalyzedPoint] = {
+    points.filterNot(_.isInstanceOf[RemovePoint]).sliding(maxConsecutiveMissing + 1)
+      .filter(_.count(_.isInstanceOf[MissingPoint]) == maxConsecutiveMissing)
+      .collect {
+        case pts if pts.head.isInstanceOf[CorrectPoint] ⇒ pts.head
+        case pts if pts.last.isInstanceOf[CorrectPoint] ⇒ pts.last
+      }
+      .toSeq.reverse // Favor end points in case of a night stop
+  }
+
+  /**
+   * Return a sorted list of analyzed points.
+   *
+   * @param original the points to analyze
+   * @return the result of the analysis with points added or removed
+   */
   private[this] def analyzePoints(original: Seq[Point]): Seq[AnalyzedPoint] = {
     val enriched = enrichPoints(original)
     // Apply remove filters
@@ -60,8 +95,8 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
         (firstKept, firstRemoved)
     ) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     val added = missingPoints(kept)
-    val result = kept.map(p ⇒ CorrectPoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
-    result.sortBy(_.point.timestamp)
+    val points = kept.map(p ⇒ CorrectPoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
+    points.sortBy(_.point.timestamp)
   }
 
   private[this] def dropEarly: KeepRemoveFilter = { points ⇒
@@ -176,8 +211,9 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
 
   private[this] def findMinVarianceExtraPoint(maxSpeed: Double)(points: Seq[EnrichedPoint]): Option[RemovePoint] = {
     // Compute the points at either end of a segment where the speed is out of range. The latest point
-    // is never considered for removal.
-    val excessiveSpeedBefore = points.dropRight(1).filter(_.speed > maxSpeed).toSet
+    // is never considered for removal unless it goes beyond the end of the race.
+    val consideredPoints = if (points.lastOption.exists(_.lap > raceInfo.laps)) points else points.dropRight(1)
+    val excessiveSpeedBefore = consideredPoints.filter(_.speed > maxSpeed).toSet
     val excessiveSpeedAfter = points.sliding(2).collect { case Seq(start, end) if end.speed > maxSpeed ⇒ start }.toSet
     val excessiveSpeed = excessiveSpeedBefore ++ excessiveSpeedAfter
     if (excessiveSpeed.isEmpty)
@@ -186,14 +222,14 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
       // Find the point whose removal will lead to the smallest variance
       val toRemove = excessiveSpeed.toVector.map(p ⇒ (p, speedVariance(reenrichPoints(points.filterNot(_.eq(p)))))).minBy(_._2)._1
       // We might need to find the point following the removed point
-      val successor = points.sliding(2).collectFirst { case Seq(`toRemove`, next) ⇒ next }.get
+      val successor = points.sliding(2).collectFirst { case Seq(`toRemove`, next) ⇒ next }
       // Remove this point with a meaningful error message
       (excessiveSpeedBefore.contains(toRemove), excessiveSpeedAfter.contains(toRemove), successor) match {
         case (true, false, _) ⇒
           Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed before this checkpoint: ${formatSpeed(toRemove.speed)}"))
-        case (false, true, next) ⇒
+        case (false, true, Some(next)) ⇒
           Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed after this checkpoint: ${formatSpeed(next.speed)}"))
-        case (true, true, next) ⇒
+        case (true, true, Some(next)) ⇒
           Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed around this checkpoint: ${formatSpeed(toRemove.speed)} before and ${formatSpeed(next.speed)} after"))
         case _ ⇒
           // This can never happen
@@ -237,11 +273,13 @@ object Analyzer {
   private val maxAnomalies = config.as[Int]("max-anomalies")
   private val maxConsecutiveAnomalies = config.as[Int]("max-consecutive-anomalies")
   private val surroundedByMissing = config.as[Int]("surrounded-by-missing")
+  private val maxConsecutiveMissing = config.as[Int]("max-consecutive-missing")
 
   def analyze(raceId: Int, contestantId: Int, points: Seq[Point]): ContestantAnalysis = {
     val raceInfo = Global.infos.get.races(raceId)
     val analyzer = new Analyzer(raceInfo, contestantId, points)
-    analyzer.analyze(points)
+    val result = analyzer.analyze(points)
+    result
   }
 
   case class EnrichedPoint(point: Point, lap: Int, distance: Double, speed: Double) {
@@ -301,13 +339,21 @@ object Analyzer {
       before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
     def isOk = checkpoints.forall(_.isInstanceOf[CorrectPoint])
     def id = s"problem-$contestantId"
-    val anomalies = checkpoints.count(_.isInstanceOf[Anomaly])
-    val valid = anomalies < maxAnomalies && !hasTooManyConsecutiveAnomalies
-
-    private def hasTooManyConsecutiveAnomalies =
-      checkpoints.size > maxConsecutiveAnomalies && anomalies >= maxConsecutiveAnomalies &&
-        checkpoints.sliding(maxConsecutiveAnomalies).exists(_.forall(_.isInstanceOf[Anomaly]))
+    val anomalies = countAnomalies(checkpoints)
+    val consecutiveAnomalies = countConsecutiveAnomalies(checkpoints)
+    val valid = anomalies < maxAnomalies && consecutiveAnomalies < maxConsecutiveAnomalies
   }
+
+  private def countAnomalies(checkpoints: Seq[AnalyzedPoint]) = checkpoints.count(_.isInstanceOf[Anomaly])
+
+  private def countConsecutiveAnomalies(checkpoints: Seq[AnalyzedPoint]) =
+    checkpoints.scanLeft(0) {
+      case (encountered, point) ⇒
+        if (point.isInstanceOf[Anomaly])
+          encountered + 1
+        else
+          0
+    }.max
 
   object ContestantAnalysis {
     implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis ⇒
