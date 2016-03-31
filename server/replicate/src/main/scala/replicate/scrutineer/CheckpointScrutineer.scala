@@ -2,14 +2,12 @@ package replicate.scrutineer
 
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, Props}
-import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
 import play.api.libs.json.JsObject
-import replicate.scrutineer.models.ContestantAnalysis
-import replicate.state.RankingState
-import replicate.state.RankingState.CheckpointData
+import replicate.state.CheckpointsState
+import replicate.state.CheckpointsState.CheckpointData
 
 import scala.concurrent.Future
 
@@ -27,7 +25,7 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
     // Load the initial values from the databases and rebuild the list of problems
     val sendInitialData =
       for (
-        _ ← RankingState.reset();
+        _ ← CheckpointsState.reset();
         (lastSeq, checkpoints) ← database.viewWithUpdateSeq[Int, JsObject]("replicate", "checkpoint", Seq("include_docs" → "true"))
       ) yield {
         checkpoints.groupBy(_._1).mapValues(_.map(_._2)).foreach { case (contestantId, docs) ⇒ self ! InitialData(contestantId, docs) }
@@ -61,15 +59,12 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
           )
         }
         val data = allData.filterNot(_.raceId == 0)
-        val problemFuture =
-          for (
-            _ ← Future.sequence(data.dropRight(1).map(RankingState.updateTimestamps));
-            analysis ← data.headOption.fold(FastFuture.successful[Option[ContestantAnalysis]](None))(updateAndAnalyze(_).map(Some(_)))
-          ) yield analysis.foreach(problemService ! _)
-        problemFuture.recover {
-          case t: Throwable ⇒
-            log.error(t, "error during analysis of initial data for bib {}: {}", contestantId, docs)
-        }
+        Future.sequence(data.map(CheckpointsState.setTimes))
+          .map(_.lastOption.foreach(points ⇒ problemService ! Analyzer.analyze(data.last.raceId, contestantId, points)))
+          .onFailure {
+            case t: Throwable ⇒
+              log.error(t, "error during analysis of initial data for bib {}: {}", contestantId, docs)
+          }
       } catch {
         case t: Throwable ⇒
           log.error(t, "unable to analyze initial data for bib {}: {}", contestantId, docs)
@@ -85,10 +80,11 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
             data.contestantId, data.siteId, doc
           )
         else
-          updateAndAnalyze(data).map(problemService ! _).recover {
-            case t: Throwable ⇒
-              log.error(t, "error during analysis of bib {} at checkpoint {}: {}", data.contestantId, data.siteId)
-          }
+          CheckpointsState.setTimes(data).map(points ⇒ problemService ! Analyzer.analyze(data.raceId, data.contestantId, points))
+            .onFailure {
+              case t: Throwable ⇒
+                log.error(t, "error during analysis of bib {} at checkpoint {}: {}", data.contestantId, data.siteId)
+            }
       } catch {
         case t: Throwable ⇒
           log.error(t, "unable to analyze document {}", doc)
@@ -106,15 +102,12 @@ class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
 
   // Can throw if the checkpoint contains invalid data or is incomplete
   private[this] def parseCheckpointDoc(doc: JsObject): CheckpointData = {
-    val contestantId = (doc \ "bib").as[Int]
     val raceId = (doc \ "race_id").as[Int]
+    val contestantId = (doc \ "bib").as[Int]
     val siteId = (doc \ "site_id").as[Int]
     val timestamps = (doc \ "times").as[Seq[Long]]
-    CheckpointData(contestantId, raceId, siteId, timestamps)
+    CheckpointData(raceId, contestantId, siteId, timestamps)
   }
-
-  private[this] def updateAndAnalyze(checkpointData: CheckpointData): Future[ContestantAnalysis] =
-    RankingState.updateTimestamps(checkpointData).map(rankInfo ⇒ Analyzer.analyze(checkpointData.contestantId, checkpointData.raceId, rankInfo))
 
   private[this] def startChangesStream(lastSeq: Long) =
     database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)

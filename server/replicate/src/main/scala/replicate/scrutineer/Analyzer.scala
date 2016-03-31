@@ -5,19 +5,18 @@ import net.ceedubs.ficus.Ficus._
 import replicate.scrutineer.models.CheckpointStatus._
 import replicate.scrutineer.models.{CheckpointAnalysis, CheckpointStatus, ContestantAnalysis}
 import replicate.state.PingState
-import replicate.state.RankingState.{Point, RankInformation}
+import replicate.state.CheckpointsState.Point
+import replicate.utils.Global
 import replicate.utils.Infos.RaceInfo
-import replicate.utils.{Global, RaceUtils}
 
-class Analyzer(contestantId: Int, raceInfo: RaceInfo, previousRank: Option[Int], rank: Option[Int]) {
+class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]) {
 
   import Analyzer._
 
   private[this] val infos = Global.infos.get
   private[this] val pings = PingState.lastPings()
   private[this] val checkpoints = infos.checkpoints.size
-  private[this] val startingReferencePoint = Point(checkpoints, raceInfo.startTime, -1)
-  private[this] val startingPoint = EnrichedPoint(startingReferencePoint, 0, 0)
+  private[this] val startingPoint = EnrichedPoint(Point(checkpoints - 1, raceInfo.startTime), -1, 0, 0)
 
   private def analyze(points: Seq[Point]): ContestantAnalysis =
     ContestantAnalysis(contestantId, raceInfo.raceId, analyzePoints(points))
@@ -95,7 +94,7 @@ class Analyzer(contestantId: Int, raceInfo: RaceInfo, previousRank: Option[Int],
     val distance = infos.distance(siteId, lap)
     val distanceRatio = distance / (after.distance - before.distance)
     val timestamp = (before.timestamp + (after.timestamp - before.timestamp) * distanceRatio).round
-    val point = EnrichedPoint(Point(siteId, timestamp, lap), distance, after.speed)
+    val point = EnrichedPoint(Point(siteId, timestamp), lap, distance, after.speed)
     val lastPing = pings.getOrElse(siteId, 0L)
     if (lastPing < after.timestamp)
       point.addStatus(Down)
@@ -128,32 +127,21 @@ class Analyzer(contestantId: Int, raceInfo: RaceInfo, previousRank: Option[Int],
   }
 
   /**
-   * Enrich the given points with distance and speed information.
-   *
-   * @param points the points
-   * @return the enriched points with distance and speed
-   */
-  private[this] def addDistanceAndSpeed(points: Seq[Point]): Seq[EnrichedPoint] = {
-    var previous = startingPoint
-    points map { point ⇒
-      assert(point != startingReferencePoint)
-      val distance = infos.distance(point.siteId, point.lap)
-      val speed = speedBetween(previous.distance, distance, previous.timestamp, point.timestamp)
-      val newPoint = EnrichedPoint(point, distance, speed)
-      previous = newPoint
-      newPoint
-    }
-
-  }
-
-  /**
    * Recompute the laps and enrich the points with distance and speed information
    *
    * @param points the original points
    * @return the enriched points with updated lap, distance, and speed information
    */
-  private[this] def enrichPoints(points: Seq[Point]): Seq[EnrichedPoint] =
-    addDistanceAndSpeed(recomputeLaps(points))
+  private[this] def enrichPoints(points: Seq[Point]): Seq[EnrichedPoint] = {
+    points.scanLeft((startingPoint.point, 0, 0.0, 0.0)) {
+      case ((prevPoint, prevLap, prevDistance, prevSpeed), point@Point(siteId, timestamp)) ⇒
+        assert(prevPoint.timestamp < timestamp)
+        val lap = if (siteId <= prevPoint.siteId) prevLap + 1 else prevLap
+        val distance = infos.distance(siteId, lap)
+        val speed = speedBetween(prevDistance, distance, prevPoint.timestamp, timestamp)
+        (point, lap, distance, speed)
+    }.tail.map { case (point, lap, distance, speed) ⇒ EnrichedPoint(point, lap, distance, speed) }
+  }
 
   /**
    * Recompute the laps, distance, and speed information for a (possibly modified) set of points
@@ -171,19 +159,14 @@ object Analyzer {
   private val config = Global.replicateConfig.as[Config]("analyzer")
   private val maxSpeed = config.as[Double]("max-acceptable-speed")
 
-  def analyze(contestantId: Int, raceId: Int, rankInfo: RankInformation): ContestantAnalysis = {
+  def analyze(raceId: Int, contestantId: Int, points: Seq[Point]): ContestantAnalysis = {
     val raceInfo = Global.infos.get.races(raceId)
-    val (previousRank, rank, points) = RankInformation.unapply(rankInfo).get
-    val analyzer = new Analyzer(contestantId, raceInfo, previousRank, rank)
+    val analyzer = new Analyzer(raceInfo, contestantId, points)
     analyzer.analyze(points)
   }
 
-  def recomputeLaps(points: Seq[Point]): Seq[Point] =
-    RaceUtils.addLaps(points.map(point ⇒ (point.siteId, point.timestamp)))
-
-  case class EnrichedPoint(point: Point, distance: Double, speed: Double) {
+  case class EnrichedPoint(point: Point, lap: Int, distance: Double, speed: Double) {
     def siteId = point.siteId
-    def lap = point.lap
     def timestamp = point.timestamp
     assert(timestamp >= 0, s"timestamp must be non-negative, currently $timestamp")
   }
