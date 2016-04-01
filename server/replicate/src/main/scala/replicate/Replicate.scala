@@ -175,7 +175,7 @@ class Replicate(options: Options.Config) extends LoggingError {
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
     if (options.alerts) {
-      system.actorOf(Props(new CheckpointScrutineer(localDatabase)), "checkpoints-scrutineer")
+      CheckpointScrutineer.startCheckpointScrutineer(localDatabase)(log, Global.flowMaterializer)
       system.actorOf(Props(new Alerts(localDatabase)), "alerts")
     }
     if (options.stalking) {

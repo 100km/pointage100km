@@ -1,121 +1,47 @@
 package replicate.scrutineer
 
-import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, Props}
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
+import akka.event.LoggingAdapter
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Flow, Source}
 import net.rfc1149.canape.Database
-import play.api.libs.json.JsObject
 import replicate.state.CheckpointsState
-import replicate.state.CheckpointsState.CheckpointData
+import replicate.state.CheckpointsState.{CheckpointData, Point}
 
 import scala.concurrent.Future
 
-class CheckpointScrutineer(database: Database) extends Actor with ActorLogging {
-
-  import CheckpointScrutineer._
-
-  private[this] implicit val materializer = ActorMaterializer()
-  private[this] implicit val dispatcher = context.dispatcher
-
-  private[this] val problemService = context.actorOf(Props(new ProblemService(database)), "problem-service")
-
-  override def preStart() = {
-    log.info("Loading existing data")
-    // Load the initial values from the databases and rebuild the list of problems
-    val sendInitialData =
-      for (
-        _ ← CheckpointsState.reset();
-        (lastSeq, checkpoints) ← database.viewWithUpdateSeq[Int, JsObject]("replicate", "checkpoint", Seq("include_docs" → "true"))
-      ) yield {
-        checkpoints.groupBy(_._1).mapValues(_.map(_._2)).foreach { case (contestantId, docs) ⇒ self ! InitialData(contestantId, docs) }
-        // The ReadyToStart message will only be received after all the problems above have been handled
-        startChangesStream(lastSeq)
-      }
-    sendInitialData.recover {
-      case throwable: Throwable ⇒
-        log.error(throwable, "unable to initialize checkpoint scrutineer")
-        self ! Suicide(throwable)
-    }
-  }
-
-  def receive = {
-
-    case Suicide(t) ⇒
-      throw t
-
-    case ReadyToStart ⇒
-      log.info("Switching to live mode")
-      sender ! Ack
-
-    case InitialData(contestantId, docs) ⇒
-      try {
-        val allData = docs.map(_.as[CheckpointData])
-        val zeroSites = allData.filter(_.raceId == 0).map(_.siteId).sorted.mkString(", ")
-        if (zeroSites.nonEmpty) {
-          log.warning(
-            "ignoring some initial checkpoint information for bib {} because race_id is unknown on site list {}: {}",
-            contestantId, zeroSites, docs
-          )
-        }
-        val data = allData.filterNot(_.raceId == 0)
-        Future.sequence(data.map(CheckpointsState.setTimes))
-          .map(_.lastOption.foreach(points ⇒ problemService ! Analyzer.analyze(data.last.raceId, contestantId, points)))
-          .onFailure {
-            case t: Throwable ⇒
-              log.error(t, "error during analysis of initial data for bib {}: {}", contestantId, docs)
-          }
-      } catch {
-        case t: Throwable ⇒
-          log.error(t, "unable to analyze initial data for bib {}: {}", contestantId, docs)
-      }
-
-    case Data(doc) ⇒
-      sender ! Ack
-      try {
-        val data = doc.as[CheckpointData]
-        if (data.raceId == 0)
-          log.warning(
-            "ignoring checkpoint information for bib {} at site {} because race_id is unknown: {}",
-            data.contestantId, data.siteId, doc
-          )
-        else
-          CheckpointsState.setTimes(data).map(points ⇒ problemService ! Analyzer.analyze(data.raceId, data.contestantId, points))
-            .onFailure {
-              case t: Throwable ⇒
-                log.error(t, "error during analysis of bib {} at checkpoint {}: {}", data.contestantId, data.siteId)
-            }
-      } catch {
-        case t: Throwable ⇒
-          log.error(t, "unable to analyze document {}", doc)
-      }
-
-    case Failure(t) ⇒
-      log.error(t, "Received a failure")
-      throw t
-
-    case other ⇒
-      log.error(s"Received an unknown message: $other")
-      throw new IllegalStateException
-
-  }
-
-  private[this] def startChangesStream(lastSeq: Long) =
-    database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
-      .map(js ⇒ Data((js \ "doc").as[JsObject]))
-      .runWith(Sink.actorRefWithAck(self, ReadyToStart, Ack, ChangesComplete))
-
-}
-
 object CheckpointScrutineer {
 
-  private case object ReadyToStart
-  private case object Ack
-  private case object ChangesComplete
+  def startCheckpointScrutineer(database: Database)(implicit log: LoggingAdapter, fm: Materializer) = {
+    import fm.executionContext
 
-  private case class Suicide(throwable: Throwable)
+    val source = Source.fromFuture(database.viewWithUpdateSeq[Int, CheckpointData]("replicate", "checkpoint", Seq("include_docs" → "true")))
+      .flatMapConcat {
+        case (lastSeq, checkpoints) ⇒
+          val groupedByContestants = Source(checkpoints.filterNot(_._2.raceId == 0).groupBy(_._1).map(_._2.map(_._2)))
+          val enterAndKeepLatest = groupedByContestants.mapAsync(1)(cps ⇒ Future.sequence(cps.dropRight(1).map(CheckpointsState.setTimes)).map(_ ⇒ cps.last))
+          val changes =
+            database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
+              .map(js ⇒ (js \ "doc").as[CheckpointData])
+          enterAndKeepLatest ++ changes
+      }
 
-  private case class InitialData(contestantId: Int, docs: Seq[JsObject])
-  private case class Data(doc: JsObject)
+    val checkpointDataToPoints = Flow[CheckpointData].mapAsync(1) {
+      case checkpointData ⇒
+        CheckpointsState.setTimes(checkpointData).map((checkpointData, _))
+    }
+
+    val pointsToAnalyzed = Flow[(CheckpointData, Seq[Point])].mapConcat {
+      case (checkpointData, points) ⇒
+        try {
+          List(Analyzer.analyze(checkpointData.raceId, checkpointData.contestantId, points))
+        } catch {
+          case t: Throwable ⇒
+            log.error(t, "unable to analyse contestant {} in race {}", checkpointData.contestantId, checkpointData.raceId)
+            Nil
+        }
+    }
+
+    source.via(checkpointDataToPoints).via(pointsToAnalyzed).to(ProblemService.problemServiceSink(database)).run()
+  }
 
 }
