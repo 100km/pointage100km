@@ -11,7 +11,14 @@ object CheckpointsState {
 
   import Global.dispatcher
 
-  case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamps: Seq[Long])
+  case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamps: Seq[Long],
+      deletedTimestamps: Option[Seq[Long]], insertedTimestamps: Option[Seq[Long]]) {
+    def pristine: CheckpointData =
+      copy(
+        timestamps         = (timestamps ++ deletedTimestamps.getOrElse(Seq())).diff(insertedTimestamps.getOrElse(Seq())).sorted,
+        deletedTimestamps  = None, insertedTimestamps = None
+      )
+  }
 
   object CheckpointData {
     implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js ⇒
@@ -20,7 +27,9 @@ object CheckpointsState {
         val contestantId = (js \ "bib").as[Int]
         val siteId = (js \ "site_id").as[Int]
         val timestamps = (js \ "times").as[Seq[Long]]
-        JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps))
+        val deletedTimestamps = (js \ "deleted_times").asOpt[Seq[Long]]
+        val insertedTimestamps = (js \ "artificial_times").asOpt[Seq[Long]]
+        JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps, deletedTimestamps, insertedTimestamps))
       } catch {
         case t: Throwable ⇒ JsError(t.getMessage)
       }
@@ -43,7 +52,7 @@ object CheckpointsState {
   def reset(): Future[Done] = racesAgent.alter(Map[Int, Race]()).map(_ ⇒ Done)
 
   def setTimes(checkpointData: CheckpointData): Future[Seq[Point]] = {
-    val CheckpointData(raceId, contestantId, siteId, timestamps) = checkpointData
+    val CheckpointData(raceId, contestantId, siteId, timestamps, _, _) = checkpointData
     racesAgent.alter { races ⇒
       val race = races.getOrElse(raceId, Map())
       val contestantTimes = race.getOrElse(contestantId, Map())

@@ -1,5 +1,7 @@
 package replicate
 
+import org.specs2.execute.Result
+import org.specs2.matcher.ResultMatchers
 import org.specs2.mutable._
 import play.api.libs.json.Json
 import replicate.scrutineer.Analyzer
@@ -10,14 +12,14 @@ import replicate.utils.{Global, Infos}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class AnalyzerSpec extends Specification {
+class AnalyzerSpec extends Specification with ResultMatchers {
 
   sequential
 
   private val infos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
   Global.infos = Some(infos)
   (0 to 6).foreach(PingState.setLastPing(_, System.currentTimeMillis()))
-  CheckpointsStateSpec.installFullRace()
+  CheckpointsStateSpec.installFullRace(pristine = true)
 
   "speedBetween" should {
 
@@ -91,6 +93,34 @@ class AnalyzerSpec extends Specification {
         result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo partial
       }
       success
+    }
+
+    "never suggest a change that would later be reverted" in {
+
+      skipped("Test does not give consistent results yet")
+
+      def check(raceId: Int, contestantId: Int): Result = {
+        val points = Await.result(CheckpointsState.timesFor(raceId, contestantId), 1.second)
+        val analysis = Analyzer.analyze(raceId, contestantId, points)
+        val deleted = analysis.checkpoints.collect { case r: RemovePoint ⇒ r.point }
+        val inserted = analysis.checkpoints.collect { case m: MissingPoint ⇒ m.point }
+        for (partial ← 1 until points.size) {
+          val partialAnalysis = Analyzer.analyze(raceId, contestantId, points.take(partial))
+          val partialDeleted = partialAnalysis.checkpoints.collect { case r: RemovePoint ⇒ r.point }
+          val partialInserted = partialAnalysis.checkpoints.collect { case m: MissingPoint ⇒ m.point }
+          for (d ← partialDeleted)
+            s"a deleted point for bib $contestantId in race $raceId is kept deleted until the end ($partialAnalysis)" <==> (deleted must contain(d))
+          for (i ← partialInserted)
+            s"an inserted point for bib $contestantId in race $raceId is kept inserted until the end ($partialAnalysis)" <==> (inserted must contain(i))
+        }
+        success
+      }
+
+      forall(List(1, 2, 3)) { raceId: Int ⇒
+        forall(Await.result(CheckpointsState.contestants(raceId), 1.second).toVector.sorted) { contestantId: Int ⇒
+          check(raceId, contestantId)
+        }
+      }
     }
 
   }

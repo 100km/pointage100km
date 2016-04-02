@@ -59,7 +59,6 @@ class ProblemService(database: Database) extends ActorSubscriber with ActorLoggi
       else {
         val base: JsObject = ContestantAnalysis.contestantAnalysisWrites.writes(analysis).as[JsObject]
         val doc = currentRev.fold(base)(rev ⇒ base ++ Json.obj("_rev" → rev))
-        log.info(s"Inserting problem for $contestantId")
         database.insert(doc).map(js ⇒ Written(contestantId, (js \ "rev").as[String])).pipeTo(self)
       }
 
