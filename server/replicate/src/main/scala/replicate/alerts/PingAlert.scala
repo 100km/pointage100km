@@ -152,10 +152,7 @@ object PingAlert {
     siteRegex.findFirstMatchIn((js \ "_id").as[String]).map(_.group(2).toInt)
 
   private def throttleLast[T](duration: FiniteDuration): Flow[T, T, NotUsed] =
-    Flow[T]
-  // XXXXX This needs to wait for Akka 2.4.3 since in 2.4.2 throttle will
-  // fail with a DivisionByZeroError
-  // Flow[T].buffer(1, OverflowStrategy.dropHead).throttle(1, duration, 1, ThrottleMode.Shaping)
+    Flow[T].buffer(1, OverflowStrategy.dropHead).throttle(1, duration, 1, ThrottleMode.Shaping)
 
   private def docToMaxTimestamp(siteId: Int, database: Database): Flow[JsObject, Long, NotUsed] =
     Flow[JsObject].flatMapConcat { doc ⇒

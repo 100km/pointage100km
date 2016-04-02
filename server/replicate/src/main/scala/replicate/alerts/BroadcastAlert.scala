@@ -2,12 +2,13 @@ package replicate.alerts
 
 import java.util.UUID
 
-import akka.stream.Materializer
+import akka.stream.{Materializer, ThrottleMode}
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json, Reads}
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity
 import replicate.utils.{Global, Glyphs}
+import scala.concurrent.duration._
 
 class Broadcaster {
 
@@ -52,8 +53,7 @@ object BroadcastAlert {
   def runBroadcastAlerts(database: Database)(implicit materializer: Materializer) = {
     val broadcaster = new Broadcaster
     database.changesSource(Map("filter" → "common/messages", "include_docs" → "true"))
-      // Unusable in Akka 2.4.2, wait for Akka 2.4.3
-      // .throttle(1, 1.minute, 5, ThrottleMode.Shaping)  // Do not make phones unusable by more than one alert every minute
+      .throttle(1, 1.minute, 5, ThrottleMode.Shaping) // Do not make phones unusable by more than one alert every minute
       .runForeach(broadcaster.sendOrCancelBroadcast)
   }
 
