@@ -41,7 +41,7 @@ object RankingState {
 
   private val rankings = Agent(Map[Int, Ranks]())
 
-  def rankingsFor(raceId: Int): Future[Ranks] = rankings.future().map(_(raceId))
+  def rankingsFor(raceId: Int): Future[Ranks] = rankings.future().map(_.getOrElse(raceId, Vector()))
 
   private def enterBestPoint(raceId: Int, contestantId: Int, point: KeepPoint): Future[_] = rankings.alter { ranks ⇒
     ranks + (raceId → addContestant(Rank(contestantId, point), ranks.getOrElse(raceId, Vector())))
@@ -51,11 +51,12 @@ object RankingState {
     ranks + (raceId → removeContestant(contestantId, ranks.getOrElse(raceId, Vector())))
   }.map(_ ⇒ Done)
 
-  def enterAnalysis(analysis: ContestantAnalysis): Future[Option[KeepPoint]] = {
-    analysis.checkpoints.reverse.collectFirst { case k: KeepPoint ⇒ k } match {
-      case p@Some(bestPoint) ⇒ enterBestPoint(analysis.raceId, analysis.contestantId, bestPoint).map(_ ⇒ p)
-      case None              ⇒ removePoints(analysis.raceId, analysis.contestantId).map(_ ⇒ None)
-    }
-  }
+  def enterAnalysis(analysis: ContestantAnalysis): Future[Option[KeepPoint]] =
+    if (analysis.valid)
+      analysis.checkpoints.reverse.collectFirst { case k: KeepPoint ⇒ k } match {
+        case p@Some(bestPoint) ⇒ enterBestPoint(analysis.raceId, analysis.contestantId, bestPoint).map(_ ⇒ p)
+        case None              ⇒ removePoints(analysis.raceId, analysis.contestantId).map(_ ⇒ None)
+      }
+    else removePoints(analysis.raceId, analysis.contestantId).map(_ ⇒ None)
 
 }
