@@ -130,27 +130,27 @@ class AnalyzerSpec extends Specification with ResultMatchers {
       def check(raceId: Int, contestantId: Int): Result = {
         val points = Await.result(CheckpointsState.timesFor(raceId, contestantId), 1.second)
         val analysis = Analyzer.analyze(raceId, contestantId, points)
-        val finalPoints = analysis.checkpoints.collect { case r: KeepPoint => r.point }
+        val finalPoints = analysis.checkpoints.collect { case r: KeepPoint ⇒ r.point }
         var signalledLap = 0
         var signalledSiteId = -1
         var signalledTime = 0L
-        for (partial <- 1 until points.size) {
+        for (partial ← 1 until points.size) {
           val partialAnalysis = Analyzer.analyze(raceId, contestantId, points.take(partial))
-          partialAnalysis.checkpoints.reverse.collectFirst { case r: KeepPoint => r } match {
-            case Some(p) if p.point.timestamp > signalledTime && (p.lap > signalledLap || (p.lap == signalledLap && p.point.siteId > signalledSiteId)) =>
+          partialAnalysis.checkpoints.reverse.collectFirst { case r: KeepPoint ⇒ r } match {
+            case Some(p) if p.point.timestamp > signalledTime && (p.lap > signalledLap || (p.lap == signalledLap && p.point.siteId > signalledSiteId)) ⇒
               s"point $p (at step $partial) for bib $contestantId in race $raceId is kept valid until the end ($analysis)" <==> (finalPoints must contain(p.point))
               signalledLap = p.lap
               signalledSiteId = p.point.siteId
               signalledTime = p.point.timestamp
-            case _ =>
-              // Either there is no point to be kept or we have signalled it already
+            case _ ⇒
+            // Either there is no point to be kept or we have signalled it already
           }
         }
         success
       }
 
-      forall(List(1, 2, 3)) { raceId: Int =>
-        forall(Await.result(CheckpointsState.contestants(raceId), 1.second).toVector.sorted) { contestantId: Int =>
+      forall(List(1, 2, 3)) { raceId: Int ⇒
+        forall(Await.result(CheckpointsState.contestants(raceId), 1.second).toVector.sorted) { contestantId: Int ⇒
           check(raceId, contestantId)
         }
       }
