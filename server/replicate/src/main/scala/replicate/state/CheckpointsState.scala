@@ -2,7 +2,8 @@ package replicate.state
 
 import akka.Done
 import akka.agent.Agent
-import play.api.libs.json.{JsError, JsSuccess, Reads}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import replicate.utils.{FormatUtils, Global}
 
 import scala.concurrent.Future
@@ -38,6 +39,13 @@ object CheckpointsState {
 
   case class Point(siteId: Int, timestamp: Long) {
     override def toString = s"Point($siteId, ${FormatUtils.formatDate(timestamp, withSeconds = true)})"
+  }
+
+  object Point {
+    implicit val pointWrites: Writes[Point] = (
+      (JsPath \ "site_id").write[Int] and
+      (JsPath \ "time").write[Long]
+    )(unlift(Point.unapply))
   }
 
   type ContestantTimes = Map[Int, Seq[Long]]
