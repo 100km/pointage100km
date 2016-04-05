@@ -123,7 +123,7 @@ class Replicate(options: Options.Config) extends LoggingError {
     if (options.replicate) {
       log.info("starting initial replication")
       try {
-        localDatabase.replicateFrom(hubDatabase, Json.obj()).execute()(initialReplicationTimeout)
+        localDatabase.replicateFrom(hubDatabase).execute()(initialReplicationTimeout)
         log.info("initial replication done")
         val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
           case Success(infos) ⇒
@@ -148,15 +148,20 @@ class Replicate(options: Options.Config) extends LoggingError {
     localDatabase.ensureFullCommit()
     exit(0)
   } else {
-    if (options.replicate) {
-      val replicateOptions = Json.obj("continuous" → true, "filter" → "common/to-replicate")
+    if (options.replicate)
       system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
-        withError(localDatabase.replicateFrom(hubDatabase, replicateOptions), "cannot start remote to local replication")
+        val sites = Global.infos.get.sites.size
+        val queryParams = Json.obj(
+          "site_id" → options.siteId.toString,
+          "prev_site_id" → ((options.siteId + sites - 1) % sites).toString
+        )
+        val replicateDownloadOptions = Json.obj("continuous" → true, "filter" → "replicate/to-download", "query_params" → queryParams)
+        withError(localDatabase.replicateFrom(hubDatabase, replicateDownloadOptions), "cannot start remote to local replication")
         if (!options.isSlave) {
-          withError(localDatabase.replicateTo(hubDatabase, replicateOptions), "cannot start local to remote replication")
+          val replicateUploadOptions = Json.obj("continuous" → true, "filter" → "replicate/to-upload")
+          withError(localDatabase.replicateTo(hubDatabase, replicateUploadOptions), "cannot start local to remote replication")
         }
       }
-    }
     if (options.compactLocal)
       system.scheduler.schedule(localCompactionInterval, localCompactionInterval) {
         withError(localDatabase.compact(), "cannot start local database compaction")
