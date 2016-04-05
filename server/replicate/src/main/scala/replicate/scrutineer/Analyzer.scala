@@ -311,13 +311,13 @@ object Analyzer {
     override def toJson = super.toJson ++ Json.obj("lap" → lap, "distance" → distance, "speed" → speed)
   }
 
-  sealed trait KeepPoint extends AnalyzedPoint
+  sealed trait KeepPoint extends AnalyzedPoint with WithCheckpointInfo
 
   sealed trait Anomaly extends AnalyzedPoint
 
-  sealed trait ExtraPoint extends AnalyzedPoint with KeepPoint with Anomaly
+  sealed trait ExtraPoint extends KeepPoint with Anomaly
 
-  final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo with KeepPoint {
+  final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends KeepPoint {
     override def toJson = super.toJson ++ Json.obj("type" → "correct")
     override def toString = s"CorrectPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
@@ -326,13 +326,13 @@ object Analyzer {
     override def toJson = super.toJson ++ Json.obj("type" → "remove", "reason" → reason, "action" → "remove")
   }
 
-  final case class MissingPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo with ExtraPoint {
+  final case class MissingPoint(point: Point, lap: Int, distance: Double, speed: Double) extends ExtraPoint {
     override def toJson = super.toJson ++ Json.obj("type" → "missing", "action" → "add")
     override def toString = s"MissingPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
   final case class DownPoint(point: Point, lap: Int, distance: Double, speed: Double, lastPing: Option[Long])
-      extends WithCheckpointInfo with ExtraPoint {
+      extends ExtraPoint {
     private def reason = lastPing.fold("Site has never been up")(downSince ⇒ s"Site is down since ${formatDate(downSince)}")
     override def toJson = super.toJson ++ Json.obj("type" → "down", "reason" → reason)
     override def toString = s"DownPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)}, $reason)"
