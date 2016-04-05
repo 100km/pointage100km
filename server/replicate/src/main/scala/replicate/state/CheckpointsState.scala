@@ -3,7 +3,7 @@ package replicate.state
 import akka.Done
 import akka.agent.Agent
 import play.api.libs.json.{JsError, JsSuccess, Reads}
-import replicate.utils.Global
+import replicate.utils.{FormatUtils, Global}
 
 import scala.concurrent.Future
 
@@ -36,7 +36,9 @@ object CheckpointsState {
     }
   }
 
-  case class Point(siteId: Int, timestamp: Long)
+  case class Point(siteId: Int, timestamp: Long) {
+    override def toString = s"Point($siteId, ${FormatUtils.formatDate(timestamp, withSeconds = true)})"
+  }
 
   type ContestantTimes = Map[Int, Seq[Long]]
   type Race = Map[Int, ContestantTimes]

@@ -97,7 +97,7 @@ class AnalyzerSpec extends Specification with ResultMatchers {
 
     "never suggest a change that would later be reverted" in {
 
-      skipped("Test does not give consistent results yet")
+      // skipped("Test does not give consistent results yet")
 
       def check(raceId: Int, contestantId: Int): Result = {
         val points = Await.result(CheckpointsState.timesFor(raceId, contestantId), 1.second)
@@ -109,9 +109,9 @@ class AnalyzerSpec extends Specification with ResultMatchers {
           val partialDeleted = partialAnalysis.checkpoints.collect { case r: RemovePoint ⇒ r.point }
           val partialInserted = partialAnalysis.checkpoints.collect { case m: MissingPoint ⇒ m.point }
           for (d ← partialDeleted)
-            s"a deleted point for bib $contestantId in race $raceId is kept deleted until the end ($partialAnalysis)" <==> (deleted must contain(d))
+            s"point $d (at step $partial) for bib $contestantId in race $raceId is kept deleted until the end ($partialAnalysis)" <==> (deleted must contain(d))
           for (i ← partialInserted)
-            s"an inserted point for bib $contestantId in race $raceId is kept inserted until the end ($partialAnalysis)" <==> (inserted must contain(i))
+            s"point $i (at step $partial) for bib $contestantId in race $raceId is kept inserted until the end ($partialAnalysis)" <==> (inserted must contain(i))
         }
         success
       }

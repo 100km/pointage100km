@@ -18,10 +18,10 @@ object CheckpointScrutineer {
       .flatMapConcat {
         case (lastSeq, checkpoints) ⇒
           val groupedByContestants = Source(checkpoints.filterNot(_._2.raceId == 0).groupBy(_._1).map(_._2.map(_._2)))
-          val enterAndKeepLatest = groupedByContestants.mapAsync(1)(cps ⇒ Future.sequence(cps.dropRight(1).map(CheckpointsState.setTimes)).map(_ ⇒ cps.last))
+          val enterAndKeepLatest = groupedByContestants.mapAsync(1)(cps ⇒ Future.sequence(cps.dropRight(1).map(_.pristine).map(CheckpointsState.setTimes)).map(_ ⇒ cps.last))
           val changes =
             database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
-              .map(js ⇒ (js \ "doc").as[CheckpointData])
+              .map(js ⇒ (js \ "doc").as[CheckpointData]).map(_.pristine)
           enterAndKeepLatest ++ changes
       }
 

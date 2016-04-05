@@ -1,12 +1,11 @@
 package replicate.scrutineer
 
-import java.util.Calendar
-
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import play.api.libs.json.{JsObject, Json, Writes}
 import replicate.state.CheckpointsState.Point
 import replicate.state.PingState
+import replicate.utils.FormatUtils._
 import replicate.utils.Global
 import replicate.utils.Infos.RaceInfo
 
@@ -286,6 +285,7 @@ object Analyzer {
     def siteId = point.siteId
     def timestamp = point.timestamp
     assert(timestamp >= 0, s"timestamp must be non-negative, currently $timestamp")
+    override def toString = s"EnrichedPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
   case object EnrichedPoint {
@@ -319,6 +319,7 @@ object Analyzer {
 
   final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo with KeepPoint {
     override def toJson = super.toJson ++ Json.obj("type" → "correct")
+    override def toString = s"CorrectPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
   final case class RemovePoint(point: Point, reason: String) extends AnalyzedPoint with Anomaly {
@@ -327,12 +328,14 @@ object Analyzer {
 
   final case class MissingPoint(point: Point, lap: Int, distance: Double, speed: Double) extends WithCheckpointInfo with ExtraPoint {
     override def toJson = super.toJson ++ Json.obj("type" → "missing", "action" → "add")
+    override def toString = s"MissingPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
   final case class DownPoint(point: Point, lap: Int, distance: Double, speed: Double, lastPing: Option[Long])
       extends WithCheckpointInfo with ExtraPoint {
     private def reason = lastPing.fold("Site has never been up")(downSince ⇒ s"Site is down since ${formatDate(downSince)}")
     override def toJson = super.toJson ++ Json.obj("type" → "down", "reason" → reason)
+    override def toString = s"DownPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)}, $reason)"
   }
 
   case class ContestantAnalysis(contestantId: Int, raceId: Int, checkpoints: Seq[AnalyzedPoint],
@@ -363,14 +366,6 @@ object Analyzer {
         "_id" → analysis.id)
     }
   }
-
-  private def formatDate(timestamp: Long) = {
-    val calendar = Calendar.getInstance()
-    calendar.setTimeInMillis(timestamp)
-    "%d:%02d".format(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE))
-  }
-
-  private def formatSpeed(speed: Double) = "%.2f km/h".format(speed)
 
   def speedBetween(startDistance: Double, endDistance: Double, startTimestamp: Long, endTimestamp: Long): Double =
     (endDistance - startDistance) * 3600 * 1000 / (endTimestamp - startTimestamp)
