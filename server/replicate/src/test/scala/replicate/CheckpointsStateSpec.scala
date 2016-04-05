@@ -2,18 +2,14 @@ package replicate
 
 import org.specs2.mutable._
 import org.specs2.specification.Scope
-import play.api.libs.json.Json
 import replicate.state.CheckpointsState
 import replicate.state.CheckpointsState.{CheckpointData, Point}
-import replicate.utils.{Global, Infos}
+import replicate.utils.Global
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-import scala.io.Source
 
 class CheckpointsStateSpec extends Specification {
-
-  import CheckpointsStateSpec._
 
   sequential
 
@@ -77,28 +73,10 @@ class CheckpointsStateSpec extends Specification {
   "a full simulation" should {
 
     "load a full race information in a reasonable time" in {
-      Await.result(installFullRace(), 5.seconds) must be equalTo 5193
+      Await.result(RaceUtils.installFullRace(), 5.seconds) must be equalTo 5193
     }
 
   }
 
 }
 
-object CheckpointsStateSpec {
-
-  implicit val dispatcher = Global.dispatcher
-
-  def loadRaceData: Iterator[CheckpointData] =
-    Source.fromInputStream(classOf[ClassLoader].getResourceAsStream("/dummy-timings.txt"), "utf-8").getLines.map(Json.parse(_).as[CheckpointData])
-
-  def loadInfos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
-
-  def installFullRace(pristine: Boolean = false): Future[Int] = {
-    val infos = loadInfos
-    CheckpointsState.reset()
-    Future.sequence(for (checkpointData ← loadRaceData if checkpointData.raceId > 0) yield {
-      CheckpointsState.setTimes(if (pristine) checkpointData.pristine else checkpointData)
-    }).map(_.size)
-  }
-
-}

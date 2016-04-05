@@ -19,7 +19,7 @@ class AnalyzerSpec extends Specification with ResultMatchers {
   private val infos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
   Global.infos = Some(infos)
   (0 to 6).foreach(PingState.setLastPing(_, System.currentTimeMillis()))
-  CheckpointsStateSpec.installFullRace(pristine = true)
+  RaceUtils.installFullRace(pristine = true)
 
   "speedBetween" should {
 
