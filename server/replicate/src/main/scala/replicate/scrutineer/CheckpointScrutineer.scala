@@ -2,9 +2,9 @@ package replicate.scrutineer
 
 import akka.event.LoggingAdapter
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import net.rfc1149.canape.Database
-import replicate.state.CheckpointsState
+import replicate.state.{CheckpointsState, RankingState}
 import replicate.state.CheckpointsState.{CheckpointData, Point}
 
 import scala.concurrent.Future
@@ -41,7 +41,12 @@ object CheckpointScrutineer {
         }
     }
 
-    source.via(checkpointDataToPoints).via(pointsToAnalyzed).to(ProblemService.problemServiceSink(database)).run()
+    // Analyze checkpoints as they arrive (after the initial batch),
+    source.via(checkpointDataToPoints).via(pointsToAnalyzed)
+      // and them them to the ranking state
+      .alsoTo(Sink.foreach(RankingState.enterAnalysis(_)))
+      // and the problem service
+      .to(ProblemService.problemServiceSink(database)).run()
   }
 
 }
