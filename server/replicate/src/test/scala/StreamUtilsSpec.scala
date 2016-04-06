@@ -104,7 +104,7 @@ class StreamUtilsSpec extends Specification {
       upstream.sendNext("foo")
       delay(50.milliseconds)
       upstream.sendNext("bar")
-      delay(100.milliseconds)
+      delay(200.milliseconds)
       upstream.sendNext("final")
       delay(10.milliseconds)
       upstream.sendNext("xyzzy").sendComplete()
