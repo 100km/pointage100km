@@ -5,6 +5,7 @@ import akka.stream.scaladsl.Flow
 import akka.stream.stage._
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 
+import scala.collection.immutable.Queue
 import scala.concurrent.duration.{Deadline, FiniteDuration}
 
 trait StreamUtils {
@@ -30,6 +31,80 @@ trait StreamUtils {
       }
       filter
     }
+
+  private class IfUnchangedAfter[T, K](key: T ⇒ K, duration: FiniteDuration, maxQueueSize: Int) extends GraphStage[FlowShape[T, T]] {
+
+    assert(maxQueueSize > 0, "maxQueueSize must be positive")
+
+    val in: Inlet[T] = Inlet("IfUnchangedAfter.in")
+    val out: Outlet[T] = Outlet("IfUnchangedAfter.out")
+
+    override def createLogic(inheritedAttributes: Attributes) = new TimerGraphStageLogic(shape) {
+
+      private var onHold: Map[K, T] = Map()
+      private var queue: Queue[T] = Queue()
+      private var slotsRemaining: Int = maxQueueSize
+
+      private def sendFromQueue() =
+        if (queue.nonEmpty && isAvailable(out)) {
+          val (element, newQueue) = queue.dequeue
+          push(out, element)
+          queue = newQueue
+          if (queue.isEmpty && onHold.isEmpty && isClosed(in))
+            complete(out)
+          slotsRemaining += 1
+          if (!isClosed(in) && !hasBeenPulled(in))
+            pull(in)
+        }
+
+      setHandler(in, new InHandler {
+        override def onPush() = {
+          val element = grab(in)
+          val k = key(element)
+          // Do not decrement the number of available slots if we already have a (to be cancelled)
+          // element for this key.
+          if (onHold.contains(k)) cancelTimer(k, onHold(k)) else slotsRemaining -= 1
+          onHold += k → element
+          scheduleOnce((k, element), duration)
+          if (slotsRemaining > 0)
+            pull(in)
+        }
+
+        override def onUpstreamFinish() =
+          if (queue.isEmpty && onHold.isEmpty)
+            complete(out)
+      })
+
+      setHandler(out, new OutHandler {
+        override def onPull() = sendFromQueue()
+      })
+
+      override def preStart() = pull(in)
+
+      override protected def onTimer(timerKey: Any) = {
+        val (k, element) = timerKey.asInstanceOf[(K, T)]
+        queue = queue.enqueue(element)
+        onHold -= k
+        sendFromQueue()
+      }
+    }
+
+    override def shape = FlowShape(in, out)
+  }
+
+  /**
+   * Wait for some time before letting an element flow through. If an element with the same key arrives in
+   * the meantime, discard the previous element and start the waiting period from scratch.
+   *
+   * @param key a function deriving the key for an element
+   * @param duration the element retention time
+   * @param maxQueueSize the maximum number of elements in transit before maxpressure triggers
+   * @tparam T the type of the elements
+   * @tparam K the type of the keys
+   * @return the delayed and possibly reduced stream
+   */
+  def ifUnchangedAfter[T, K](key: T ⇒ K, duration: FiniteDuration, maxQueueSize: Int): Flow[T, T, NotUsed] =
+    Flow[T].via(new IfUnchangedAfter[T, K](key, duration, maxQueueSize))
 
   private class IdleAlert[T](timeout: FiniteDuration, alert: T) extends GraphStage[FlowShape[T, T]] {
 

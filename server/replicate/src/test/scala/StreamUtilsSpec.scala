@@ -1,9 +1,9 @@
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.testkit.scaladsl.{TestSink, TestSource}
-import com.typesafe.config.ConfigFactory
+import akka.stream.testkit.{TestPublisher, TestSubscriber}
+import akka.stream.{ActorMaterializer, Materializer}
 import org.specs2.mutable._
 import replicate.utils.StreamUtils._
 
@@ -53,6 +53,63 @@ class StreamUtilsSpec extends Specification {
       Await.result(result, 2.seconds) must throwA[RuntimeException]("marker")
     }
 
+  }
+
+  "ifUnchangedAfter()" should {
+
+    def probes()(implicit system: ActorSystem, fm: Materializer): (TestPublisher.Probe[String], TestSubscriber.Probe[String]) =
+      TestSource.probe[String].via(ifUnchangedAfter[String, Char](_.head, 100.milliseconds, 10)).toMat(TestSink.probe[String])(Keep.both).run()
+
+    def delay(duration: FiniteDuration): Unit =
+      try Thread.sleep(duration.toMillis)
+      catch { case _: InterruptedException ⇒ }
+
+    "let a single element go through" in new withActorSystem {
+      val (upstream, downstream) = probes()
+      upstream.sendNext("foobar").sendComplete()
+      downstream.request(2).expectNoMsg(50.milliseconds).expectNext("foobar").expectComplete()
+    }
+
+    "propagate errors immediately" in new withActorSystem {
+      val (upstream, downstream) = probes()
+      val error = new RuntimeException("random error")
+      upstream.sendNext("foobar").sendError(error)
+      downstream.request(2).expectError(error)
+    }
+
+    "let elements flow through in order if keys are distincts" in new withActorSystem {
+      val (upstream, downstream) = probes()
+      upstream.sendNext("foo")
+      delay(10.milliseconds)
+      upstream.sendNext("bar")
+      delay(10.milliseconds)
+      upstream.sendNext("xyzzy").sendComplete()
+      downstream.request(4).expectNoMsg(50.milliseconds).expectNext("foo", "bar", "xyzzy").expectComplete()
+    }
+
+    "replace elements with the same key" in new withActorSystem {
+      val (upstream, downstream) = probes()
+      upstream.sendNext("foo")
+      delay(10.milliseconds)
+      upstream.sendNext("bar")
+      delay(10.milliseconds)
+      upstream.sendNext("final")
+      delay(10.milliseconds)
+      upstream.sendNext("xyzzy").sendComplete()
+      downstream.request(5).expectNoMsg(50.milliseconds).expectNext("bar", "final", "xyzzy").expectComplete()
+    }
+
+    "do not replace elements with the same key if the delay has expired" in new withActorSystem {
+      val (upstream, downstream) = probes()
+      upstream.sendNext("foo")
+      delay(50.milliseconds)
+      upstream.sendNext("bar")
+      delay(100.milliseconds)
+      upstream.sendNext("final")
+      delay(10.milliseconds)
+      upstream.sendNext("xyzzy").sendComplete()
+      downstream.request(5).expectNext("foo", "bar", "final", "xyzzy").expectComplete()
+    }
   }
 
   "idleAlert()" should {
