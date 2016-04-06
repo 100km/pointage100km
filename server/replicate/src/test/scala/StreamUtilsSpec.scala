@@ -64,6 +64,13 @@ class StreamUtilsSpec extends Specification {
       try Thread.sleep(duration.toMillis)
       catch { case _: InterruptedException ⇒ }
 
+    "close an empty stream" in new WithActorSystem {
+      val (upstream, downstream) = probes()
+      upstream.sendComplete()
+      downstream.expectSubscription()
+      downstream.expectComplete()
+    }
+
     "let a single element go through" in new WithActorSystem {
       val (upstream, downstream) = probes()
       upstream.sendNext("foobar").sendComplete()
@@ -109,6 +116,15 @@ class StreamUtilsSpec extends Specification {
       delay(10.milliseconds)
       upstream.sendNext("xyzzy").sendComplete()
       downstream.request(5).expectNext("foo", "bar", "final", "xyzzy").expectComplete()
+    }
+
+    "backpressure the input when the queue is full" in new WithActorSystem {
+      val (upstream, downstream) = probes()
+      for (s ← List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"))
+        upstream.sendNext(s)
+      upstream.sendComplete()
+      downstream.request(20).expectNextUnordered("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
+      downstream.expectNoMsg(50.milliseconds).expectNextUnordered("k", "l", "m").expectComplete()
     }
   }
 
