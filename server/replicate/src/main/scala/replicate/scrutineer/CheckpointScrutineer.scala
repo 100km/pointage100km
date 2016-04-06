@@ -4,8 +4,8 @@ import akka.event.LoggingAdapter
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import net.rfc1149.canape.Database
-import replicate.state.{CheckpointsState, RankingState}
 import replicate.state.CheckpointsState.{CheckpointData, Point}
+import replicate.state.{CheckpointsState, RankingState}
 
 import scala.concurrent.Future
 
@@ -39,7 +39,7 @@ object CheckpointScrutineer {
             log.error(t, "unable to analyse contestant {} in race {}", checkpointData.contestantId, checkpointData.raceId)
             Nil
         }
-    }
+    }.named("analyzer")
 
     // Analyze checkpoints as they arrive (after the initial batch),
     source.via(checkpointDataToPoints).via(pointsToAnalyzed)

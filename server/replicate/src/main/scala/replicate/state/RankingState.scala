@@ -1,6 +1,5 @@
 package replicate.state
 
-import akka.Done
 import akka.agent.Agent
 import replicate.scrutineer.Analyzer.{ContestantAnalysis, KeepPoint}
 import replicate.utils.Global
@@ -43,20 +42,22 @@ object RankingState {
 
   def rankingsFor(raceId: Int): Future[Ranks] = rankings.future().map(_.getOrElse(raceId, Vector()))
 
-  private def enterBestPoint(raceId: Int, contestantId: Int, point: KeepPoint): Future[_] = rankings.alter { ranks ⇒
+  private def enterBestPoint(raceId: Int, contestantId: Int, point: KeepPoint): Future[Map[Int, Ranks]] = rankings.alter { ranks ⇒
     ranks + (raceId → addContestant(Rank(contestantId, point), ranks.getOrElse(raceId, Vector())))
   }
 
-  private def removePoints(raceId: Int, contestantId: Int): Future[_] = rankings.alter { ranks ⇒
+  private def removePoints(raceId: Int, contestantId: Int): Future[Map[Int, Ranks]] = rankings.alter { ranks ⇒
     ranks + (raceId → removeContestant(contestantId, ranks.getOrElse(raceId, Vector())))
-  }.map(_ ⇒ Done)
+  }
 
-  def enterAnalysis(analysis: ContestantAnalysis): Future[Option[KeepPoint]] =
-    if (analysis.valid)
-      analysis.checkpoints.reverse.collectFirst { case k: KeepPoint ⇒ k } match {
-        case p@Some(bestPoint) ⇒ enterBestPoint(analysis.raceId, analysis.contestantId, bestPoint).map(_ ⇒ p)
-        case None              ⇒ removePoints(analysis.raceId, analysis.contestantId).map(_ ⇒ None)
-      }
-    else removePoints(analysis.raceId, analysis.contestantId).map(_ ⇒ None)
+  def enterAnalysis(analysis: ContestantAnalysis): Future[Ranks] = {
+    val raceId = analysis.raceId
+    val contestantId = analysis.contestantId
+    val allRanks = analysis.bestPoint match {
+      case Some(bestPoint) ⇒ enterBestPoint(raceId, contestantId, bestPoint)
+      case None            ⇒ removePoints(raceId, contestantId)
+    }
+    allRanks.map(_.getOrElse(raceId, Vector()))
+  }
 
 }

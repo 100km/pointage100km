@@ -345,6 +345,8 @@ object Analyzer {
     val anomalies = countAnomalies(checkpoints)
     val consecutiveAnomalies = countConsecutiveAnomalies(checkpoints)
     val valid = anomalies < maxAnomalies && consecutiveAnomalies < maxConsecutiveAnomalies
+
+    def bestPoint: Option[KeepPoint] = if (valid) checkpoints.reverse.collectFirst { case p: KeepPoint ⇒ p } else None
   }
 
   private def countAnomalies(checkpoints: Seq[AnalyzedPoint]) = checkpoints.count(_.isInstanceOf[Anomaly])
