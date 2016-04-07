@@ -1,28 +1,68 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Administration Pointage</title>
     <link rel="stylesheet" href="style/main.css" type="text/css">
+    <!-- Bootstrap -->
+    <link href="../common/vendor/bootstrap-3.3.6-dist/css/bootstrap.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
   </head>
   <body>
-    <div id="bib_admin_current_time">Il est :<div id="the_current_time"></div></div>
-    <div class="title"><h1>Page d'administration pour les 100kms</h1></div>
-    <div id="bib_admin_last_refresh_time">Dernière mise à jour :<div id="the_last_refresh_time"></div></div>
-    <div style="clear:both;"></div>
-    <div id="bib_admin_title"></div>
-    <div style="clear:both;"></div>
-    <div id="bib_admin_input_message_div"></div>
-    <div id="bib_admin_message_list_div"></div>
-    <div id="bib_admin_problems"></div>
-    <hr style="width: 80%"/>
-    <div style="font-size: 80%; text-align: center">
-      Liste des modules d'alerte actifs: <span id="officers">inconnu</span> — 
-      Obtenez votre code d'alerte Pushbullet <a href="https://www.pushbullet.com/authorize?client_id=3kDezN4AXk1kYpbQWHXZhqh4dTM8cNLq&response_type=token&redirect_uri=http:%2F%2Flocalhost:5984/steenwerck100km%2F_design%2Fadmin%2Fpushbullet-token.html">ici</a>
-      <br/>
-      <a href="alerts.html">Alertes</a> -
-      <a href="stalking.html">Suivi SMS</a> -
-      <a href="comments.html">Inscriptions avec commentaire</a>
+    <div class="container-fluid">
+      <div class="row text-center">
+        <div class="col-xs-6 col-sm-3">
+          <div class="page-header" style="border-bottom: none; padding-bottom: 0px;">
+          <div class="panel panel-default" id="bib_admin_current_time">
+            <div class="panel-heading"><h3 class="panel-title">Il est</h3></div>
+            <div class="panel-body" id="the_current_time"></div>
+          </div>
+          </div>
+        </div>
+        <div class="col-xs-6 col-sm-3 col-sm-push-6">
+          <div class="page-header" style="border-bottom: none; padding-bottom: 0px;">
+          <div class="panel panel-default" id="bib_admin_last_refresh_time">
+            <div class="panel-heading"><h3 class="panel-title">Mise à jour</h3></div>
+            <div class="panel-body" id="the_last_refresh_time"></div></div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-sm-pull-3">
+          <div class="page-header"><h1>Page d'administration pour les 100kms</h1></div>
+        </div>
+      </div>
+      <div class="row"><div class="col-xs-12">
+        <div id="bib_admin_title"></div>
+      </div></div>
+      <div class="row"><div class="col-xs-12">
+        <div id="bib_admin_input_message_div"></div>
+      </div></div>
+      <div class="row"><div class="col-xs-12">
+        <div id="bib_admin_message_list_div"></div>
+      </div></div>
+      <div class="row"><div class="col-xs-12">
+      <div id="bib_admin_problems"></div>
+      </div></div>
+      <hr style="width: 80%"/>
+      <div class="row">
+      <div style="font-size: 80%; text-align: center">
+        Liste des modules d'alerte actifs: <span id="officers">inconnu</span> —
+        Obtenez votre code d'alerte Pushbullet <a href="https://www.pushbullet.com/authorize?client_id=3kDezN4AXk1kYpbQWHXZhqh4dTM8cNLq&response_type=token&redirect_uri=http:%2F%2Flocalhost:5984/steenwerck100km%2F_design%2Fadmin%2Fpushbullet-token.html">ici</a>
+        <br/>
+        <a href="alerts.html">Alertes</a> -
+        <a href="stalking.html">Suivi SMS</a> -
+        <a href="comments.html">Inscriptions avec commentaire</a>
+      </div>
+      </div>
     </div>
   <script src="../common/vendor/couchapp/loader.js"></script>
   <script src="../common/lib/utils.js"></script>
@@ -55,5 +95,6 @@
       });
     });
   </script>
+  <script src="../common/vendor/bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
   </body>
 </html>

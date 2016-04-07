@@ -1,21 +1,21 @@
 <h3>Envoyer un message</h3>
 <form>
   <!-- onSubmit and onKeyup are dealed by evently -->
-  <label>Message : <input type="text" name="bib_admin_message" size=64 value="" maxlength=128></label>
+  <div class="form-group">
+  <label for="bib_admin_message" >Message</label>
+  <input type="text" class="form-control" id="bib_admin_message"
+    name="bib_admin_message" placeholder="Message..." size=64 value="" maxlength=128>
   <div id="message_len"></div>
-  <div style="clear:both;"></div>
+  </div>
+  <div class="form-group">
   <!-- TODO: Use data in infos JSON -->
-  <label>Destination : <select name="bib_admin_message_target">
+  <label for="bib_admin_message_target">Destination</label>
+  <select class="form-control" name="bib_admin_message_target" id="bib_admin_message_target">
   <option value="-1" >tous les sites</option>
   {{#sites}}
     <option value="{{site_id}}">{{site_name}}</option>
   {{/sites}}
-  </select></label>
-  <div style="clear:both;"></div>
-  <button id="bib_admin_message_send_button" style="font: 14px Arial" value="send_message">Envoyer</button>
-  <div id="message_check"></div>
-  <div id="clk"></div>
-  <div style="clear:both;"></div>
+  </select>
+  </div>
+  <button type="submit" class="btn btn-default" id="bib_admin_message_send_button" value="send_message">Envoyer</button>
 </form>
-
-<div style="clear:left;"></div>

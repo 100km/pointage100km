@@ -15,7 +15,7 @@ function(data) {
     function reformat_data_thru_map(current) {
 	res = {};
 
-	res.target      = current.target;
+	res.target      = current.target || -1;
 	res.message     = current.message;
 	res.addedTS     = current.addedTS;
 	res.time_hour   = time_to_hour_string(res.addedTS);
