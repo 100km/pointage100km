@@ -21,6 +21,7 @@ object CheckpointScrutineer {
           val enterAndKeepLatest = groupedByContestants.mapAsync(1)(cps ⇒ Future.sequence(cps.dropRight(1).map(_.pristine).map(CheckpointsState.setTimes)).map(_ ⇒ cps.last))
           val changes =
             database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
+              // FIXME: right now the checkpoints are loaded as pristine, that must be changed in production
               .map(js ⇒ (js \ "doc").as[CheckpointData]).map(_.pristine)
           enterAndKeepLatest ++ changes
       }
