@@ -32,6 +32,9 @@ object CheckpointScrutineer {
     }
 
     val pointsToAnalyzed = Flow[(CheckpointData, Seq[Point])].mapConcat {
+      case (checkpointData, _) if checkpointData.raceId == 0 =>
+        log.warning("skipping analysis of contestant {} at site {} because no race is defined", checkpointData.contestantId, checkpointData.siteId)
+        Nil
       case (checkpointData, points) ⇒
         try {
           List(Analyzer.analyze(checkpointData.raceId, checkpointData.contestantId, points))
@@ -47,7 +50,7 @@ object CheckpointScrutineer {
       // and them them to the ranking state
       .alsoTo(Sink.foreach(RankingState.enterAnalysis(_)))
       // and the problem service
-      .to(ProblemService.problemServiceSink(database)).run()
+      .to(AnalysisService.analysisServiceSink(database)).run()
   }
 
 }

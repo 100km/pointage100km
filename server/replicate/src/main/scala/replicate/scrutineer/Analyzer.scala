@@ -341,7 +341,7 @@ object Analyzer {
   case class ContestantAnalysis(contestantId: Int, raceId: Int, checkpoints: Seq[AnalyzedPoint],
       before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
     def isOk = checkpoints.forall(_.isInstanceOf[CorrectPoint])
-    def id = s"problem-$contestantId"
+    def id = s"analysis-$contestantId"
     val anomalies = countAnomalies(checkpoints)
     val consecutiveAnomalies = countConsecutiveAnomalies(checkpoints)
     val valid = anomalies < maxAnomalies && consecutiveAnomalies < maxConsecutiveAnomalies
