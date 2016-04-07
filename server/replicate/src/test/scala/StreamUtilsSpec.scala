@@ -86,45 +86,40 @@ class StreamUtilsSpec extends Specification {
 
     "let elements flow through in order if keys are distincts" in new WithActorSystem {
       val (upstream, downstream) = probes()
-      upstream.sendNext("foo")
-      delay(10.milliseconds)
-      upstream.sendNext("bar")
-      delay(10.milliseconds)
-      upstream.sendNext("xyzzy").sendComplete()
+      upstream.sendNext("foo").sendNext("bar").sendNext("xyzzy").sendComplete()
       downstream.request(4).expectNoMsg(50.milliseconds).expectNext("foo", "bar", "xyzzy").expectComplete()
     }
 
     "replace elements with the same key" in new WithActorSystem {
       val (upstream, downstream) = probes()
-      upstream.sendNext("foo")
-      delay(10.milliseconds)
-      upstream.sendNext("bar")
-      delay(10.milliseconds)
-      upstream.sendNext("final")
-      delay(10.milliseconds)
-      upstream.sendNext("xyzzy").sendComplete()
+      upstream.sendNext("foo").sendNext("bar").sendNext("final").sendNext("xyzzy").sendComplete()
       downstream.request(5).expectNoMsg(50.milliseconds).expectNext("bar", "final", "xyzzy").expectComplete()
     }
 
-    "do not replace elements with the same key if the delay has expired" in new WithActorSystem {
+    "replace elements with the same key if the delay has expired if they have not been pulled downstream" in new WithActorSystem {
       val (upstream, downstream) = probes()
-      upstream.sendNext("foo")
-      delay(50.milliseconds)
-      upstream.sendNext("bar")
+      upstream.sendNext("foo").sendNext("bar")
       delay(200.milliseconds)
-      upstream.sendNext("final")
-      delay(10.milliseconds)
-      upstream.sendNext("xyzzy").sendComplete()
-      downstream.request(5).expectNext("foo", "bar", "final", "xyzzy").expectComplete()
+      upstream.sendNext("final").sendNext("xyzzy").sendComplete()
+      downstream.request(5).expectNext("bar", "final", "xyzzy").expectComplete()
+    }
+
+    "not replace elements with the same key if the delay has expired and they are pulled downstream" in new WithActorSystem {
+      val (upstream, downstream) = probes()
+      upstream.sendNext("foo").sendNext("bar")
+      downstream.request(5).expectNext("foo")
+      upstream.sendNext("final").sendNext("xyzzy").sendComplete()
+      downstream.expectNext("bar", "final", "xyzzy").expectComplete()
     }
 
     "backpressure the input when the queue is full" in new WithActorSystem {
       val (upstream, downstream) = probes()
+      // "k", "l", and "m" cannot be accepted before respectively "a", "b", abd "c" are pulled
       for (s ← List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"))
         upstream.sendNext(s)
       upstream.sendComplete()
-      downstream.request(20).expectNextUnordered("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
-      downstream.expectNoMsg(50.milliseconds).expectNextUnordered("k", "l", "m").expectComplete()
+      downstream.request(20).expectNext("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
+      downstream.expectNoMsg(50.milliseconds).expectNext("k", "l", "m").expectComplete()
     }
   }
 

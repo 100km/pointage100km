@@ -1,5 +1,7 @@
 package replicate.utils
 
+import java.util.concurrent.TimeUnit
+
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import akka.stream.stage._
@@ -36,42 +38,56 @@ trait StreamUtils {
 
     assert(maxQueueSize > 0, "maxQueueSize must be positive")
 
-    val in: Inlet[T] = Inlet("IfUnchangedAfter.in")
-    val out: Outlet[T] = Outlet("IfUnchangedAfter.out")
+    private val in: Inlet[T] = Inlet("IfUnchangedAfter.in")
+    private val out: Outlet[T] = Outlet("IfUnchangedAfter.out")
+
+    private case class Holder(deadline: Long, k: K, element: T)
+
+    private object Enqueued {
+      def apply(element: T): Holder = new Holder(System.nanoTime() + duration.toNanos, key(element), element)
+    }
 
     override def createLogic(inheritedAttributes: Attributes) = new TimerGraphStageLogic(shape) {
 
-      private var onHold: Map[K, T] = Map()
-      private var queue: Queue[T] = Queue()
-      private var slotsRemaining: Int = maxQueueSize
+      private var queue: Queue[Holder] = Queue()
+      private var inQueue: Set[K] = Set()
 
       private def sendFromQueue() =
-        if (queue.nonEmpty && isAvailable(out)) {
-          val (element, newQueue) = queue.dequeue
-          push(out, element)
-          queue = newQueue
-          if (queue.isEmpty && onHold.isEmpty && isClosed(in))
-            complete(out)
-          slotsRemaining += 1
-          if (!isClosed(in) && !hasBeenPulled(in))
-            pull(in)
-        }
+        if (isAvailable(out))
+          queue.headOption.map(_.deadline - System.nanoTime()).foreach { remainingNanos ⇒
+            if (remainingNanos <= 0) {
+              val (dequeued, newQueue) = queue.dequeue
+              queue = newQueue
+              inQueue -= dequeued.k
+              if (!isClosed(in) && !hasBeenPulled(in))
+                pull(in)
+              push(out, dequeued.element)
+              if (queue.isEmpty && isClosed(in))
+                complete(out)
+            } else
+              scheduleOnce(None, FiniteDuration(remainingNanos, TimeUnit.NANOSECONDS))
+          }
 
       setHandler(in, new InHandler {
         override def onPush() = {
           val element = grab(in)
-          val k = key(element)
-          // Do not decrement the number of available slots if we already have a (to be cancelled)
-          // element for this key.
-          if (onHold.contains(k)) cancelTimer(k, onHold(k)) else slotsRemaining -= 1
-          onHold += k → element
-          scheduleOnce((k, element), duration)
-          if (slotsRemaining > 0)
+          val enqueued = Enqueued(element)
+          // If the same element (according to the key) was already in the queue, remove it, otherwise
+          // remember that it will be in the queue.
+          if (inQueue.contains(enqueued.k))
+            queue = queue.filterNot(_.k == enqueued.k)
+          else
+            inQueue += enqueued.k
+          // Start the timer if this is the first element in the queue and the output port is waiting
+          if (queue.isEmpty && isAvailable(out))
+            scheduleOnce(None, duration)
+          queue = queue.enqueue(enqueued)
+          if (queue.size < maxQueueSize)
             pull(in)
         }
 
         override def onUpstreamFinish() =
-          if (queue.isEmpty && onHold.isEmpty)
+          if (queue.isEmpty)
             complete(out)
       })
 
@@ -81,12 +97,7 @@ trait StreamUtils {
 
       override def preStart() = pull(in)
 
-      override protected def onTimer(timerKey: Any) = {
-        val (k, element) = timerKey.asInstanceOf[(K, T)]
-        queue = queue.enqueue(element)
-        onHold -= k
-        sendFromQueue()
-      }
+      override protected def onTimer(timerKey: Any) = sendFromQueue()
     }
 
     override def shape = FlowShape(in, out)
@@ -94,11 +105,13 @@ trait StreamUtils {
 
   /**
    * Wait for some time before letting an element flow through. If an element with the same key arrives in
-   * the meantime, discard the previous element and start the waiting period from scratch.
+   * the meantime or any time before downstream pulls the previous one, discard the previous one and start
+   * the waiting period from scratch.
    *
    * @param key a function deriving the key for an element
    * @param duration the element retention time
-   * @param maxQueueSize the maximum number of elements in transit before maxpressure triggers
+   * @param maxQueueSize the maximum number of elements in transit (with unique keys) before maxpressure triggers
+   *                     upstream
    * @tparam T the type of the elements
    * @tparam K the type of the keys
    * @return the delayed and possibly reduced stream
