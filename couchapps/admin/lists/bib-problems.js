@@ -205,6 +205,38 @@ function do_check_times(res, bib, times, deleted_times, artificial_times, pings)
         artificial_times: get_site_bib_artificial_times(artificial_times, i, bib)
       });
     }
+
+    var all_times = [];
+    // TODO: hardcoded number of sites
+    for (var i = 0; i < 7; i++) {
+      for (var j = 0; times[i] && j < times[i].length; j++) {
+        all_times.push({
+          time: times[i][j],
+          site: i,
+          lap: j
+        });
+      }
+      for (var j = 0; deleted_times[i] && j < deleted_times[i].length; j++) {
+        all_times.push({
+          time: deleted_times[i][j],
+          site: i,
+          lap: j
+        });
+      }
+    }
+    all_times.sort(function(s1, s2) { return s2.time < s1.time ? 1 : (s1.time < s2.time ? -1 : 0); });
+
+    //Display the times in another order
+    check.times = [];
+    for (var k = 0; k < all_times.length; k++) {
+      check.times.push({
+          time: format_date(new Date(all_times[k].time)),
+          site: all_times[k].site,
+          lap: all_times[k].lap,
+          is_artificial: artificial_times[all_times[k].site] ? (artificial_times[all_times[k].site].indexOf(all_times[k].time) >= 0 ? true : false) : false,
+          is_deleted: deleted_times[all_times[k].site] ? (deleted_times[all_times[k].site].indexOf(all_times[k].time) >= 0 ? true : false) :false,
+      });
+    }
   }
 }
 

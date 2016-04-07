@@ -1,31 +1,35 @@
 <h3>Liste des messages valides</h3>
-<ul>
-  <li>
-      <div class="bib_admin_message_list_div_col_fixed_80">Sup?</div>
-      <div class="bib_admin_message_list_div_col_5">Destination</div>
-      <div class="bib_admin_message_list_div_col_15">Heure d'envoi</div>
-      <div class="bib_admin_message_list_div_col">Message</div>
-      <div style="clear:both;"></div>
-  </li>
-  {{#all_valid_messages}}
-    <li>
-      <div class="bib_admin_message_list_div_col_fixed_80_delete">
-        <form id="delete">
-          <input type="image" name="delete" src="img/delete.png"/>
-          <input type="hidden" name="id" value="{{message_id}}"/>
-          <input type="hidden" name="rev" value="{{message_rev}}"/>
-          <input type="hidden" name="target" value="{{target}}"/>
-          <input type="hidden" name="body" value="{{message}}"/>
-          <input type="hidden" name="addedTS" value="{{addedTS}}"/>
-        </form>
-      </div>
-      <div class="bib_admin_message_list_div_col_5">{{target}}</div>
-      <div class="bib_admin_message_list_div_col_15">{{time_hour}}</div>
-      <div class="bib_admin_message_list_div_col">{{message}}</div>
-      <div style="clear:both;"></div>
-    </li>
-  {{/all_valid_messages}}
-</ul>
 
-
-
+    <div class="list-group">
+      <li class="list-group-item">
+        <div class="row">
+        <div class="col-xs-4 col-sm-2 col-lg-1 text-center">Suppr</div>
+        <div class="col-xs-4 col-sm-1 text-center">Dest</div>
+        <div class="col-xs-4 col-sm-2 col-lg-1 text-center">Date</div>
+        <div class="col-sm-7 col-lg-9 hidden-xs">Message</div>
+        </div>
+      </li>
+      {{#all_valid_messages}}
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-xs-4 col-sm-2 col-lg-1 text-center">
+            <form id="delete">
+              <button type="submit" name="delete" class="btn btn-sm btn-danger"><span class="glyphicon glyphicon-remove"></span></button>
+              <input type="hidden" name="id" value="{{message_id}}"/>
+              <input type="hidden" name="rev" value="{{message_rev}}"/>
+              <input type="hidden" name="target" value="{{target}}"/>
+              <input type="hidden" name="body" value="{{message}}"/>
+              <input type="hidden" name="addedTS" value="{{addedTS}}"/>
+            </form>
+          </div>
+          <div class="col-xs-4 col-sm-1 text-center">{{target}}</div>
+          <div class="col-xs-4 col-sm-2 col-lg-1 text-center">{{time_hour}}</div>
+          <div class="clearfix visible-xs-block"></div>
+          <div class="col-xs-12 visible-xs-block"><p></p></div>
+          <div class="col-xs-12 col-sm-7 col-lg-9 hidden-xs"><span class="visible-xs-inline">Message: </span>{{message}}</div>
+          <div class="col-xs-12 col-sm-7 col-lg-9 visible-xs"><blockquote style="margin-bottom: 0px;">{{message}}</blockquote></div>
+          <div class="clearfix"></div>
+        </div>
+      </li>
+      {{/all_valid_messages}}
+    </div>

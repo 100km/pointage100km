@@ -1,17 +1,21 @@
 <h3>Classement général</h3>
-<ul>
   {{#pbs}}
-  <li> Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}} </li>
-  <ul>
+  <div class="row">
+    <div class="col-xs-12">
+    Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}}
+    </div>
+  </div>
+  <div class="row text-center"><div class="col-xs-6 col-sm-3">Par site</div><div class="col-xs-6 col-sm-3">Par temps</div></div>
+  <div class="row small">
+    <div class="col-xs-6 col-sm-3">
     {{#sites}}
-    <li>
       <a href="/_utils/document.html?steenwerck100km/checkpoints-{{id}}-{{bib}}">Site {{id}}</a>
-      <ul>
-        <li>
-          times:
-          <ul>
+            <div class="row"><div class="col-xs-12">
+              times:
+            </div></div>
             {{#times}}
-            <li>
+            <div class="row">
+              <div class="col-xs-12">
               {{#val}}
                 {{#remove}}<span style="color: red">{{/remove}}
                 {{val}}
@@ -19,34 +23,39 @@
                 <input class="remove" type="button" value="remove" data-bib="{{bib}}" data-site_id="{{site_id}}" data-lap="{{lap}}"/>
               {{/val}}
               {{#add}}<input class="add" type="button" value="add" data-bib="{{bib}}" data-site_id={{site_id}} data-lap="{{lap}}" data-next_site="{{next_site}}" data-next_time="{{next_time}}" data-prev_time="{{prev_time}}" data-prev_site="{{prev_site}}"/>{{/add}}
-            </li>
+              </div>
+            </div>
             {{/times}}
-          </ul>
-        </li>
-        <li>
-          deleted times:
-          <ul>
+            <div class="row"><div class="col-xs-12">
+              deleted times:
+            </div></div>
             {{#deleted_times}}
-            <li>
+            <div class="row"><div class="col-xs-12">
               {{val}}
               <input class="restore" type="button" value="restore" data-bib="{{bib}}" data-site_id="{{site_id}}" data-lap="{{lap}}"/>
-            </li>
+            </div></div>
             {{/deleted_times}}
-          </ul>
-        </li>
-        <li>
-          artificial times:
-          <ul>
+            <div class="row"><div class="col-xs-12">
+              artificial times:
+            </div></div>
             {{#artificial_times}}
-            <li>
+            <div class="row"><div class="col-xs-12">
               {{val}}
-            </li>
+            </div></div>
             {{/artificial_times}}
-          </ul>
-        </li>
-      </ul>
-    </li>
     {{/sites}}
-  </ul>
+      </div>
+      <div class="col-xs-6 col-sm-3 text-center">
+        {{#times}}
+        <div class="row"><div class="col-xs-12">
+            {{site}}
+            {{#is_deleted}}<strike>{{/is_deleted}}
+            {{#is_artificial}}<i class="bg-warning">{{/is_artificial}}
+            {{time}}{{#is_artificial}}*</i>
+            {{/is_artificial}}
+            {{#is_deleted}}</strike>{{/is_deleted}}
+        </div></div>
+        {{/times}}
+      </div>
+    </div>
   {{/pbs}}
-</ul>
