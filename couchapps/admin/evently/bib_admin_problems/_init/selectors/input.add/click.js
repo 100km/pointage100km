@@ -49,8 +49,10 @@ function() {
               $('#bib_admin_problems').trigger('_init');
             },
             error: function() {
+              // TODO use update function 'add-checkpoint'
               db.saveDoc({
                 _id: 'checkpoints-' + site_id + '-' + bib,
+                type: "checkpoint",
                 bib: bib,
                 race_id: constestant.race,
                 site_id: site_id,
