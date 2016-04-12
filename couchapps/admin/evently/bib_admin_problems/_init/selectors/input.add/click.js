@@ -17,7 +17,8 @@ function() {
           if (prev_time) {
             prev_time = parseInt(prev_time);
             prev_site = parseInt(prev_site);
-            prev_km = site_lap_to_kms(app, prev_site, prev_site == 2 ? (lap - 1) : lap);
+            // TODO hardcoded number of sites
+            prev_km = site_lap_to_kms(app, prev_site, prev_site == 6 ? (lap - 1) : lap);
           } else {
             prev_time = infos.start_times[constestant.race];
             prev_km = 0;
