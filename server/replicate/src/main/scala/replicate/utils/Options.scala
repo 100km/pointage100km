@@ -9,6 +9,7 @@ object Options {
   case object Checkpoint extends Mode
   case object Master extends Mode
   case object Slave extends Mode
+  case object Mirror extends Mode
   case object Tests extends Mode
 
   case class Config(
@@ -114,6 +115,9 @@ object Options {
         opt[Unit]("no-reset") abbr "nR" text "do not reset site id (test)" action { (_, c) ⇒
           c.copy(resetSiteId = false)
         }
+      }
+      cmd("mirror") text "mirror of main server" action { (_, c) =>
+        c.copy(modes = Mirror +: c.modes)
       }
       cmd("slave") text "slave mode (no modifications propagated to the server)" action { (_, c) ⇒
         c.copy(modes = Slave +: c.modes)

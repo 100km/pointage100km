@@ -9,6 +9,7 @@ import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
 import replicate.scrutineer.CheckpointScrutineer
 import replicate.stalking.Stalker
+import replicate.utils.Options.Checkpoint
 import replicate.utils._
 import steenwerck._
 
@@ -126,8 +127,8 @@ class Replicate(options: Options.Config) extends LoggingError {
         localDatabase.replicateFrom(hubDatabase).execute()(initialReplicationTimeout)
         log.info("initial replication done")
         val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
-          case Success(infos) ⇒
-            Global.infos = Some(infos)
+          case Success(i) ⇒
+            Global.infos = Some(i)
             log.info("race information loaded from database")
           case Failure(t) ⇒
             log.error(t, "unable to read race information from database")
@@ -148,20 +149,26 @@ class Replicate(options: Options.Config) extends LoggingError {
     localDatabase.ensureFullCommit()
     exit(0)
   } else {
-    if (options.replicate)
+    if (options.replicate) {
+      val (downloadFilter, uploadFilter) =
+        if (options.mode == Checkpoint) {
+          val sites = Global.infos.get.sites.length
+          val queryParams = Json.obj(
+            "site_id" → options.siteId.toString,
+            "prev_site_id" → ((options.siteId + sites - 1) % sites).toString
+          )
+          (Json.obj("filter" -> "replicate/to-download", "query_params" -> queryParams), Json.obj("filter" -> "replicate/to-upload"))
+        } else
+          (Json.obj("filter" -> "replicate/no-local"), Json.obj("filter" -> "replicate/no-local"))
+      val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" → true)
+      val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" → true)
       system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
-        val sites = Global.infos.get.sites.size
-        val queryParams = Json.obj(
-          "site_id" → options.siteId.toString,
-          "prev_site_id" → ((options.siteId + sites - 1) % sites).toString
-        )
-        val replicateDownloadOptions = Json.obj("continuous" → true, "filter" → "replicate/to-download", "query_params" → queryParams)
         withError(localDatabase.replicateFrom(hubDatabase, replicateDownloadOptions), "cannot start remote to local replication")
         if (!options.isSlave) {
-          val replicateUploadOptions = Json.obj("continuous" → true, "filter" → "replicate/to-upload")
           withError(localDatabase.replicateTo(hubDatabase, replicateUploadOptions), "cannot start local to remote replication")
         }
       }
+    }
     if (options.compactLocal)
       system.scheduler.schedule(localCompactionInterval, localCompactionInterval) {
         withError(localDatabase.compact(), "cannot start local database compaction")
