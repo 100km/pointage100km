@@ -4,6 +4,13 @@ import scopt.OptionParser
 
 object Options {
 
+  sealed trait Mode
+  case object Init extends Mode
+  case object Checkpoint extends Mode
+  case object Master extends Mode
+  case object Slave extends Mode
+  case object Tests extends Mode
+
   case class Config(
       compactLocal: Boolean = true,
       compactMaster: Boolean = false,
@@ -16,7 +23,7 @@ object Options {
       stalking: Boolean = false,
       resetSiteId: Boolean = true,
       siteId: Int = -1,
-      modes: List[String] = Nil,
+      modes: List[Mode] = Nil,
       _ping: Boolean = true
   ) {
 
@@ -27,9 +34,9 @@ object Options {
 
     def onChanges = fixConflicts || fixIncomplete || ping
 
-    def mode = modes.headOption.getOrElse("tests")
-    def isSlave = mode == "slave"
-    def initOnly = mode == "init"
+    def mode = modes.headOption.getOrElse(Tests)
+    def isSlave = mode == Slave
+    def initOnly = mode == Init
 
     def dump() = {
       def po(opt: String, current: Any) = {
@@ -67,7 +74,7 @@ object Options {
       opt[Unit]("no-replicate") abbr "nr" text "do not start replication" action { (_, c) ⇒
         c.copy(replicate = false)
       }
-      cmd("checkpoint") text "run checkpoint" action { (_, c) ⇒ c.copy(modes = "checkpoint" +: c.modes) } children {
+      cmd("checkpoint") text "run checkpoint" action { (_, c) ⇒ c.copy(modes = Checkpoint +: c.modes) } children {
         opt[Unit]("no-ping") abbr "np" text "do not start ping" action { (_, c) ⇒
           c.copy(_ping = false)
         }
@@ -77,7 +84,7 @@ object Options {
       }
       cmd("init") text "checkpoint initialization" action { (_, c) ⇒
         c.copy(compactLocal = false, compactMaster = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
-          replicate      = false, _ping = false, modes = "init" +: c.modes)
+          replicate      = false, _ping = false, modes = Init +: c.modes)
       } children {
         arg[Int]("<site-id>") text "numerical id of the current site" action { (x, c) ⇒
           c.copy(siteId = x)
@@ -85,7 +92,7 @@ object Options {
       }
       cmd("master") text "main server procedures" action { (_, c) ⇒
         c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
-          replicate      = true, _ping = false, alerts = true, stalking = true, modes = "master" +: c.modes)
+          replicate      = true, _ping = false, alerts = true, stalking = true, modes = Master +: c.modes)
       } text "turn on every service but ping" children {
         opt[Unit]("no-conflicts") abbr "nc" text "do not fix conflicts as they appear" action { (_, c) ⇒
           c.copy(_fixConflicts = false)
@@ -110,7 +117,7 @@ object Options {
         }
       }
       cmd("slave") text "slave mode (no modifications propagated to the server)" action { (_, c) ⇒
-        c.copy(modes = "slave" +: c.modes)
+        c.copy(modes = Slave +: c.modes)
       }
       checkConfig { c ⇒
         if (c.modes.isEmpty || c.modes.size > 1)
