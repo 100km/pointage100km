@@ -31,7 +31,7 @@ object Options {
     def fixConflicts: Boolean = _fixConflicts && !isSlave
     def fixIncomplete: Boolean = _fixIncomplete && !isSlave
     def obsolete: Boolean = _obsolete && !isSlave
-    def ping: Boolean = _ping && !isSlave
+    def ping: Boolean = _ping && mode == Checkpoint
 
     def onChanges = fixConflicts || fixIncomplete || ping
 
