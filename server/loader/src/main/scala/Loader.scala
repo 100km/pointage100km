@@ -85,11 +85,10 @@ object Loader extends App {
   try {
 
     val source = new BasicDataSource
-    source.setDriverClassName("com.mysql.jdbc.Driver")
     val host = options.host.orElse(config.as[Option[String]]("mysql-host")).getOrElse("localhost")
     val port = options.port.orElse(config.as[Option[Int]]("mysql-port")).getOrElse(3306)
     val database = options.database.getOrElse(config.getString("mysql-database"))
-    source.setUrl(s"jdbc:mysql://$host:$port/$database")
+    source.setUrl(s"jdbc:mysql://$host:$port/$database?useSSL=true&verifyServerCertificate=false")
     options.user.orElse(config.as[Option[String]]("mysql-user")).foreach(source.setUsername)
     options.password.orElse(config.as[Option[String]]("mysql-password")).foreach(source.setPassword)
 
