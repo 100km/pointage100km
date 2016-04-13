@@ -8,7 +8,8 @@ RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true 
 ADD cors.ini /usr/local/etc/couchdb/local.d/
 
 RUN apt-get update && \
-    apt-get install -y --force-yes --no-install-recommends oracle-java8-installer oracle-java8-set-default git make
+    apt-get install -y --force-yes --no-install-recommends oracle-java8-installer oracle-java8-set-default git make && \
+    rm -rf /var/cache/oracle-jdk-installer
 
 RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
 
@@ -23,6 +24,7 @@ RUN cd /home/steenwerck && \
 
 USER root
 ADD start.sh /
+RUN chmod 755 /start.sh
 ENTRYPOINT [ "/start.sh" ]
 
 # It is likely that you will want to extend this Dockerfile by adding a configuration
