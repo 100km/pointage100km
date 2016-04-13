@@ -43,8 +43,7 @@ object Options {
         System.out.println(s"  - $opt: $current")
       }
       System.out.println(s"Current configuration ($mode mode):")
-      if (siteId != -1)
-        po("site id", siteId)
+      po("site id", siteId)
       po("compact local database regularly", compactLocal)
       po("compact master database regularly", compactMaster)
       po("fix conflicts", fixConflicts)
