@@ -9,10 +9,6 @@ import replicate.utils.Global
 import scala.concurrent.Future
 
 class Telegram(id: String) extends Actor with ActorLogging with Messaging {
-  override def preStart = {
-    super.preStart()
-    log.info(s"Telegram service starting for id $id")
-  }
 
   override def sendMessage(message: Message): Future[Option[String]] = {
     val mdUrl = message.url.fold("")(uri ⇒ s" [(link)]($uri)")
