@@ -116,7 +116,7 @@ object Options {
           c.copy(resetSiteId = false)
         }
       }
-      cmd("mirror") text "mirror of main server" action { (_, c) =>
+      cmd("mirror") text "mirror of main server" action { (_, c) ⇒
         c.copy(modes = Mirror +: c.modes)
       }
       cmd("slave") text "slave mode (no modifications propagated to the server)" action { (_, c) ⇒

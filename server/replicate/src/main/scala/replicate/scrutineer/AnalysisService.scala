@@ -11,7 +11,7 @@ import play.api.libs.json.{JsObject, Json}
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 
 /**
- * This class is in charge of keeping the analysis for every analysisatic concurrent
+ * This class is in charge of keeping the analysis for every concurrent
  * synchronized with the database.
  *
  * @param database the database in which the analyses are stored
@@ -30,7 +30,7 @@ class AnalysisService(database: Database) extends ActorSubscriber with ActorLogg
 
   override def preStart() = {
     database.view[String, String]("replicate", "analysis").map { analyses ⇒
-      InitialRevs(for ((id, rev) <- analyses) yield (id.stripPrefix("analysis-").toInt, rev))
+      InitialRevs(for ((id, rev) ← analyses) yield (id.stripPrefix("analysis-").toInt, rev))
     } pipeTo self
   }
 
@@ -64,7 +64,7 @@ class AnalysisService(database: Database) extends ActorSubscriber with ActorLogg
       log.error(t, "stream failed with an error")
       throw t
 
-    case InitialRevs(revs) =>
+    case InitialRevs(revs) ⇒
       knownAnalysesRevs = revs.toMap
       request(1)
 

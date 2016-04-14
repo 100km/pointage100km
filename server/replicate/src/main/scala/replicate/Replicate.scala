@@ -2,14 +2,16 @@ package replicate
 
 import akka.actor.Props
 import akka.event.Logging
+import akka.stream.scaladsl.{Broadcast, Flow, Sink}
 import net.rfc1149.canape._
 import play.api.libs.json.Json
-import replicate.alerts.Alerts
 import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
-import replicate.scrutineer.CheckpointScrutineer
-import replicate.stalking.Stalker
-import replicate.utils.Options.Checkpoint
+import replicate.scrutineer.Analyzer.ContestantAnalysis
+import replicate.scrutineer.{AnalysisService, CheckpointScrutineer}
+import replicate.stalking.StalkingService
+import replicate.state.{ContestantState, RankingState}
+import replicate.utils.Options.{Checkpoint, Master}
 import replicate.utils._
 import steenwerck._
 
@@ -157,9 +159,9 @@ class Replicate(options: Options.Config) extends LoggingError {
             "site_id" → options.siteId.toString,
             "prev_site_id" → ((options.siteId + sites - 1) % sites).toString
           )
-          (Json.obj("filter" -> "replicate/to-download", "query_params" -> queryParams), Json.obj("filter" -> "replicate/to-upload"))
+          (Json.obj("filter" → "replicate/to-download", "query_params" → queryParams), Json.obj("filter" → "replicate/to-upload"))
         } else
-          (Json.obj("filter" -> "replicate/no-local"), Json.obj("filter" -> "replicate/no-local"))
+          (Json.obj("filter" → "replicate/no-local"), Json.obj("filter" → "replicate/no-local"))
       val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" → true)
       val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" → true)
       system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
@@ -186,14 +188,22 @@ class Replicate(options: Options.Config) extends LoggingError {
       }
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
-    if (options.alerts) {
-      CheckpointScrutineer.startCheckpointScrutineer(localDatabase)(log, Global.flowMaterializer)
-      system.actorOf(Props(new Alerts(localDatabase)), "alerts")
+
+    if (options.mode == Master) {
+      ContestantState.startContestantAgent(localDatabase)(log, flowMaterializer)
+      val checkpointScrutineerSource = CheckpointScrutineer.checkpointScrutineer(localDatabase)(log, flowMaterializer)
+      val stalkingSink = if (options.stalking) {
+        val textService = system.actorOf(Props(new TextService), "text-service")
+        Global.TextMessages.ifAnalysisUnchanged.to(StalkingService.stalkingServiceSink(localDatabase, textService))
+      } else
+        Sink.ignore
+      checkpointScrutineerSource.runWith(Sink.combine(
+        stalkingSink,
+        AnalysisService.analysisServiceSink(localDatabase),
+        Sink.foreach[ContestantAnalysis](RankingState.enterAnalysis(_))
+      )(Broadcast(_)))
     }
-    if (options.stalking) {
-      val textService = system.actorOf(Props(new TextService), "textService")
-      system.actorOf(Props(new Stalker(localDatabase, textService)), "stalker")
-    }
+
   }
 
   private def exit(status: Int) {

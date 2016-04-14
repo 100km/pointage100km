@@ -30,6 +30,9 @@ class TextService extends Actor with ActorLogging {
         val sender = config.as[Option[String]]("octopush.sender-id")
         Some(context.actorOf(Props(new OctopushSMS(userLogin, apiKey, sender)), "octopush"))
 
+      case Some("fake") ⇒
+        Some(context.actorOf(Props[FakeSMS], "fake-sms"))
+
       case Some(provider) ⇒
         log.error("Unknown SMS provider {} configured", provider)
         None

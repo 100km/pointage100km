@@ -3,8 +3,10 @@ package replicate.utils
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Flow
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
+import replicate.scrutineer.Analyzer.ContestantAnalysis
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -50,6 +52,12 @@ object Global {
 
   object TextMessages {
     private val textMessagesConfig = replicateConfig.as[Config]("text-messages")
+    private val stabilizationDelay = textMessagesConfig.as[FiniteDuration]("stabilization-delay")
+    private val maxQueueSize = textMessagesConfig.as[Int]("max-queue-size")
+
+    val ifAnalysisUnchanged =
+      Flow[ContestantAnalysis].via(StreamUtils.ifUnchangedAfter(_.contestantId, stabilizationDelay, maxQueueSize)).named("ifAnalysisUnchanged")
+
     object TopUp {
       private val topUpConfig = textMessagesConfig.as[Config]("top-up")
       val noticeAmount: Double = topUpConfig.as[Double]("notice-amount")
