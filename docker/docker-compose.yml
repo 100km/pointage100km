@@ -1,0 +1,17 @@
+version: '2'
+services:
+  replicate:
+    image: rfc1149/pointage100km
+    depends_on:
+      - database
+    command: "replicate ${REPLICATE_OPTS}"
+    volumes:
+      - $STEENWERCK_CONF:/steenwerck.conf
+  database:
+    image: rfc1149/couchdb:1.6.1
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb-data:/usr/local/var/lib/couchdb
+volumes:
+  couchdb-data: {}

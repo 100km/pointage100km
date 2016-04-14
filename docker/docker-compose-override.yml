@@ -1,0 +1,6 @@
+version: '2'
+services:
+  replicate:
+    volumes:
+      - "$HOME/.ivy2:/home/steenwerck/.ivy2"
+    build: .
