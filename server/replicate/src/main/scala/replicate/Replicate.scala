@@ -5,6 +5,7 @@ import akka.event.Logging
 import akka.stream.scaladsl.{Broadcast, Flow, Sink}
 import net.rfc1149.canape._
 import play.api.libs.json.Json
+import replicate.alerts.Alerts
 import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
 import replicate.scrutineer.Analyzer.ContestantAnalysis
@@ -186,8 +187,12 @@ class Replicate(options: Options.Config) extends LoggingError {
           "cannot remove obsolete documents"
         )
       }
+
     if (options.onChanges)
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
+
+    if (options.alerts)
+      system.actorOf(Props(new Alerts(localDatabase)), "alerts")
 
     if (options.mode == Master) {
       ContestantState.startContestantAgent(localDatabase)(log, flowMaterializer)
