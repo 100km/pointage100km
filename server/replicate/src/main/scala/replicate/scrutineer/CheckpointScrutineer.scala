@@ -15,13 +15,13 @@ import scala.concurrent.Future
 object CheckpointScrutineer {
 
   /**
-    * Return a source of live analyzed race data, starting with historical race data.
-    *
-    * @param database the database to connect to
-    * @param log the log to use to indicate problems
-    * @param fm a materializer
-    * @return a source of contestant analysis data
-    */
+   * Return a source of live analyzed race data, starting with historical race data.
+   *
+   * @param database the database to connect to
+   * @param log the log to use to indicate problems
+   * @param fm a materializer
+   * @return a source of contestant analysis data
+   */
   def checkpointScrutineer(database: Database)(implicit log: LoggingAdapter, fm: Materializer): Source[ContestantAnalysis, NotUsed] = {
     import fm.executionContext
 
