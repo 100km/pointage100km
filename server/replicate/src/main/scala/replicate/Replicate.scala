@@ -2,7 +2,7 @@ package replicate
 
 import akka.actor.Props
 import akka.event.Logging
-import akka.stream.scaladsl.{Broadcast, Flow, Sink}
+import akka.stream.scaladsl.{Broadcast, Sink}
 import net.rfc1149.canape._
 import play.api.libs.json.Json
 import replicate.alerts.Alerts

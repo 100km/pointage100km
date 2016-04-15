@@ -2,8 +2,8 @@ package replicate.scrutineer
 
 import akka.NotUsed
 import akka.event.LoggingAdapter
-import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.{ActorAttributes, Attributes, Materializer, Supervision}
 import net.rfc1149.canape.Database
 import replicate.models.CheckpointData
 import replicate.scrutineer.Analyzer.ContestantAnalysis
@@ -36,10 +36,8 @@ object CheckpointScrutineer {
           enterAndKeepLatest ++ changes
       }
 
-    val checkpointDataToPoints = Flow[CheckpointData].mapAsync(1) {
-      case checkpointData ⇒
-        CheckpointsState.setTimes(checkpointData).map((checkpointData, _))
-    }.named("checkpointDataToPoints")
+    val checkpointDataToPoints = Flow[CheckpointData].mapAsync(1)(checkpointData ⇒ CheckpointsState.setTimes(checkpointData).map((checkpointData, _)))
+      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider) and Attributes.name("checkpointDataToPoints"))
 
     val pointsToAnalyzed = Flow[(CheckpointData, Seq[Point])].mapConcat {
       case (checkpointData, _) if checkpointData.raceId == 0 ⇒
