@@ -26,7 +26,7 @@ case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamp
    * @param other the other checkpoint
    * @return the merged checkpoint
    */
-  def merge(other: CheckpointData) = {
+  def merge(other: CheckpointData): CheckpointData = {
     val deleted = (deletedTimestamps ++ other.deletedTimestamps).distinct.sorted
     val inserted = (insertedTimestamps ++ other.insertedTimestamps).distinct.sorted
     val times = (timestamps ++ other.timestamps ++ inserted).diff(deleted).distinct.sorted
@@ -36,6 +36,8 @@ case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamp
 
 object CheckpointData {
 
+  // We are lenient about the presence of `deleted_times` and `artificial_times` as some older
+  // administration tools may not insert them initially.
   implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js ⇒
     try {
       val raceId = (js \ "race_id").as[Int]
