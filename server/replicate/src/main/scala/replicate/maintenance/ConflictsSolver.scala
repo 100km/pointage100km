@@ -26,6 +26,13 @@ trait ConflictsSolver {
         f
     }
 
+  /**
+   * Some checkpoints might be modified at several places at the same time. In this case, merging
+   * is required.
+   *
+   * @param db the database
+   * @return a list of checkpoints whose conflicts have been resolved
+   */
   def fixConflictingCheckpoints(db: Database): Future[Iterable[Seq[JsObject]]] =
     db.mapOnly("common", "conflicting-checkpoints") flatMap { r ⇒
       Future.sequence(for ((id, _, value) ← r.items[JsValue, List[String]])

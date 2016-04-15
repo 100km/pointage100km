@@ -2,45 +2,42 @@ package replicate.maintenance
 
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.util.FastFuture
-import net.rfc1149.canape._
+import akka.{Done, NotUsed}
+import net.rfc1149.canape.helpers._
+import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json._
+import replicate.models.{CheckpointData, Contestant}
 import replicate.utils.Global._
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 trait IncompleteCheckpoints {
 
   val log: LoggingAdapter
 
-  def fixIncompleteCheckpoints(db: Database): Future[Unit] =
-    db.view[JsValue, JsObject]("common", "incomplete-checkpoints").flatMap(Future.traverse(_) {
-      case (_, doc) ⇒
-        val bib = (doc \ "bib").as[Int]
-        db("contestant-" + bib) flatMap {
-          r ⇒
-            val race = (r \ "race").as[Int]
-            if (race != 0) {
-              val first = (r \ "first_name").as[String]
-              val name = (r \ "name").as[String]
-              val contestant = s"contestant $bib ($first $name) in race $race"
-              val newDoc = doc.transform((__ \ 'race_id).json.update(__.read(JsNumber(race)))).get
-              val inserter = db.insert(newDoc)
-              inserter onSuccess {
-                case _ ⇒
+  def fixIncompleteCheckpoints(db: Database): Future[Done] =
+    db.view[String, JsObject]("common", "incomplete-checkpoints").flatMap(Future.traverse(_) {
+      case (rev, doc) ⇒
+        val cpd = doc.as[CheckpointData]
+        db(s"contestant-${cpd.contestantId}").map(_.as[Contestant]) flatMap {
+          contestant ⇒
+            if (contestant.raceId != 0) {
+              val newCpd = cpd.copy(raceId = contestant.raceId)
+              val inserter = db.insert(newCpd.withIdRev(doc))
+              inserter onComplete {
+                case Success(_) ⇒
                   log.info("successfully fixed incomplete race information for {}", contestant)
+                case Failure(t) ⇒
+                  log.error(t, "unable to fix incomplete race information for {}", contestant)
               }
-              inserter recover {
-                case e: Exception ⇒
-                  log.error(e, "unable to fix incomplete race information for {}", contestant)
-                  JsUndefined
-              }
+              inserter
             } else
-              FastFuture.successful(JsUndefined)
+              FastFuture.successful(NotUsed)
         } recover {
           case Couch.StatusError(404, _, _) ⇒
-            log.debug("no information available for contestant {}", bib)
-            JsUndefined
+            log.info("no information available for contestant {}", cpd.contestantId)
         }
-    }).map(_ ⇒ ())
+    }).map(_ ⇒ Done)
 
 }
