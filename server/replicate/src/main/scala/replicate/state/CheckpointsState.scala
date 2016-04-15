@@ -2,8 +2,9 @@ package replicate.state
 
 import akka.Done
 import akka.agent.Agent
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
+import replicate.models.CheckpointData
 import replicate.utils.{FormatUtils, Global}
 
 import scala.concurrent.Future
@@ -11,31 +12,6 @@ import scala.concurrent.Future
 object CheckpointsState {
 
   import Global.dispatcher
-
-  case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamps: Seq[Long],
-      deletedTimestamps: Option[Seq[Long]], insertedTimestamps: Option[Seq[Long]]) {
-    def pristine: CheckpointData =
-      copy(
-        timestamps         = (timestamps ++ deletedTimestamps.getOrElse(Seq())).diff(insertedTimestamps.getOrElse(Seq())).sorted,
-        deletedTimestamps  = None, insertedTimestamps = None
-      )
-  }
-
-  object CheckpointData {
-    implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js ⇒
-      try {
-        val raceId = (js \ "race_id").as[Int]
-        val contestantId = (js \ "bib").as[Int]
-        val siteId = (js \ "site_id").as[Int]
-        val timestamps = (js \ "times").as[Seq[Long]]
-        val deletedTimestamps = (js \ "deleted_times").asOpt[Seq[Long]]
-        val insertedTimestamps = (js \ "artificial_times").asOpt[Seq[Long]]
-        JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps, deletedTimestamps, insertedTimestamps))
-      } catch {
-        case t: Throwable ⇒ JsError(t.getMessage)
-      }
-    }
-  }
 
   case class Point(siteId: Int, timestamp: Long) {
     override def toString = s"Point($siteId, ${FormatUtils.formatDate(timestamp, withSeconds = true)})"

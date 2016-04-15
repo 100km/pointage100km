@@ -5,14 +5,23 @@ import akka.event.LoggingAdapter
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Source}
 import net.rfc1149.canape.Database
+import replicate.models.CheckpointData
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.state.CheckpointsState
-import replicate.state.CheckpointsState.{CheckpointData, Point}
+import replicate.state.CheckpointsState.Point
 
 import scala.concurrent.Future
 
 object CheckpointScrutineer {
 
+  /**
+    * Return a source of live analyzed race data, starting with historical race data.
+    *
+    * @param database the database to connect to
+    * @param log the log to use to indicate problems
+    * @param fm a materializer
+    * @return a source of contestant analysis data
+    */
   def checkpointScrutineer(database: Database)(implicit log: LoggingAdapter, fm: Materializer): Source[ContestantAnalysis, NotUsed] = {
     import fm.executionContext
 

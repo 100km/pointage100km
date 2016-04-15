@@ -1,8 +1,8 @@
 package replicate
 
 import play.api.libs.json.Json
+import replicate.models.CheckpointData
 import replicate.state.CheckpointsState
-import replicate.state.CheckpointsState.CheckpointData
 import replicate.utils.{Global, Infos}
 
 import scala.concurrent.Future
