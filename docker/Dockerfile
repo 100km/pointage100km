@@ -1,4 +1,4 @@
-FROM rfc1149/couchdb:1.6.1
+FROM rfc1149/couchdb:1.x.x
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
 ADD webupd8team-java.list /etc/apt/sources.list.d/
