@@ -1,13 +1,15 @@
 <h3>Classement général</h3>
   {{#pbs}}
   <div class="row">
-    <div class="col-xs-12">
-    Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}}
+    <div class="col-sm-6">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title" >Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}}</h4>
     </div>
-  </div>
-  <div class="row text-center"><div class="col-xs-6 col-sm-3">Par site</div><div class="col-xs-6 col-sm-3">Par temps</div></div>
-  <div class="row small">
-    <div class="col-xs-6 col-sm-3">
+    <div class="panel-body">
+  <div class="row list-group-item-text text-center"><div class="col-xs-6 col-sm-3">Par site</div><div class="col-xs-6">Par temps</div></div>
+  <div class="row list-group-item-text small">
+    <div class="col-xs-6">
     {{#sites}}
       <a href="/_utils/document.html?steenwerck100km/checkpoints-{{id}}-{{bib}}">Site {{id}}</a>
             <div class="row"><div class="col-xs-12">
@@ -45,7 +47,7 @@
             {{/artificial_times}}
     {{/sites}}
       </div>
-      <div class="col-xs-6 col-sm-3 text-center">
+      <div class="col-xs-6 text-center">
         {{#times}}
         <div class="row"><div class="col-xs-12">
             {{site}}
@@ -57,5 +59,9 @@
         </div></div>
         {{/times}}
       </div>
+    </div>
+  </div>
+</div>
+</div>
     </div>
   {{/pbs}}
