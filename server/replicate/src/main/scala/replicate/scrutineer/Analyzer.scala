@@ -362,7 +362,7 @@ object Analyzer {
 
   object ContestantAnalysis {
     implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis ⇒
-      Json.obj("type" → "problem", "bib" → analysis.contestantId, "race_id" → analysis.raceId,
+      Json.obj("type" → "analysis", "bib" → analysis.contestantId, "race_id" → analysis.raceId,
         "valid" → analysis.valid, "anomalies" → analysis.anomalies,
         "checkpoints" → analysis.checkpoints, "before" → analysis.before, "after" → analysis.after,
         "_id" → analysis.id)
