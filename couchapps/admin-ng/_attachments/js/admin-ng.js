@@ -160,7 +160,7 @@ app.component("app", {
   templateUrl: "partials/admin-ng.html",
   controller: "appCtrl",
   $routeConfig: [
-    {path: "/analysis/...", "component": "analysisTop", useAsDefault: true}
+    {path: "/analysis/...", "name": "Analysis", "component": "analysisTop", useAsDefault: true}
   ]
 });
 app.run(["globalChangesService",
