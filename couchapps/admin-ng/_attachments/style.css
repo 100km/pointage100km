@@ -37,15 +37,3 @@ table.times th {
 table.times td {
   padding: 0.2em;
 }
-
-.analysis .remove {
-  color: red;
-}
-
-.analysis .down {
-  font-style: italic;
-}
-
-.analysis .missing {
-  color: red;
-}

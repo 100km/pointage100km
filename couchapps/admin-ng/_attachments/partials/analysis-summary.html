@@ -1,5 +1,5 @@
-<div class="panel-body">
-<table class="table table-striped table-condensed">
+<div class="panel-body" id="{{$ctrl.panelid}}">
+<table class="table table-condensed table-hover">
   <thead>
     <tr>
       <th>Lap</th>
@@ -12,13 +12,13 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-repeat="point in $ctrl.points" ng-controller="analysisPoint" class="{{point.type}}">
+    <tr ng-repeat="point in $ctrl.points" ng-controller="analysisPoint" class="{{action_class}}">
       <td>{{point.lap}}</td>
       <td>{{site}}</td>
       <td>{{point.distance | digitsUnit : 2 : "km"}}</td>
       <td>{{point.time | date : "HH:mm:ss" : infos.timezone}}</td>
       <td>{{point.speed | digitsUnit : 2 : "km/h"}}</td>
-      <td ng-if="$ctrl.active" class="{{action_class}} btn btn-block">
+      <td ng-if="$ctrl.active" class="btn btn-block">
         <span class="glyphicon glyphicon-{{action_icon}}"></span>
       </td>
       <td ng-if="$ctrl.active">{{point.reason}}</td>
