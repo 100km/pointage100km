@@ -1,28 +1,26 @@
 <div class="analysis">
-  <h2>Analysis for {{analysis.full_name}} <small>{{infos.races_names[analysis.race_id]}}</small></h2>
+  <h2>{{analysis.full_name}} <small>{{infos.races_names[analysis.race_id]}}</small></h2>
 
   <div ng-if="needsFixing" class="alert {{analysis.valid ? 'alert-warning' : 'alert-danger' }}">
     Anomalies: {{analysis.anomalies}}
     <span ng-if="!analysis.valid">(invalid entry, removed from rankings)</span>
   </div>
 
-  <div class="panel-group">
-    <div class="panel panel-primary">
-      <div class="panel-heading">Possible actions</div>
-      <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true">
-      </analysis-summary>
-    </div>
+  <div class="panel panel-primary">
+    <div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" href="#panelposs">Possible actions</a></h4></div>
+    <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true" panelid="panelposs">
+    </analysis-summary>
+  </div>
 
-    <div ng-if="needsFixing" class="panel panel-danger">
-      <div class="panel-heading">Before modifications</div>
-      <analysis-summary bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
-      </analysis-summary>
-    </div>
+  <div ng-if="needsFixing" class="panel panel-warning">
+    <div class="panel-heading">Before modifications</div>
+    <analysis-summary bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
+    </analysis-summary>
+  </div>
 
-    <div ng-if="needsFixing" class="panel panel-success">
-      <div class="panel-heading">After modifications</div>
-      <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
-      </analysis-summary>
-    </div>
+  <div ng-if="needsFixing" class="panel panel-success">
+    <div class="panel-heading">After modifications</div>
+    <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
+    </analysis-summary>
   </div>
 </div>
