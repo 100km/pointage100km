@@ -52,6 +52,16 @@ angular.module("admin-ng").component("analysisSummary", {
 angular.module("admin-ng").controller("analysisPoint", ["$scope", "dbService",
     function($scope, dbService) {
       $scope.site = "Site " + $scope.point.site_id;
+      $scope.action_icon = "trash";
+      $scope.action_label = "Remove";
+      $scope.action_class = "btn-danger";
+      if ($scope.point.action === "add") {
+        $scope.action_label = "Add";
+        $scope.action_icon = "plus-sign";
+        $scope.action_class = "btn-success";
+      } else if ($scope.point.action === undefined) {
+        $scope.action_class = "btn-default";
+      }
       dbService.infos.then(function(infos) {
         $scope.site = $scope.site + " (" + infos.sites[$scope.point.site_id] + ")";
       });

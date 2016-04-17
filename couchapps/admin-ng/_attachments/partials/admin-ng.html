@@ -1,33 +1,19 @@
-<section layout="row" flex>
+<div ng-controller="infosCtrl" class="container">
+<section ng-controller="livenessCtrl" class="row">
+  <!-- XXXXX Set color according to liveness[$index] -->
+  <div class="btn-group btn-group-justified">
+  <label ng-repeat="site in infos.sites"
+         class="btn btn-primary liveness-{{liveness[$index]}}"
+         href="#/site/{{$index}}">
+    <div>{{site}}</div>
+    {{console.log("Here");}}
+    <div ng-show="liveness[$index] !== 'default'">
+      ({{times[$index] | date : "HH:mm:ss" : infos.timezone }})
+    </div>
+  </label>
+  </div>
 
-  <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
-    <md-toolbar>
-      <h1 class="md-toolbar-tools">Administration des 100km</h1>
-    </md-toolbar>
-    <md-content layout-padding ng-controller="leftCtrl">
-      <md-button ng-click="close()" class="md-primary" hide-gt-md>
-        Close Sidenav Left
-      </md-button>
-      <p hide-md show-gt-md>
-      This sidenav is locked open on your device. To go back to the default behavior,
-      narrow your display.
-      </p>
-    </md-content>
-  </md-sidenav>
-
-  <md-content flex layout-padding ng-controller="infosCtrl">
-
-    <section layout="row" layout-align="center center" ng-controller="livenessCtrl">
-      <!-- XXXXX Set color according to liveness[$index] -->
-      <md-button ng-repeat="site in infos.sites" class="md-raised liveness-{{liveness[$index]}}"
-                                                 href="#/site/{{$index}}">
-        <div>{{site}}</div>
-        <div ng-show="liveness[$index] !== 'default'">
-          ({{times[$index] | date : "HH:mm:ss" : infos.timezone }})
-        </div>
-      </md-button>
-    </section>
-
-    <ng-outlet></ng-outlet>
-  </md-content>
 </section>
+
+<ng-outlet></ng-outlet>
+</div>

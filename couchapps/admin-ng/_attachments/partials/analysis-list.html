@@ -1,5 +1,3 @@
-<ul class="anomalies">
-  <li ng-repeat="anomaly in anomalies" class="{{anomaly.valid ? 'valid' : 'invalid'}}">
-    Bib <a ng-link="['Analysis', {bib: anomaly.bib}]">{{anomaly.bib}}</a> in race {{anomaly.race_id}}: {{anomaly.anomalies}} {{anomaly.anomalies === 1 ? "anomaly" : "anomalies"}}
-  </li>
-</ul>
+<div class="list-group">
+  <a ng-repeat="anomaly in anomalies" class="list-group-item {{anomaly.valid ? (anomaly.anomalies === 0 ? '' : 'list-group-item-warning') : 'list-group-item-danger'}}" ng-link="['Analysis', {bib: anomaly.bib}]"><span ng-if="anomaly.anomalies > 0" class="badge">{{anomaly.anomalies}}</span> Bib {{anomaly.bib}} in race {{anomaly.race_id}}</a>
+</div>
