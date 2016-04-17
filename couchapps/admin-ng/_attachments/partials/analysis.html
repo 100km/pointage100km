@@ -6,12 +6,19 @@
     <li>Valid: {{analysis.valid}}</li>
   </ul>
 
+  <h3>Possible actions</h3>
   <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true">
   </analysis-summary>
 
-  <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
-  </analysis-summary>
+  <div ng-if="needsFixing">
+    <h3>Before modifications</h3>
+    <analysis-summary bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
+    </analysis-summary>
+  </div>
 
-  <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
-  </analysis-summary>
+  <div ng-if="needsFixing">
+    <h3>After modifications</h3>
+    <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
+    </analysis-summary>
+  </div>
 </div>
