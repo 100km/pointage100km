@@ -1,4 +1,4 @@
-var app = angular.module("app", ["ngRoute", "ngMaterial"]);
+var app = angular.module("admin-ng", ["ngRoute", "ngMaterial"]);
 
 app.factory("onChangesService", ["database", "$httpParamSerializer", function(database, $httpParamSerializer) {
   return {
@@ -30,7 +30,8 @@ app.factory("globalChangesService", ["onChangesService", "$rootScope", "database
     function(onChangesService, $rootScope, database, $http) {
       return {
         start: function() {
-          $http.get(database).success(function(status) {
+          $http.get(database).then(function(response) {
+            var status = response.data;
             var sequence = status.update_seq;
             onChangesService.onChanges($rootScope, {since: sequence, heartbeat: 3000, include_docs: true},
                 function(change) {
@@ -42,7 +43,7 @@ app.factory("globalChangesService", ["onChangesService", "$rootScope", "database
     }]);
 
 app.controller("infosCtrl", ["$scope", "$http", "database", function($scope, $http, database) {
-  $http.get(database + "/infos").success(function(infos) { $scope.infos = infos; });
+  $http.get(database + "/infos").then(function(response) { $scope.infos = response.data; });
 }]);
 
 app.controller("appCtrl", ["$scope", "$timeout", "$mdSidenav", "$mdUtil", function($scope, $timeout, $mdSidenav, $mdUtil) {
@@ -70,9 +71,10 @@ app.controller("livenessCtrl", ["$scope", "$http", "database", "$interval", func
   };
   var checkSites = function() {
     $http.get(database + "/_design/admin/_view/alive?group_level=1")
-      .success(function(alive) {
-        var now = Number(new Date())
-          resetLiveness();
+      .then(function(response) {
+        var alive = response.data;
+        var now = Number(new Date());
+        resetLiveness();
         angular.forEach(alive.rows, function(row) {
           var t = row.value.max;
           var d = (now - t) / 60000;
@@ -110,7 +112,8 @@ app.controller("siteCtrl", ["$scope", "$routeParams", "onChangesService", "$http
       var latestSeq = 0
       var load = function() {
         $http.get(database + "/_design/admin-ng/_view/last-checkpoints", {params: params})
-          .success(function(data) {
+          .then(function(response) {
+            var data = response.data;
             latestSeq = data.update_seq;
             $scope.checkpoints = [];
             var latest;
@@ -155,6 +158,12 @@ app.filter("gravatarUrl", function() {
     return "http://www.gravatar.com/avatar/" + CryptoJS.MD5(angular.lowercase(doc.email));
   };
 });
+
+app.filter("digitsUnit", ["$filter", function($filter) {
+  return function(x, digits, unit) {
+    return x === undefined ? "" : ($filter('number')(x, digits) + " " + unit);
+  }
+}]);
 
 app.constant("database", "../../");
 app.config(["$routeProvider",
