@@ -39,22 +39,9 @@ class AnalysisService(database: Database) extends ActorSubscriber with ActorLogg
     case OnNext(analysis: ContestantAnalysis) ⇒
       val contestantId = analysis.contestantId
       val currentRev = knownAnalysesRevs.get(contestantId)
-      // If we have to do a database operation, will wil suspend handling messages until this is done as to not confuse
-      // ourselves about the version currently in the database. Also, this will prevent exceeding the max-connections
-      // setting with multiple database connections at the same time.
-      if (analysis.isOk)
-        currentRev match {
-          case Some(rev) ⇒
-            knownAnalysesRevs -= analysis.contestantId
-            database.delete(analysis.id, rev).map(_ ⇒ Ready).pipeTo(self)
-          case None ⇒
-            request(1)
-        }
-      else {
-        val base: JsObject = ContestantAnalysis.contestantAnalysisWrites.writes(analysis).as[JsObject]
-        val doc = currentRev.fold(base)(rev ⇒ base ++ Json.obj("_rev" → rev))
-        database.insert(doc).map(js ⇒ Written(contestantId, (js \ "rev").as[String])).pipeTo(self)
-      }
+      val base: JsObject = ContestantAnalysis.contestantAnalysisWrites.writes(analysis).as[JsObject]
+      val doc = currentRev.fold(base)(rev ⇒ base ++ Json.obj("_rev" → rev))
+      database.insert(doc).map(js ⇒ Written(contestantId, (js \ "rev").as[String])).pipeTo(self)
 
     case OnComplete ⇒
       log.info("stream terminated")
