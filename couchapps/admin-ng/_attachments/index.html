@@ -7,44 +7,11 @@
     <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css"/>
     <link rel="stylesheet" href="style.css"/>
   </head>
-  <body ng-app="admin-ng" ng-controller="appCtrl" class="md-theme-indigo">
-    <section layout="row" flex>
-
-      <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
-        <md-toolbar>
-          <h1 class="md-toolbar-tools">Administration des 100km</h1>
-        </md-toolbar>
-        <md-content layout-padding ng-controller="leftCtrl">
-          <md-button ng-click="close()" class="md-primary" hide-gt-md>
-            Close Sidenav Left
-          </md-button>
-          <p hide-md show-gt-md>
-          This sidenav is locked open on your device. To go back to the default behavior,
-          narrow your display.
-          </p>
-        </md-content>
-      </md-sidenav>
-
-      <md-content flex layout-padding ng-controller="infosCtrl">
-
-        <analysis bib=59> </analysis>
-
-        <section layout="row" layout-align="center center" ng-controller="livenessCtrl">
-          <!-- XXXXX Set color according to liveness[$index] -->
-          <md-button ng-repeat="site in infos.sites" class="md-raised liveness-{{liveness[$index]}}"
-                                             href="#/site/{{$index}}">
-            <div>{{site}}</div>
-            <div ng-show="liveness[$index] !== 'default'">
-              ({{times[$index] | date : "HH:mm:ss" : infos.timezone }})
-            </div>
-          </md-button>
-        </section>
-
-        <div ng-view></div>
-      </md-content>
-    </section>
+  <body ng-app="admin-ng" class="md-theme-indigo">
+    <app></app>
     <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-component-router/angular_1_router.js"></script>
+    <script src="bower_components/angular-component-router/ng_route_shim.js"></script>
     <script src="bower_components/angular-animate/angular-animate.js"></script>
     <script src="bower_components/angular-aria/angular-aria.js"></script>
     <script src="bower_components/angular-material/angular-material.js"></script>

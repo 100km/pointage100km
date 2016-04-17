@@ -49,3 +49,7 @@ table.times td {
 .analysis .missing {
   color: red;
 }
+
+.anomalies .invalid {
+  color: red;
+}

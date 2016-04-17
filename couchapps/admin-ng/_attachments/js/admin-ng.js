@@ -1,4 +1,4 @@
-var app = angular.module("admin-ng", ["ngRoute", "ngMaterial"]);
+var app = angular.module("admin-ng", ["ngComponentRouter", "ngMaterial"]);
 
 app.factory("onChangesService", ["database", "$httpParamSerializer", function(database, $httpParamSerializer) {
   return {
@@ -166,22 +166,14 @@ app.filter("digitsUnit", ["$filter", function($filter) {
 }]);
 
 app.constant("database", "../../");
-app.config(["$routeProvider",
-    function($routeProvider) {
-      $routeProvider.
-        when("/changes", {
-          templateUrl: "partials/changes.html",
-          controller: "reactiveChangesCtrl"
-        }).
-      when("/site/:siteId", {
-        templateUrl: "partials/site.html",
-        controller: "siteCtrl",
-        controllerAs: "site"
-      }).
-      otherwise({
-        redirectTo: "/changes"
-      });
-    }]);
+app.value("$routerRootComponent", "app");
+app.component("app", {
+  templateUrl: "partials/admin-ng.html",
+  controller: "appCtrl",
+  $routeConfig: [
+    {path: "/analysis/...", "component": "analysisTop", useAsDefault: true}
+  ]
+});
 app.run(["globalChangesService",
     function(globalChangesService) {
       globalChangesService.start();

@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "angular": "~1.5.4",
-    "angular-route": "~1.5.4",
+    "angular-component-router": "~0.2.0",
     "angular-animate": "~1.5.4",
     "angular-aria": "~1.5.4",
     "angular-material": "~1.1.0-RC4",
