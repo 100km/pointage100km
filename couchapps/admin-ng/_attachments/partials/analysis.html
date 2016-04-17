@@ -1,0 +1,18 @@
+<div class="analysis">
+  <h3>Analysis for contestant {{analysis.full_name}} — {{infos.races_names[analysis.race_id]}}</h3>
+
+  <ul>
+    <li>Anomalies: {{analysis.anomalies}}</li>
+    <li>Valid: {{analysis.valid}}</li>
+    <li>Needs fixing: {{needsFixing}}</li>
+  </ul>
+
+  <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true">
+  </analysis-summary>
+
+  <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
+  </analysis-summary>
+
+  <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
+  </analysis-summary>
+</div>

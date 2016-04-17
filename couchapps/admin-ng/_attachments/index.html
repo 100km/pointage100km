@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css"/>
     <link rel="stylesheet" href="style.css"/>
   </head>
-  <body ng-app="app" ng-controller="appCtrl" class="md-theme-indigo">
+  <body ng-app="admin-ng" ng-controller="appCtrl" class="md-theme-indigo">
     <section layout="row" flex>
 
       <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
@@ -26,6 +26,9 @@
       </md-sidenav>
 
       <md-content flex layout-padding ng-controller="infosCtrl">
+
+        <analysis bib=59> </analysis>
+
         <section layout="row" layout-align="center center" ng-controller="livenessCtrl">
           <!-- XXXXX Set color according to liveness[$index] -->
           <md-button ng-repeat="site in infos.sites" class="md-raised liveness-{{liveness[$index]}}"
@@ -47,5 +50,8 @@
     <script src="bower_components/angular-material/angular-material.js"></script>
     <script src="js/md5.js"></script>
     <script src="js/admin-ng.js"></script>
+    <script src="js/db-service.js"></script>
+    <script src="js/infos-service.js"></script>
+    <script src="js/analysis.js"></script>
   </body>
 </html>
