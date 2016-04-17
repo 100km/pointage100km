@@ -1,11 +1,29 @@
+function AnalysisListController($scope, $http, database) {
+  var $ctrl = this;
+  $http.get(database + "/_design/admin-ng/_view/by-anomalies")
+    .then(function(response) {
+      $scope.anomalies = response.data.rows.map(function(o) { return o.value; });
+    });
+}
+
+angular.module("admin-ng").component("analysisList", {
+  templateUrl: "partials/analysis-list.html",
+  controller: AnalysisListController
+});
+
 function AnalysisController($scope, dbService) {
   var $ctrl = this;
   $scope.needsFixing = false;
-  dbService.infos.then(function(infos) { $scope.infos = infos; });
-  dbService.enrichedAnalysis($ctrl.bib).then(function(analysis) {
-    $scope.analysis = analysis;
-    $scope.needsFixing = analysis.anomalies > 0;
-  });
+
+  this.$routerOnActivate = function(next, previous) {
+    $ctrl.bib = Number(next.params.bib);
+
+    dbService.infos.then(function(infos) { $scope.infos = infos; });
+    dbService.enrichedAnalysis($ctrl.bib).then(function(analysis) {
+      $scope.analysis = analysis;
+      $scope.needsFixing = analysis.anomalies > 0;
+    });
+  };
 }
 
 angular.module("admin-ng").component("analysis", {
@@ -38,3 +56,11 @@ angular.module("admin-ng").controller("analysisPoint", ["$scope", "dbService",
         $scope.site = $scope.site + " (" + infos.sites[$scope.point.site_id] + ")";
       });
     }]);
+
+angular.module("admin-ng").component("analysisTop", {
+  template: "<ng-outlet></ng-outlet>",
+  $routeConfig: [
+  {path: "/", component: "analysisList", useAsDefault: true},
+  {path: "/:bib", name: "Analysis", component: "analysis"}
+  ]
+});
