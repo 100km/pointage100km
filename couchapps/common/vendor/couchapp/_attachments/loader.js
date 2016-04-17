@@ -5,10 +5,14 @@ function couchapp_load(scripts) {
   }
 }
 
-couchapp_load([
+
+couchapp_load(([
   "/_utils/script/sha1.js",
   "/_utils/script/json2.js",
-  "/_utils/script/jquery.js",
+]).concat(
+  (typeof (window.jQuery) == 'undefined' ) ?
+  [ "/_utils/script/jquery.js" ] : [ ]
+).concat([
   "/_utils/script/jquery.couch.js",
   "../common/lib/db_api/app-info.js",
   "../common/lib/db_api/checkpoints.js",
@@ -26,4 +30,4 @@ couchapp_load([
   "../common/vendor/couchapp/jquery.couch.app.util.js",
   "../common/vendor/couchapp/jquery.mustache.js",
   "../common/vendor/couchapp/jquery.evently.js"
-]);
+]));
