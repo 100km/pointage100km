@@ -1,4 +1,4 @@
-var app = angular.module("admin-ng", ["ngComponentRouter", "ngMaterial"]);
+var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap"]);
 
 app.factory("onChangesService", ["database", "$httpParamSerializer", function(database, $httpParamSerializer) {
   return {
@@ -46,18 +46,7 @@ app.controller("infosCtrl", ["$scope", "$http", "database", function($scope, $ht
   $http.get(database + "/infos").then(function(response) { $scope.infos = response.data; });
 }]);
 
-app.controller("appCtrl", ["$scope", "$timeout", "$mdSidenav", "$mdUtil", function($scope, $timeout, $mdSidenav, $mdUtil) {
-  $scope.toggleLeft = buildToggler('left');
-  function buildToggler(navID) {
-    var debounceFn =  $mdUtil.debounce(function(){
-      $mdSidenav(navID).toggle();
-    }, 300);
-    return debounceFn;
-  }
-}]);
-
-app.controller("leftCtrl", ["$scope", "$timeout", "$mdSidenav", function($scope, $timeout, $mdSidenav) {
-  $scope.close = $mdSidenav("left").close
+app.controller("appCtrl", ["$scope", "$timeout", function($scope, $timeout) {
 }]);
 
 app.controller("livenessCtrl", ["$scope", "$http", "database", "$interval", function($scope, $http, database, $interval) {

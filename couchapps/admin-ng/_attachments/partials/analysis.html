@@ -1,24 +1,28 @@
 <div class="analysis">
-  <h3>Analysis for contestant {{analysis.full_name}} — {{infos.races_names[analysis.race_id]}}</h3>
+  <h2>Analysis for {{analysis.full_name}} <small>{{infos.races_names[analysis.race_id]}}</small></h2>
 
-  <ul>
-    <li>Anomalies: {{analysis.anomalies}}</li>
-    <li>Valid: {{analysis.valid}}</li>
-  </ul>
-
-  <h3>Possible actions</h3>
-  <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true">
-  </analysis-summary>
-
-  <div ng-if="needsFixing">
-    <h3>Before modifications</h3>
-    <analysis-summary bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
-    </analysis-summary>
+  <div ng-if="needsFixing" class="alert {{analysis.valid ? 'alert-warning' : 'alert-danger' }}">
+    Anomalies: {{analysis.anomalies}}
+    <span ng-if="!analysis.valid">(invalid entry, removed from rankings)</span>
   </div>
 
-  <div ng-if="needsFixing">
-    <h3>After modifications</h3>
-    <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
-    </analysis-summary>
+  <div class="panel-group">
+    <div class="panel panel-primary">
+      <div class="panel-heading">Possible actions</div>
+      <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true">
+      </analysis-summary>
+    </div>
+
+    <div ng-if="needsFixing" class="panel panel-danger">
+      <div class="panel-heading">Before modifications</div>
+      <analysis-summary bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
+      </analysis-summary>
+    </div>
+
+    <div ng-if="needsFixing" class="panel panel-success">
+      <div class="panel-heading">After modifications</div>
+      <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
+      </analysis-summary>
+    </div>
   </div>
 </div>
