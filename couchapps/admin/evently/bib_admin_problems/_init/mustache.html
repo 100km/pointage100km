@@ -1,16 +1,35 @@
 <h3>Classement général</h3>
   {{#pbs}}
   <div class="row">
-    <div class="col-sm-6">
+    <div class="col-xs-12">
   <div class="panel panel-default">
     <div class="panel-heading">
       <h4 class="panel-title" >Dossard {{bib}} : {{type}} au tour {{lap}} au site {{site_id}}</h4>
     </div>
     <div class="panel-body">
-  <div class="row list-group-item-text text-center"><div class="col-xs-6 col-sm-3">Par site</div><div class="col-xs-6">Par temps</div></div>
-  <div class="row list-group-item-text small">
-    <div class="col-xs-6">
-    {{#sites}}
+      <ul class="nav nav-tabs nav-justified nav-no-stack tabs-100km-problems" role="tablist">
+    <li role="presentation" class="active"><a href="#times_{{bib}}" aria-controls="times_{{bib}}" role="tab" data-toggle="tab">Temps</a></li>
+    <li role="presentation"><a href="#sites_{{bib}}" aria-controls="sites_{{bib}}" role="tab" data-toggle="tab">Sites</a></li>
+  </ul>
+
+  <div class="tab-content tab-100km-content">
+    <div role="tabpanel" class="tab-pane active" id="times_{{bib}}">
+      <div class="pane-100km-problems">
+      {{#times}}
+      <div class="row"><div class="col-xs-12">
+          {{site}}
+          {{#is_deleted}}<strike>{{/is_deleted}}
+          {{#is_artificial}}<i class="bg-warning">{{/is_artificial}}
+          {{time}}{{#is_artificial}}*</i>
+          {{/is_artificial}}
+          {{#is_deleted}}</strike>{{/is_deleted}}
+      </div></div>
+      {{/times}}
+      </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="sites_{{bib}}">
+      <div class="pane-100km-problems">
+      {{#sites}}
       <a href="/_utils/document.html?steenwerck100km/checkpoints-{{id}}-{{bib}}">Site {{id}}</a>
             <div class="row"><div class="col-xs-12">
               times:
@@ -46,22 +65,45 @@
             </div></div>
             {{/artificial_times}}
     {{/sites}}
-      </div>
-      <div class="col-xs-6 text-center">
-        {{#times}}
-        <div class="row"><div class="col-xs-12">
-            {{site}}
-            {{#is_deleted}}<strike>{{/is_deleted}}
-            {{#is_artificial}}<i class="bg-warning">{{/is_artificial}}
-            {{time}}{{#is_artificial}}*</i>
-            {{/is_artificial}}
-            {{#is_deleted}}</strike>{{/is_deleted}}
-        </div></div>
-        {{/times}}
+        </div>
       </div>
     </div>
   </div>
 </div>
 </div>
-    </div>
+  </div>
   {{/pbs}}
+
+  <script>
+$(".tabs-100km-problems").each( function(idx) {
+
+  $(this).addClass( "visible-xs" );
+  $(this).parent().find(".tab-100km-content").addClass( "visible-xs" );
+
+  var tab_headers = [];
+  $(this).find("li").each(function(idx) {
+    tab_headers.push($(this).text());
+  });
+  var tab_contents = [];
+  $(this).parent().find( ".pane-100km-problems" ).each(function(idx) {
+    tab_contents.push(this);
+  });
+
+  var header = $("<div class=\"row hidden-xs\"></div>");
+  for (var i=0; i<tab_headers.length;i++) {
+    var col = $("<div class=\"col-xs-6\"></div>");
+    col.text(tab_headers[i]);
+    header.append(col);
+  }
+
+  var contents = $("<div class=\"row hidden-xs\"></div>");
+  for (var i=0; i<tab_contents.length;i++) {
+    var col = $("<div class=\"col-xs-6\"></div>");
+    col.append($(tab_contents[i]).clone().removeAttr("id"));
+    contents.append(col);
+  }
+
+  $(this).parent().append(header);
+  $(this).parent().append(contents);
+});
+  </script>
