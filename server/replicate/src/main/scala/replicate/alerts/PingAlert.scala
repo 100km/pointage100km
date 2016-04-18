@@ -151,9 +151,6 @@ object PingAlert {
   private def docToSite(js: JsObject): Option[Int] =
     siteRegex.findFirstMatchIn((js \ "_id").as[String]).map(_.group(2).toInt)
 
-  private def throttleLast[T](duration: FiniteDuration): Flow[T, T, NotUsed] =
-    Flow[T].buffer(1, OverflowStrategy.dropHead).throttle(1, duration, 1, ThrottleMode.Shaping)
-
   private def docToMaxTimestamp(siteId: Int, database: Database): Flow[JsObject, Long, NotUsed] =
     Flow[JsObject].flatMapConcat { doc ⇒
       if ((doc \ "_deleted").asOpt[Boolean].contains(true)) {
@@ -182,7 +179,6 @@ object PingAlert {
     for (siteId ← 0 until sites) {
       val actorRef = context.actorOf(Props(new CheckpointWatcher(siteId, database)))
       partition.out(siteId) ~> Flow[JsObject].prepend(Source.single(Json.obj("_deleted" → true))) ~>
-        throttleLast[JsObject](noticeDelay / 2) ~>
         docToMaxTimestamp(siteId, database) ~> Sink.actorRefWithAck[Long](actorRef, Initial, Ack, Complete)
     }
     partition.out(sites) ~> Sink.ignore
