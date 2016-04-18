@@ -53,16 +53,20 @@ object PingAlert {
 
     private[this] def scheduleRecheck(nextDuration: FiniteDuration, currentDuration: FiniteDuration): Unit = {
       currentRecheckTimer.foreach(_.cancel())
-      currentRecheckTimer = Some(context.system.scheduler.scheduleOnce(
-        nextDuration - currentDuration,
-        self, Recheck(currentTimestamp)
-      ))
+      currentRecheckTimer =
+        if (nextDuration > currentDuration)
+          Some(context.system.scheduler.scheduleOnce(
+            nextDuration - currentDuration,
+            self, Recheck(currentTimestamp)
+          ))
+        else
+          None
     }
 
     private[this] def checkTimestamp(ts: Long): Unit = {
       if (ts == -1 || ts >= currentTimestamp) {
         val oldState = currentState
-        val elapsed = FiniteDuration(System.currentTimeMillis() - ts, TimeUnit.MILLISECONDS)
+        val elapsed = FiniteDuration((System.currentTimeMillis() - ts).max(0L), TimeUnit.MILLISECONDS)
         currentState = if (ts == -1) Inactive else timestampToState(elapsed)
         currentTimestamp = ts
         (oldState, currentState) match {
