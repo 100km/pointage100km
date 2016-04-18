@@ -11,18 +11,29 @@ angular.module("admin-ng").component("analysisList", {
   controller: AnalysisListController
 });
 
-function AnalysisController($scope, dbService) {
+function AnalysisController($scope, dbService, changesService) {
   var $ctrl = this;
   $scope.needsFixing = false;
 
-  this.$routerOnActivate = function(next, previous) {
-    $ctrl.bib = Number(next.params.bib);
-
-    dbService.infos.then(function(infos) { $scope.infos = infos; });
-    dbService.enrichedAnalysis($ctrl.bib).then(function(analysis) {
+  $scope.loadAnalysis = function() {
+    dbService.enrichedAnalysis($scope.bib).then(function(analysis) {
       $scope.analysis = analysis;
       $scope.needsFixing = analysis.anomalies > 0;
     });
+  };
+
+  this.$routerOnActivate = function(next, previous) {
+    $scope.bib = Number(next.params.bib);
+
+    dbService.infos.then(function(infos) { $scope.infos = infos; });
+    $scope.loadAnalysis();
+
+    // If either the document or the contestant information changes,
+    // we want to reload a fresh analysis.
+    changesService.onChange($scope,
+        {filter: "_doc_ids", doc_ids: '["contestant-' + $scope.bib + '","analysis-' + $scope.bib + '"]',
+          heartbeat: 30000, /* since: "now" */},
+          $scope.loadAnalysis);
   };
 }
 
