@@ -1,5 +1,5 @@
 <div class="panel-body" id="{{$ctrl.panelid}}">
-<table class="table table-condensed table-hover">
+<table class="table table-condensed table-hover analysis">
   <thead>
     <tr>
       <th>Lap</th>
@@ -12,7 +12,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-repeat="point in $ctrl.points" ng-controller="analysisPoint" class="{{action_class}}">
+    <tr ng-repeat="point in $ctrl.points" ng-controller="analysisPoint" class="{{action_class}}" uib-tooltip="{{tooltip}}">
       <td>{{point.lap}}</td>
       <td>{{site}}</td>
       <td>{{point.distance | digitsUnit : 2 : "km"}}</td>
