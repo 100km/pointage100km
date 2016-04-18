@@ -10,21 +10,6 @@
 </nav>
 
 <div ng-controller="infosCtrl" class="container">
-<section ng-controller="livenessCtrl" class="row">
-  <!-- XXXXX Set color according to liveness[$index] -->
-  <div class="btn-group btn-group-justified">
-  <label ng-repeat="site in infos.sites_short"
-         class="btn btn-success liveness-{{liveness[$index]}}"
-         href="#/site/{{$index}}">
-    <div>{{site}}</div>
-    {{console.log("Here");}}
-    <div ng-show="liveness[$index] !== 'default'">
-      ({{times[$index] | date : "HH:mm:ss" : infos.timezone }})
-    </div>
-  </label>
-  </div>
-
-</section>
-
-<ng-outlet></ng-outlet>
+  <liveness></liveness>
+  <ng-outlet></ng-outlet>
 </div>
