@@ -17,8 +17,8 @@ app.factory("onChangesService", ["database", "$httpParamSerializer", function(da
             ev.close();
             reconnect();
           }
-        }
-      }
+        };
+      };
 
       reconnect();
       scope.$on("$destroy", function() { ev.close(); });
