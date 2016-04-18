@@ -1,36 +1,64 @@
 angular.module("admin-ng").controller("livenessCtrl",
-    ["$scope", "$http", "database", "$interval", "dbService",
-    function($scope, $http, database, $interval, dbService) {
+    ["$scope", "$interval", "$http", "database", "changesService", "dbService",
+    function($scope, $interval, $http, database, changesService, dbService) {
       $scope.liveness = [];
       $scope.times = [];
 
-      var checkSites = function() {
-        $http.get(database + "/_design/admin/_view/alive?group_level=1")
+      // Set a site timestamp. If the new timestamp is not greater or equal
+      // (equal is useful to refresh the status), it is ignored.
+      $scope.setSite = function(siteId, timestamp) {
+        if (isFinite($scope.times[siteId]) && $scope.times[siteId] > timestamp) {
+          return;
+        }
+        var now = Number(new Date());
+        var d = (now - timestamp) / 60000;
+        var state;
+        if (d < 5) state = "success";
+        else if (d < 15) state = "info";
+        else if (d < 30) state = "warning";
+        else state = "danger";
+        $scope.liveness[siteId] = state;
+        $scope.times[siteId] = timestamp;
+      };
+
+      // Load the infos into the scope to get the site names.
+      dbService.infos.then(function(infos) {
+        $scope.infos = infos;
+      });
+
+      // Initially check the sites liveness to get fresh information as soon as
+      // the page is loaded.
+      $scope.checkSites = function() {
+        return $http.get(database + "/_design/admin/_view/alive?group_level=1")
           .then(function(response) {
             var alive = response.data;
-            var now = Number(new Date());
-            angular.forEach(alive.rows, function(row) {
-              var t = row.value.max;
-              var d = (now - t) / 60000;
-              var state;
-              if (d < 5) state = "success";
-              else if (d < 15) state = "info";
-              else if (d < 30) state = "warning";
-              else state = "danger";
-              $scope.liveness[row.key] = state;
-              $scope.times[row.key] = t;
+            angular.forEach(response.data.rows, function(row) {
+              $scope.setSite(row.key, row.value.max);
             });
           });
       };
 
-      dbService.infos.then(function(infos) {
-        $scope.infos = infos;
-        checkSites();
-        var check = $interval(checkSites, 30000);
-        $scope.$on("$destroy", function() {
-          $interval.cancel(check);
-        });
+      // Use a _changes connection to get fresh information about the sites.
+      $scope.checkSites().then(function() {
+        changesService.onChange($scope, {since: "now", heartbeat: 30000, include_docs: true,
+          filter: "_view", view: "admin/alive"},
+          function(change) {
+            $scope.setSite(change.doc.site_id, change.doc.time);
+          });
       });
+
+      // Regularly refresh the informations we have (with the same timestamps)
+      // in order to refresh the display in case the status has changed.
+      var periodic = $interval(function() {
+        for (var siteId in $scope.times) {
+          if (isFinite($scope.times[siteId])) {
+            $scope.setSite(siteId, $scope.times[siteId]);
+          }
+        }
+      }, 10000);
+
+      // Cancel the timer on scope exit.
+      $scope.$on("$destroy", function() { $interval.cancel(periodic); });
 
     }]);
 
