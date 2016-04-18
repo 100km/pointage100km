@@ -3,8 +3,9 @@ package replicate.scrutineer
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import play.api.libs.json.{JsObject, Json, Writes}
+import replicate.models.CheckpointData
 import replicate.state.CheckpointsState.Point
-import replicate.state.PingState
+import replicate.state.{CheckpointsState, PingState}
 import replicate.utils.FormatUtils._
 import replicate.utils.Global
 import replicate.utils.Infos.RaceInfo
@@ -59,15 +60,15 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
     points.filterNot(_.isInstanceOf[RemovePoint]).sliding(surroundedByMissing + 1)
       .filter(pts ⇒ pts.count(_.isInstanceOf[MissingPoint]) == surroundedByMissing &&
         pts.head.isInstanceOf[MissingPoint] && pts.last.isInstanceOf[MissingPoint])
-      .flatMap(_.find(_.isInstanceOf[CorrectPoint])).toSeq
+      .flatMap(_.find(_.isInstanceOf[GenuinePoint])).toSeq
   }
 
   private[this] def findEnclosingMissing(points: Seq[AnalyzedPoint]): Seq[AnalyzedPoint] = {
     points.filterNot(_.isInstanceOf[RemovePoint]).sliding(maxConsecutiveMissing + 1)
       .filter(_.count(_.isInstanceOf[MissingPoint]) == maxConsecutiveMissing)
       .collect {
-        case pts if pts.head.isInstanceOf[CorrectPoint] ⇒ pts.head
-        case pts if pts.last.isInstanceOf[CorrectPoint] ⇒ pts.last
+        case pts if pts.head.isInstanceOf[GenuinePoint] ⇒ pts.head
+        case pts if pts.last.isInstanceOf[GenuinePoint] ⇒ pts.last
       }
       .toSeq.reverse // Favor end points in case of a night stop
   }
@@ -94,7 +95,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
         (firstKept, firstRemoved)
     ) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     val added = missingPoints(kept)
-    val points = kept.map(p ⇒ CorrectPoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
+    val points = kept.map(p ⇒ GenuinePoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
     points.sortBy(_.point.timestamp)
   }
 
@@ -281,6 +282,21 @@ object Analyzer {
     result
   }
 
+  def analyze(data: Seq[CheckpointData]): ContestantAnalysis = {
+    // Conduct an analysis with the valid points only
+    val sample = data.head
+    val points = CheckpointsState.sortedTimestamps(data)
+    val analysis = analyze(sample.raceId, sample.contestantId, points)
+    // Enrich the analysis with information about the extra points
+    val deletedPoints = data.flatMap(cpd ⇒ CheckpointsState.toPoints(cpd.siteId, cpd.deletedTimestamps).map(DeletedPoint))
+    val inserted = data.flatMap(cpd ⇒ CheckpointsState.toPoints(cpd.siteId, cpd.insertedTimestamps)).toSet
+    val newCheckpoints = deletedPoints ++ analysis.checkpoints.map {
+      case p: GenuinePoint if inserted.contains(p.point) ⇒ ArtificialPoint(p)
+      case p ⇒ p
+    }
+    analysis.copy(checkpoints = newCheckpoints.sortBy(_.point.timestamp))
+  }
+
   case class EnrichedPoint(point: Point, lap: Int, distance: Double, speed: Double) {
     def siteId = point.siteId
     def timestamp = point.timestamp
@@ -317,9 +333,22 @@ object Analyzer {
 
   sealed trait ExtraPoint extends KeepPoint with Anomaly
 
-  final case class CorrectPoint(point: Point, lap: Int, distance: Double, speed: Double) extends KeepPoint {
-    override def toJson = super.toJson ++ Json.obj("type" → "correct")
+  final case class GenuinePoint(point: Point, lap: Int, distance: Double, speed: Double) extends KeepPoint {
+    override def toJson = super.toJson ++ Json.obj("type" → "genuine")
     override def toString = s"CorrectPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
+  }
+
+  final case class ArtificialPoint(point: Point, lap: Int, distance: Double, speed: Double) extends KeepPoint {
+    override def toJson = super.toJson ++ Json.obj("type" → "artificial")
+    override def toString = s"ArtificialPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
+  }
+
+  object ArtificialPoint {
+    def apply(point: GenuinePoint): ArtificialPoint = ArtificialPoint(point.point, point.lap, point.distance, point.speed)
+  }
+
+  final case class DeletedPoint(point: Point) extends AnalyzedPoint {
+    override def toJson = super.toJson ++ Json.obj("type" → "deleted")
   }
 
   final case class RemovePoint(point: Point, reason: String) extends AnalyzedPoint with Anomaly {
@@ -340,11 +369,11 @@ object Analyzer {
 
   case class ContestantAnalysis(contestantId: Int, raceId: Int, checkpoints: Seq[AnalyzedPoint],
       before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
-    def isOk = checkpoints.forall(_.isInstanceOf[CorrectPoint])
-    def id = s"analysis-$contestantId"
     val anomalies = countAnomalies(checkpoints)
     val consecutiveAnomalies = countConsecutiveAnomalies(checkpoints)
     val valid = anomalies < maxAnomalies && consecutiveAnomalies < maxConsecutiveAnomalies
+    val isOk = anomalies == 0
+    val id = s"analysis-$contestantId"
 
     def bestPoint: Option[KeepPoint] = if (valid) checkpoints.reverse.collectFirst { case p: KeepPoint ⇒ p } else None
   }

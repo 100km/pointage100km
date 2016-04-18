@@ -66,10 +66,10 @@ class ReplicateSpec extends Specification with After {
 
     "complete missing checkpoints" in new WithCleanup {
       val contestant = Json.obj("first_name" → "John", "name" → "Doe", "bib" → 10000,
-        "race" → 17, "_id" → "contestant-10000", "type" → "contestant", "stalkers" -> List[String]())
+        "race" → 17, "_id" → "contestant-10000", "type" → "contestant", "stalkers" → List[String]())
       waitForResult(delete(contestant))
       val checkpoint = Json.obj("_id" → "checkpoint-99-10000", "bib" → 10000, "race_id" → 0, "site_id" → 99,
-        "times" → Array(12345), "bib" → 10000, "type" -> "checkpoint")
+        "times" → Array(12345), "bib" → 10000, "type" → "checkpoint")
       waitForResult(delInsert(checkpoint))
       waitForResult(delInsert(contestant))
       Thread.sleep(6000)
@@ -79,7 +79,7 @@ class ReplicateSpec extends Specification with After {
 
     "fix conflicting checkpoints" in new WithCleanup {
       val base = Json.obj("_id" → "checkpoint-98-11000", "bib" → 11000, "race_id" → 19, "site_id" → 98,
-        "uuid" → UUID.randomUUID().toString, "type" -> "checkpoint")
+        "uuid" → UUID.randomUUID().toString, "type" → "checkpoint")
       val cp1 = base ++ Json.obj("times" → Array(1, 2, 8), "deleted_times" → Array(4))
       val cp2 = base ++ Json.obj("times" → Array(4, 5, 7), "artificial_times" → Array(5))
       val cp3 = base ++ Json.obj("times" → Array(3, 6, 9))

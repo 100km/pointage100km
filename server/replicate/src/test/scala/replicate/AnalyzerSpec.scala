@@ -5,7 +5,7 @@ import org.specs2.matcher.ResultMatchers
 import org.specs2.mutable._
 import play.api.libs.json.Json
 import replicate.scrutineer.Analyzer
-import replicate.scrutineer.Analyzer.{CorrectPoint, KeepPoint, MissingPoint, RemovePoint}
+import replicate.scrutineer.Analyzer.{ArtificialPoint, GenuinePoint, DeletedPoint, KeepPoint, MissingPoint, RemovePoint}
 import replicate.state.{CheckpointsState, PingState}
 import replicate.utils.{Global, Infos}
 
@@ -19,7 +19,7 @@ class AnalyzerSpec extends Specification with ResultMatchers {
   private val infos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
   Global.infos = Some(infos)
   (0 to 6).foreach(PingState.setLastPing(_, System.currentTimeMillis()))
-  RaceUtils.installFullRace(pristine = true)
+  RaceUtils.installFullRace(pristine = false)
 
   "speedBetween" should {
 
@@ -57,7 +57,7 @@ class AnalyzerSpec extends Specification with ResultMatchers {
       points.size must be equalTo 21
       val result = Analyzer.analyze(1, 688, points)
       result.checkpoints.size must be equalTo 22
-      result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 20
+      result.checkpoints.count(_.isInstanceOf[GenuinePoint]) must be equalTo 20
       result.checkpoints.count(_.isInstanceOf[MissingPoint]) must be equalTo 1
       result.checkpoints.count(_.isInstanceOf[RemovePoint]) must be equalTo 1
       infos.checkpoints(result.checkpoints.filter(_.isInstanceOf[MissingPoint]).head.point.siteId).name must be equalTo "La salle des sports, boucle 1"
@@ -70,18 +70,18 @@ class AnalyzerSpec extends Specification with ResultMatchers {
       points.size must be equalTo 21
       val result = Analyzer.analyze(1, 24, points)
       result.checkpoints.size must be equalTo 22
-      result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 20
+      result.checkpoints.count(_.isInstanceOf[GenuinePoint]) must be equalTo 20
       result.checkpoints.count(_.isInstanceOf[MissingPoint]) must be equalTo 1
       result.checkpoints.count(_.isInstanceOf[RemovePoint]) must be equalTo 1
       infos.checkpoints(result.checkpoints.filter(_.isInstanceOf[MissingPoint]).head.point.siteId).name must be equalTo "La salle des sports, boucle 1"
     }
 
     "let a consistent race untouched (contestant 201)" in {
-      val points = Await.result(CheckpointsState.timesFor(1, 201), 1.second)
-      points.size must be equalTo 21
-      val result = Analyzer.analyze(1, 201, points)
+      val data = Await.result(CheckpointsState.checkpointDataFor(1, 201), 1.second)
+      data.size must be equalTo 7
+      val result = Analyzer.analyze(data)
       result.checkpoints.size must be equalTo 21
-      result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo 21
+      result.checkpoints.count(_.isInstanceOf[GenuinePoint]) must be equalTo 21
     }
 
     "never suggest a change in a consistent race (contestant 201)" in {
@@ -90,9 +90,20 @@ class AnalyzerSpec extends Specification with ResultMatchers {
       for (partial ← 1 to points.size) {
         val result = Analyzer.analyze(1, 201, points.take(partial))
         result.checkpoints.size must be equalTo partial
-        result.checkpoints.count(_.isInstanceOf[CorrectPoint]) must be equalTo partial
+        result.checkpoints.count(_.isInstanceOf[GenuinePoint]) must be equalTo partial
       }
       success
+    }
+
+    "properly reflect the time manipulations" in {
+      val data = Await.result(CheckpointsState.checkpointDataFor(1, 59), 1.second)
+      data.size must be equalTo 7
+      val result = Analyzer.analyze(data)
+      result.checkpoints.size must be equalTo 22
+      result.checkpoints.count(_.isInstanceOf[KeepPoint]) must be equalTo 21
+      result.checkpoints.count(_.isInstanceOf[GenuinePoint]) must be equalTo 19
+      result.checkpoints.count(_.isInstanceOf[ArtificialPoint]) must be equalTo 2
+      result.checkpoints.count(_.isInstanceOf[DeletedPoint]) must be equalTo 1
     }
 
     "never suggest a change that would later be reverted" in {
