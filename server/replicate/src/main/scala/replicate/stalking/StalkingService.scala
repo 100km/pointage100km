@@ -42,9 +42,13 @@ class StalkingService(database: Database, textService: ActorRef) extends Persist
       case Some(contestant) ⇒
         if (contestant.stalkers.nonEmpty) {
           val point = analysis.after.last
-          val message = s"${contestant.full_name_and_bib}: passage à ${FormatUtils.formatDate(point.timestamp)} " +
-            s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, ${FormatUtils.formatDistance(point.distance)})"""
-          contestant.stalkers.foreach(textService ! (_, message))
+          if (System.currentTimeMillis() - point.timestamp <= Global.TextMessages.maxAcceptableDelay.toMillis) {
+            val message = s"${contestant.full_name_and_bib}: passage à ${FormatUtils.formatDate(point.timestamp)} " +
+              s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, ${FormatUtils.formatDistance(point.distance)})"""
+            contestant.stalkers.foreach(textService !(_, message))
+          } else
+            log.info("Not sending obsolete (older than {}) checkpoint information for {} in race {}",
+              Global.TextMessages.maxAcceptableDelay, contestant.full_name_and_bib, analysis.raceId);
         }
       case None ⇒
         log.warning("no information known on contestant {}", analysis.contestantId)

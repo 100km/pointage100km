@@ -54,6 +54,7 @@ object Global {
     private val textMessagesConfig = replicateConfig.as[Config]("text-messages")
     private val stabilizationDelay = textMessagesConfig.as[FiniteDuration]("stabilization-delay")
     private val maxQueueSize = textMessagesConfig.as[Int]("max-queue-size")
+    val maxAcceptableDelay = textMessagesConfig.as[FiniteDuration]("max-acceptable-delay")
 
     val ifAnalysisUnchanged =
       Flow[ContestantAnalysis].via(StreamUtils.ifUnchangedAfter(_.contestantId, stabilizationDelay, maxQueueSize)).named("ifAnalysisUnchanged")
