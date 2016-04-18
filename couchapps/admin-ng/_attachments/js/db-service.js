@@ -22,6 +22,10 @@ function DbService($http, database) {
         analysis.full_name = analysis.first_name + " " + analysis.name +
           " (bib " + contestantId + ")";
         return analysis;
+      }, function(reason) {
+        console.log("Could not find info on contestant " + contestantId + ": " + reason);
+        analysis.full_name = "Bib " + contestantId + " (no detailed info)";
+        return analysis;
       });
     });
   };
