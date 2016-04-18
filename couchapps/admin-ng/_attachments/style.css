@@ -37,3 +37,12 @@ table.times th {
 table.times td {
   padding: 0.2em;
 }
+
+table.analysis .deleted {
+  font-style: italic;
+  text-decoration: line-through;
+}
+
+table.analysis .artificial {
+  font-style: italic;
+}
