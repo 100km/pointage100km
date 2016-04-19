@@ -1,10 +1,10 @@
 <section class="row">
   <div class="btn-group btn-group-justified">
   <label ng-repeat="site in infos.sites_short"
-         class="btn btn-success btn-{{liveness[$index] || 'default'}}"
+         class="btn btn-{{liveness[$index] || 'default'}}"
          href="#/site/{{$index}}">
     <div>{{site}}</div>
-    <div ng-show="liveness[$index] !== 'default'">
+    <div ng-show="liveness[$index]">
       {{times[$index] | date : "HH:mm:ss" : infos.timezone }}
     </div>
   </label>
