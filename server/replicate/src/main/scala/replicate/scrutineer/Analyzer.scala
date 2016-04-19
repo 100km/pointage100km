@@ -189,7 +189,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
     assert(timestamp < after.timestamp)
     val point = Point(siteId, timestamp)
     val lastPing = pings.get(siteId)
-    if (lastPing.exists(_ >= after.timestamp))
+    if (lastPing.exists(_ >= after.timestamp - 2 * Global.pingTimeout.toMillis))
       MissingPoint(point, lap, distance, after.speed)
     else
       DownPoint(point, lap, distance, after.speed, lastPing)
