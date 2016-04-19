@@ -37,7 +37,7 @@ function map_contestants(data) {
   result.name       = data.name;
   result.first_name = data.first_name;
   result.race       = data.race;
-  result.cat        = cat_from_year(birth_date.getYear() , data.sexe == 2);
+  result.cat        = cat_from_year(birth_date.getYear());
   result.sex        = data.sex;
   result.zipcode    = data.zipcode;
   result.city       = data.city;
