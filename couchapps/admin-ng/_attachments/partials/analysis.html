@@ -1,7 +1,7 @@
 <div class="analysis">
   <h2>{{$ctrl.analysis.full_name}} <small>{{$ctrl.infos.races_names[$ctrl.analysis.race_id]}}</small></h2>
 
-  <div ng-if="needsFixing" class="alert {{$ctrl.analysis.valid ? 'alert-warning' : 'alert-danger' }}">
+  <div ng-if="$ctrl.needsFixing" class="alert {{$ctrl.analysis.valid ? 'alert-warning' : 'alert-danger' }}">
     Anomalies: {{$ctrl.analysis.anomalies}}
     <span ng-if="!$ctrl.analysis.valid">(invalid entry, removed from rankings)</span>
   </div>
