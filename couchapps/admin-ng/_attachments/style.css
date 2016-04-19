@@ -46,3 +46,7 @@ table.analysis .deleted {
 table.analysis .artificial {
   font-style: italic;
 }
+
+table.analysis .down {
+  font-style: italic;
+}

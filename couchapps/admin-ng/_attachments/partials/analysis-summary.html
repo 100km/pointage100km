@@ -19,7 +19,7 @@
       <td>{{point.time | date : "HH:mm:ss" : infos.timezone}}</td>
       <td>{{point.speed | digitsUnit : 2 : "km/h"}}</td>
       <td ng-if="$ctrl.active" class="btn btn-block">
-        <span class="glyphicon glyphicon-{{action_icon}}"></span>
+        <span ng-if="action_icon" class="glyphicon glyphicon-{{action_icon}}"></span>
       </td>
       <td ng-if="$ctrl.active">{{point.reason}}</td>
     </tr>
