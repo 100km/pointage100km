@@ -1,7 +1,7 @@
 function db_global_ranking(app, cb, race_id) {
   var last_lap = app.races_laps[race_id];
 
-  app.db.list("main_display/global-ranking","global-ranking", {
+  app.db.list("main_display/global-ranking","global-ranking-ng", {
     startkey:[race_id, -last_lap, null, null],
     endkey:[race_id+1, null, null, null]
   }, {
