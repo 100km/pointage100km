@@ -157,15 +157,23 @@ object PingAlert {
 
   private def docToMaxTimestamp(siteId: Int, database: Database): Flow[JsObject, Long, NotUsed] =
     Flow[JsObject].flatMapConcat { doc ⇒
-      if ((doc \ "_deleted").asOpt[Boolean].contains(true)) {
+      if ((doc \ "_deleted").asOpt[Boolean].contains(true))
         Source.fromFuture(lastPing(siteId, database).map(_.getOrElse(-1)))
-      } else {
-        (doc \ "times").asOpt[List[Long]] match {
-          case None      ⇒ Source.single((doc \ "time").as[Long])
-          case Some(Nil) ⇒ Source.empty[Long]
-          case Some(l)   ⇒ Source.single(l.max)
+      else
+        (doc \ "type").asOpt[String] match {
+          case Some("ping") ⇒
+            Source.single((doc \ "time").as[Long])
+          case Some("checkpoint") ⇒
+            val times = (doc \ "times").asOpt[List[Long]].getOrElse(Nil)
+            val artificialTimes = (doc \ "artificial_times").asOpt[List[Long]].getOrElse(Nil)
+            val realTimes = times.diff(artificialTimes)
+            realTimes.lastOption match {
+              case Some(ts) ⇒ Source.single(ts)
+              case None     ⇒ Source.empty[Long]
+            }
+          case _ ⇒
+            Source.empty[Long]
         }
-      }
     }
 
   private def pingAlerts(database: Database)(implicit context: ActorRefFactory) = RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
