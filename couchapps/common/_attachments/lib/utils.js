@@ -233,7 +233,7 @@ function remove_accents(str) {
 }
 
 
-function cat_from_year(year, is_woman) {
+function cat_from_year(year) {
   var date = new Date();
   var age = date.getYear() - year;
 
