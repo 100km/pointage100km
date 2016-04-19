@@ -62,6 +62,9 @@ angular.module("admin-ng").component("analysis", {
 //
 
 function AnalysisSummaryController() {
+  this.act = function(bib, siteId, timestamp, action) {
+    console.log("Will " + action + " " + timestamp + " on checkpoints-" + siteId + "-" + bib);
+  };
 }
 
 angular.module("admin-ng").component("analysisSummary", {
@@ -72,8 +75,7 @@ angular.module("admin-ng").component("analysisSummary", {
     points: '<',
     analysis: '<',
     active: '<',
-    infos: '<',
-    addAction: '&',
+    infos: '<'
   }
 });
 
@@ -87,39 +89,29 @@ function AnalysisPointController($scope) {
     ctrl.site = ctrl.infos.sites[ctrl.point.site_id] + " (" + ctrl.point.site_id + ")";
 
     if (ctrl.active) {
-      var setDisplay = function(label, icon, clazz, tooltip) {
+      var setDisplay = function(action, label, icon, clazz, tooltip) {
+        ctrl.action = action;
+        // FIXME: Add to global actions here if needed
         ctrl.action_label = label;
         ctrl.action_icon = icon;
         ctrl.action_class = clazz || ctrl.point.type;
         ctrl.tooltip = tooltip;
       };
-      var setAction = function(action, isSuggested) {
-        ctrl.action = {docid: "checkpoints-" + ctrl.point.site_id + "-" + ctrl.bib,
-          action: action, time: ctrl.point.time};
-        if (isSuggested) {
-          // FIXME: Add to global actions here
-        }
-      };
       ctrl.act = function() {
-        console.log("Performing action " + JSON.stringify(ctrl.action));
+        ctrl.upperAct({action: ctrl.action});
       };
       if (ctrl.point.action === "add") {
-        setDisplay("Add", "plus-sign", "success", "The algorithm suggests to add this point");
-        setAction("add", true);
+        setDisplay("add", "Add", "plus-sign", "success", "The algorithm suggests to add this point");
       } else if (ctrl.point.action === "remove") {
-        setDisplay("Remove", "trash", "danger", "The algorithm suggests to delete this point");
-        setAction("remove", true);
+        setDisplay("remove", "Remove", "trash", "danger", "The algorithm suggests to delete this point");
       } else if (ctrl.point.type === "deleted") {
-        setDisplay("Restore", "plus-sign", "deleted", "This time has been previously deleted");
-        setAction("add");
+        setDisplay("add", "Restore", "plus-sign", "deleted", "This time has been previously deleted");
       } else if (ctrl.point.type === "down") {
         setDisplay();
       } else if (ctrl.point.type === "artificial") {
-        setDisplay("Remove", "remove", "artificial", "This time has been inserted manually");
-        setAction("remove");
+        setDisplay("remove", "Remove", "remove", "artificial", "This time has been inserted manually");
       } else {
-        setDisplay("Remove", "trash");
-        setAction("remove");
+        setDisplay("remove", "Remove", "trash");
       }
     }
   };
@@ -136,7 +128,7 @@ angular.module("admin-ng").directive("analysisPoint", function() {
       infos: "<",
       point: "<",
       bib: "<",
-      addAction: "&",
+      upperAct: "&act",
       active: "<"
     }
   };

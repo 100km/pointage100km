@@ -12,7 +12,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr analysis-point ng-repeat="point in $ctrl.points" point="point" bib="$ctrl.bib" add-action="$ctrl.addAction" infos="$ctrl.infos" active="$ctrl.active"></analysis-point>
+      <tr analysis-point ng-repeat="point in $ctrl.points" point="point" bib="$ctrl.bib" add-action="$ctrl.addAction" infos="$ctrl.infos" active="$ctrl.active" act="$ctrl.act($ctrl.bib, point.site_id, point.time, action)"></analysis-point>
     </tbody>
   </table>
 </div>
