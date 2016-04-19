@@ -135,6 +135,7 @@ angular.module("admin-ng").directive("analysisPoint", function() {
     scope: {
       infos: "<",
       point: "<",
+      bib: "<",
       addAction: "&",
       active: "<"
     }
