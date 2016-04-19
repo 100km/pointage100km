@@ -43,7 +43,7 @@ class StalkingService(database: Database, textService: ActorRef) extends Persist
         if (contestant.stalkers.nonEmpty) {
           val point = analysis.after.last
           if (System.currentTimeMillis() - point.timestamp <= Global.TextMessages.maxAcceptableDelay.toMillis) {
-            val message = s"${contestant.full_name_and_bib}: passage à ${FormatUtils.formatDate(point.timestamp)} " +
+            val message = s"${contestant.full_name_and_bib}: passage à ${FormatUtils.formatDate(point.timestamp, withSeconds = true)} " +
               s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, ${FormatUtils.formatDistance(point.distance)})"""
             contestant.stalkers.foreach(textService ! (_, message))
           } else
