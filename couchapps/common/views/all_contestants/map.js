@@ -4,9 +4,6 @@
 //TODO teams
 function(doc) {
   if (doc.type == 'contestant' ) {
-      emit(doc.bib, {name: doc.name, first_name: doc.first_name, bib: doc.bib,
-        birth: doc.birth, handisport: doc.handisport,
-        championship: doc.championship || false, zipcode: doc.zipcode,
-        sex: doc.sex, race: doc.race, city: doc.city});
+      emit(doc.bib, doc);
   }
 };
