@@ -3,6 +3,7 @@ package replicate
 import akka.actor.Props
 import akka.event.Logging
 import akka.stream.scaladsl.{Broadcast, Sink}
+import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape._
 import play.api.libs.json.Json
 import replicate.alerts.Alerts
@@ -96,26 +97,28 @@ class Replicate(options: Options.Config) extends LoggingError {
   private lazy val hubDatabase = hubCouch.db(remoteDbName)
 
   if (options.replicate) {
-    if (!previousDbName.contains(remoteDbName)) {
-      log.info("deleting previous database")
+    if (previousDbName.contains(remoteDbName))
+      log.info("reusing existing local database")
+    else {
       try {
         localDatabase.delete().execute()
+        log.info("previous local database deleted")
+      } catch {
+        case StatusError(404, _, _) =>
+          log.info("previous local database did not exist, nothing to delete")
+        case t: Exception ⇒
+          log.error(t, "deletion of previous local database failed, cannot continue")
+          exit(1)
+      }
+      try {
+        localDatabase.create().execute()
+        log.info("local database created")
       } catch {
         case t: Exception ⇒
-          log.error(t, "deletion failed")
+          log.error(t, "cannot create local database")
+          exit(1)
       }
     }
-  }
-
-  try {
-    localDatabase.create().execute()
-    log.info("database created")
-  } catch {
-    case Couch.StatusError(412, _, _) ⇒
-      log.info("database already exists")
-    case t: Exception ⇒
-      log.error(t, "cannot create database")
-      exit(1)
   }
 
   try {
