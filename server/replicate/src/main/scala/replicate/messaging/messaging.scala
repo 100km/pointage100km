@@ -47,8 +47,8 @@ package object messaging {
       if (status != currentStatus) {
         val current = amountToCurrency(balance)
         val message = (currentStatus, status) match {
-          case (Ok, null) ⇒ s"Current balance is $current"
-          case (Ok, _)    ⇒ s"Balance has been restored to $current"
+          case (null, Ok) ⇒ s"Current balance is $current"
+          case (_, Ok)    ⇒ s"Balance has been restored to $current"
           case _          ⇒ s"Balance is $current, below the limit of ${amountToCurrency(limit)}"
         }
         currentStatus = status
