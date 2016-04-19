@@ -23,7 +23,7 @@ function(data) {
     item.rank    = i;
     item.bib     = current_infos.bib;
     item.kms     = site_lap_to_kms(app, current_infos.site_id, lap)
-    item.time    = int_to_datestring(current_infos.times[lap-1] - start_time);
+    item.time    = int_to_datestring(current_infos.times[current_infos.times.length - 1] - start_time);
     item.is_odd  = ((i%2) == 0);
 
     if (current_contestant === undefined) {
