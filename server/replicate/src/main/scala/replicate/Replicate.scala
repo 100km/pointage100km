@@ -104,7 +104,7 @@ class Replicate(options: Options.Config) extends LoggingError {
         localDatabase.delete().execute()
         log.info("previous local database deleted")
       } catch {
-        case StatusError(404, _, _) =>
+        case StatusError(404, _, _) ⇒
           log.info("previous local database did not exist, nothing to delete")
         case t: Exception ⇒
           log.error(t, "deletion of previous local database failed, cannot continue")
