@@ -1,28 +1,18 @@
-<div class="panel-body" id="{{$ctrl.panelid}}">
-<table class="table table-condensed table-hover analysis">
-  <thead>
-    <tr>
-      <th>Lap</th>
-      <th>Checkpoint</th>
-      <th>Distance</th>
-      <th>Timestamp</th>
-      <th>Speed</th>
-      <th ng-if="$ctrl.active">Action</th>
-      <th ng-if="$ctrl.active">Reason</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr ng-repeat="point in $ctrl.points" ng-controller="analysisPoint" class="{{action_class}}" uib-tooltip="{{tooltip}}">
-      <td>{{point.lap}}</td>
-      <td>{{site}}</td>
-      <td>{{point.distance | digitsUnit : 2 : "km"}}</td>
-      <td>{{point.time | date : "HH:mm:ss" : infos.timezone}}</td>
-      <td>{{point.speed | digitsUnit : 2 : "km/h"}}</td>
-      <td ng-if="$ctrl.active" class="btn btn-block">
-        <span ng-if="action_icon" class="glyphicon glyphicon-{{action_icon}}"></span>
-      </td>
-      <td ng-if="$ctrl.active">{{point.reason}}</td>
-    </tr>
-  </tbody>
-</table>
+<div class="panel-body">
+  <table class="table table-condensed table-hover analysis">
+    <thead>
+      <tr>
+        <th>Lap</th>
+        <th>Checkpoint</th>
+        <th>Distance</th>
+        <th>Timestamp</th>
+        <th>Speed</th>
+        <th ng-if="$ctrl.active">Action</th>
+        <th ng-if="$ctrl.active">Reason</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr analysis-point ng-repeat="point in $ctrl.points" point="point" bib="$ctrl.bib" add-action="$ctrl.addAction" infos="$ctrl.infos" active="$ctrl.active"></analysis-point>
+    </tbody>
+  </table>
 </div>

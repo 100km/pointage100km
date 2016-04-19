@@ -1,26 +1,26 @@
 <div class="analysis">
-  <h2>{{analysis.full_name}} <small>{{infos.races_names[analysis.race_id]}}</small></h2>
+  <h2>{{$ctrl.analysis.full_name}} <small>{{$ctrl.infos.races_names[$ctrl.analysis.race_id]}}</small></h2>
 
-  <div ng-if="needsFixing" class="alert {{analysis.valid ? 'alert-warning' : 'alert-danger' }}">
-    Anomalies: {{analysis.anomalies}}
-    <span ng-if="!analysis.valid">(invalid entry, removed from rankings)</span>
+  <div ng-if="needsFixing" class="alert {{$ctrl.analysis.valid ? 'alert-warning' : 'alert-danger' }}">
+    Anomalies: {{$ctrl.analysis.anomalies}}
+    <span ng-if="!$ctrl.analysis.valid">(invalid entry, removed from rankings)</span>
   </div>
 
   <div class="panel panel-primary">
     <div class="panel-heading"><h4 class="panel-title">Possible actions</h4></div>
-    <analysis-summary bib="ctrl.bib" points="analysis.checkpoints" analysis="analysis" active="true" panelid="panelposs">
+    <analysis-summary bib="$ctrl.bib" points="$ctrl.analysis.checkpoints" analysis="$ctrl.analysis" active="true" infos="$ctrl.infos">
     </analysis-summary>
   </div>
 
-  <div ng-if="needsFixing" class="panel panel-warning">
+  <div ng-if="$ctrl.needsFixing" class="panel panel-warning">
     <div class="panel-heading"><h4 class="panel-title">Before modifications</h4></div>
-    <analysis-summary bib="ctrl.bib" points="analysis.before" analysis="analysis" active="false">
+    <analysis-summary bib="$ctrl.bib" points="$ctrl.analysis.before" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
     </analysis-summary>
   </div>
 
-  <div ng-if="needsFixing" class="panel panel-success">
+  <div ng-if="$ctrl.needsFixing" class="panel panel-success">
     <div class="panel-heading"><h4 class="panel-title">After modifications</h4></div>
-    <analysis-summary ng-if="needsFixing" bib="ctrl.bib" points="analysis.after" analysis="analysis" active="false">
+    <analysis-summary ng-if="$ctrl.needsFixing" bib="$ctrl.bib" points="$ctrl.analysis.after" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
     </analysis-summary>
   </div>
 </div>
