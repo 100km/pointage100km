@@ -81,6 +81,8 @@ angular.module("admin-ng").controller("analysisPoint", ["$scope", "dbService",
       } else if ($scope.point.type === "deleted") {
         setAction("Restore", "plus-sign", "deleted");
         $scope.tooltip = "This time has been previously deleted";
+      } else if ($scope.point.type === "down") {
+        setAction(null, null, "down");
       } else if ($scope.point.type === "artificial") {
         $scope.tooltip = "This time has been inserted manually";
         setAction("Remove", "remove", "artificial");
