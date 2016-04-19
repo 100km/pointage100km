@@ -48,7 +48,7 @@ On a dev pc:
 ```
 $ bin/wipe login password
 $ couchapps/server-pushapps server login password
-$ bin/replicate checkpoint --no-ping 0
+$ bin/replicate mirror
 ```
 
 $ /kvm/launch-steenwerck
@@ -74,7 +74,7 @@ $ docker rm -f steenwerck-replicate
         - set the start times of the races to now + 10 minutes: in couchapps/_docs/infos.json, put the value of `echo $(($(date +%s)*1000 + 10*60*1000))`
         - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
         - ensure couchdb is running on developper PC.
-        - launch replicate checkpoint --no-ping 0
+        - launch replicate mirror
         - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
         - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p PASSWD -d 100km_prod 2014`
         - insert a few bibs
@@ -96,7 +96,7 @@ $ docker rm -f steenwerck-replicate
       - check that everything you are couchapp_pushing is committed and pushed to git (infos.json, JS, HTML, ...)
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
       - ensure couchdb and replicate are running on developper PC.
-        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate checkpoint --no-ping 0`
+        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate mirror`
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
@@ -113,6 +113,14 @@ $ docker rm -f steenwerck-replicate
     - !! if X == 6, launch "sudo ./share-connection" in /home/steenwerck
     - detach screen
     - put to sleep.
+  - On the 100km website:
+    - launch `docker pull rfc1149/pointage100km`
+    - launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate slave`
+    - launch friends app
+      - go to /usr/local/var/lib/node/100km-results
+      - mv the old 100km.sqlite to 100km-<year>.sqlite
+      - run grunt create-database (to recreate 100km.sqlite)
+      - systemctl restart node-100kmresults-server
 
 1. @all checkpoints site
   - NEEDS: 7 checkpoints PCs, 7 3G keys, 14 pens, paper, site keys;
