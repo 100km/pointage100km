@@ -10,7 +10,6 @@ function(cb) {
   db_global_ranking(app, function(data) {
       // Here, if race_id is 2, then the race 2 has started.
       // If race_id is 2 and there is no timestamps for race_id 2, go to race_id 3
-      console.log("data is", data);
       if (race_id == 2 && data.data.rows.length == 0) {
         db_global_ranking(app, cb, 3);
       } else {
