@@ -14,7 +14,7 @@ function(data) {
     showItems: 10
   }, function() {
     setTimeout(function() {
-      $(_this).trigger("update_ranking");
+      $(_this).trigger("_init");
     }, 1000);
   });
 }
