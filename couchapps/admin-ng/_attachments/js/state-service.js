@@ -6,13 +6,11 @@ angular.module("admin-ng").factory("stateService",
         contestants: {},
       };
 
-      changesService.onChange($rootScope, {
-        heartbeat: 30000, since: 0, filter: "_view", view: "common/all_contestants",
-        include_docs: true
-      }, function (change) {
-        var contestant = change.doc;
-        $rootScope.$applyAsync(function() { data.contestants[contestant.bib] = contestant; });
-      });
+      changesService.initThenOnChange($rootScope, "common", "all_contestants",
+          function (change) {
+            var contestant = change.doc;
+            $rootScope.$applyAsync(function() { data.contestants[contestant.bib] = contestant; });
+          });
 
       changesService.onChange($rootScope, {
         heartbeat: 30000, since: 0, filter: "_doc_ids", doc_ids: '["infos"]', include_docs: true
