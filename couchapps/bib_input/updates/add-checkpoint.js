@@ -1,6 +1,16 @@
 function(doc, req) {
   doc = doc || {_id: (req.id || req.uuid), type: "checkpoint"};
   var ts = Number(req.form.ts);
+
+  if (!isFinite(ts))
+    return [doc, {
+      code: 400,
+      headers : {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify("invalid timestamp")
+    }];
+
   if (!doc.times) {
     doc.times = [ts];
   } else {

@@ -1,5 +1,13 @@
 function(doc, req) {
   var ts = Number(req.form.ts);
+  if (!isFinite(ts))
+    return [doc, {
+      code: 400,
+      headers : {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify("invalid timestamp")
+    }];
 
   var deleted = false;
   doc.deleted_times = doc.deleted_times || [];
