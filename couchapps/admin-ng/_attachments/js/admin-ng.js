@@ -80,7 +80,8 @@ app.component("app", {
   templateUrl: "partials/admin-ng.html",
   controller: "appCtrl",
   $routeConfig: [
-    {path: "/analysis/...", "name": "Analysis", "component": "analysisTop", useAsDefault: true}
+    {path: "/analysis/...", "name": "Analysis", "component": "analysisTop", useAsDefault: true},
+    {path: "/sms", "name": "SMS", "component": "sent"}
   ]
 });
 app.run(["globalChangesService",

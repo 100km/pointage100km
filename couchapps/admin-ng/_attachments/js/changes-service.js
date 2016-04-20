@@ -22,8 +22,8 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
         scope.$on("$destroy", function() { ev.close(); });
       };
 
-      var initThenOnChange = function(scope, design, view, callback) {
-        $http.get(database + "/_design/" + design + "/_view/" + view + "?include_docs=true&update_seq=true").then(function(response) {
+      var initThenOnChange = function(scope, design, view, callback, viewParams) {
+        $http.get(database + "/_design/" + design + "/_view/" + view + "?include_docs=true&update_seq=true&reduce=false").then(function(response) {
           angular.forEach(response.data.rows, function(row) { callback(row); });
           onChange(scope, {filter: "_view", view: design + "/" + view,
             since: response.data.update_seq,
