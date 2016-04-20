@@ -3,7 +3,7 @@
     <tr><th>Time sent</th><th>Recipients</th><th>Message</th></tr>
   </thead>
   <tbody>
-    <tr ng-repeat="message in $ctrl.messages | orderBy : 'timestamp' : true">
+    <tr ng-repeat="message in $ctrl.messages | filter : {bib: $ctrl.bib} | orderBy : 'timestamp' : true">
       <td>{{ message.timestamp | date : "HH:mm:ss" : $ctrl.infos.timezone }}</td>
       <td>{{ message.recipients.join(", ") }}</td>
       <td>{{ message.message }}</td>

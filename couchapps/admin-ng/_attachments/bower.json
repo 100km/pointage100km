@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "angular": "~1.5.5",
-    "angular-component-router": "~0.2.0",
+    "angular-component-router": "~0.2.1",
     "angular-animate": "~1.5.5",
     "angular-touch": "~1.5.5",
     "angular-route": "~1.5.5",
