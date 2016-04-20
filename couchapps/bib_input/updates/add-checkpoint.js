@@ -14,9 +14,8 @@ function(doc, req) {
   if (!doc.times) {
     doc.times = [ts];
   } else {
-    //TODO maybe need to optimized sorted array insertion?
     doc.times.push(ts);
-    doc.times.sort(function(a,b) {return a-b});
+    doc.times.sort(function(a,b) {return a-b;});
   }
   return [doc, {
     headers : {
@@ -24,8 +23,8 @@ function(doc, req) {
     },
     //Tell the client we need more initialization
     body: JSON.stringify({
-      need_more: !doc.race_id || doc.bib == undefined || doc.site_id  == undefined,
+      need_more: !doc.race_id || doc.bib === undefined || doc.site_id  === undefined,
       lap: doc.times.length
     })
   }];
-};
+}
