@@ -6,7 +6,12 @@ function DbService($http, database) {
 
   this.contestant = function(contestantId) {
     return $http.get(database + "/contestant-" + contestantId)
-      .then(function (r) { return r.data; });
+      .then(function (r) {
+        contestant = r.data;
+        contestant.full_name = contestant.first_name + " " + contestant.name +
+          " (bib " + contestantId + ")";
+        return contestant;
+      });
   };
 
   this.analysis = function(contestantId) {
@@ -16,17 +21,13 @@ function DbService($http, database) {
 
   this.enrichedAnalysis = function(contestantId) {
     return $service.analysis(contestantId).then(function (analysis) {
-      return $service.contestant(contestantId).then(function (contestant) {
-        analysis.first_name = contestant.first_name;
-        analysis.name = contestant.name;
-        analysis.full_name = analysis.first_name + " " + analysis.name +
-          " (bib " + contestantId + ")";
-        return analysis;
-      }, function(reason) {
-        console.log("Could not find info on contestant " + contestantId + ": " + reason);
-        analysis.full_name = "Bib " + contestantId + " (no detailed info)";
-        return analysis;
+      analysis.full_name = "Bib " + contestantId;
+      $service.contestant(contestantId).then(function (contestant) {
+        analysis.full_name = contestant.full_name;
+      }, function (reason) {
+        analysis.full_name = analysis.full_name + " (no detailed info)";
       });
+      return analysis;
     });
   };
 }

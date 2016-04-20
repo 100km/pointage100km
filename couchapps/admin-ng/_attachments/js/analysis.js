@@ -2,15 +2,19 @@
 // Analysis list
 //
 
-function AnalysisListController($http, database) {
+function AnalysisListController($http, database, dbService, stateService) {
   var ctrl = this;
 
   this.$onInit = function() {
     return $http.get(database + "/_design/admin-ng/_view/by-anomalies")
       .then(function(response) {
-        ctrl.anomalies = response.data.rows.map(function(o) { return o.value; });
+        ctrl.anomalies = response.data.rows.map(function(o) {
+          return o.value;
+        });
       });
   };
+
+  stateService.injectContestants(ctrl);
 }
 
 angular.module("admin-ng").component("analysisList", {
