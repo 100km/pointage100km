@@ -4,10 +4,8 @@
   <td>{{point.distance | digitsUnit : 2 : "km"}}</td>
   <td>{{point.time | date : "HH:mm:ss" : infos.timezone}}</td>
   <td>{{point.speed | digitsUnit : 2 : "km/h"}}</td>
-  <td ng-if="active" class="btn btn-block">
-    <span ng-if="action_icon" ng-click="act()">
-      <span class="glyphicon glyphicon-{{action_icon}}"></span>
-    </span>
+  <td ng-if="active" ng-click="act()">
+    <span class="glyphicon glyphicon-{{action_icon}}"></span>
   </td>
   <td ng-if="active">{{point.reason}}</td>
 </tr>
