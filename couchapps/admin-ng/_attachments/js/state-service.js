@@ -4,12 +4,19 @@ angular.module("admin-ng").factory("stateService",
 
       var data = {
         contestants: {},
+        analyses: {}
       };
 
       changesService.initThenOnChange($rootScope, "common", "all_contestants",
           function (change) {
             var contestant = change.doc;
             $rootScope.$applyAsync(function() { data.contestants[contestant.bib] = contestant; });
+          });
+
+      changesService.initThenOnChange($rootScope, "admin-ng", "by-anomalies",
+          function (change) {
+            var analysis = change.doc;
+            $rootScope.$applyAsync(function() { data.analyses[analysis.bib] = analysis; });
           });
 
       changesService.onChange($rootScope, {
