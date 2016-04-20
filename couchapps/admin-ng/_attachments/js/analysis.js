@@ -2,18 +2,13 @@
 // Analysis list
 //
 
-function AnalysisListController($http, database, dbService, stateService) {
+function AnalysisListController($scope, stateService) {
   var ctrl = this;
-
-  this.$onInit = function() {
-    return $http.get(database + "/_design/admin-ng/_view/by-anomalies")
-      .then(function(response) {
-        ctrl.anomalies = response.data.rows.map(function(o) {
-          return o.value;
-        });
-      });
-  };
-
+  this.analyses = [];
+  $scope.$watchCollection(function() { return stateService.analyses; }, function(analyses) {
+    ctrl.analyses = [];
+    angular.forEach(analyses, function(a) { ctrl.analyses.push(a); });
+  });
 }
 
 angular.module("admin-ng").component("analysisList", {
@@ -25,33 +20,25 @@ angular.module("admin-ng").component("analysisList", {
 // Analysis for one contestant
 //
 
-function AnalysisController($scope, dbService, changesService) {
+function AnalysisController($scope, stateService) {
   var ctrl = this;
-  ctrl.needsFixing = false;
-
-  ctrl.loadAnalysis = function() {
-    return dbService.enrichedAnalysis(ctrl.bib).then(function(analysis) {
-      ctrl.analysis = analysis;
-      ctrl.needsFixing = analysis.anomalies > 0;
-    });
-  };
 
   this.$routerOnActivate = function(next, previous) {
     ctrl.bib = Number(next.params.bib);
 
-    dbService.infos.then(function(infos) { ctrl.infos = infos; });
+    $scope.$watch(function() { return stateService.analyses[ctrl.bib]; },
+        function(analysis) {
+          if (analysis) {
+            ctrl.analysis = analysis;
+            ctrl.needsFixing = analysis.anomalies > 0;
+          }
+        });
 
-    // If either the document or the contestant information changes,
-    // we want to reload a fresh analysis.
-    changesService.onChange($scope, {
-      filter: "_doc_ids",
-      doc_ids: '["contestant-' + ctrl.bib + '","analysis-' + ctrl.bib + '"]',
-      heartbeat: 30000, since: "now"
-    },
-    ctrl.loadAnalysis);
+    $scope.$watch(function() { return stateService.infos; },
+        function(infos) {
+          ctrl.infos = infos;
+        });
 
-    // Wait until we have loaded the initial analysis before continuing.
-    return ctrl.loadAnalysis();
   };
 }
 

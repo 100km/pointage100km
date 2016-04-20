@@ -1,3 +1,7 @@
 <div class="list-group">
-  <a ng-repeat="anomaly in $ctrl.anomalies" class="list-group-item {{anomaly.valid ? (anomaly.anomalies === 0 ? '' : 'list-group-item-warning') : 'list-group-item-danger'}}" ng-link="['Analysis', {bib: anomaly.bib}]"><span ng-if="anomaly.anomalies > 0" class="badge">{{anomaly.valid ? anomaly.anomalies : "Invalid"}}</span> <contestant bib="anomaly.bib"/></contestant> — <race race-id="anomaly.race_id"></race></a>
+  <a ng-repeat="analysis in $ctrl.analyses | orderBy : ['valid', '-anomalies', '+bib']"
+     class="list-group-item {{analysis.valid ? (analysis.anomalies === 0 ? '' : 'list-group-item-warning') : 'list-group-item-danger'}}"
+     ng-link="['Analysis', {bib: analysis.bib}]">
+    <span ng-if="analysis.anomalies > 0" class="badge">{{analysis.valid ? analysis.anomalies : "Invalid"}}</span> <contestant bib="analysis.bib"/></contestant> — <race race-id="analysis.race_id"></race>
+  </a>
 </div>
