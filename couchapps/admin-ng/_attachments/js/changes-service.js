@@ -1,19 +1,30 @@
-angular.module("admin-ng").factory("changesService", ["database", "$http", "$httpParamSerializer",
-    function(database, $http, $httpParamSerializer) {
+angular.module("admin-ng").factory("changesService", ["database", "$http", "$httpParamSerializer", "$timeout",
+    function(database, $http, $httpParamSerializer, $timeout) {
       var onChange = function(scope, params, callback) {
         var ev;
         var allParams = angular.merge({feed: "eventsource"}, params);
 
+        // The reconnection delay after an error will start at 10ms
+        // and will be doubled until it reaches 20.48s.
+        var reconnectionDelay;
+
         var reconnect = function() {
           ev = new EventSource(database + "/_changes?" + $httpParamSerializer(allParams));
+          ev.onopen = function() {
+            reconnectionDelay = undefined;
+          };
           ev.onmessage = function(event) {
             allParams.since = event.lastEventId;
             scope.$applyAsync(function() { callback(JSON.parse(event.data)); });
           };
           ev.onerror = function(event) {
             if (ev.readyState === EventSource.CLOSED) {
+              if (!reconnectionDelay)
+                reconnectionDelay = 10;
+              else if (reconnectionDelay < 20480)
+                reconnectionDelay *= 2;
               ev.close();
-              reconnect();
+              $timeout(reconnect, reconnectionDelay, false);
             }
           };
         };
