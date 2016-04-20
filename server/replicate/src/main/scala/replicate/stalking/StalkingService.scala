@@ -1,16 +1,19 @@
 package replicate.stalking
 
-import akka.actor.{ActorLogging, ActorRef, ActorRefFactory, Props, Terminated}
-import akka.persistence.{PersistentActor, SnapshotOffer}
+import akka.actor.Status.Failure
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorRefFactory, Props, Stash, Terminated}
+import akka.pattern.pipe
 import akka.stream.ActorMaterializer
 import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, OneByOneRequestStrategy}
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
+import play.api.libs.json.{JsObject, Json}
 import replicate.alerts.Alerts
 import replicate.messaging.Message
 import replicate.messaging.Message.{Severity, TextMessage}
-import replicate.scrutineer.Analyzer.{ContestantAnalysis, EnrichedPoint}
+import replicate.scrutineer.Analyzer.ContestantAnalysis
+import replicate.stalking.StalkingService.{InitialFailure, InitialNotifications}
 import replicate.state.ContestantState
 import replicate.utils.{FormatUtils, Global, Glyphs}
 
@@ -18,73 +21,83 @@ import replicate.utils.{FormatUtils, Global, Glyphs}
  * This class will keep the list of stalkers for every contestant up-to-date, and will also maintain
  * the information on the last status for which a text message has been sent for a contestant.
  */
-class StalkingService(database: Database, textService: ActorRef) extends PersistentActor with ActorSubscriber with ActorLogging {
+class StalkingService(database: Database, textService: ActorRef) extends Actor with Stash with ActorSubscriber with ActorLogging {
 
   private implicit val fm = ActorMaterializer.create(context)
   private implicit val ec = fm.executionContext
 
-  override def persistenceId = "stalking-service"
-
   override val requestStrategy = OneByOneRequestStrategy
 
-  // List of stalkers phone numbers
-  private[this] var stalkers: Map[Int, List[String]] = Map()
-  // Map of contestant to (lap, siteId)
-  private[this] var stalkingInfo: Map[Int, EnrichedPoint] = Map()
+  // Map of contestant to signalled distance
+  private[this] var stalkingInfo: Map[Int, Double] = Map()
 
   override def preStart = {
-    context.watch(textService)
     log.info("stalking service starting")
+    context.watch(textService)
+    context.become(receiveInitial)
+    database.view[Int, JsObject]("replicate", "sms-distance", List("group" → "true")).map(_.map {
+      case (k, v) ⇒ (k, (v \ "max").as[Double])
+    }).transform(InitialNotifications, InitialFailure).pipeTo(self)
   }
 
   private[this] def sendToStalkers(analysis: ContestantAnalysis) = {
-    ContestantState.contestantFromId(analysis.contestantId) match {
+    val contestantId = analysis.contestantId
+    ContestantState.contestantFromId(contestantId) match {
       case Some(contestant) ⇒
         if (contestant.stalkers.nonEmpty) {
           val point = analysis.after.last
           if (System.currentTimeMillis() - point.timestamp <= Global.TextMessages.maxAcceptableDelay.toMillis) {
-            val message = s"${contestant.full_name_and_bib}: passage à ${FormatUtils.formatDate(point.timestamp, withSeconds = true)} " +
-              s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, ${FormatUtils.formatDistance(point.distance)})"""
-            contestant.stalkers.foreach(textService ! (_, message))
+            // Check that we didn't already send information about this contestant for this distance or a greater one.
+            val distanceStr = FormatUtils.formatDistance(point.distance)
+            if (stalkingInfo.get(analysis.contestantId).exists(_ >= point.distance))
+              log.info(
+                "Skipping information for {} in race {} at distance {} (sent for distance {} already)",
+                contestant.full_name_and_bib, analysis.raceId, distanceStr,
+                FormatUtils.formatDistance(stalkingInfo(contestantId))
+              )
+            else {
+              stalkingInfo += analysis.contestantId → point.distance
+              val message = s"${contestant.full_name_and_bib} : passage à ${FormatUtils.formatDate(point.timestamp, withSeconds = true)} " +
+                s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, $distanceStr)"""
+              contestant.stalkers.foreach(textService ! (_, message))
+              database.insert(Json.obj("type" → "sms", "bib" → contestantId, "distance" → point.distance,
+                "timestamp" -> System.currentTimeMillis(), "recipients" → contestant.stalkers,
+                "message" → message, "_id" → s"sms-$contestantId-${point.distance}"))
+            }
           } else
             log.info(
               "Not sending obsolete (older than {}) checkpoint information for {} in race {}",
-              Global.TextMessages.maxAcceptableDelay, contestant.full_name_and_bib, analysis.raceId
-            );
+              Global.TextMessages.maxAcceptableDelay.toCoarsest, contestant.full_name_and_bib, analysis.raceId
+            )
         }
       case None ⇒
         log.warning("no information known on contestant {}", analysis.contestantId)
     }
   }
 
-  val receiveRecover: Receive = {
-    case analysis: ContestantAnalysis ⇒
-      stalkingInfo += analysis.contestantId → analysis.after.last
-    case SnapshotOffer(_, snapshot: Map[Int, EnrichedPoint] @unchecked) ⇒
-      stalkingInfo = snapshot
+  def receiveInitial: Receive = {
+
+    case InitialNotifications(notifications) ⇒
+      log.info("received initial notifications state")
+      log.info(notifications.toString)
+      stalkingInfo = notifications.toMap
+      unstashAll()
+      context.become(receive)
+
+    case Failure(InitialFailure(throwable)) ⇒
+      log.error(throwable, "could not get initial notifications state, aborting")
+      throw throwable
+
+    case _ ⇒
+      stash()
   }
 
-  val receiveCommand: Receive = {
+  def receive = {
 
     case OnNext(analysis: ContestantAnalysis) ⇒
-      // Check the info freshness and remember it
-      (analysis.after.lastOption, stalkingInfo.get(analysis.contestantId)) match {
-
-        case (Some(point), None) ⇒
-          persist(analysis) { _ ⇒
-            stalkingInfo += analysis.contestantId → point
-            sendToStalkers(analysis)
-          }
-
-        case (Some(point), Some(previous)) if point.distance > previous.distance ⇒
-          persist(analysis) { _ ⇒
-            stalkingInfo += analysis.contestantId → point
-            sendToStalkers(analysis)
-          }
-
-        case _ ⇒
-        // Do nothing, either we got back in distance, or we removed the last valid point
-      }
+      // Do not send an empty analysis (last point removed)
+      if (analysis.after.nonEmpty)
+        sendToStalkers(analysis)
 
     case OnComplete ⇒
       log.info("end of stream, terminating")
@@ -107,6 +120,9 @@ class StalkingService(database: Database, textService: ActorRef) extends Persist
 }
 
 object StalkingService {
+
+  private case class InitialNotifications(notifications: Seq[(Int, Double)])
+  private case class InitialFailure(throwable: Throwable) extends Exception
 
   def stalkingServiceSink(database: Database, textService: ActorRef)(implicit context: ActorRefFactory) =
     Sink.actorSubscriber[ContestantAnalysis](Props(new StalkingService(database, textService)))
