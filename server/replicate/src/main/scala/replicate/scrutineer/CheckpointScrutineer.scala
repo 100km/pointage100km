@@ -5,6 +5,7 @@ import akka.event.LoggingAdapter
 import akka.stream.scaladsl.{Flow, Source}
 import akka.stream.{ActorAttributes, Attributes, Materializer, Supervision}
 import net.rfc1149.canape.Database
+import play.api.libs.json.JsObject
 import replicate.models.CheckpointData
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.state.CheckpointsState
@@ -31,8 +32,14 @@ object CheckpointScrutineer {
           val enterAndKeepLatest = groupedByContestants.mapAsync(1)(cps ⇒ Future.sequence(cps.dropRight(1).map(CheckpointsState.setTimes)).map(_ ⇒ cps.last))
           val changes =
             database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
-              .map(js ⇒ (js \ "doc").as[CheckpointData])
-              .mapConcat {
+              .mapConcat { js ⇒
+                (js \ "doc").asOpt[CheckpointData] match {
+                  case Some(cpd) ⇒
+                    List(cpd)
+                  case None ⇒
+                    log.error("unable to decode {} as valid checkpoint data", (js \ "doc").as[JsObject]); Nil
+                }
+              }.mapConcat {
                 case cpd if cpd.raceId == 0 ⇒
                   log.warning("skipping checkpoint data of contestant {} at site {} because no race is defined", cpd.contestantId, cpd.siteId)
                   Nil
