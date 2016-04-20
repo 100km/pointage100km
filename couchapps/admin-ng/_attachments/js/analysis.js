@@ -51,9 +51,16 @@ angular.module("admin-ng").component("analysis", {
 // Analysis summary (or before/after)
 //
 
-function AnalysisSummaryController() {
-  this.act = function(bib, siteId, timestamp, action) {
-    console.log("Will " + action + " " + timestamp + " on checkpoints-" + siteId + "-" + bib);
+function AnalysisSummaryController($scope, $http, database) {
+  var ctrl = this;
+
+  this.act = function(siteId, timestamp, action) {
+    var docid = "checkpoints-" + siteId + "-" + ctrl.analysis.bib;
+    var payload = {
+      bib: ctrl.analysis.bib, race_id: ctrl.analysis.race_id,
+      site_id: siteId, timestamp: timestamp, action: action
+    };
+    $http.put(database + "/_design/admin-ng/_update/fix-checkpoint/" + docid, payload);
   };
 }
 
@@ -61,7 +68,6 @@ angular.module("admin-ng").component("analysisSummary", {
   templateUrl: "partials/analysis-summary.html",
   controller: AnalysisSummaryController,
   bindings: {
-    bib: '<',
     points: '<',
     analysis: '<',
     active: '<',
@@ -73,10 +79,15 @@ angular.module("admin-ng").component("analysisSummary", {
 // Represent a given point (table row) in the analysis
 //
 
-function AnalysisPointController($scope) {
+function AnalysisPointController($scope, stateService) {
   var ctrl = $scope;
   this.$onInit = function() {
-    ctrl.site = ctrl.infos.sites[ctrl.point.site_id] + " (" + ctrl.point.site_id + ")";
+    ctrl.site = "Site " + ctrl.point.site_id;
+    $scope.$watch(function() { return stateService.infos; },
+        function(infos) {
+          if (infos)
+            ctrl.site = ctrl.infos.sites[ctrl.point.site_id] + " (" + ctrl.point.site_id + ")";
+        });
 
     if (ctrl.active) {
       var setDisplay = function(action, label, icon, clazz, tooltip) {
@@ -117,7 +128,6 @@ angular.module("admin-ng").directive("analysisPoint", function() {
     scope: {
       infos: "<",
       point: "<",
-      bib: "<",
       upperAct: "&act",
       active: "<"
     }
