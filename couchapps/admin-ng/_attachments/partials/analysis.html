@@ -8,19 +8,19 @@
 
   <div class="panel panel-primary">
     <div class="panel-heading"><h4 class="panel-title">Possible actions</h4></div>
-    <analysis-summary bib="$ctrl.bib" points="$ctrl.analysis.checkpoints" analysis="$ctrl.analysis" active="true" infos="$ctrl.infos">
+    <analysis-summary points="$ctrl.analysis.checkpoints" analysis="$ctrl.analysis" active="true" infos="$ctrl.infos">
     </analysis-summary>
   </div>
 
   <div ng-if="$ctrl.needsFixing" class="panel panel-warning">
     <div class="panel-heading"><h4 class="panel-title">Before modifications</h4></div>
-    <analysis-summary bib="$ctrl.bib" points="$ctrl.analysis.before" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
+    <analysis-summary points="$ctrl.analysis.before" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
     </analysis-summary>
   </div>
 
   <div ng-if="$ctrl.needsFixing" class="panel panel-success">
     <div class="panel-heading"><h4 class="panel-title">After modifications</h4></div>
-    <analysis-summary ng-if="$ctrl.needsFixing" bib="$ctrl.bib" points="$ctrl.analysis.after" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
+    <analysis-summary ng-if="$ctrl.needsFixing" points="$ctrl.analysis.after" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
     </analysis-summary>
   </div>
 </div>
