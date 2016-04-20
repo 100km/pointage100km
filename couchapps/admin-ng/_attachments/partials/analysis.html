@@ -23,4 +23,11 @@
     <analysis-summary ng-if="$ctrl.needsFixing" points="$ctrl.analysis.after" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
     </analysis-summary>
   </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading"><h4 class="panel-title">Sent SMS</h4></div>
+    <div class="panel-body">
+      <sent bib="$ctrl.analysis.bib"></sent>
+    </div>
+  </div>
 </div>

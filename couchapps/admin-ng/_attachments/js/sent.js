@@ -11,4 +11,7 @@ function SentController($scope, changesService) {
 angular.module("admin-ng").component("sent", {
   templateUrl: "partials/sent-sms.html",
   controller: SentController,
+  bindings: {
+    bib: '<?'
+  }
 });

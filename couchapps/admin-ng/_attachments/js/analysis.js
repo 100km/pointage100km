@@ -141,7 +141,7 @@ angular.module("admin-ng").directive("analysisPoint", function() {
 angular.module("admin-ng").component("analysisTop", {
   template: "<ng-outlet></ng-outlet>",
   $routeConfig: [
-  {path: "/", component: "analysisList", useAsDefault: true},
+  {path: "/", name: "AnalysisList", component: "analysisList", useAsDefault: true},
   {path: "/:bib", name: "Analysis", component: "analysis"}
   ]
 });
