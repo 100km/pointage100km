@@ -6,7 +6,7 @@ function(data) {
   else
     $(_this).removeClass('race_3');
 
-  $(this).find("#ranking-container").vTicker({
+  _this.find("#ranking-container").vTicker({
     speed: 500,
     pause: 1000,
     animation: 'fade',
@@ -15,6 +15,6 @@ function(data) {
   }, function() {
     setTimeout(function() {
       $(_this).trigger("update_ranking");
-    }, 1000);
+    }, $(_this).find("#ranking-container").find("li").length > 10 ? 1000 : 10000);
   });
 }
