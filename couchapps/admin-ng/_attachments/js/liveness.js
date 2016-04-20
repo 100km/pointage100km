@@ -1,6 +1,6 @@
 angular.module("admin-ng").controller("livenessCtrl",
-    ["$scope", "$interval", "$http", "database", "changesService", "dbService",
-    function($scope, $interval, $http, database, changesService, dbService) {
+    ["$scope", "$interval", "$http", "database", "changesService", "stateService",
+    function($scope, $interval, $http, database, changesService, stateService) {
       $scope.liveness = [];
       $scope.times = [];
 
@@ -22,9 +22,8 @@ angular.module("admin-ng").controller("livenessCtrl",
       };
 
       // Load the infos into the scope to get the site names.
-      dbService.infos.then(function(infos) {
-        $scope.infos = infos;
-      });
+      $scope.$watch(function() { return stateService.infos; },
+          function(infos) { $scope.infos = infos; });
 
       // Initially check the sites liveness to get fresh information as soon as
       // the page is loaded.
