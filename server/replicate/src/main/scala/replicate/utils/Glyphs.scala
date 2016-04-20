@@ -30,6 +30,8 @@ object Glyphs {
   final val blackSmilingFace = "\u263b"
   final val whiteSunWithRays = "\u263c"
 
+  final val envelope = "\u2709"
+
   final val fistedHandSign = "\ud83d\udc4a" // 1f44a
   final val wavingHandSign = "\ud83d\udc4b" // 1f44b
   final val okHandSign = "\ud83d\udc4c" // 1f44c
