@@ -5,6 +5,7 @@
 function AnalysisListController($scope, stateService) {
   var ctrl = this;
   this.analyses = [];
+
   $scope.$watchCollection(function() { return stateService.analyses; }, function(analyses) {
     ctrl.analyses = [];
     angular.forEach(analyses, function(a) { ctrl.analyses.push(a); });

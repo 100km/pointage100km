@@ -6,7 +6,7 @@
     <tr ng-repeat="message in $ctrl.messages | filter : {bib: $ctrl.bib} | orderBy : 'timestamp' : true">
       <td>{{ message.timestamp | date : "HH:mm:ss" : $ctrl.infos.timezone }}</td>
       <td>{{ message.recipients.join(", ") }}</td>
-      <td>{{ message.message }}</td>
+      <td><a href="#/analysis/{{message.bib}}">{{ message.message }}</a></td>
     </tr>
   </tbody>
 </table>
