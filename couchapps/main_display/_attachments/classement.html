@@ -18,6 +18,7 @@
     <div id="bottom_pane_div" class="bottom_pane">bottom pane text</div>
     <div id="left_pane_div" class="left_pane" data-race_id=1></div>
     <div id="right_pane_div" class="right_pane"  data-race_id=2></div>
+    <div id="dummy"></div>
 
   </body>
   <script src="../common/vendor/couchapp/loader.js"></script>
@@ -33,6 +34,7 @@
       $("#left_pane_div").evently("classement_side_pane_div", app);
       $("#right_pane_div").evently("classement_side_pane_div", app);
       $("#bottom_pane_div").evently("classement_bottom_pane_div", app);
+      $("#dummy").evently("contestant_refresh", app);
       $.evently.connect("#clock_current_time", "#clock_100km_open", ["tick"]);
       $.evently.connect("#clock_current_time", "#clock_100km_race", ["tick"]);
       $.evently.connect("#ranking_title_div", "#left_pane_div", ["update_ranking"]);
