@@ -14,7 +14,6 @@ function AnalysisListController($http, database, dbService, stateService) {
       });
   };
 
-  stateService.injectContestants(ctrl);
 }
 
 angular.module("admin-ng").component("analysisList", {
