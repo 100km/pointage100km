@@ -1,4 +1,4 @@
-function AlertsController($scope, changesService) {
+function AlertsController($scope, changesService, stateService) {
   var ctrl = this;
   this.alertsSet = {};
   this.alerts = [];
@@ -11,6 +11,10 @@ function AlertsController($scope, changesService) {
       case "info": return "info";
       default: return "default";
     }
+  };
+
+  this.$routerOnActivate = function(next, previous) {
+    return stateService.installInfo($scope);
   };
 
   changesService.initThenOnChange($scope, "admin", "alerts", 

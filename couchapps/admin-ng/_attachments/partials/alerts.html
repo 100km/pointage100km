@@ -2,14 +2,14 @@
   <thead><tr><th>Time</th><th>Category</th><th>Severity</th><th>Title</th><th>Message</th><th>Link</th><th>Targets</th><th>Cancelled</th></tr></thead>
   <tbody>
     <tr ng-repeat="alert in $ctrl.alerts | orderBy: '-addedTS'" class="cancelled-{{!!alert.cancelledTS}} alert-{{alert.severity}} {{alert.level}}">
-      <td>{{alert.addedTS | date:"HH:mm:ss":"Europe/Paris"}}</td>
+      <td>{{alert.addedTS | date:"HH:mm:ss":infos.timezone}}</td>
       <td>{{alert.category}}</td>
       <td>{{alert.severity}}</td>
       <td>{{alert.title}}</td>
       <td>{{alert.body}}</td>
       <td><a ng-href="{{alert.url}}" ng-if="alert.url">Link</a></td>
       <td>{{alert.targets.join(", ")}}</td>
-      <td><span ng-if="!!alert.cancelledTS">{{alert.cancelledTS | date:'HH:mm:ss':'Europe/Paris'}}</span></td>
+      <td><span ng-if="!!alert.cancelledTS">{{alert.cancelledTS | date:'HH:mm:ss':infos.timezone}}</span></td>
     </tr>
   </tbody>
 </table>
