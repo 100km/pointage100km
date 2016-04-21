@@ -55,7 +55,7 @@ class TextService extends Actor with ActorLogging {
 
   def receive = {
     case m@(recipient: String, message: String) ⇒
-      val alert = Message(TextMessage, Severity.Debug, s"SMS for $recipient", message, None, Some(Glyphs.envelope))
+      val alert = Message(TextMessage, Severity.Verbose, s"SMS for $recipient", message, None, Some(Glyphs.envelope))
       Alerts.sendAlert(alert)
       textService.forward(m)
   }
