@@ -5,28 +5,18 @@ angular.module("admin-ng").factory("stateService",
       var data = {
         contestants: {},
         analyses: {},
-        installInfo: function(scope) {
+        installInfos: function(scope) {
           return changesService.installAndCheck(scope, "infos", "infos");
         }
       };
 
-      changesService.initThenOnChange($rootScope, "common", "all_contestants",
-          function (change) {
-            var contestant = change.doc;
-            $rootScope.$applyAsync(function() { data.contestants[contestant.bib] = contestant; });
-          });
+      changesService.initThenFilterEach($rootScope, "common", "all_contestants",
+          function(change) { return change.doc.type === "contestant"; },
+          function(row) { data.contestants[row.doc.bib] = row.doc; });
 
-      changesService.initThenOnChange($rootScope, "admin-ng", "by-anomalies",
-          function (change) {
-            var analysis = change.doc;
-            $rootScope.$applyAsync(function() { data.analyses[analysis.bib] = analysis; });
-          });
-
-      changesService.onChange($rootScope, {
-        heartbeat: 30000, since: 0, filter: "_doc_ids", doc_ids: '["infos"]', include_docs: true
-      }, function (change) {
-        $rootScope.$applyAsync(function() { data.infos = change.doc; });
-      });
+      changesService.initThenFilterEach($rootScope, "admin-ng", "by-anomalies",
+          function(change) { return change.doc.type == "analysis"; },
+          function(row) { data.analyses[row.doc.bib] = row.doc; });
 
       return data;
 

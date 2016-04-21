@@ -1,5 +1,5 @@
-angular.module("admin-ng").factory("changesService", ["database", "$http", "$httpParamSerializer", "$timeout",
-    function(database, $http, $httpParamSerializer, $timeout) {
+angular.module("admin-ng").factory("changesService", ["database", "$http", "$httpParamSerializer", "$timeout", "$rootScope", "pubsub",
+    function(database, $http, $httpParamSerializer, $timeout, $rootScope, pubsub) {
 
       var onChange = function(scope, params, callback) {
         var ev;
@@ -40,47 +40,73 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
       // The scope parameter must be a real scope since its `$onDestroy`
       // event will be watched.
       var installAndCheck = function(scope, name, docid) {
-        return $http.get(database + "/" + docid + "?local_seq=true")
+        return $http.get(database + "/" + docid)
           .then(function(response) {
             scope[name] = response.data;
-            onChange(scope, {filter: "_doc_ids", doc_ids: '["' + docid + '"]',
-              include_docs: true, heartbeat: 30000, since: response.data._local_seq},
-              function(change) { scope[name] = change.doc; });
+            filterChanges(scope, function(change) { return change.doc._id === docid; },
+                function(change) {
+                  scope.$applyAsync(function() { scope[name] = change.doc; });
+                });
           });
       };
 
-      // Call `callback` with every element returned by the view `design/view`.
-      // Once this is done, resolve the promise, and call `callback` with any
-      // new document matching `design/view` used as a filter.
+      var globalChangesStart = function() {
+        onChange($rootScope, {since: "now", heartbeat: 30000, include_docs: true},
+            function(change) {
+              pubsub.publish("globalChange", change);
+            });
+      };
+
+      // Filter the global changes stream.
       // The scope parameter must be a real scope since its `$onDestroy`
       // event will be watched.
-      var initThenOnChange = function(scope, design, view, callback) {
+      var filterChanges = function(scope, filter, callback) {
+        var id = pubsub.subscribe(function(key, element) {
+          return key === "globalChange" && filter(element);
+        }, callback);
+        scope.$on("$destroy", function() { pubsub.unsubscribe(id); });
+      };
+
+      // Call a callback on the initial value returned by the view, then
+      // a callback if a filter matches a change. The promise is completed
+      // when the initial value has been sent to the callback.
+      // The scope parameter must be a real scope since its `$onDestroy`
+      // event will be watched.
+      var initThenFilter = function(scope, design, view, initCallback, filter, changeCallback) {
         return $http.get(database + "/_design/" + design + "/_view/" + view +
-            "?include_docs=true&update_seq=true&reduce=false")
+            "?include_docs=true&reduce=false")
           .then(function(response) {
-            scope.$applyAsync(function() { angular.forEach(response.data.rows, callback); });
-            onChange(scope, {filter: "_view", view: design + "/" + view,
-              since: response.data.update_seq,
-              include_docs: true, heartbeat: 30000}, callback);
-            return response;
+            initCallback(response.data);
+            filterChanges(scope, filter, changeCallback);
           });
       };
 
-      return {
-        onChange: onChange,
-        initThenOnChange: initThenOnChange,
-        installAndCheck: installAndCheck
+      // Same than initThenFilter, except the same callback will be called
+      // on every initial row and on the new changes.
+      // The scope parameter must be a real scope since its `$onDestroy`
+      // event will be watched.
+      var initThenFilterEach = function(scope, design, view, filter, callback, apply) {
+        return initThenFilter(scope, design, view,
+            function(data) {
+              if (apply)
+                scope.$applyAsync(function() { angular.forEach(data.rows, callback); });
+              else
+                angular.forEach(data.rows, function(row) { callback(row); });
+            },
+            filter,
+            function(row) {
+              if (apply)
+                scope.$applyAsync(function() { callback(row); });
+              else
+                callback(row);
+            });
       };
-    }]);
 
-angular.module("admin-ng").factory("globalChangesService", ["changesService", "$rootScope", "database", "$http",
-    function(changesService, $rootScope, database, $http) {
       return {
-        start: function() {
-          changesService.onChange($rootScope, {since: "now", heartbeat: 3000, include_docs: true},
-              function(change) {
-                $rootScope.$broadcast("change", change);
-              });
-        }
+        initThenFilter: initThenFilter,
+        initThenFilterEach: initThenFilterEach,
+        installAndCheck: installAndCheck,
+        globalChangesStart: globalChangesStart,
+        filterChanges: filterChanges
       };
     }]);
