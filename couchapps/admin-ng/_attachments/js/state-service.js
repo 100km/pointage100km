@@ -4,7 +4,10 @@ angular.module("admin-ng").factory("stateService",
 
       var data = {
         contestants: {},
-        analyses: {}
+        analyses: {},
+        installInfo: function(scope) {
+          return changesService.installAndCheck(scope, "infos", "infos");
+        }
       };
 
       changesService.initThenOnChange($rootScope, "common", "all_contestants",
