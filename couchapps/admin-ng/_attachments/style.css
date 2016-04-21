@@ -50,3 +50,7 @@ table.analysis .artificial {
 table.analysis .down {
   font-style: italic;
 }
+
+table.alerts .cancelled-true { text-decoration: line-through; }
+table.alerts .alert-critical { font-weight: bold; }
+table.alerts .alert-debug { font-style: italic; }
