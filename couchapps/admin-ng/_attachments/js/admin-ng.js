@@ -81,7 +81,8 @@ app.component("app", {
   controller: "appCtrl",
   $routeConfig: [
     {path: "/analysis/...", name: "Analysis", component: "analysisTop", useAsDefault: true},
-    {path: "/sms/", name: "SMS", component: "sent"}
+    {path: "/sms/", name: "SMS", component: "sent"},
+    {path: "/alerts/", name: "Alerts", component: "alerts"},
   ]
 });
 app.run(["globalChangesService",
