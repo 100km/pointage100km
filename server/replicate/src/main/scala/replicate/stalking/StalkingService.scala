@@ -78,11 +78,10 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
   def receiveInitial: Receive = {
 
     case InitialNotifications(notifications) ⇒
-      log.info("received initial notifications state")
-      log.info(notifications.toString)
       stalkingInfo = notifications.toMap
       unstashAll()
       context.become(receive)
+      log.info("Stalking service starting with existing information")
 
     case Failure(InitialFailure(throwable)) ⇒
       log.error(throwable, "could not get initial notifications state, aborting")
