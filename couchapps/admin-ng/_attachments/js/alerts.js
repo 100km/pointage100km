@@ -14,10 +14,11 @@ function AlertsController($scope, changesService, stateService) {
   };
 
   this.$routerOnActivate = function(next, previous) {
-    return stateService.installInfo($scope);
+    return stateService.installInfos($scope);
   };
 
-  changesService.initThenOnChange($scope, "admin", "alerts", 
+  changesService.initThenFilterEach($scope, "admin", "alerts",
+      function(change) { return change.doc.type === "alert"; },
       function(change) {
         var alert = change.doc;
         alert.level = mapSeverity(alert.severity);
@@ -29,7 +30,7 @@ function AlertsController($scope, changesService, stateService) {
         } else {
           ctrl.alerts.unshift(alert);
         }
-      });
+      }, true);
 }
 
 angular.module("admin-ng").component("alerts", {

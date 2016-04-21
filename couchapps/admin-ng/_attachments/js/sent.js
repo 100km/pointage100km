@@ -7,15 +7,13 @@ function SentController($scope, changesService) {
   // (/analysis?bib=bib). Unfortunately, this one will not get matched
   // by the router for Analysis.
   this.onSelectBib = function(bib) {
-    console.log("bib: ", bib);
-    console.log("$router: ", ctrl.$router);
     ctrl.$router.navigate(["Analysis", {bib: bib}]);
   }
 
-  changesService.initThenOnChange($scope, "replicate", "sms-distance",
-      function(row) {
-        ctrl.messages.push(row.doc);
-      });
+  changesService.initThenFilterEach($scope, "replicate", "sms-distance",
+      function(change) { return change.doc.type === "sms"; },
+      function(change) { ctrl.messages.push(change.doc); },
+      true);
 }
 
 angular.module("admin-ng").component("sent", {

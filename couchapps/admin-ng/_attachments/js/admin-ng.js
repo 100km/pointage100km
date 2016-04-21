@@ -1,4 +1,4 @@
-var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap"]);
+var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub"]);
 
 app.filter("fullName", function() {
   return function(doc) {
@@ -18,7 +18,7 @@ app.filter("gravatarUrl", function() {
 app.filter("digitsUnit", ["$filter", function($filter) {
   return function(x, digits, unit) {
     return x === undefined ? "" : ($filter('number')(x, digits) + " " + unit);
-  }
+  };
 }]);
 
 app.constant("database", "../../");
@@ -31,7 +31,7 @@ app.component("app", {
     {path: "/alerts/", name: "Alerts", component: "alerts"},
   ]
 });
-app.run(["globalChangesService",
-    function(globalChangesService) {
-      globalChangesService.start();
+app.run(["changesService",
+    function(changesService) {
+      changesService.globalChangesStart();
     }]);

@@ -1,12 +1,14 @@
 angular.module("admin-ng").controller("livenessCtrl",
     ["$scope", "$interval", "$http", "database", "changesService", "stateService",
     function($scope, $interval, $http, database, changesService, stateService) {
+      var ctrl = this;
+
       $scope.liveness = [];
       $scope.times = [];
 
       // Set a site timestamp. If the new timestamp is not greater or equal
       // (equal is useful to refresh the status), it is ignored.
-      $scope.setSite = function(siteId, timestamp) {
+      this.setSite = function(siteId, timestamp) {
         if (isFinite($scope.times[siteId]) && $scope.times[siteId] > timestamp) {
           return;
         }
@@ -17,33 +19,51 @@ angular.module("admin-ng").controller("livenessCtrl",
         else if (d < 15) state = "info";
         else if (d < 30) state = "warning";
         else state = "danger";
-        $scope.liveness[siteId] = state;
-        $scope.times[siteId] = timestamp;
+        $scope.$applyAsync(function() {
+          $scope.liveness[siteId] = state;
+          $scope.times[siteId] = timestamp;
+        });
       };
 
       // Load the infos into the scope to get the site names.
-      $scope.$watch(function() { return stateService.infos; },
-          function(infos) { $scope.infos = infos; });
+      stateService.installInfos($scope);
 
       // Initially check the sites liveness to get fresh information as soon as
       // the page is loaded.
-      $scope.checkSites = function() {
+      this.checkSites = function() {
         return $http.get(database + "/_design/admin/_view/alive?group_level=1")
           .then(function(response) {
             var alive = response.data;
             angular.forEach(response.data.rows, function(row) {
-              $scope.setSite(row.key, row.value.max);
+              ctrl.setSite(row.key, row.value.max);
             });
           });
       };
 
-      // Use a _changes connection to get fresh information about the sites.
-      $scope.checkSites().then(function() {
-        changesService.onChange($scope, {since: "now", heartbeat: 30000, include_docs: true,
-          filter: "_view", view: "admin/alive"},
-          function(change) {
-            $scope.setSite(change.doc.site_id, change.doc.time);
-          });
+      // Watch for fresh information about the sites
+      this.checkSites().then(function() {
+        changesService.filterChanges($scope,
+            function(change) {
+              return change.doc.type === "ping" || change.doc.type === "checkpoint";
+            },
+            function(change) {
+              var time;
+              var doc = change.doc;
+              if (doc.type === "ping")
+                ctrl.setSite(doc.site_id, doc.time);
+              else {
+                var times = doc.times || [];
+                var artificial_times = doc.artificial_times || [];
+                var i = times.length - 1;
+                while (i >= 0) {
+                  if (artificial_times.indexOf(times[i]) === -1) {
+                    ctrl.setSite(doc.site_id, times[i]);
+                    break;
+                  }
+                  i--;
+                }
+              }
+            });
       });
 
       // Regularly refresh the informations we have (with the same timestamps)
@@ -51,7 +71,7 @@ angular.module("admin-ng").controller("livenessCtrl",
       var periodic = $interval(function() {
         for (var siteId in $scope.times) {
           if (isFinite($scope.times[siteId])) {
-            $scope.setSite(siteId, $scope.times[siteId]);
+            ctrl.setSite(siteId, $scope.times[siteId]);
           }
         }
       }, 10000);
