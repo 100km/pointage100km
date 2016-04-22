@@ -4,19 +4,17 @@ angular.module("pubsub", []).factory("pubsub", [
       var subscribers = {};
 
       return {
-        subscribe: function(filter, callback) {
+        subscribe: (filter, callback) => {
           latestSubscriptionId++;
           subscribers[latestSubscriptionId] = {filter: filter, callback: callback};
           return latestSubscriptionId;
         },
 
-        unsubscribe: function(subscriptionId) {
-          return delete subscribers[subscriptionId];
-        },
+        unsubscribe: subscriptionId => delete subscribers[subscriptionId],
 
-        publish: function(key, value) {
+        publish: (key, value) => {
           var count = 0;
-          angular.forEach(subscribers, function(subscriber) {
+          angular.forEach(subscribers, subscriber => {
             if (subscriber.filter(key, value)) {
               count++;
               subscriber.callback(value, key);

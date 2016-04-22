@@ -1,9 +1,8 @@
 function AlertsController($scope, changesService, stateService) {
-  var ctrl = this;
   this.alertsSet = {};
   this.alerts = [];
 
-  var mapSeverity = function(severity) {
+  var mapSeverity = severity => {
     switch (severity) {
       case "critical": return "danger";
       case "error": return "danger";
@@ -13,22 +12,20 @@ function AlertsController($scope, changesService, stateService) {
     }
   };
 
-  this.$routerOnActivate = function(next, previous) {
-    return stateService.installInfos($scope);
-  };
+  this.$routerOnActivate = (next, previous) => stateService.installInfos($scope);
 
   changesService.initThenFilterEach($scope, "admin", "alerts",
-      function(change) { return change.doc.type === "alert"; },
-      function(change) {
+      change => change.doc.type === "alert",
+      change => {
         var alert = change.doc;
         alert.level = mapSeverity(alert.severity);
-        ctrl.alertsSet[alert._id] = alert;
+        this.alertsSet[alert._id] = alert;
         if (alert.cancelledTS) {
-          ctrl.alerts = [];
-          angular.forEach(ctrl.alertsSet, function(a) { ctrl.alerts.push(a); });
-          ctrl.alerts.sort(function(a, b) { return b.addedTS - a.addedTS; });
+          this.alerts = [];
+          angular.forEach(this.alertsSet, a => this.alerts.push(a));
+          this.alerts.sort((a, b) => b.addedTS - a.addedTS);
         } else {
-          ctrl.alerts.unshift(alert);
+          this.alerts.unshift(alert);
         }
       }, true);
 }

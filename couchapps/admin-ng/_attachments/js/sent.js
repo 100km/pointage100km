@@ -1,18 +1,15 @@
 function SentController($scope, changesService) {
-  var ctrl = this;
   this.messages = [];
 
   // We cannot use this function as this will not build the complete
   // route (/analysis/:bib), but one with a query parameter instead
   // (/analysis?bib=bib). Unfortunately, this one will not get matched
   // by the router for Analysis.
-  this.onSelectBib = function(bib) {
-    ctrl.$router.navigate(["Analysis", {bib: bib}]);
-  };
+  this.onSelectBib = bib => this.$router.navigate(["Analysis", {bib: bib}]);
 
   changesService.initThenFilterEach($scope, "replicate", "sms-distance",
-      function(change) { return change.doc.type === "sms"; },
-      function(change) { ctrl.messages.push(change.doc); },
+      change => change.doc.type === "sms",
+      change => this.messages.push(change.doc),
       true);
 }
 
