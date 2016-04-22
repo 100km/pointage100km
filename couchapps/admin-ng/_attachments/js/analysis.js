@@ -6,6 +6,7 @@ function AnalysisListController($scope, stateService) {
   var ctrl = this;
   this.analyses = [];
 
+  stateService.installInfos($scope);
   $scope.$watchCollection(function() { return stateService.analyses; }, function(analyses) {
     ctrl.analyses = [];
     angular.forEach(analyses, function(a) { ctrl.analyses.push(a); });
@@ -24,6 +25,8 @@ angular.module("admin-ng").component("analysisList", {
 function AnalysisController($scope, stateService) {
   var ctrl = this;
 
+  stateService.installInfos($scope);
+
   this.$routerOnActivate = function(next, previous) {
     ctrl.bib = Number(next.params.bib);
 
@@ -33,11 +36,6 @@ function AnalysisController($scope, stateService) {
             ctrl.analysis = analysis;
             ctrl.needsFixing = analysis.anomalies > 0;
           }
-        });
-
-    $scope.$watch(function() { return stateService.infos; },
-        function(infos) {
-          ctrl.infos = infos;
         });
 
   };
@@ -52,7 +50,7 @@ angular.module("admin-ng").component("analysis", {
 // Analysis summary (or before/after)
 //
 
-function AnalysisSummaryController($scope, $http, database) {
+function AnalysisSummaryController($scope, $http, database, stateService) {
   var ctrl = this;
 
   this.act = function(siteId, timestamp, action) {
@@ -83,13 +81,6 @@ angular.module("admin-ng").component("analysisSummary", {
 function AnalysisPointController($scope, stateService) {
   var ctrl = $scope;
   this.$onInit = function() {
-    ctrl.site = "Site " + ctrl.point.site_id;
-    $scope.$watch(function() { return stateService.infos; },
-        function(infos) {
-          if (infos)
-            ctrl.site = ctrl.infos.sites[ctrl.point.site_id] + " (" + ctrl.point.site_id + ")";
-        });
-
     if (ctrl.active) {
       var setDisplay = function(action, label, icon, clazz, tooltip) {
         ctrl.action = action;

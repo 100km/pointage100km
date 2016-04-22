@@ -8,7 +8,7 @@ function SentController($scope, changesService) {
   // by the router for Analysis.
   this.onSelectBib = function(bib) {
     ctrl.$router.navigate(["Analysis", {bib: bib}]);
-  }
+  };
 
   changesService.initThenFilterEach($scope, "replicate", "sms-distance",
       function(change) { return change.doc.type === "sms"; },

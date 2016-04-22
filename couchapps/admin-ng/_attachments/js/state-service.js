@@ -46,11 +46,10 @@ angular.module("admin-ng")
         .directive("race", function() {
           return {
             template: "{{raceName}}",
-            scope: { raceId: "<" },
-            controller: function($scope, stateService) {
+            scope: { raceId: "<", infos: "<" },
+            controller: function($scope) {
               this.$onInit = function() {
-                $scope.$watchGroup([function() { return stateService.infos; },
-                                    "raceId"],
+                $scope.$watchGroup(["infos", "raceId"],
                     function(values) {
                       var infos = values[0];
                       var raceId = values[1];
@@ -62,4 +61,26 @@ angular.module("admin-ng")
               };
             }
           };
+        })
+        .component("site", {
+          template: "{{$ctrl.site}}",
+          bindings: { siteId: '<', infos: '<', format: '<?' },
+          controller: function() {
+            var ctrl = this;
+            this.$onChanges = function(changes) {
+              if (ctrl.siteId !== undefined) {
+                var siteN = "Site " + ctrl.siteId;
+                switch(ctrl.format || "") {
+                  case "short":
+                    ctrl.site = ctrl.infos ? ctrl.infos.sites_short[ctrl.siteId] : siteN;
+                    break;
+                  case "name":
+                    ctrl.site = ctrl.infos ? ctrl.infos.sites[ctrl.siteId] : siteN;
+                    break;
+                  default:
+                    ctrl.site = ctrl.infos ? ctrl.infos.sites[ctrl.siteId] + " (" + ctrl.siteId + ")" : siteN;
+                }
+              }
+            };
+          }
         });
