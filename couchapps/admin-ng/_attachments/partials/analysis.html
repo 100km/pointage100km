@@ -1,5 +1,5 @@
 <div class="analysis">
-  <h2><contestant bib="$ctrl.analysis.bib"></contestant> <small><race race-id="$ctrl.analysis.race_id"></race></small></h2>
+  <h2><contestant bib="$ctrl.analysis.bib"></contestant> <small><race race-id="$ctrl.analysis.race_id" infos="infos"></race></small></h2>
 
   <div ng-if="$ctrl.needsFixing" class="alert {{$ctrl.analysis.valid ? 'alert-warning' : 'alert-danger' }}">
     Anomalies: {{$ctrl.analysis.anomalies}}
@@ -8,19 +8,19 @@
 
   <div class="panel panel-primary">
     <div class="panel-heading"><h4 class="panel-title">Possible actions</h4></div>
-    <analysis-summary points="$ctrl.analysis.checkpoints" analysis="$ctrl.analysis" active="true" infos="$ctrl.infos">
+    <analysis-summary points="$ctrl.analysis.checkpoints" analysis="$ctrl.analysis" active="true" infos="infos">
     </analysis-summary>
   </div>
 
   <div ng-if="$ctrl.needsFixing" class="panel panel-warning">
     <div class="panel-heading"><h4 class="panel-title">Before modifications</h4></div>
-    <analysis-summary points="$ctrl.analysis.before" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
+    <analysis-summary points="$ctrl.analysis.before" analysis="$ctrl.analysis" active="false" infos="infos">
     </analysis-summary>
   </div>
 
   <div ng-if="$ctrl.needsFixing" class="panel panel-success">
     <div class="panel-heading"><h4 class="panel-title">After modifications</h4></div>
-    <analysis-summary ng-if="$ctrl.needsFixing" points="$ctrl.analysis.after" analysis="$ctrl.analysis" active="false" infos="$ctrl.infos">
+    <analysis-summary ng-if="$ctrl.needsFixing" points="$ctrl.analysis.after" analysis="$ctrl.analysis" active="false" infos="infos">
     </analysis-summary>
   </div>
 
