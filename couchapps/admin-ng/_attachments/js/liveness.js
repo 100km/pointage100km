@@ -29,42 +29,43 @@ angular.module("admin-ng").controller("livenessCtrl",
       stateService.installInfos($scope);
 
       // Initially check the sites liveness to get fresh information as soon as
-      // the page is loaded.
+      // the page is loaded. Return the sequence number in a promise.
       this.checkSites = function() {
-        return $http.get(database + "/_design/admin/_view/alive?group_level=1")
+        return $http.get(database + "/_design/admin/_view/alive?group_level=1&update_seq=true")
           .then(function(response) {
             var alive = response.data;
             angular.forEach(response.data.rows, function(row) {
               ctrl.setSite(row.key, row.value.max);
             });
+            return response.data.update_seq;
           });
       };
 
-      // Watch for fresh information about the sites
-      this.checkSites().then(function() {
-        changesService.filterChanges($scope,
-            function(change) {
-              return change.doc.type === "ping" || change.doc.type === "checkpoint";
-            },
-            function(change) {
-              var time;
-              var doc = change.doc;
-              if (doc.type === "ping")
-                ctrl.setSite(doc.site_id, doc.time);
-              else {
-                var times = doc.times || [];
-                var artificial_times = doc.artificial_times || [];
-                var i = times.length - 1;
-                while (i >= 0) {
-                  if (artificial_times.indexOf(times[i]) === -1) {
-                    ctrl.setSite(doc.site_id, times[i]);
-                    break;
-                  }
-                  i--;
+      // Watch for fresh information about the sites once the initial information
+      // has arrived.
+      changesService.filterChangesAfter($scope,
+          function(change) {
+            return change.doc.type === "ping" || change.doc.type === "checkpoint";
+          },
+          function(change) {
+            var time;
+            var doc = change.doc;
+            if (doc.type === "ping")
+              ctrl.setSite(doc.site_id, doc.time);
+            else {
+              var times = doc.times || [];
+              var artificial_times = doc.artificial_times || [];
+              var i = times.length - 1;
+              while (i >= 0) {
+                if (artificial_times.indexOf(times[i]) === -1) {
+                  ctrl.setSite(doc.site_id, times[i]);
+                  break;
                 }
+                i--;
               }
-            });
-      });
+            }
+          },
+          ctrl.checkSites());
 
       // Regularly refresh the informations we have (with the same timestamps)
       // in order to refresh the display in case the status has changed.

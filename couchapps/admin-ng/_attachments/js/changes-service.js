@@ -60,11 +60,40 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
       // Filter the global changes stream.
       // The scope parameter must be a real scope since its `$onDestroy`
       // event will be watched.
+      // The scope parameter must be a real scope since its `$onDestroy`
+      // event will be watched.
       var filterChanges = function(scope, filter, callback) {
         var id = pubsub.subscribe(function(key, element) {
           return key === "globalChange" && filter(element);
         }, callback);
         scope.$on("$destroy", function() { pubsub.unsubscribe(id); });
+      };
+
+      // Filter the global changes stream after a sequence number which is
+      // given in a promise. Before that, changes are accumulated and will
+      // be replayed if they are greater than the sequence number.
+      // The promise returned by this function will resolve once the
+      // sequence number has been resolved.
+      // The scope parameter must be a real scope since its `$onDestroy`
+      // event will be watched.
+      var filterChangesAfter = function(scope, filter, callback, after) {
+        var prematureChanges = [];
+        var afterResolved;
+        filterChanges(scope, filter,
+            function(change) {
+              if (afterResolved === undefined)
+                prematureChanges.push(change);
+              else if (change.seq > afterResolved)
+                callback(change);
+            });
+        return after.then(function(value) {
+          afterResolved = value;
+          angular.forEach(prematureChanges, function(change) {
+            if (change.seq > afterResolved)
+              callback(change);
+          });
+          prematuresChanges = undefined;
+        });
       };
 
       // Call a callback on the initial value returned by the view, then
@@ -73,12 +102,15 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
       // The scope parameter must be a real scope since its `$onDestroy`
       // event will be watched.
       var initThenFilter = function(scope, design, view, initCallback, filter, changeCallback) {
-        return $http.get(database + "/_design/" + design + "/_view/" + view +
-            "?include_docs=true&reduce=false")
-          .then(function(response) {
-            initCallback(response.data);
-            filterChanges(scope, filter, changeCallback);
-          });
+        return filterChangesAfter(scope, filter, changeCallback,
+            new Promise(function(resolve, fail) {
+              return $http.get(database + "/_design/" + design + "/_view/" + view +
+                  "?include_docs=true&reduce=false&update_seq=true")
+                .then(function(response) {
+                  initCallback(response.data);
+                  resolve(response.data.update_seq);
+                });
+            }));
       };
 
       // Same than initThenFilter, except the same callback will be called
@@ -107,6 +139,7 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
         initThenFilterEach: initThenFilterEach,
         installAndCheck: installAndCheck,
         globalChangesStart: globalChangesStart,
-        filterChanges: filterChanges
+        filterChanges: filterChanges,
+        filterChangesAfter: filterChangesAfter
       };
     }]);
