@@ -23,25 +23,24 @@ angular.module("admin-ng").factory("stateService",
 }]);
 
 angular.module("admin-ng")
-        .directive("contestant", function() {
-          return {
-            template: "{{contestantName}}",
-            scope: { bib: "<" },
+        .component("contestant", {
+            template: "{{$ctrl.contestantName}}",
+            bindings: { bib: "<" },
             controller: function($scope, stateService) {
+              var ctrl = this;
               this.$onInit = function() {
-                $scope.$watchGroup([function() { return stateService.contestants[$scope.bib]; },
+                $scope.$watchGroup([function() { return stateService.contestants[ctrl.bib]; },
                                     "bib"],
                     function(values) {
                       var contestant = values[0];
                       if (contestant)
-                        $scope.contestantName = contestant.first_name + " " + contestant.name +
-                          " (bib " + contestant.bib + ")";
+                        ctrl.contestantName = contestant.first_name + " " + contestant.name +
+                          " (" + contestant.bib + ")";
                       else
-                        $scope.contestantName = "Bib " + $scope.bib;
+                        ctrl.contestantName = "Bib " + ctrl.bib;
                     });
               };
             }
-          };
         })
         .component("race", {
           template: "{{$ctrl.raceName}}",
