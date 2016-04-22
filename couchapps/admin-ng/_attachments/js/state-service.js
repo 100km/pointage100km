@@ -43,24 +43,15 @@ angular.module("admin-ng")
             }
           };
         })
-        .directive("race", function() {
-          return {
-            template: "{{raceName}}",
-            scope: { raceId: "<", infos: "<" },
-            controller: function($scope) {
-              this.$onInit = function() {
-                $scope.$watchGroup(["infos", "raceId"],
-                    function(values) {
-                      var infos = values[0];
-                      var raceId = values[1];
-                      if (infos)
-                        $scope.raceName = infos.races_names[raceId];
-                      else
-                        $scope.raceName = "Race " + raceId;
-                    });
-              };
-            }
-          };
+        .component("race", {
+          template: "{{$ctrl.raceName}}",
+          bindings: { raceId: "<", infos: "<" },
+          controller: function() {
+            var ctrl = this;
+            this.$onChanges = function() {
+              ctrl.raceName = ctrl.infos ? ctrl.infos.races_names[ctrl.raceId] : "Race " + ctrl.raceId;
+            };
+          }
         })
         .component("site", {
           template: "{{$ctrl.site}}",
