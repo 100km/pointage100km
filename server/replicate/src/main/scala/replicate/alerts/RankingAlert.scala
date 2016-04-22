@@ -5,7 +5,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.{ActorMaterializer, Materializer}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import net.rfc1149.canape.{Couch, Database}
+import net.rfc1149.canape.Database
 import play.api.libs.json.{JsValue, Json}
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity.Severity
@@ -84,10 +84,12 @@ class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskA
 
 object RankingAlert extends PlayJsonSupport {
 
-  def raceRanking(raceInfo: RaceInfo, database: Database): Future[HttpResponse] =
+  // The entity body will have to be consumed by the caller.
+  private def raceRanking(raceInfo: RaceInfo, database: Database): Future[HttpResponse] =
     database.list("main_display", "global-ranking", "global-ranking",
       Seq("startkey" → Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" → Json.stringify(Json.arr(raceInfo.raceId + 1)),
-        "inclusive_end" → "false"))
+        "inclusive_end" → "false"),
+      keepBody = true)
 
   /**
    * Return the ranking of a given race.
