@@ -32,7 +32,6 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
   private[this] var stalkingInfo: Map[Int, Double] = Map()
 
   override def preStart = {
-    log.info("stalking service starting")
     context.watch(textService)
     context.become(receiveInitial)
     database.view[Int, JsObject]("replicate", "sms-distance", List("group" → "true")).map(_.map {

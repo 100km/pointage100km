@@ -1,108 +1,47 @@
 package replicate.alerts
 
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.http.scaladsl.util.FastFuture
-import akka.stream.{ActorMaterializer, Materializer}
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import net.rfc1149.canape.Database
-import play.api.libs.json.{JsValue, Json}
+import akka.stream.scaladsl.{Flow, Keep, Sink}
+import akka.{Done, NotUsed}
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{RaceInfo, Severity}
-import replicate.utils.Infos.RaceInfo
-import replicate.utils.{Global, PeriodicTaskActor}
+import replicate.state.ContestantState
+import replicate.state.RankingState.RankingInfo
+import replicate.utils.{Global, Glyphs}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class RankingAlert(database: Database, raceInfo: RaceInfo) extends PeriodicTaskActor {
-
-  import RankingAlert._
-
-  private[this] implicit val dispatcher = context.system.dispatcher
-  private[this] implicit val fm = ActorMaterializer()
-
-  override val period = Global.RankingAlerts.checkInterval
-  override def immediateStart = true
-
-  // null means that there has been no update yet
-  private[this] var currentHead: Seq[Int] = null
+object RankingAlert {
 
   /**
-   * Send an alert after prepending the contestant name to the body.
+   * Build a message and prepend the contestant name to the body.
    */
-  private[this] def alert(severity: Severity, bib: Int, rank: Int, message: String, addLink: Boolean): Future[Unit] = {
-    val contestantInfo = database(s"contestant-$bib") map { doc ⇒
-      val (firstName, lastName) = ((doc \ "first_name").as[String], (doc \ "name").as[String])
-      s"$firstName $lastName (bib $bib)"
-    }
-    contestantInfo.map { name ⇒
-      Alerts.sendAlert(Message(RaceInfo, severity, title = s"${raceInfo.name}, rank $rank",
-        body  = s"$name $message", url = if (addLink) Global.configuration.map(_.adminLink) else None))
-    }
+  private[this] def alert(severity: Severity, rankingInfo: RankingInfo, message: String): Message = {
+    val contestantId = rankingInfo.contestantId
+    val raceId = rankingInfo.raceId
+    val name = ContestantState.contestantFromId(contestantId).fold(s"Contestant $contestantId")(_.full_name_and_bib)
+    val raceName = Global.infos.fold(s"Race $raceId")(_.races_names(raceId))
+    Message(RaceInfo, severity, title = rankingInfo.currentRank.fold(raceName)(rank ⇒ s"$raceName rank $rank"),
+      body  = s"$name $message", icon = Some(Glyphs.runner))
   }
 
-  private[this] def checkForChange(runners: Seq[Int]): Unit = {
-    for ((bib, idx) ← runners.zipWithIndex; ranking = idx + 1) {
-      val isAtHead = ranking <= Global.RankingAlerts.topRunners
-      Some(currentHead.indexOf(bib)).filterNot(_ == -1).map(_ + 1) match {
-        // Someone gained many ranks at once
-        case Some(previousRanking) ⇒
-          if (ranking < previousRanking && previousRanking - ranking >= Global.RankingAlerts.suspiciousRankJump) {
-            // Someone gained many ranks at once
-            alert(Severity.Warning, bib, ranking,
-              s"gained ${previousRanking - ranking} ranks at once (was at rank $previousRanking)", addLink = true)
-          } else if (isAtHead && ranking < previousRanking) {
-            // Someone did progress into the top-runners
-            val suspicious = previousRanking >= Global.RankingAlerts.headOfRace
-            alert(if (suspicious) Severity.Warning else Severity.Info, bib, ranking,
-              s"was previously at rank $previousRanking (${ranking - previousRanking})", addLink = suspicious)
-          }
-        case None if isAtHead ⇒
-          if (currentHead.size >= Global.RankingAlerts.topRunners) {
-            // Someone appeared at the head of the race while we did not know them previously and we know the top runners already
-            alert(Severity.Critical, bib, ranking, s"suddenly appeared to the head of the race", addLink = true)
-          } else {
-            // Someone appeared at the head of the race, but we are still building the top runners list
-            alert(Severity.Verbose, bib, ranking, s"is at the head (initial ranking)", addLink = false)
-          }
-        case _ ⇒
-          FastFuture.successful(())
-      }
-    }
-    currentHead = runners
-  }
-
-  override def future = headOfRace(raceInfo, database).map { runners ⇒
-    if (currentHead == null)
-      currentHead = runners
-    else
-      checkForChange(runners)
-  }
-
-}
-
-object RankingAlert extends PlayJsonSupport {
-
-  // The entity body will have to be consumed by the caller.
-  private def raceRanking(raceInfo: RaceInfo, database: Database): Future[HttpResponse] =
-    database.list("main_display", "global-ranking", "global-ranking",
-      Seq("startkey" → Json.stringify(Json.arr(raceInfo.raceId, -raceInfo.laps)), "endkey" → Json.stringify(Json.arr(raceInfo.raceId + 1)),
-        "inclusive_end" → "false"),
-      keepBody = true)
-
-  /**
-   * Return the ranking of a given race.
-   *
-   * @return a list of bibs ordered by rank
-   */
-  private def headOfRace(raceInfo: RaceInfo, database: Database)(implicit fm: Materializer, ec: ExecutionContext): Future[Seq[Int]] = {
-    raceRanking(raceInfo, database).filter(_.status.isSuccess()).flatMap(r ⇒ Unmarshal(r.entity).to[JsValue]).map { result ⇒
-      (result \ "rows").as[Array[JsValue]].headOption.map(_ \ "contestants" \\ "id" map { id ⇒
-        // id is of the form checkpoints-CHECKPOINT-CONTESTANT
-        id.as[String].split('-').last.toInt
-      }).getOrElse(Seq())
+  private val rankingInfoToMessage: Flow[RankingInfo, Message, NotUsed] = Flow[RankingInfo].mapConcat { rankingInfo ⇒
+    (rankingInfo.previousRank, rankingInfo.currentRank) match {
+      case (Some(_), None) ⇒
+        List(alert(Severity.Error, rankingInfo, "disappeared from rankings"))
+      case (Some(previous), Some(current)) if previous - current >= Global.RankingAlerts.suspiciousRankJump ⇒
+        List(alert(Severity.Warning, rankingInfo, s"gained ${previous - current} ranks at once (previously at rank $previous)"))
+      case (Some(previous), Some(current)) if previous != current && current <= Global.RankingAlerts.topRunners ⇒
+        List(alert(Severity.Info, rankingInfo, s"is in the top ${Global.RankingAlerts.topRunners} (previously at rank $previous)"))
+      case (None, Some(current)) if current <= Global.RankingAlerts.topRunners ⇒
+        List(alert(Severity.Info, rankingInfo, s"started directly in the top ${Global.RankingAlerts.topRunners}"))
+      case _ ⇒
+        Nil
     }
   }
+
+  private val alertsSink: Sink[Message, Future[Done]] = Flow[Message].toMat(Sink.foreach(Alerts.sendAlert(_)))(Keep.right)
+
+  def rankingAlertSink: Sink[RankingInfo, Future[Done]] = Flow[RankingInfo].via(rankingInfoToMessage).toMat(alertsSink)(Keep.right)
 
 }

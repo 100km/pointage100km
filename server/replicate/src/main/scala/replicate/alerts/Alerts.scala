@@ -55,8 +55,6 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     }
     database.updateForm("bib_input", "force-update", "officers", Map("json" → Json.stringify(Json.obj("officers" → officersStr))))
     // Alert services
-    for (infos ← Global.infos; raceInfo ← infos.races.values)
-      context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")
     PingAlert.runPingAlerts(database)
     BroadcastAlert.runBroadcastAlerts(database)
   }

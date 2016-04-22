@@ -22,7 +22,7 @@ object CheckpointScrutineer {
    * @param fm a materializer
    * @return a source of contestant analysis data
    */
-  def checkpointScrutineer(database: Database)(implicit log: LoggingAdapter, fm: Materializer): Source[ContestantAnalysis, NotUsed] = {
+  def checkpointScrutineer(database: Database)(implicit log: LoggingAdapter, fm: Materializer): Source[(ContestantAnalysis, Boolean), NotUsed] = {
     import fm.executionContext
 
     val source = Source.fromFuture(database.viewWithUpdateSeq[Int, CheckpointData]("replicate", "checkpoint", Seq("include_docs" → "true")))
@@ -46,20 +46,22 @@ object CheckpointScrutineer {
                 case cpd ⇒
                   List(cpd)
               }
-          enterAndKeepLatest ++ changes
+          enterAndKeepLatest.map((_, true)) ++ changes.map((_, false))
       }
 
-    val checkpointDataToPoints = Flow[CheckpointData].mapAsync(1)(checkpointData ⇒ CheckpointsState.setTimes(checkpointData))
+    val checkpointDataToPoints = Flow[(CheckpointData, Boolean)]
+      .mapAsync(1) { case (checkpointData, initial) ⇒ CheckpointsState.setTimes(checkpointData).map((_, initial)) }
       .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider) and Attributes.name("checkpointDataToPoints"))
 
-    val pointsToAnalyzed = Flow[Seq[CheckpointData]].mapConcat { data ⇒
-      try {
-        List(Analyzer.analyze(data))
-      } catch {
-        case t: Throwable ⇒
-          log.error(t, "unable to analyse contestant {} in race {}", data.head.contestantId, data.head.raceId)
-          Nil
-      }
+    val pointsToAnalyzed = Flow[(Seq[CheckpointData], Boolean)].mapConcat {
+      case (data, initial) ⇒
+        try {
+          List((Analyzer.analyze(data), initial))
+        } catch {
+          case t: Throwable ⇒
+            log.error(t, "unable to analyse contestant {} in race {}", data.head.contestantId, data.head.raceId)
+            Nil
+        }
     }.named("analyzer")
 
     // Analyze checkpoints as they arrive (after the initial batch),

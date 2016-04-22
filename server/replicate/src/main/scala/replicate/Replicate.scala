@@ -2,11 +2,11 @@ package replicate
 
 import akka.actor.Props
 import akka.event.Logging
-import akka.stream.scaladsl.{Broadcast, Sink}
+import akka.stream.scaladsl.{Broadcast, Flow, Sink}
 import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape._
 import play.api.libs.json.Json
-import replicate.alerts.Alerts
+import replicate.alerts.{Alerts, RankingAlert}
 import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
 import replicate.scrutineer.Analyzer.ContestantAnalysis
@@ -198,18 +198,32 @@ class Replicate(options: Options.Config) extends LoggingError {
       system.actorOf(Props(new Alerts(localDatabase)), "alerts")
 
     if (options.mode == Master) {
+      // Load the contestant information
       ContestantState.startContestantAgent(localDatabase)(log, flowMaterializer)
+
+      // Start to analyze the checkpoints, with a marker telling if we are in the initial state
       val checkpointScrutineerSource = CheckpointScrutineer.checkpointScrutineer(localDatabase)(log, flowMaterializer)
+
+      // If we have activated the stalking service, build a sink for it, or ignore
       val stalkingSink = if (options.stalking) {
         val textService = system.actorOf(Props(new TextService), "text-service")
-        Global.TextMessages.ifAnalysisUnchanged.to(StalkingService.stalkingServiceSink(localDatabase, textService))
+        // Include initial data as we may have missed some text messages to send while we were out.
+        Flow[(ContestantAnalysis, Boolean)].map(_._1)
+          .via(Global.TextMessages.ifAnalysisUnchanged)
+          .to(StalkingService.stalkingServiceSink(localDatabase, textService))
       } else
         Sink.ignore
-      checkpointScrutineerSource.runWith(Sink.combine(
-        stalkingSink,
-        AnalysisService.analysisServiceSink(localDatabase),
-        Sink.foreach[ContestantAnalysis](RankingState.enterAnalysis(_))
-      )(Broadcast(_)))
+
+      // Write all documents to the database
+      val analysisServiceSink = Flow[(ContestantAnalysis, Boolean)].map(_._1).to(AnalysisService.analysisServiceSink(localDatabase))
+
+      // Enter rankings all the times, but do not send alerts until we are no longer in the initial mode
+      val rankingAlertSink = Flow[(ContestantAnalysis, Boolean)].mapAsync(1) {
+        case (analysis, initial) ⇒
+          RankingState.enterContestant(analysis).map((_, initial))
+      }.collect { case (rankingInfo, initial) if !initial ⇒ rankingInfo }.to(RankingAlert.rankingAlertSink)
+
+      checkpointScrutineerSource.runWith(Sink.combine(stalkingSink, analysisServiceSink, rankingAlertSink)(Broadcast(_)))
     }
 
   }

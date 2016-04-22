@@ -30,9 +30,7 @@ object Global {
 
   object RankingAlerts {
     private val rankingAlertsConfig = replicateConfig.as[Config]("ranking-alerts")
-    val checkInterval: FiniteDuration = rankingAlertsConfig.as[FiniteDuration]("check-interval")
     val topRunners: Int = rankingAlertsConfig.as[Int]("top-runners")
-    val headOfRace: Int = rankingAlertsConfig.as[Int]("head-of-race")
     val suspiciousRankJump: Int = rankingAlertsConfig.as[Int]("suspicious-rank-jump")
   }
 
