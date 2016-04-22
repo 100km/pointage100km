@@ -5,18 +5,16 @@ angular.module("admin-ng").factory("stateService",
       var data = {
         contestants: {},
         analyses: {},
-        installInfos: function(scope) {
-          return changesService.installAndCheck(scope, "infos", "infos");
-        }
+        installInfos: scope => changesService.installAndCheck(scope, "infos", "infos")
       };
 
       changesService.initThenFilterEach($rootScope, "common", "all_contestants",
-          function(change) { return change.doc.type === "contestant"; },
-          function(row) { data.contestants[row.doc.bib] = row.doc; });
+          change => change.doc.type === "contestant",
+          row => data.contestants[row.doc.bib] = row.doc);
 
       changesService.initThenFilterEach($rootScope, "admin-ng", "by-anomalies",
-          function(change) { return change.doc.type == "analysis"; },
-          function(row) { data.analyses[row.doc.bib] = row.doc; });
+          change => change.doc.type == "analysis",
+          row => data.analyses[row.doc.bib] = row.doc);
 
       return data;
 
@@ -27,17 +25,15 @@ angular.module("admin-ng")
             template: "{{$ctrl.contestantName}}",
             bindings: { bib: "<" },
             controller: function($scope, stateService) {
-              var ctrl = this;
-              this.$onInit = function() {
-                $scope.$watchGroup([function() { return stateService.contestants[ctrl.bib]; },
-                                    "bib"],
-                    function(values) {
+              this.$onInit = () =>  {
+                $scope.$watchGroup([() => stateService.contestants[this.bib], "bib"],
+                    values => {
                       var contestant = values[0];
                       if (contestant)
-                        ctrl.contestantName = contestant.first_name + " " + contestant.name +
+                        this.contestantName = contestant.first_name + " " + contestant.name +
                           " (" + contestant.bib + ")";
                       else
-                        ctrl.contestantName = "Bib " + ctrl.bib;
+                        this.contestantName = "Bib " + this.bib;
                     });
               };
             }
@@ -46,29 +42,26 @@ angular.module("admin-ng")
           template: "{{$ctrl.raceName}}",
           bindings: { raceId: "<", infos: "<" },
           controller: function() {
-            var ctrl = this;
-            this.$onChanges = function() {
-              ctrl.raceName = ctrl.infos ? ctrl.infos.races_names[ctrl.raceId] : "Race " + ctrl.raceId;
-            };
+            this.$onChanges =
+             () => this.raceName = this.infos ? this.infos.races_names[this.raceId] : "Race " + this.raceId;
           }
         })
         .component("site", {
           template: "{{$ctrl.site}}",
           bindings: { siteId: '<', infos: '<', format: '<?' },
           controller: function() {
-            var ctrl = this;
-            this.$onChanges = function(changes) {
-              if (ctrl.siteId !== undefined) {
-                var siteN = "Site " + ctrl.siteId;
-                switch(ctrl.format || "") {
+            this.$onChanges = changes => {
+              if (this.siteId !== undefined) {
+                var siteN = "Site " + this.siteId;
+                switch(this.format || "") {
                   case "short":
-                    ctrl.site = ctrl.infos ? ctrl.infos.sites_short[ctrl.siteId] : siteN;
+                    this.site = this.infos ? this.infos.sites_short[this.siteId] : siteN;
                     break;
                   case "name":
-                    ctrl.site = ctrl.infos ? ctrl.infos.sites[ctrl.siteId] : siteN;
+                    this.site = this.infos ? this.infos.sites[this.siteId] : siteN;
                     break;
                   default:
-                    ctrl.site = ctrl.infos ? ctrl.infos.sites[ctrl.siteId] + " (" + ctrl.siteId + ")" : siteN;
+                    this.site = this.infos ? this.infos.sites[this.siteId] + " (" + this.siteId + ")" : siteN;
                 }
               }
             };

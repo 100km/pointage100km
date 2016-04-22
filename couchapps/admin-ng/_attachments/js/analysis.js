@@ -3,13 +3,12 @@
 //
 
 function AnalysisListController($scope, stateService) {
-  var ctrl = this;
   this.analyses = [];
 
   stateService.installInfos($scope);
-  $scope.$watchCollection(function() { return stateService.analyses; }, function(analyses) {
-    ctrl.analyses = [];
-    angular.forEach(analyses, function(a) { ctrl.analyses.push(a); });
+  $scope.$watchCollection(() => stateService.analyses, analyses => {
+    this.analyses = [];
+    angular.forEach(analyses, a => this.analyses.push(a));
   });
 }
 
@@ -23,18 +22,16 @@ angular.module("admin-ng").component("analysisList", {
 //
 
 function AnalysisController($scope, stateService) {
-  var ctrl = this;
-
   stateService.installInfos($scope);
 
-  this.$routerOnActivate = function(next, previous) {
-    ctrl.bib = Number(next.params.bib);
+  this.$routerOnActivate = (next, previous) => {
+    this.bib = Number(next.params.bib);
 
-    $scope.$watch(function() { return stateService.analyses[ctrl.bib]; },
-        function(analysis) {
+    $scope.$watch(() => stateService.analyses[this.bib],
+        analysis => {
           if (analysis) {
-            ctrl.analysis = analysis;
-            ctrl.needsFixing = analysis.anomalies > 0;
+            this.analysis = analysis;
+            this.needsFixing = analysis.anomalies > 0;
           }
         });
 
@@ -50,13 +47,11 @@ angular.module("admin-ng").component("analysis", {
 // Analysis summary (or before/after)
 //
 
-function AnalysisSummaryController($scope, $http, database, stateService) {
-  var ctrl = this;
-
-  this.act = function(siteId, timestamp, action) {
-    var docid = "checkpoints-" + siteId + "-" + ctrl.analysis.bib;
+function AnalysisSummaryController($http, database) {
+  this.act = (siteId, timestamp, action) => {
+    var docid = "checkpoints-" + siteId + "-" + this.analysis.bib;
     var payload = {
-      bib: ctrl.analysis.bib, race_id: ctrl.analysis.race_id,
+      bib: this.analysis.bib, race_id: this.analysis.race_id,
       site_id: siteId, timestamp: timestamp, action: action
     };
     $http.put(database + "/_design/admin-ng/_update/fix-checkpoint/" + docid, payload);
@@ -79,29 +74,26 @@ angular.module("admin-ng").component("analysisSummary", {
 //
 
 function AnalysisPointController($scope, stateService) {
-  var ctrl = $scope;
-  this.$onInit = function() {
-    if (ctrl.active) {
-      var setDisplay = function(action, label, icon, clazz, tooltip) {
-        ctrl.action = action;
+  this.$onInit = () => {
+    if ($scope.active) {
+      var setDisplay = (action, label, icon, clazz, tooltip) => {
+        $scope.action = action;
         // FIXME: Add to global actions here if needed
-        ctrl.action_label = label;
-        ctrl.action_icon = icon;
-        ctrl.action_class = clazz || ctrl.point.type;
-        ctrl.tooltip = tooltip;
+        $scope.action_label = label;
+        $scope.action_icon = icon;
+        $scope.action_class = clazz || $scope.point.type;
+        $scope.tooltip = tooltip;
       };
-      ctrl.act = function() {
-        ctrl.upperAct({action: ctrl.action});
-      };
-      if (ctrl.point.action === "add") {
+      $scope.act = () => $scope.upperAct({action: $scope.action});
+      if ($scope.point.action === "add") {
         setDisplay("add", "Add", "plus-sign", "success", "The algorithm suggests to add this point");
-      } else if (ctrl.point.action === "remove") {
+      } else if ($scope.point.action === "remove") {
         setDisplay("remove", "Remove", "trash", "danger", "The algorithm suggests to delete this point");
-      } else if (ctrl.point.type === "deleted") {
+      } else if ($scope.point.type === "deleted") {
         setDisplay("add", "Restore", "plus-sign", "deleted", "This time has been previously deleted");
-      } else if (ctrl.point.type === "down") {
+      } else if ($scope.point.type === "down") {
         setDisplay();
-      } else if (ctrl.point.type === "artificial") {
+      } else if ($scope.point.type === "artificial") {
         setDisplay("remove", "Remove", "remove", "artificial", "This time has been inserted manually");
       } else {
         setDisplay("remove", "Remove", "trash");
@@ -111,7 +103,7 @@ function AnalysisPointController($scope, stateService) {
 
 }
 
-angular.module("admin-ng").directive("analysisPoint", function() {
+angular.module("admin-ng").directive("analysisPoint", () => {
   return {
     templateUrl: "partials/analysis-point.html",
     controller: AnalysisPointController,

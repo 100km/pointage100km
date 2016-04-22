@@ -1,7 +1,7 @@
 var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub"]);
 
 app.filter("fullName", function() {
-  return function(doc) {
+  return doc => {
     if (doc.name)
       return doc.first_name + " " + doc.name + " (dossard " + doc.bib + ")";
     else
@@ -10,15 +10,14 @@ app.filter("fullName", function() {
 });
 
 app.filter("gravatarUrl", function() {
-  return function(doc) {
+  return doc => {
     return "http://www.gravatar.com/avatar/" + CryptoJS.MD5(angular.lowercase(doc.email));
   };
 });
 
 app.filter("digitsUnit", ["$filter", function($filter) {
-  return function(x, digits, unit) {
-    return x === undefined ? "" : ($filter('number')(x, digits) + " " + unit);
-  };
+  return (x, digits, unit) =>
+    x === undefined ? "" : ($filter('number')(x, digits) + " " + unit);
 }]);
 
 app.constant("database", "../../");
