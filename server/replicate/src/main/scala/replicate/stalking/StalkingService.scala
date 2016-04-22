@@ -61,7 +61,7 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
                 s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, $distanceStr)"""
               contestant.stalkers.foreach(textService ! (_, message))
               database.insert(Json.obj("type" → "sms", "bib" → contestantId, "distance" → point.distance,
-                "timestamp" -> System.currentTimeMillis(), "recipients" → contestant.stalkers,
+                "timestamp" → System.currentTimeMillis(), "recipients" → contestant.stalkers,
                 "message" → message, "_id" → s"sms-$contestantId-${point.distance}"))
             }
           } else

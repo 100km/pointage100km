@@ -53,7 +53,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
       case _ ⇒ sendAlert(Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
         icon = Some(Glyphs.wrench)))
     }
-    database.update("bib_input", "force-update", "officers", Map("json" → Json.stringify(Json.obj("officers" → officersStr))))
+    database.updateForm("bib_input", "force-update", "officers", Map("json" → Json.stringify(Json.obj("officers" → officersStr))))
     // Alert services
     for (infos ← Global.infos; raceInfo ← infos.races.values)
       context.actorOf(Props(new RankingAlert(database, raceInfo)), s"race-ranking-${raceInfo.raceId}")

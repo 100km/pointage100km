@@ -15,7 +15,7 @@ object PingService extends LoggingError {
 
   override val log = Logging(Global.system, "pingService")
 
-  def pingService(siteId: Int, db: Database): Sink[JsObject, Future[Done]] = {
+  def pingService(siteId: Int, db: Database)(implicit fm: Materializer): Sink[JsObject, Future[Done]] = {
     val prefix = s"checkpoints-$siteId-"
     Flow[JsObject]
       .filter(js ⇒ (js \ "id").as[String].startsWith(prefix)).map(_ ⇒ false)
@@ -26,7 +26,7 @@ object PingService extends LoggingError {
       .toMat(Sink.ignore)(Keep.right)
   }
 
-  def launchPingService(siteId: Int, db: Database)(implicit materializer: Materializer): Future[Done] = {
+  def launchPingService(siteId: Int, db: Database)(implicit fm: Materializer): Future[Done] = {
     db.changesSource(Map("filter" → "bib_input/no-ping")).toMat(pingService(siteId, db))(Keep.right).run()
   }
 
