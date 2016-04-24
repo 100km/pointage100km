@@ -1,6 +1,6 @@
 angular.module("admin-ng").factory("stateService",
-    ["$http", "database", "changesService", "$rootScope",
-    function($http, database, changesService, $rootScope) {
+    ["changesService", "$rootScope",
+    function(changesService, $rootScope) {
 
       var data = {
         contestants: {},
