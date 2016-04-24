@@ -1,6 +1,6 @@
 angular.module("admin-ng").controller("livenessCtrl",
-    ["$scope", "$interval", "$http", "database", "changesService", "stateService",
-    function($scope, $interval, $http, database, changesService, stateService) {
+    ["$scope", "$interval", "dbService", "changesService", "stateService",
+    function($scope, $interval, dbService, changesService, stateService) {
       $scope.liveness = [];
       $scope.times = [];
 
@@ -29,11 +29,10 @@ angular.module("admin-ng").controller("livenessCtrl",
       // Initially check the sites liveness to get fresh information as soon as
       // the page is loaded. Return the sequence number in a promise.
       this.checkSites = () => {
-        return $http.get(database + "/_design/admin/_view/alive?group_level=1&update_seq=true")
-          .then(response => {
-            var alive = response.data;
-            angular.forEach(response.data.rows, row => this.setSite(row.key, row.value.max));
-            return response.data.update_seq;
+        return dbService.checkSites()
+          .then(data => {
+            angular.forEach(data.rows, row => this.setSite(row.key, row.value.max));
+            return data.update_seq;
           });
       };
 

@@ -47,15 +47,9 @@ angular.module("admin-ng").component("analysis", {
 // Analysis summary (or before/after)
 //
 
-function AnalysisSummaryController($http, database) {
-  this.act = (siteId, timestamp, action) => {
-    var docid = "checkpoints-" + siteId + "-" + this.analysis.bib;
-    var payload = {
-      bib: this.analysis.bib, race_id: this.analysis.race_id,
-      site_id: siteId, timestamp: timestamp, action: action
-    };
-    $http.put(database + "/_design/admin-ng/_update/fix-checkpoint/" + docid, payload);
-  };
+function AnalysisSummaryController(dbService) {
+  this.act = (siteId, timestamp, action) =>
+    dbService.fixCheckpoint(this.analysis.bib, this.analysis.race_id, siteId, timestamp, action);
 }
 
 angular.module("admin-ng").component("analysisSummary", {
