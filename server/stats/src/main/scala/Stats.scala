@@ -1,7 +1,9 @@
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import net.rfc1149.canape._
 import net.rfc1149.canape.implicits._
-import play.api.libs.json.{JsDefined, JsValue, Json, JsBoolean}
+import play.api.libs.json._
+
 import scala.concurrent.duration._
 import scala.util.Random._
 
@@ -12,20 +14,21 @@ object Stats extends App {
   private val parser = new scopt.OptionParser[Config]("stats") {
     opt[Int]('c', "count") action { (x, c) ⇒
       c.copy(count = x)
-    } text ("Number of checkpoints to insert (default: 100)")
+    } text "Number of checkpoints to insert (default: 100)"
     opt[Int]('d', "delay") action { (x, c) ⇒
       c.copy(delay = x)
-    } text ("Wait for delay in ms between updates (default: 0)")
+    } text "Wait for delay in ms between updates (default: 0)"
     opt[Int]('s', "site_id") action { (x, c) ⇒
       c.copy(siteId = x)
-    } text ("Numerical id of the current site (default: random [0-2])")
-    help("help") abbr ("h") text ("show this help")
+    } text "Numerical id of the current site (default: random [0-2])"
+    help("help") abbr "h" text "show this help"
     override val showUsageOnError = true
   }
 
   private val options = parser.parse(args, Config()) getOrElse { sys.exit(1) }
 
   private implicit val system = ActorSystem()
+  private implicit val materializer = ActorMaterializer()
   private implicit val dispatcher = system.dispatcher
 
   private implicit val timeout: Duration = (5, SECONDS)
@@ -34,8 +37,8 @@ object Stats extends App {
 
   def update(checkpoint: Int, bib: Int, race: Int) {
     val id = "checkpoints-" + checkpoint + "-" + bib
-    val r = db.update("bib_input", "add-checkpoint", id,
-      Map("ts" → System.currentTimeMillis.toString)).execute()
+    val r = db.updateForm("bib_input", "add-checkpoint", id,
+      Map("ts" → System.currentTimeMillis.toString), keepBody = true).flatMap(Couch.checkResponse[JsObject]).execute()
     if ((r \ "need_more").asOpt[Boolean].getOrElse(false)) {
       val d = db(id).execute() ++ Json.obj("race_id" → race, "bib" → bib, "site_id" → checkpoint)
       db.insert(d).execute()
