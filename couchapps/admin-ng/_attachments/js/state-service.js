@@ -22,7 +22,7 @@ angular.module("admin-ng").factory("stateService",
 
 angular.module("admin-ng")
         .component("contestant", {
-            template: "{{$ctrl.contestantName}} <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race></small>",
+            template: "{{$ctrl.contestantName}} <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
             bindings: { bib: "<", infos: "<" },
             controller: function($scope, stateService) {
               this.$onInit = () =>  {
@@ -33,6 +33,7 @@ angular.module("admin-ng")
                         this.contestantName = contestant.first_name + " " + contestant.name +
                           " (" + contestant.bib + ")";
                         this.raceId = contestant.race;
+                        this.teamName = contestant.team_name;
                       } else
                         this.contestantName = "Bib " + this.bib;
                     });
