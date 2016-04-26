@@ -20,7 +20,7 @@
           {{site}}
           {{#is_deleted}}<strike>{{/is_deleted}}
           {{#is_artificial}}<i class="bg-warning">{{/is_artificial}}
-          {{time}}{{#is_artificial}}*</i>
+          {{formatted_time}}{{#is_artificial}}*</i>
           {{/is_artificial}}
           {{#is_deleted}}</strike>{{/is_deleted}}
       </div></div>
@@ -39,7 +39,7 @@
               <div class="col-xs-12">
               {{#val}}
                 {{#remove}}<span style="color: red">{{/remove}}
-                {{val}}
+                {{formatted_val}}
                 {{#remove}}</span>{{/remove}}
                 <input class="remove" type="button" value="remove" data-bib="{{bib}}" data-site_id="{{site_id}}" data-lap="{{lap}}"/>
               {{/val}}
@@ -52,7 +52,7 @@
             </div></div>
             {{#deleted_times}}
             <div class="row"><div class="col-xs-12">
-              {{val}}
+              {{formatted_val}}
               <input class="restore" type="button" value="restore" data-bib="{{bib}}" data-site_id="{{site_id}}" data-lap="{{lap}}"/>
             </div></div>
             {{/deleted_times}}
@@ -61,7 +61,7 @@
             </div></div>
             {{#artificial_times}}
             <div class="row"><div class="col-xs-12">
-              {{val}}
+              {{formatted_val}}
             </div></div>
             {{/artificial_times}}
     {{/sites}}
