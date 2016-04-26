@@ -1,4 +1,4 @@
-function SentController($scope, changesService) {
+function SentController($scope, changesService, dbService) {
   this.messages = [];
 
   // We cannot use this function as this will not build the complete
@@ -7,10 +7,45 @@ function SentController($scope, changesService) {
   // by the router for Analysis.
   this.onSelectBib = bib => this.$router.navigate(["Analysis", {bib: bib}]);
 
-  changesService.initThenFilterEach($scope, "replicate", "sms-distance",
-      change => change.doc.type === "sms",
-      change => this.messages.push(change.doc),
-      true);
+  this.totalItems = 0;
+  this.currentPage = 1;
+
+  this.$onInit = () => {
+
+    if (this.bib === undefined) {
+
+      this.itemsPerPage = 20;
+      this.loadSMS = changesService.serializedFunFactory(() =>
+          dbService.getSMSFrom((this.currentPage - 1) * this.itemsPerPage, this.itemsPerPage)
+          .then(response => {
+            this.totalItems = response.data.total_rows;
+            this.messages = response.data.rows.map(row => row.doc);
+          }));
+      changesService.filterChanges($scope,
+          change => change.doc.type === "sms",
+          this.loadSMS);
+
+    } else {
+
+      this.itemsPerPage = 5;
+      this.loadSMS = changesService.serializedFunFactory(() =>
+          dbService.getSMSFor(this.bib)
+          .then(response => {
+            this.totalItems = response.data.rows.length;
+            this.messages = response.data.rows.map(row => row.doc);
+            this.messages.splice(0, (this.currentPage - 1) * this.itemsPerPage);
+            this.messages.splice(this.itemsPerPage);
+          }));
+      changesService.filterChanges($scope,
+          change => change.doc.type === "sms" && this.bib == change.doc.bib,
+          this.loadSMS);
+
+      }
+
+    this.loadSMS();
+
+  };
+
 }
 
 angular.module("admin-ng").component("sent", {

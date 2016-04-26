@@ -20,6 +20,17 @@ angular.module("admin-ng").factory("dbService",
         getAlertsFrom: function(offset, limit) {
           return $http.get(database + "/_design/admin/_view/alerts?skip=" + offset +
              "&limit=" + limit);
+        },
+
+        getSMSFor: function(bib) {
+          return $http.get(database + "/_design/admin-ng/_view/sms-by-bib",
+              { params: { startkey: JSON.stringify([bib]), endkey: JSON.stringify([bib+1]),
+                          inclusive_end: false, include_docs: true } });
+        },
+
+        getSMSFrom: function(offset, limit) {
+            return $http.get(database + "/_design/admin-ng/_view/sms-all?skip=" +
+                offset + "&limit=" + limit + "&include_docs=true");
         }
 
       };

@@ -1,5 +1,5 @@
 <div class="analysis">
-  <h2><contestant bib="$ctrl.analysis.bib"></contestant> <small><race race-id="$ctrl.analysis.race_id" infos="infos"></race></small></h2>
+  <h2><contestant bib="$ctrl.bib"></contestant> <small><race race-id="$ctrl.analysis.race_id" infos="infos"></race></small></h2>
 
   <div ng-if="$ctrl.needsFixing" class="alert {{$ctrl.analysis.valid ? 'alert-warning' : 'alert-danger' }}">
     Anomalies: {{$ctrl.analysis.anomalies}}
@@ -27,7 +27,7 @@
   <div class="panel panel-default">
     <div class="panel-heading"><h4 class="panel-title">Sent SMS</h4></div>
     <div class="panel-body">
-      <sent bib="$ctrl.analysis.bib"></sent>
+      <sent bib="$ctrl.bib"></sent>
     </div>
   </div>
 </div>
