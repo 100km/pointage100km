@@ -12,7 +12,7 @@ angular.module("admin-ng").factory("dbService",
         fixCheckpoint: function(contestantId, raceId, siteId, timestamp, action) {
           var docid = "checkpoints-" + siteId + "-" + contestantId;
           var payload = { bib: contestantId, race_id: raceId, site_id: siteId,
-            timestamp: timestamp, action: action }
+            timestamp: timestamp, action: action };
           return $http.put(database + "/_design/admin-ng/_update/fix-checkpoint/" +
               docid, payload);
         }
