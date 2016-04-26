@@ -3,7 +3,7 @@
 <table class="table table-condensed table-hover alerts">
   <thead><tr><th>Time</th><th>Category</th><th>Severity</th><th>Title</th><th>Message</th><th>Link</th><th>Targets</th><th>Cancelled</th></tr></thead>
   <tbody>
-    <tr ng-repeat="alert in $ctrl.alerts | orderBy: '-addedTS'" class="cancelled-{{!!alert.cancelledTS}} alert-{{alert.severity}} {{alert.level}}">
+    <tr ng-repeat="alert in $ctrl.alerts | orderBy: '-addedTS'" class="cancelled-{{!!alert.cancelledTS}} alert-{{$ctrl.mapSeverity(alert.severity)}} {{alert.level}}">
       <td>{{alert.addedTS | date:"HH:mm:ss":infos.timezone}}</td>
       <td>{{alert.category}}</td>
       <td>{{alert.severity}}</td>
