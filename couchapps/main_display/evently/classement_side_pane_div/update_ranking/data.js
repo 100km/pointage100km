@@ -29,8 +29,9 @@ function(data) {
     if (current_contestant === undefined) {
       $.log("skip contestant infos for bib " + current_infos.bib);
     } else {
-      item.name       = current_contestant.name;
-      item.first_name = current_contestant.first_name;
+      item.name         = current_contestant.name;
+      item.first_name   = current_contestant.first_name;
+      item.championship = current_contestant.championship;
     }
 
     p.items.push(item);
