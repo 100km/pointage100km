@@ -1,4 +1,4 @@
-<uib-pagination total-items="$ctrl.totalItems" ng-model="$ctrl.currentPage" ng-change="$ctrl.loadAlerts()" items-per-page="$ctrl.itemsPerPage" max-size="10" class="pagination-sm" boundary-link-numbers="true" force-ellipses="true"></uib-pagination>
+<uib-pagination total-items="$ctrl.totalItems" ng-model="$ctrl.currentPage" ng-change="$ctrl.reloadAlerts()" items-per-page="$ctrl.itemsPerPage" max-size="10" class="pagination-sm" boundary-link-numbers="true" force-ellipses="true"></uib-pagination>
 
 <table class="table table-condensed table-hover alerts">
   <thead><tr><th>Time</th><th>Category</th><th>Severity</th><th>Title</th><th>Message</th><th>Link</th><th>Targets</th><th>Cancelled</th></tr></thead>
