@@ -122,12 +122,37 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
                 callback(row);
             });
 
+      // Decorate a function returning a promise so that it can only be called
+      // once at the same time. If another attempt is done while the function
+      // is executing, it will be queued for later. Not more than one attempt
+      // will be queued, as this would be pointless since the function must
+      // return the same result if the reload has not been retriggered.
+      var serializedFunFactory = function(fun) {
+        this.loading = false;
+        this.mustReload = false;
+        var f = () => {
+          if (this.loading)
+            this.mustReload = true;
+          else {
+            this.loading = true;
+            this.mustReload = false;
+            fun().then(() => {
+              this.loading = false;
+              if (this.mustReload)
+                f();
+            });
+          }
+        };
+        return f;
+        };
+
       return {
         initThenFilter: initThenFilter,
         initThenFilterEach: initThenFilterEach,
         installAndCheck: installAndCheck,
         globalChangesStart: globalChangesStart,
         filterChanges: filterChanges,
-        filterChangesAfter: filterChangesAfter
+        filterChangesAfter: filterChangesAfter,
+        serializedFunFactory: serializedFunFactory
       };
     }]);
