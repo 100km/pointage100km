@@ -22,17 +22,18 @@ angular.module("admin-ng").factory("stateService",
 
 angular.module("admin-ng")
         .component("contestant", {
-            template: "{{$ctrl.contestantName}}",
-            bindings: { bib: "<" },
+            template: "{{$ctrl.contestantName}} <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race></small>",
+            bindings: { bib: "<", infos: "<" },
             controller: function($scope, stateService) {
               this.$onInit = () =>  {
                 $scope.$watchGroup([() => stateService.contestants[this.bib], "bib"],
                     values => {
                       var contestant = values[0];
-                      if (contestant)
+                      if (contestant) {
                         this.contestantName = contestant.first_name + " " + contestant.name +
                           " (" + contestant.bib + ")";
-                      else
+                        this.raceId = contestant.race;
+                      } else
                         this.contestantName = "Bib " + this.bib;
                     });
               };
