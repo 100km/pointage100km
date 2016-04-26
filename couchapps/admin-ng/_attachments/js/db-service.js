@@ -15,6 +15,11 @@ angular.module("admin-ng").factory("dbService",
             timestamp: timestamp, action: action };
           return $http.put(database + "/_design/admin-ng/_update/fix-checkpoint/" +
               docid, payload);
+        },
+
+        getAlertsFrom: function(offset, limit) {
+          return $http.get(database + "/_design/admin/_view/alerts?include_docs=true&skip=" +
+              offset + "&limit=" + limit);
         }
 
       };

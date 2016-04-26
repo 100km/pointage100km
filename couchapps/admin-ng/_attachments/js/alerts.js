@@ -1,4 +1,4 @@
-function AlertsController($scope, changesService, stateService) {
+function AlertsController($scope, changesService, stateService, dbService) {
   this.alertsSet = {};
   this.alerts = [];
 
@@ -14,20 +14,23 @@ function AlertsController($scope, changesService, stateService) {
 
   this.$routerOnActivate = (next, previous) => stateService.installInfos($scope);
 
-  changesService.initThenFilterEach($scope, "admin", "alerts",
-      change => change.doc.type === "alert",
-      change => {
-        var alert = change.doc;
-        alert.level = mapSeverity(alert.severity);
-        this.alertsSet[alert._id] = alert;
-        if (alert.cancelledTS) {
-          this.alerts = [];
-          angular.forEach(this.alertsSet, a => this.alerts.push(a));
-          this.alerts.sort((a, b) => b.addedTS - a.addedTS);
-        } else {
-          this.alerts.unshift(alert);
-        }
-      }, true);
+  this.totalItems = 0;
+  this.currentPage = 1;
+  this.itemsPerPage = 20;
+
+  this.loadAlerts = () => {
+        dbService.getAlertsFrom((this.currentPage - 1) * this.itemsPerPage, this.itemsPerPage)
+          .then(response => {
+            this.totalItems = response.data.total_rows;
+            this.alerts = response.data.rows.map(row => row.doc);
+          });
+  };
+
+  changesService.filterChanges($scope, change => change.doc.type === "alert",
+      () => this.loadAlerts());
+
+  this.loadAlerts();
+
 }
 
 angular.module("admin-ng").component("alerts", {
