@@ -1,9 +1,5 @@
 function(head, req) {
 
-function format_date(date) {
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-}
-
 // lcs from sp4ce
 var lcs_DELETION;
 var lcs_RIGHT;
@@ -230,7 +226,7 @@ function do_check_times(res, bib, times, deleted_times, artificial_times, pings)
     check.times = [];
     for (var k = 0; k < all_times.length; k++) {
       check.times.push({
-          time: format_date(new Date(all_times[k].time)),
+          time: all_times[k].time,
           site: all_times[k].site,
           lap: all_times[k].lap,
           is_artificial: artificial_times[all_times[k].site] ? (artificial_times[all_times[k].site].indexOf(all_times[k].time) >= 0 ? true : false) : false,
@@ -252,7 +248,7 @@ function get_site_bib_deleted_times(deleted_times, i, bib) {
   if (deleted_times[i]) {
     for (var j = 0; j < deleted_times[i].length; j++) {
       site_bib_deleted_times.push({
-        val: format_date(new Date(deleted_times[i][j])),
+        val: deleted_times[i][j],
         lap: j,
         bib: bib,
         site_id: i
@@ -275,7 +271,7 @@ function get_site_bib_artificial_times(artificial_times, i, bib) {
   if (artificial_times[i]) {
     for (var j = 0; j < artificial_times[i].length; j++) {
       site_bib_artificial_times.push({
-        val: format_date(new Date(artificial_times[i][j])),
+        val: artificial_times[i][j],
         lap: j,
         bib: bib,
         site_id: i
@@ -321,7 +317,7 @@ function get_site_bib_times(check, times, i, bib) {
       // Get the time value and add a line (also check if this time was detected as wrongly inserted).
       var t = times[i][lap];
       site_bib_times.push({
-        val: format_date(new Date(t)),
+        val: t,
         lap: lap,
         bib: bib,
         site_id: i,
