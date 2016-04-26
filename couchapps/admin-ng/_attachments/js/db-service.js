@@ -18,8 +18,8 @@ angular.module("admin-ng").factory("dbService",
         },
 
         getAlertsFrom: function(offset, limit) {
-          return $http.get(database + "/_design/admin/_view/alerts?include_docs=true&skip=" +
-              offset + "&limit=" + limit);
+          return $http.get(database + "/_design/admin/_view/alerts?skip=" + offset +
+             "&limit=" + limit);
         }
 
       };
