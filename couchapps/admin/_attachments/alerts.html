@@ -39,9 +39,9 @@
   <script type="text/javascript">
     var app = angular.module('alerts', []);
     app.controller('alertsCtrl', function($scope, $http, $sce) {
-      $http.get("_view/alerts")
+      $http.get("_view/alerts?include_docs=true")
         .success(function (response) {
-          $scope.alerts = response.rows.map(function (row) { return row.value; });
+          $scope.alerts = response.rows.map(function (row) { return row.doc; });
         });
     });
   </script>
