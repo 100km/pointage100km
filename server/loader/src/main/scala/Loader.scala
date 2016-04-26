@@ -98,21 +98,11 @@ object Loader extends App {
 
       val run = new QueryRunner(source)
 
-      val teams = {
-        val t = run.query(
-          "SELECT * FROM teams WHERE year = ?",
-          new MapListHandler,
-          new java.lang.Integer(options.year)
-        )
-        (for (team ← t)
-          yield team("id").asInstanceOf[java.lang.Integer] → team("name").asInstanceOf[String]).toMap
-      }
-
       val upToDate = new AtomicInteger(0)
       val inserted = new AtomicInteger(0)
       val updated = new AtomicInteger(0)
       val q = run.query(
-        "SELECT * FROM registrations WHERE year = ?",
+        "SELECT registrations.*, teams.name as team_name FROM registrations LEFT JOIN teams ON registrations.team_id = teams.id WHERE registrations.year = ?",
         new MapListHandler,
         new java.lang.Integer(options.year)
       ).toList
@@ -131,8 +121,7 @@ object Loader extends App {
             "type" → "contestant",
             "name" → name,
             "first_name" → firstName
-          ) ++
-            (if (teamId != null) Json.obj("team_name" → teams(teamId)) else Json.obj())
+          )
         val desc = s"bib $bib ($firstName $name)"
         existing.get(bib) match {
           case Some(original) ⇒
