@@ -138,11 +138,13 @@ class Replicate(options: Options.Config) extends LoggingError {
             log.info("race information loaded from database")
           case Failure(t) ⇒
             log.error(t, "unable to read race information from database")
+            exit(1)
         }
         loadInfos.execute()
       } catch {
         case t: Exception ⇒
           log.error(t, "initial replication failed")
+          exit(1)
       }
     }
   } catch {
