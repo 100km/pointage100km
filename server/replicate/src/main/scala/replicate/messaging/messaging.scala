@@ -4,9 +4,9 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging}
 import replicate.alerts.Alerts
-import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.messaging.Message.Severity.Severity
-import replicate.utils.Glyphs
+import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.utils.{FormatUtils, Glyphs}
 
 package object messaging {
 
@@ -31,8 +31,6 @@ package object messaging {
       (Ok, 0)
   }
 
-  private[messaging] def amountToCurrency(amount: Double): String = "%.2f€".format(amount)
-
   private[messaging] trait BalanceTracker extends Actor with ActorLogging {
 
     val messageTitle: String
@@ -43,13 +41,13 @@ package object messaging {
 
     def trackBalance(balance: Double) = {
       val (status, limit) = amountToStatus(balance)
-      log.debug("Balance for {} is {}", messageTitle, amountToCurrency(balance))
+      log.debug("Balance for {} is {}", messageTitle, FormatUtils.formatEuros(balance))
       if (status != currentStatus) {
-        val current = amountToCurrency(balance)
+        val current = FormatUtils.formatEuros(balance)
         val message = (currentStatus, status) match {
           case (null, Ok) ⇒ s"Current balance is $current"
           case (_, Ok)    ⇒ s"Balance has been restored to $current"
-          case _          ⇒ s"Balance is $current, below the limit of ${amountToCurrency(limit)}"
+          case _          ⇒ s"Balance is $current, below the limit of ${FormatUtils.formatEuros(limit)}"
         }
         currentStatus = status
         latestAlert.foreach(Alerts.cancelAlert)

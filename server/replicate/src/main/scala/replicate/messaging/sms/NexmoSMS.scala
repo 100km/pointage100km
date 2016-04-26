@@ -17,7 +17,7 @@ import play.api.libs.json.{JsObject, JsPath, Reads}
 import replicate.alerts.Alerts
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.messaging.{Balance, BalanceError, BalanceTracker, Message ⇒ Msg}
-import replicate.utils.{Glyphs, Networks}
+import replicate.utils.{FormatUtils, Glyphs, Networks}
 
 import scala.concurrent.Future
 
@@ -67,7 +67,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
         for ((message, idx) ← response.messages.zipWithIndex) {
           if (message.status == 0) {
             val network = message.network.flatMap(Networks.byMCCMNC.get).fold("unknown network")(op ⇒ s"${op.network} (${op.country})")
-            val cost = message.messagePrice.fold("an unknown cost")("%.2f€".format(_))
+            val cost = message.messagePrice.fold("an unknown cost")(FormatUtils.formatEuros)
             val dst = message.to.fold("unknown recipient")('+' + _)
             val msg = Msg(TextMessage, Severity.Debug, s"Text message delivered to $dst (${idx + 1}/$parts)",
               s"Delivered through $network for $cost", icon = Some(Glyphs.telephoneReceiver))

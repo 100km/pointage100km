@@ -18,4 +18,6 @@ object FormatUtils {
 
   def formatDistance(distance: Double) = "%.2f km".format(distance)
 
+  def formatEuros(amount: Double): String = "%.2f€".format(amount)
+
 }
