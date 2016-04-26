@@ -3,9 +3,16 @@ function(data) {
   var app = $$(this).app;
   var site_id = data.site_id;
   data = data.data;
+
+  var safe_site_name = "";
+  if (app && app.sites && site_id<app.sites.length) {
+    safe_site_name = app.sites[site_id];
+  }
+
   if (data[0] == undefined || !appinfo_initialized_no_site(app)) {
     return {
-      item_0 : [],
+      item_0 : [], //TODO unused?
+      site_name: safe_site_name,
       items : [],
     }
   }
@@ -39,7 +46,7 @@ function(data) {
 
   return {
     items : data.map(create_infos),
-    site_name: app.sites[site_id]
+    site_name: safe_site_name
   }
 
 };

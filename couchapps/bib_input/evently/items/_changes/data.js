@@ -3,7 +3,7 @@ function(data) {
   var app = $$(this).app;
   if (data[0] == undefined)
     return {
-      item_0 : [],
+      item_0 : [], //TODO unused?
       items : [],
     }
 
