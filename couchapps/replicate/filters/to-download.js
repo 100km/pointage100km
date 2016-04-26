@@ -17,5 +17,8 @@ function(doc, req) {
     (prev_site_id !== undefined && startsWith("checkpoints-" + prev_site_id + "-")) ||
     startsWith("contestant-") ||
     startsWith("_design/") ||
-    startsWith("message-");
+    startsWith("message-") ||
+
+    // Analysis documents are needed on site 6 for the main display.
+    (startsWith("analysis-") && site_id == 6);
 }
