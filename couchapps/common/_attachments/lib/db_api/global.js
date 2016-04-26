@@ -33,15 +33,16 @@ function map_contestants(data) {
   var birth_date = new Date(data.birth);
 
   //no error checking: we suppose all contestants have the following info in the database
-  result.bib        = data.bib;
-  result.name       = data.name;
-  result.first_name = data.first_name;
-  result.race       = data.race;
-  result.cat        = cat_from_year(birth_date.getYear());
-  result.sex        = data.sex;
-  result.zipcode    = data.zipcode;
-  result.city       = data.city;
-  result.handisport = data.handisport;
+  result.bib          = data.bib;
+  result.name         = data.name;
+  result.first_name   = data.first_name;
+  result.race         = data.race;
+  result.cat          = cat_from_year(birth_date.getYear());
+  result.sex          = data.sex;
+  result.zipcode      = data.zipcode;
+  result.city         = data.city;
+  result.handisport   = data.handisport;
+  result.championship = data.championship;
 
   return result;
 }
