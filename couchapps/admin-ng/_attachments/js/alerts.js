@@ -2,7 +2,7 @@ function AlertsController($scope, changesService, stateService, dbService) {
   this.alertsSet = {};
   this.alerts = [];
 
-  var mapSeverity = severity => {
+  this.mapSeverity = severity => {
     switch (severity) {
       case "critical": return "danger";
       case "error": return "danger";
