@@ -81,18 +81,28 @@
       };
       $scope.addStalker = function (stalkee) {
         stalker = $scope.normalizePhone(stalkee.newStalker);
-        var validPhone = new RegExp("^\\+[0-9]{8,13}$");
+        var validPhone = new RegExp("^\\+[0-9]{8,}$");
         if (!validPhone.test(stalker)) {
           alert("Invalid phone number " + stalker);
           return;
         }
-        if (stalker.substring(0, 3) != "+33") {
-          alert("Message to foreign numbers are not supported: " + stalker);
-          return;
-        }
-        if (stalker[3] != '6' && stalker[3] != '7') {
-          alert("Messages to landlines are not supported: " + stalker);
-          return;
+        switch (stalker.substring(0, 3)) {
+          case "+33":
+            if (stalker[3] != '6' && stalker[3] != '7') {
+              alert("Messages to French landlines are not supported: " + stalker);
+              return;
+            }
+            if (stalker.length != 12) {
+              alert("Invalid French phone number length: " + stalker);
+              return;
+            }
+            break;
+          case "+32":
+            // No verification on numbers from Belgium
+            break;
+          default:
+            alert("Only numbers from France and Belgium are supported: " + stalker);
+            return;
         }
         $http.post("_update/change-stalker/contestant-" + stalkee.bib,
             angular.toJson({operation: "add", stalker: stalker}))
