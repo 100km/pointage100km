@@ -19,6 +19,9 @@ angular.module("admin-ng").factory("stateService",
             var contestant = row.doc;
             contestant.fullName = contestant.first_name + " " + contestant.name;
             contestant.displayName = contestant.fullName + " (" + contestant.bib + ")";
+            contestant.searchName = contestant.displayName;
+            if (contestant.team_name)
+              contestant.searchName += " — team \"" + contestant.team_name + "\"";
             data.contestants[contestant.bib] = contestant;
           });
 
