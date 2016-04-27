@@ -1,5 +1,10 @@
 <div class="analysis">
+
   <h2><contestant bib="$ctrl.bib" infos="infos"></contestant></h2>
+
+  <uib-progressbar ng-show="$ctrl.maxKms" max="$ctrl.maxKms" value="$ctrl.currentKms">
+    {{$ctrl.currentKms | digitsUnit: 2: "km"}} / {{$ctrl.maxKms | digitsUnit: 2: "km"}}
+  </uib-progressbar>
 
   <div ng-if="$ctrl.needsFixing" class="alert {{$ctrl.analysis.valid ? 'alert-warning' : 'alert-danger' }}">
     Anomalies: {{$ctrl.analysis.anomalies}}

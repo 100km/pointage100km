@@ -35,18 +35,31 @@ angular.module("admin-ng").component("analysisList", {
 function AnalysisController($scope, stateService, changesService) {
   stateService.installInfos($scope);
 
+  this.currentKms = 0;
+  this.maxKms = 100;
+
   this.$routerOnActivate = (next, previous) => {
     this.bib = Number(next.params.bib);
+
+    changesService.installAndCheck($scope, "analysis", "analysis-" + this.bib);
 
     $scope.$watch("analysis",
         analysis => {
           if (analysis) {
             this.analysis = analysis;
             this.needsFixing = analysis.anomalies > 0;
+            var after = analysis.after;
+            if (after.length > 0)
+              this.currentKms = after[after.length - 1].distance;
+            else
+              this.currentKms = 0;
+            if ($scope.infos !== undefined) {
+              var raceId = analysis.race_id;
+              this.maxKms = $scope.infos.kms_lap*($scope.infos.races_laps[raceId]-1) +
+                $scope.infos.kms_offset[$scope.infos.kms_offset.length - 1];
+            }
           }
         });
-
-    changesService.installAndCheck($scope, "analysis", "analysis-" + this.bib);
 
   };
 }
