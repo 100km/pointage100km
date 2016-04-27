@@ -12,7 +12,7 @@
     </thead>
     <tbody>
       <tr ng-repeat="point in $ctrl.points">
-        <td><contestant bib="point.bib" infos="$ctrl.infos"></td>
+        <td><contestant bib="point.bib" infos="infos"></td>
         <td>{{point.timestamp | date: "HH:mm:ss"}}</td>
       </tr>
     </tbody>
