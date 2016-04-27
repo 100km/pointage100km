@@ -23,8 +23,6 @@ angular.module("admin-ng").factory("stateService",
             if (contestant.team_name)
               contestant.searchName += " — team \"" + contestant.team_name + "\"";
             contestant.searchMatch = removeDiacritics.replace(contestant.searchName);
-            if (contestant.searchMatch !== contestant.searchName)
-              console.log(contestant.searchName, contestant.searchMatch);
             data.contestants[contestant.bib] = contestant;
           });
 

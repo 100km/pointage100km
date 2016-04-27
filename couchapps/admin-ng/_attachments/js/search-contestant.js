@@ -1,11 +1,7 @@
 function SearchContestantController($scope, stateService, removeDiacritics) {
 
   // this.replace = removeDiacritics.replace;
-  this.replace = input => {
-    var result = removeDiacritics.replace(input);
-    console.log(input, result);
-    return result;
-  };
+  this.replace = removeDiacritics.replace;
 
   $scope.$watchCollection(() => stateService.contestants, 
       contestants => {
