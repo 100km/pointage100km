@@ -1,10 +1,18 @@
-function SearchContestantController($scope, stateService) {
+function SearchContestantController($scope, stateService, removeDiacritics) {
+
+  // this.replace = removeDiacritics.replace;
+  this.replace = input => {
+    var result = removeDiacritics.replace(input);
+    console.log(input, result);
+    return result;
+  };
 
   $scope.$watchCollection(() => stateService.contestants, 
       contestants => {
         $scope.contestants = [];
         angular.forEach(contestants,
-            c => $scope.contestants.push({bib: c.bib, searchName: c.searchName}));
+            c => $scope.contestants.push({bib: c.bib, searchName: c.searchName,
+              searchMatch: c.searchMatch}));
       });
 
   this.select = contestant => {

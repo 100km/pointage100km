@@ -1,4 +1,5 @@
-var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub"]);
+var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub",
+    "txx.diacritics"]);
 
 app.filter("fullName", function() {
   return doc => {
