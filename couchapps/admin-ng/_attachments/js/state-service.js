@@ -22,7 +22,7 @@ angular.module("admin-ng").factory("stateService",
 
 angular.module("admin-ng")
         .component("contestant", {
-            template: "{{$ctrl.contestantName}} <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
+          template: "<span ng-link=\"['/Analysis', 'Contestant', {bib: $ctrl.bib}]\">{{$ctrl.contestantName}}</span> <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
             bindings: { bib: "<", infos: "<" },
             controller: function($scope, stateService) {
               this.$onInit = () =>  {
@@ -49,7 +49,7 @@ angular.module("admin-ng")
           }
         })
         .component("site", {
-          template: "{{$ctrl.site}}",
+          template: "<span ng-link=\"['/Checkpoints', 'Checkpoint', {siteId: 's' + $ctrl.siteId}]\">{{$ctrl.site}}</span>",
           bindings: { siteId: '<', infos: '<', format: '<?' },
           controller: function() {
             this.$onChanges = changes => {
