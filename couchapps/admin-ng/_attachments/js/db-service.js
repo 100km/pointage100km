@@ -1,6 +1,10 @@
 angular.module("admin-ng").factory("dbService",
     ["$http", "database", function($http, database) {
 
+      var uuid = function() {
+        return $http.get(database + "/../../_uuids").then(response => response.data.uuids[0]);
+      };
+
       return {
 
         checkSites: function() {
@@ -44,6 +48,27 @@ angular.module("admin-ng").factory("dbService",
         getAnalysesFrom: function(offset, limit) {
           return $http.get(database + "/_design/admin-ng/_view/by-anomalies?skip=" +
               offset + "&limit=" + limit);
+        },
+
+        getMessages: function() {
+          return $http.get(database + "/_design/admin/_view/all-valid-messages",
+              { params: { startkey: JSON.stringify([true]) } });
+        },
+
+        deleteMessage: function(id) {
+          return $http.put(database + "/_design/admin-ng/_update/delete-message/" + id, {});
+        },
+
+        uuid: uuid,
+
+        createMessage: function(message, target) {
+          uuid().then(uuid => {
+            var id = "message-" + uuid;
+            var msg = {message: message, addedTS: Date.now(), type: "message"};
+            if (target !== undefined)
+              msg.target = target;
+            return $http.put(database + "/" + id, msg);
+          });
         }
 
       };

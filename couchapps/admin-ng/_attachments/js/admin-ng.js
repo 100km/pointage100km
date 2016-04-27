@@ -27,6 +27,7 @@ app.component("app", {
   $routeConfig: [
     {path: "/analysis/...", name: "Analysis", component: "analysisTop", useAsDefault: true},
     {path: "/checkpoint/...", name: "Checkpoints", component: "checkpointTop"},
+    {path: "/messages/", name: "Messages", component: "messages"},
     {path: "/sms/", name: "SMS", component: "sent"},
     {path: "/alerts/", name: "Alerts", component: "alerts"},
   ]
