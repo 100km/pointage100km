@@ -31,7 +31,15 @@ angular.module("admin-ng").factory("dbService",
         getSMSFrom: function(offset, limit) {
             return $http.get(database + "/_design/admin-ng/_view/sms-all?skip=" +
                 offset + "&limit=" + limit + "&include_docs=true");
-        }
+        },
+
+        getCheckpointsFrom: function(siteId, offset, limit) {
+          return $http.get(database + "/_design/admin-ng/_view/at-checkpoint",
+              { params: { startkey: JSON.stringify([siteId]),
+                          endkey: JSON.stringify([siteId+1]),
+                          inclusive_end: false,
+                          skip: offset, limit: limit } });
+        },
 
       };
     }]);

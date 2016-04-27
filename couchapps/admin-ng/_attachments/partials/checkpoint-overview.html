@@ -1,0 +1,10 @@
+<div class="panel panel-default">
+  <div class="panel-heading"><a ng-link='["Checkpoint", {siteId: "s" + $ctrl.siteId}]'><h3 class="panel-title"><site site-id="$ctrl.siteId" infos="$ctrl.infos"></site></h3></a></div>
+
+  <div class="panel-body">
+    <div ng-repeat="point in $ctrl.points" class="row">
+      <span class="col-sm-2 text-right">{{point.timestamp | date: "HH:mm:ss" : $ctrl.infos.timezone}}</span>
+      <span class="col-sm-10"><contestant bib="point.bib" infos="$ctrl.infos"></contestant></span>
+    </div>
+  </div>
+</div>
