@@ -15,7 +15,12 @@ angular.module("admin-ng").factory("stateService",
 
       changesService.initThenFilterEach($rootScope, "common", "all_contestants",
           change => change.doc.type === "contestant",
-          row => data.contestants[row.doc.bib] = row.doc);
+          row => {
+            var contestant = row.doc;
+            contestant.fullName = contestant.first_name + " " + contestant.name;
+            contestant.displayName = contestant.fullName + " (" + contestant.bib + ")";
+            data.contestants[contestant.bib] = contestant;
+          });
 
       return data;
 
@@ -23,7 +28,7 @@ angular.module("admin-ng").factory("stateService",
 
 angular.module("admin-ng")
         .component("contestant", {
-          template: "<span ng-link=\"['/Analysis', 'Contestant', {bib: $ctrl.bib}]\">{{$ctrl.contestantName}}<img ng-if=\"$ctrl.championship\" src=\"images/belgian_flag.svg\" class=\"flag\"></img></span> <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
+          template: "<span ng-link=\"['/Analysis', 'Contestant', {bib: $ctrl.bib}]\">{{$ctrl.displayName}}<img ng-if=\"$ctrl.championship\" src=\"images/belgian_flag.svg\" class=\"flag\"></img></span> <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
             bindings: { bib: "<", infos: "<" },
             controller: function($scope, stateService) {
               this.$onInit = () =>  {
@@ -31,13 +36,12 @@ angular.module("admin-ng")
                     values => {
                       var contestant = values[0];
                       if (contestant) {
-                        this.contestantName = contestant.first_name + " " + contestant.name +
-                          " (" + contestant.bib + ")";
+                        this.displayName = contestant.displayName;
                         this.raceId = contestant.race;
                         this.teamName = contestant.team_name;
                         this.championship = contestant.championship;
                       } else
-                        this.contestantName = "Bib " + this.bib;
+                        this.displayName = "Bib " + this.bib;
                     });
               };
             }
