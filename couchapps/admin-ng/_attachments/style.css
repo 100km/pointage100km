@@ -54,3 +54,5 @@ table.analysis .down {
 table.alerts .cancelled-true { text-decoration: line-through; }
 table.alerts .alert-critical { font-weight: bold; }
 table.alerts .alert-debug { font-style: italic; }
+
+img.flag { height: 0.8em; margin-left: 0.3em; }
