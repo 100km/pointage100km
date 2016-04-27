@@ -10,6 +10,11 @@
       <li><a ng-link="['/Messages']">Messages</a></li>
       <li><a ng-link="['/SMS']">SMS</a></li>
     </ul>
+  <div class="col-sm-3 col-md-3 pull-right">
+    <form class="navbar-form" role="search">
+      <search-contestant on-selection="$ctrl.onSelection(bib)"></search>
+    </form>
+  </div>
   </div>
 </nav>
 

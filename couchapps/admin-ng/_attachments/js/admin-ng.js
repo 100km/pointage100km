@@ -20,6 +20,13 @@ app.filter("digitsUnit", ["$filter", function($filter) {
     x === undefined ? "" : ($filter('number')(x, digits) + " " + unit);
 }]);
 
+function RootController($scope) {
+
+  // What a ugly hack
+  this.onSelection = bib =>
+    $scope.$$ngOutlet.$$outlet.router.navigate(["/Analysis", "Contestant", {bib: bib}]);
+}
+
 app.constant("database", "../../");
 app.value("$routerRootComponent", "app");
 app.component("app", {
@@ -30,7 +37,8 @@ app.component("app", {
     {path: "/messages/", name: "Messages", component: "messages"},
     {path: "/sms/", name: "SMS", component: "sent"},
     {path: "/alerts/", name: "Alerts", component: "alerts"},
-  ]
+  ],
+  controller: RootController
 });
 app.run(["changesService",
     function(changesService) {
