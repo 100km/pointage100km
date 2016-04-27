@@ -1,6 +1,6 @@
 angular.module("admin-ng").factory("stateService",
-    ["changesService", "$rootScope",
-    function(changesService, $rootScope) {
+    ["changesService", "$rootScope", "removeDiacritics",
+    function(changesService, $rootScope, removeDiacritics) {
 
       var data = {
         contestants: {},
@@ -22,6 +22,9 @@ angular.module("admin-ng").factory("stateService",
             contestant.searchName = contestant.displayName;
             if (contestant.team_name)
               contestant.searchName += " — team \"" + contestant.team_name + "\"";
+            contestant.searchMatch = removeDiacritics.replace(contestant.searchName);
+            if (contestant.searchMatch !== contestant.searchName)
+              console.log(contestant.searchName, contestant.searchMatch);
             data.contestants[contestant.bib] = contestant;
           });
 
