@@ -2,25 +2,24 @@ package replicate.alerts
 
 import java.util.UUID
 
-import akka.stream.{Materializer, ThrottleMode}
+import akka.stream.Materializer
 import net.rfc1149.canape.Database
-import play.api.libs.json.{JsObject, Json, Reads}
+import play.api.libs.json._
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity
 import replicate.utils.{Global, Glyphs}
-import scala.concurrent.duration._
 
-class Broadcaster {
+private class BroadcastAlert {
 
   import BroadcastAlert._
 
   private[this] var sentBroadcasts: Map[String, UUID] = Map()
 
-  def sendOrCancelBroadcast(doc: JsObject): Unit =
-    doc match {
-      case json: JsObject ⇒
-        (json \ "doc").as[Broadcast] match {
-          case bcast if bcast.isDeleted ⇒
+  def sendOrCancelBroadcast(json: JsObject): Unit =
+    try {
+      (json \ "doc").validate[Broadcast] match {
+        case JsSuccess(bcast, _) ⇒
+          if (bcast.isDeleted) {
             sentBroadcasts.get(bcast._id) match {
               case Some(uuid) ⇒
                 Alerts.cancelAlert(uuid)
@@ -28,11 +27,15 @@ class Broadcaster {
               case None ⇒
               // We did not send this broadcast, it was sent before we started
             }
-          case bcast ⇒
+          } else
             sentBroadcasts += bcast._id → Alerts.sendAlert(bcast.toMessage)
-        }
+        case error: JsError ⇒
+          Global.system.log.error("BroadcastAlert: unable to analyze alert {}: {}", (json \ "id").as[String], error);
+      }
+    } catch {
+      case throwable: Throwable ⇒
+        Global.system.log.error(throwable, "BroadcastAlert: crash when analyzing {}", (json \ "id").as[String]);
     }
-
 }
 
 object BroadcastAlert {
@@ -51,9 +54,8 @@ object BroadcastAlert {
   implicit val broadcastReads: Reads[Broadcast] = Json.reads[Broadcast]
 
   def runBroadcastAlerts(database: Database)(implicit materializer: Materializer) = {
-    val broadcaster = new Broadcaster
-    database.changesSource(Map("filter" → "common/messages", "include_docs" → "true"))
-      .throttle(1, 1.minute, 5, ThrottleMode.Shaping) // Do not make phones unusable by more than one alert every minute
+    val broadcaster = new BroadcastAlert
+    database.changesSource(Map("filter" → "replicate/messages", "include_docs" → "true"))
       .runForeach(broadcaster.sendOrCancelBroadcast)
   }
 
