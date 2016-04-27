@@ -2,7 +2,7 @@
   <div class="btn-group btn-group-justified">
   <label ng-repeat="site in infos.sites_short"
          class="btn btn-{{liveness[$index] || 'default'}}"
-         href="#/site/{{$index}}">
+         ng-link='["Checkpoints", "Checkpoint", {siteId: "s" + $index}]'>
     <div>{{site}}</div>
     <div ng-show="liveness[$index]">
       {{times[$index] | date : "HH:mm:ss" : infos.timezone }}
