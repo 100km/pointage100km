@@ -2,14 +2,25 @@
 // Analysis list
 //
 
-function AnalysisListController($scope, stateService) {
+function AnalysisListController($scope, stateService, dbService, changesService) {
+
   this.analyses = [];
+  this.totalItems = 0;
+  this.currentPage = 1;
+  this.itemsPerPage = 20;
 
   stateService.installInfos($scope);
-  $scope.$watchCollection(() => stateService.analyses, analyses => {
-    this.analyses = [];
-    angular.forEach(analyses, a => this.analyses.push(a));
-  });
+
+  this.loadAnalyses = changesService.serializedFunFactory(() =>
+        dbService.getAnalysesFrom((this.currentPage - 1) * this.itemsPerPage, this.itemsPerPage)
+          .then(response => {
+            this.totalItems = response.data.total_rows;
+            this.analyses = response.data.rows.map(row => row.value);
+          }));
+
+  changesService.filterChanges($scope, change => change.doc.type === "analysis", this.loadAnalyses);
+
+  this.loadAnalyses();
 }
 
 angular.module("admin-ng").component("analysisList", {
@@ -21,19 +32,21 @@ angular.module("admin-ng").component("analysisList", {
 // Analysis for one contestant
 //
 
-function AnalysisController($scope, stateService) {
+function AnalysisController($scope, stateService, changesService) {
   stateService.installInfos($scope);
 
   this.$routerOnActivate = (next, previous) => {
     this.bib = Number(next.params.bib);
 
-    $scope.$watch(() => stateService.analyses[this.bib],
+    $scope.$watch("analysis",
         analysis => {
           if (analysis) {
             this.analysis = analysis;
             this.needsFixing = analysis.anomalies > 0;
           }
         });
+
+    changesService.installAndCheck($scope, "analysis", "analysis-" + this.bib);
 
   };
 }

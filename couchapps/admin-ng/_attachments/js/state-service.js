@@ -9,15 +9,13 @@ angular.module("admin-ng").factory("stateService",
           scope.$watch(() => $rootScope.infos, infos => scope.infos = $rootScope.infos)
       };
 
+      // Infos and filters are continuously watched as we need this information all
+      // the time.
       changesService.installAndCheck($rootScope, "infos", "infos");
 
       changesService.initThenFilterEach($rootScope, "common", "all_contestants",
           change => change.doc.type === "contestant",
           row => data.contestants[row.doc.bib] = row.doc);
-
-      changesService.initThenFilterEach($rootScope, "admin-ng", "by-anomalies",
-          change => change.doc.type == "analysis",
-          row => data.analyses[row.doc.bib] = row.doc);
 
       return data;
 
