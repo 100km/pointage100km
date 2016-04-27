@@ -5,8 +5,11 @@ angular.module("admin-ng").factory("stateService",
       var data = {
         contestants: {},
         analyses: {},
-        installInfos: scope => changesService.installAndCheck(scope, "infos", "infos")
+        installInfos: scope =>
+          scope.$watch(() => $rootScope.infos, infos => scope.infos = $rootScope.infos)
       };
+
+      changesService.installAndCheck($rootScope, "infos", "infos");
 
       changesService.initThenFilterEach($rootScope, "common", "all_contestants",
           change => change.doc.type === "contestant",
