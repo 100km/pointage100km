@@ -1,3 +1,5 @@
+<uib-pagination total-items="$ctrl.totalItems" ng-model="$ctrl.currentPage" ng-change="$ctrl.loadAnalyses()" items-per-page="$ctrl.itemsPerPage" max-size="10" class="pagination-sm" boundary-link-numbers="true" force-ellipses="true"></uib-pagination>
+
 <div class="list-group">
   <a ng-repeat="analysis in $ctrl.analyses | orderBy : ['valid', '-anomalies', '+bib']"
      class="list-group-item {{analysis.valid ? (analysis.anomalies === 0 ? '' : 'list-group-item-warning') : 'list-group-item-danger'}}"

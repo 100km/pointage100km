@@ -41,5 +41,10 @@ angular.module("admin-ng").factory("dbService",
                           skip: offset, limit: limit } });
         },
 
+        getAnalysesFrom: function(offset, limit) {
+          return $http.get(database + "/_design/admin-ng/_view/by-anomalies?skip=" +
+              offset + "&limit=" + limit);
+        }
+
       };
     }]);
