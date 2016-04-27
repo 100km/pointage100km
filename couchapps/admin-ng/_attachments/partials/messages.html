@@ -1,0 +1,36 @@
+<div ng-if="$ctrl.messages.length > 0 || $ctrl.includeTarget">
+  <h3 ng-if="$ctrl.title">{{$ctrl.title}}</h3>
+
+  <table class="table table-condensed table-hover">
+    <thead>
+      <tr>
+        <th>Time sent</th>
+        <th ng-if="$ctrl.includeTarget">Target</th>
+        <th>Text</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-if="$ctrl.includeTarget">
+        <td></td>
+        <td>
+          <select class="form-control" ng-model="$ctrl.newMessage.siteId">
+            <option value="-1" selected>All the sites</option>
+            <option ng-repeat="site in infos.sites" value="{{$index.toString()}}">{{infos.sites[$index]}}</option>
+          </select>
+        </td>
+        <td><input type="text" ng-model="$ctrl.newMessage.text" placeholder="Text" class="form-control"></input></td>
+        <td><button class="btn btn-sm {{ $ctrl.newMessage.text.length > 0 ? 'enabled' : 'disabled' }}" ng-click="$ctrl.sendMessage()">Send</button></td>
+      </tr>
+      <tr ng-repeat="message in $ctrl.messages | orderBy: 'addedTS' : true">
+        <td>{{message.addedTS | date: "HH:mm:ss" : infos.timezone}}</td>
+        <td ng-if="$ctrl.includeTarget">
+          <span ng-if="message.target === undefined">All the sites</span>
+          <site ng-if="message.target !== undefined" infos="infos" site-id="message.target"></site>
+        </td>
+        <td>{{message.message}}</td>
+        <td><span class="glyphicon glyphicon-trash" ng-click="$ctrl.deleteMessage(message._id)"></span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

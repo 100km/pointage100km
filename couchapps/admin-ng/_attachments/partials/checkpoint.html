@@ -1,11 +1,14 @@
 <div class="checkpoint">
   <h2><site site-id="$ctrl.siteId" infos="infos"></site></h2>
 
+  <messages site-id="$ctrl.siteId"></messages>
+
   <ul class="pager">
     <li class="previous" ng-show="$ctrl.nextEnabled"><a ng-click="$ctrl.next()">Next</a></li>
     <li class="next" ng-show="$ctrl.previousEnabled"><a ng-click="$ctrl.previous()">Previous</a></li>
   </ul>
 
+  <h3>Latest inputs</h3>
   <table class="table table-table-condensed table-hover">
     <thead>
       <tr><th>Contestant</th><th>Timestamp</th></tr>
