@@ -2,12 +2,6 @@ function(e, data) {
   // Get the matching <li> element according to the data.
   var li = $('#js_checkpoint_' + data.bib + '_' + data.lap);
 
-  // If we don't find the item, take the first one
-  if (li.length == 0) {
-    li = $(this).find('li:eq(1)');
-    data = li.data('checkpoint');
-  }
-
   // Update the data of the selected_item to be up to date.
   $('#items').data('selected_item', data);
 
