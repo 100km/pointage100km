@@ -1,4 +1,4 @@
-angular.module("admin-ng").factory("stateService",
+angular.module("steenwerck.state", ["changes", "txx.diacritics"]).factory("stateService",
     ["changesService", "$rootScope", "removeDiacritics",
     function(changesService, $rootScope, removeDiacritics) {
 
@@ -30,7 +30,7 @@ angular.module("admin-ng").factory("stateService",
 
 }]);
 
-angular.module("admin-ng")
+angular.module("steenwerck.state")
         .component("contestant", {
           template: "<span ng-link=\"['/Analysis', 'Contestant', {bib: $ctrl.bib}]\">{{$ctrl.displayName}}<img ng-if=\"$ctrl.championship\" src=\"images/belgian_flag.svg\" class=\"flag\"></img></span> <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
             bindings: { bib: "<", infos: "<" },

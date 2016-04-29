@@ -1,3 +1,5 @@
+angular.module("steenwerck.analysis", ["steenwerck.database", "steenwerck.state", "changes"]);
+
 //
 // Analysis list
 //
@@ -23,7 +25,7 @@ function AnalysisListController($scope, stateService, dbService, changesService)
   this.loadAnalyses();
 }
 
-angular.module("admin-ng").component("analysisList", {
+angular.module("steenwerck.analysis").component("analysisList", {
   templateUrl: "partials/analysis-list.html",
   controller: AnalysisListController
 });
@@ -64,7 +66,7 @@ function AnalysisController($scope, stateService, changesService) {
   };
 }
 
-angular.module("admin-ng").component("analysis", {
+angular.module("steenwerck.analysis").component("analysis", {
   templateUrl: "partials/analysis.html",
   controller: AnalysisController,
 });
@@ -78,7 +80,7 @@ function AnalysisSummaryController(dbService) {
     dbService.fixCheckpoint(this.analysis.bib, this.analysis.race_id, siteId, timestamp, action);
 }
 
-angular.module("admin-ng").component("analysisSummary", {
+angular.module("steenwerck.analysis").component("analysisSummary", {
   templateUrl: "partials/analysis-summary.html",
   controller: AnalysisSummaryController,
   bindings: {
@@ -123,7 +125,7 @@ function AnalysisPointController($scope, stateService) {
 
 }
 
-angular.module("admin-ng").directive("analysisPoint", () => {
+angular.module("steenwerck.analysis").directive("analysisPoint", () => {
   return {
     templateUrl: "partials/analysis-point.html",
     controller: AnalysisPointController,
@@ -142,7 +144,7 @@ angular.module("admin-ng").directive("analysisPoint", () => {
 // Routing component
 //
 
-angular.module("admin-ng").component("analysisTop", {
+angular.module("steenwerck.analysis").component("analysisTop", {
   template: "<ng-outlet></ng-outlet>",
   $routeConfig: [
   {path: "/", component: "analysisList", useAsDefault: true},

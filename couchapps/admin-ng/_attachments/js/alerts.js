@@ -31,7 +31,8 @@ function AlertsController($scope, changesService, stateService, dbService) {
 
 }
 
-angular.module("admin-ng").component("alerts", {
-  templateUrl: "partials/alerts.html",
-  controller: AlertsController
-});
+angular.module("steenwerck.alerts", ["steenwerck.database", "steenwerck.state", "changes"])
+  .component("alerts", {
+    templateUrl: "partials/alerts.html",
+    controller: AlertsController
+  });
