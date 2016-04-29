@@ -1,4 +1,5 @@
-angular.module("admin-ng").factory("changesService", ["database", "$http", "$httpParamSerializer", "$timeout", "$rootScope", "pubsub",
+angular.module("changes", ["pubsub"]).factory("changesService", ["database", "$http",
+    "$httpParamSerializer", "$timeout", "$rootScope", "pubsub",
     function(database, $http, $httpParamSerializer, $timeout, $rootScope, pubsub) {
 
       var onChange = (scope, params, callback) => {

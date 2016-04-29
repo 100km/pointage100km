@@ -5,7 +5,7 @@ function SentController($scope, changesService, dbService) {
   // route (/analysis/:bib), but one with a query parameter instead
   // (/analysis?bib=bib). Unfortunately, this one will not get matched
   // by the router for Analysis.
-  this.onSelectBib = bib => this.$router.navigate(["Analysis", {bib: bib}]);
+  this.onSelectBib = bib => this.$router.navigate(["/Analysis", "Contestant", {bib: bib}]);
 
   this.totalItems = 0;
   this.currentPage = 1;
@@ -48,11 +48,12 @@ function SentController($scope, changesService, dbService) {
 
 }
 
-angular.module("admin-ng").component("sent", {
-  templateUrl: "partials/sent-sms.html",
-  controller: SentController,
-  bindings: {
-    bib: '<?',
-    $router: '<'
-  }
-});
+angular.module("steenwerck.sms", ["steenwerck.database", "changes"])
+  .component("sent", {
+    templateUrl: "partials/sent-sms.html",
+    controller: SentController,
+    bindings: {
+      bib: '<?',
+      $router: '<'
+    }
+  });

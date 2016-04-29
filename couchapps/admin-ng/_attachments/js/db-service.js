@@ -1,4 +1,4 @@
-angular.module("admin-ng").factory("dbService",
+angular.module("steenwerck.database", []).factory("dbService",
     ["$http", "database", function($http, database) {
 
       var uuid = function() {

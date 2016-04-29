@@ -1,3 +1,5 @@
+angular.module("steenwerck.checkpoint", ["steenwerck.database", "steenwerck.state", "changes"]);
+
 //
 // Checkpoint
 //
@@ -42,12 +44,12 @@ function CheckpointController($scope, stateService, dbService, changesService) {
   };
 }
 
-angular.module("admin-ng").component("checkpoint", {
+angular.module("steenwerck.checkpoint").component("checkpoint", {
   templateUrl: "partials/checkpoint.html",
   controller: CheckpointController
 });
 
-angular.module("admin-ng").component("checkpointOverview", {
+angular.module("steenwerck.checkpoint").component("checkpointOverview", {
   templateUrl: "partials/checkpoint-overview.html",
   bindings: { siteId: "<", infos: "<" },
   controller: CheckpointController
@@ -61,7 +63,7 @@ function CheckpointListController($scope, stateService) {
   stateService.installInfos($scope);
 }
 
-angular.module("admin-ng").component("checkpointList", {
+angular.module("steenwerck.checkpoint").component("checkpointList", {
   templateUrl: "partials/checkpoint-list.html",
   controller: CheckpointListController
 });
@@ -70,7 +72,7 @@ angular.module("admin-ng").component("checkpointList", {
 // Routing component
 //
 
-angular.module("admin-ng").component("checkpointTop", {
+angular.module("steenwerck.checkpoint").component("checkpointTop", {
   template: "<ng-outlet></ng-outlet>",
   $routeConfig: [
   {path: "/", component: "checkpointList", useAsDefault: true},

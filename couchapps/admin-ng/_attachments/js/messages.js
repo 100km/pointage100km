@@ -33,8 +33,9 @@ function MessagesController($scope, dbService, stateService, changesService) {
   };
 }
 
-angular.module("admin-ng").component("messages", {
-  templateUrl: "partials/messages.html",
-  bindings: {"siteId": "<?"},
-  controller: MessagesController
-});
+angular.module("steenwerck.messages", ["steenwerck.database", "steenwerck.state", "changes"])
+  .component("messages", {
+    templateUrl: "partials/messages.html",
+    bindings: {"siteId": "<?"},
+    controller: MessagesController
+  });

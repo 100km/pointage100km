@@ -1,5 +1,7 @@
-var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub",
-    "txx.diacritics"]);
+var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub", "changes",
+    "steenwerck.database", "steenwerck.search", "steenwerck.state", "steenwerck.liveness",
+    "steenwerck.analysis", "steenwerck.checkpoint", "steenwerck.messages",
+    "steenwerck.alerts", "steenwerck.sms"]);
 
 app.filter("fullName", function() {
   return doc => {

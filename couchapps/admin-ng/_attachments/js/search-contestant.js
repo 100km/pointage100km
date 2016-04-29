@@ -19,8 +19,9 @@ function SearchContestantController($scope, stateService, removeDiacritics) {
   };
 }
 
-angular.module("admin-ng").component("searchContestant", {
-  templateUrl: "partials/search-contestant.html",
-  controller: SearchContestantController,
-  bindings: { "onSelection": "&" }
-});
+angular.module("steenwerck.search", ["steenwerck.state", "txx.diacritics"])
+  .component("searchContestant", {
+    templateUrl: "partials/search-contestant.html",
+    controller: SearchContestantController,
+    bindings: { "onSelection": "&" }
+  });
