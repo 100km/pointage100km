@@ -34,16 +34,23 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
 
       // Get the initial value of a document, install it in the given scope,
       // then check for updates. The promise is resolved when the first
-      // value is installed.
+      // value has been installed (or when the document non-existence has
+      // been seen).
+      //
+      // If the document does not exist initially, it will be watched
+      // nonetheless to catch its creation and its future updates.
+      //
       // The scope parameter must be a real scope since its `$onDestroy`
       // event will be watched.
       var installAndCheck = (scope, name, docid) =>
-        $http.get(database + "/" + docid)
-          .then(response => {
-            scope[name] = response.data;
-            filterChanges(scope, change => change.doc._id === docid,
-                  change => scope.$applyAsync(() => scope[name] = change.doc))
-          });
+        filterChangesAfter(scope, change => change.doc._id === docid,
+            change => scope.$applyAsync(() => scope[name] = change.doc),
+            new Promise((resolve, reject) =>
+              $http.get(database + "/" + docid + "?local_seq=true")
+                .then(response => {
+                  scope[name] = response.data;
+                  resolve(response.data._local_seq);
+                }).catch(() => resolve(0) /* Document does not exist yet */)));
 
       var globalChangesStart = () =>
         onChange($rootScope, {since: "now", heartbeat: 30000, include_docs: true},
