@@ -52,6 +52,8 @@ angular.module("admin-ng").factory("changesService", ["database", "$http", "$htt
                   resolve(response.data._local_seq);
                 }).catch(() => resolve(0) /* Document does not exist yet */)));
 
+      // Start the global changes listener. This must be called once per
+      // application.
       var globalChangesStart = () =>
         onChange($rootScope, {since: "now", heartbeat: 30000, include_docs: true},
             change => pubsub.publish("globalChange", change));
