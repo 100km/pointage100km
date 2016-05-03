@@ -1,10 +1,10 @@
-<h2>Stalkers interface</h2>
+<h2>Gestion des inscriptions SMS</h2>
 
-<div class="row">
+<div class="row" ng-init="$ctrl.setLang('fr')">
   <div class="col-sm-4">
     <form class="form-inline">
       <div class="form-group">
-        <label>Contestant:</label>
+        <label>Concurrent :</label>
         <search-contestant on-selection="$ctrl.onSelection(bib)"></search-contestant>
       </div>
     </form>
@@ -19,7 +19,7 @@
       <div class="panel-body">
         <form novalidate class="form-inline">
           <div class="form-group">
-            <label>Phone number:</label>
+            <label>Téléphone :</label>
             <input type="text" class="form-control" id="phone" ng-model="$ctrl.phone" required></input>
             <input type="submit" ng-click="$ctrl.addStalker()" class="hidden"></input>
           </div>
@@ -30,7 +30,7 @@
         </form>
 
         <div ng-show="$ctrl.stalkers.length > 0">
-          <h4>Existing phone numbers</h4>
+          <h4>Numéros déjà présents</h4>
         <ul class="list-group">
           <li ng-repeat="stalker in $ctrl.stalkers" class="list-group-item">
             <span class="glyphicon glyphicon-trash" ng-click="$ctrl.removeStalker(stalker)"></span>
