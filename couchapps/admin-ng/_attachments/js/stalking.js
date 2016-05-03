@@ -4,6 +4,27 @@ function StalkingController($scope, dbService, stateService, $timeout) {
 
   $scope.$watch(() => this.bib, () => document.getElementById("phone").focus());
 
+  var translateToFrench = msg => {
+    switch (msg) {
+      case "Number already present":
+        return "Numéro déjà présent";
+      case "Number too short":
+        return "Numéro trop court";
+      case "Only French and Belgian phone numbers are accepted":
+        return "Uniquement numéros français et belges";
+      case "This French number is not a mobile line":
+        return "Ce n'est pas un numéro de mobile français";
+      case "This Belgian number is not a mobile line":
+        return "Ce n'est pas un numéro de mobile belge";
+      case "Invalid number":
+        return "Numéro invalide";
+      default:
+        return msg;
+    }
+  };
+
+  var translate = msg => this.lang === "fr" ? translateToFrench(msg) : msg;
+
   this.onSelection = bib => {
     this.bib = bib;
     dbService.getStalkers(bib).then(stalkers => this.stalkers = stalkers);
@@ -35,23 +56,32 @@ function StalkingController($scope, dbService, stateService, $timeout) {
     return number;
   };
 
+  var validNumber = /^\+[0-9]*$/;
+
   this.invalidate = normalized => {
     if (this.stalkers && this.stalkers.indexOf(normalized) > -1)
-      return "Number already present";
+      return translate("Number already present");
+    if (normalized && !validNumber.test(normalized))
+      return translate("Invalid number");
     if (normalized.length === 0)
       return false;
     if (normalized.length < 3)
-      return "Number too short";
+      return translate("Number too short");
     var prefix = normalized.substring(0, 3);
     if (prefix !== "+32" && prefix != "+33")
-      return "Only French and Belgian phone numbers are accepted";
+      return translate("Only French and Belgian phone numbers are accepted");
     if (normalized.length < 4)
       return false;
     var code = normalized[3];
     if (prefix === "+33" && code !== "6" && code != "7")
-      return "This French number is not a mobile line";
+      return translate("This French number is not a mobile line");
     if (prefix === "+32" && code !== "4")
-      return "This Belgian number is not a mobile line";
+      return translate("This Belgian number is not a mobile line");
+  };
+
+  this.setLang = lang => {
+    console.log("Setting lang to", lang);
+    this.lang = lang;
   };
 
   this.addStalker = () => {
@@ -64,6 +94,7 @@ function StalkingController($scope, dbService, stateService, $timeout) {
 
   this.removeStalker = stalker =>
     dbService.removeStalker(this.bib, stalker).then(response => this.stalkers = response.data);
+
 }
 
 angular.module("steenwerck.stalking",
