@@ -21,6 +21,7 @@
     });
     $.couch.app(function(app) {
       $.evently.changesOpts.filter = "bib_input/no-ping";
+      app.bibs_clocked_here = [];
       $("#bib_input").evently("bib_input", app);
       $("#items").evently("items", app);
       $("#title").evently("title", app);

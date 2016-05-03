@@ -13,6 +13,11 @@ function() {
   bib = parseInt(bib, 10);
   add_checkpoint(bib, app, null, function(lap) {
     $(form).trigger('set_selected_item', { bib: bib, lap: lap });
+
+    //Only keep the last 20 times clocked on this page, we show the 10 most recents.
+    //It will work if people always delete less than 10 times consecutively.
+    app.bibs_clocked_here.unshift({ bib: bib, lap: lap });
+    app.bibs_clocked_here.length = Math.min(10, app.bibs_clocked_here.length);
   });
 
   return false;

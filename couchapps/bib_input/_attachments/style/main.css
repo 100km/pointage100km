@@ -113,6 +113,10 @@ h1 {
   font-weight: bold;
 }
 
+#items li.added-elsewhere {
+  color: grey;
+}
+
 #items form {
   float:left;
 }

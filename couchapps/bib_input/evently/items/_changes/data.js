@@ -19,6 +19,11 @@ function(data) {
     p.first_name = r.infos && r.infos.first_name;
     p.race       = r.infos && r.infos.race;
 
+    //This is findWhere but our underscore.js is to old..
+    p.added_elsewhere = r.value && r.value.bib && r.value.lap && !_.find(app.bibs_clocked_here, function(elem) {
+      return elem.bib === r.value.bib && elem.lap === r.value.lap;
+    });
+
     return p;
   }
 
