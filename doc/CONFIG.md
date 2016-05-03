@@ -72,7 +72,7 @@ $ docker rm -f steenwerck-replicate
       - On the developper PC:
         - launch ./wipe
         - set the start times of the races to now + 10 minutes: in couchapps/_docs/infos.json, put the value of `echo $(($(date +%s)*1000 + 10*60*1000))`
-        - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
+        - push couchapps: cd couchapps && ./server-pushapps server LOGIN PASSWD
         - ensure couchdb is running on developper PC.
         - launch replicate mirror
         - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
@@ -100,22 +100,24 @@ $ docker rm -f steenwerck-replicate
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
+      - launch replicate master on the main server : `/kvm/launch-steenwerck`
       - setup correct log level in the documents officer-<name> in the server database
   - foreach checkpoint pc X:
     - launch sudo rm -rf /var/lib/puppet
     - launch `docker volume ls -q | grep -x steenwerck-data | xargs -r docker volume rm` to clear previous race data
-    - launch sudo puppet agent --test
+    - launch `sudo puppet agent --test --waitforcert 3 --server <SERVER_NAME>`
+    - launch `sudo firewall_100km_start`
     - open screen
     - in screen, launch
         - `docker ps -a -q -f name=steenwerck-replicate | xargs -r docker rm -f` to ensure no previous containers
         - `docker run --rm --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/usr/local/var/lib/couchdb rfc1149/pointage100km replicate checkpoint X`
-    - stick the post-it with X and the name on the pc;
-    - for checkpoint0, setup 2 PCs and share the connection on the first PC
     - in screen, launch `./couchsync --watch`
     - in screen, launch the appropriate command for getting 3G Internet:
        - !! if X == 6 || X == 3, no need for USB key, use the wifi network
        - use `clef[1-7]` scripts (should be in your PATH in /usr/local/bin)
     - detach screen
+    - stick the post-it with X and the name on the pc
+    - for checkpoint0, setup 2 PCs and share the connection on the first PC
     - put to sleep.
   - On the 100km website:
     - launch `docker pull rfc1149/pointage100km`
