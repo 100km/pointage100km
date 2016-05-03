@@ -33,7 +33,7 @@
           <h4>Existing phone numbers</h4>
         <ul class="list-group">
           <li ng-repeat="stalker in $ctrl.stalkers" class="list-group-item">
-            <a href="#" ng-click="$ctrl.removeStalker(stalker)"><span class="glyphicon glyphicon-trash"></span></a>
+            <a ng-click="$ctrl.removeStalker(stalker)" ng-link="['/Stalking']"><span class="glyphicon glyphicon-trash"></span></a>
             {{stalker}}
           </li>
         </ul>
@@ -42,3 +42,5 @@
     </div>
   </div>
 </div>
+
+<stalkers-list></stalkers-list>
