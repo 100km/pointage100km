@@ -8,7 +8,7 @@ function(cb, x, data) {
 
   var race_id = data.race
   var max_lap = app.races_laps[race_id];
-  app.db.view("search/all-times-per-bib", {
+  app.db.view("search/all-times-per-bib-ng", {
     startkey: [bib,null],
     endkey: [bib,max_lap+1],
     inclusive_end: false,
