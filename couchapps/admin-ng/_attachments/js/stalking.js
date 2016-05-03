@@ -10,6 +10,8 @@ function StalkingController($scope, dbService, stateService, $timeout) {
         return "Numéro déjà présent";
       case "Number too short":
         return "Numéro trop court";
+      case "Number too long":
+        return "Numéro trop long";
       case "Only French and Belgian phone numbers are accepted":
         return "Uniquement numéros français et belges";
       case "This French number is not a mobile line":
@@ -71,12 +73,16 @@ function StalkingController($scope, dbService, stateService, $timeout) {
     if (prefix !== "+32" && prefix != "+33")
       return translate("Only French and Belgian phone numbers are accepted");
     if (normalized.length < 4)
-      return false;
+      return translate("Number too short");
     var code = normalized[3];
     if (prefix === "+33" && code !== "6" && code != "7")
       return translate("This French number is not a mobile line");
     if (prefix === "+32" && code !== "4")
       return translate("This Belgian number is not a mobile line");
+    if (normalized.length < 12)
+      return translate("Number too short");
+    else if (normalized.length > 12)
+      return translate("Number too long");
   };
 
   this.setLang = lang => {

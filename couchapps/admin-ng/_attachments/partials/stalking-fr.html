@@ -33,7 +33,7 @@
           <h4>Numéros déjà présents</h4>
         <ul class="list-group">
           <li ng-repeat="stalker in $ctrl.stalkers" class="list-group-item">
-            <span class="glyphicon glyphicon-trash" ng-click="$ctrl.removeStalker(stalker)"></span>
+            <a href="#" ng-click="$ctrl.removeStalker(stalker)"><span class="glyphicon glyphicon-trash"></span></a>
             {{stalker}}
           </li>
         </ul>
