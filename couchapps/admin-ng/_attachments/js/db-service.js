@@ -5,6 +5,9 @@ angular.module("steenwerck.database", []).factory("dbService",
         return $http.get(database + "/../../_uuids").then(response => response.data.uuids[0]);
       };
 
+      var updateStalker = bib =>
+        database + "/_design/admin/_update/change-stalker/contestant-" + bib;
+
       return {
 
         checkSites: function() {
@@ -69,6 +72,19 @@ angular.module("steenwerck.database", []).factory("dbService",
               msg.target = target;
             return $http.put(database + "/" + id, msg);
           });
+        },
+
+        getStalkers: function(bib) {
+          return $http.get(database + "/contestant-" + bib)
+            .then(response => response.data.stalkers || []);
+        },
+
+        addStalker: function(bib, stalker) {
+          return $http.put(updateStalker(bib), {operation: "add", stalker: stalker});
+        },
+
+        removeStalker: function(bib, stalker) {
+          return $http.put(updateStalker(bib), {operation: "remove", stalker: stalker});
         }
 
       };

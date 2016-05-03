@@ -1,7 +1,7 @@
 var app = angular.module("admin-ng", ["ngComponentRouter", "ui.bootstrap", "pubsub", "changes",
     "steenwerck.database", "steenwerck.search", "steenwerck.state", "steenwerck.liveness",
     "steenwerck.analysis", "steenwerck.checkpoint", "steenwerck.messages",
-    "steenwerck.alerts", "steenwerck.sms"]);
+    "steenwerck.alerts", "steenwerck.sms", "steenwerck.stalking"]);
 
 app.filter("fullName", function() {
   return doc => {
@@ -39,6 +39,7 @@ app.component("app", {
     {path: "/checkpoint/...", name: "Checkpoints", component: "checkpointTop"},
     {path: "/messages/", name: "Messages", component: "messages"},
     {path: "/sms/", name: "SMS", component: "sent"},
+    {path: "/stalking/", name: "Stalking", component: "stalking"},
     {path: "/alerts/", name: "Alerts", component: "alerts"},
   ],
   controller: RootController

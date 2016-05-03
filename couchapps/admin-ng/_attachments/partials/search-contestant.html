@@ -1,12 +1,10 @@
-<div class="input-group">
-  <input
-     class="form-control"
-     uib-typeahead="contestant as contestant.searchName for contestant in contestants | filter:{searchMatch: $ctrl.replace($viewValue)} | limitTo: 20"
-     class="form-control"
-     typeahead-editable="false"
-     typeahead-select-on-exact="true"
-     type="text"
-     ng-model="search"
-     placeholder="Name/Bib"
-     typeahead-on-select="$ctrl.select(search)"></input>
-</div>
+<input
+  class="form-control"
+  uib-typeahead="contestant as contestant.searchName for contestant in contestants | filter:{searchMatch: $ctrl.replace($viewValue)} | limitTo: 20"
+  class="form-control"
+  typeahead-editable="false"
+  typeahead-select-on-exact="true"
+  type="text"
+  ng-model="search"
+  placeholder="Name/Bib"
+  typeahead-on-select="$ctrl.select(search)"></input>
