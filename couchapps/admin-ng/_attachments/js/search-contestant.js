@@ -1,7 +1,8 @@
 function SearchContestantController($scope, stateService, removeDiacritics) {
 
-  // this.replace = removeDiacritics.replace;
   this.replace = removeDiacritics.replace;
+
+  this.placeholder = this.placeholder || "Name/bib";
 
   $scope.$watchCollection(() => stateService.contestants, 
       contestants => {
@@ -23,5 +24,5 @@ angular.module("steenwerck.search", ["steenwerck.state", "txx.diacritics"])
   .component("searchContestant", {
     templateUrl: "partials/search-contestant.html",
     controller: SearchContestantController,
-    bindings: { "onSelection": "&" }
+    bindings: { "onSelection": "&", "placeholder": "@?" }
   });
