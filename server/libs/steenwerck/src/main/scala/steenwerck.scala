@@ -66,6 +66,9 @@ package object steenwerck {
   def localCouch(implicit actorSystem: ActorSystem): Couch =
     couchFromConfig("steenwerck.local", actorSystem)
 
+  def proxyUrl(implicit actorSystem: ActorSystem): Option[String] =
+    config.as[Option[String]]("steenwerck.master.proxy-url")
+
   val localDbName = "steenwerck100km"
 
   def masterCouch(auth: Option[(String, String)] = None)(implicit actorSystem: ActorSystem): Couch =

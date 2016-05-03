@@ -5,7 +5,7 @@ import akka.event.Logging
 import akka.stream.scaladsl.{Broadcast, Flow, Sink}
 import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import replicate.alerts.{Alerts, RankingAlert}
 import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
@@ -121,6 +121,8 @@ class Replicate(options: Options.Config) extends LoggingError {
     }
   }
 
+  val proxyOptions: JsObject = steenwerck.proxyUrl.fold(Json.obj())(url ⇒ Json.obj("proxy" → url))
+
   try {
     if (!options.isSlave) {
       createLocalInfo(localDatabase)
@@ -130,7 +132,7 @@ class Replicate(options: Options.Config) extends LoggingError {
     if (options.replicate) {
       log.info("starting initial replication")
       try {
-        localDatabase.replicateFrom(hubDatabase).execute()(initialReplicationTimeout)
+        localDatabase.replicateFrom(hubDatabase, proxyOptions).execute()(initialReplicationTimeout)
         log.info("initial replication done")
         val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
           case Success(i) ⇒
@@ -168,8 +170,8 @@ class Replicate(options: Options.Config) extends LoggingError {
           (Json.obj("filter" → "replicate/to-download", "query_params" → queryParams), Json.obj("filter" → "replicate/to-upload"))
         } else
           (Json.obj("filter" → "replicate/no-local"), Json.obj("filter" → "replicate/no-local"))
-      val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" → true)
-      val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" → true)
+      val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" → true) ++ proxyOptions
+      val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" → true) ++ proxyOptions
       system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
         withError(localDatabase.replicateFrom(hubDatabase, replicateDownloadOptions), "cannot start remote to local replication")
         if (!options.isSlave) {
