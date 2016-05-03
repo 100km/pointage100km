@@ -13,8 +13,8 @@ function SearchContestantController($scope, stateService, removeDiacritics) {
 
   this.select = contestant => {
     if (contestant) {
-      this.onSelection({bib: contestant.bib});
       $scope.search = "";
+      this.onSelection({bib: contestant.bib});
     }
   };
 }

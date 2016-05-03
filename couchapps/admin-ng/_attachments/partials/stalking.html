@@ -1,0 +1,44 @@
+<h2>Stalkers interface</h2>
+
+<div class="row">
+  <div class="col-sm-4">
+    <form class="form-inline">
+      <div class="form-group">
+        <label>Contestant:</label>
+        <search-contestant on-selection="$ctrl.onSelection(bib)"></search-contestant>
+      </div>
+    </form>
+  </div>
+
+  <div class="col-sm-8">
+    <div ng-show="$ctrl.bib !== undefined" class="panel panel-default">
+      <div class="panel-heading">
+        <contestant bib="$ctrl.bib" infos="infos" class="panel-title"></contestant>
+      </div>
+
+      <div class="panel-body">
+        <form novalidate class="form-inline">
+          <div class="form-group">
+            <label>Phone number:</label>
+            <input type="text" class="form-control" id="phone" ng-model="$ctrl.phone" ng-model-options ="{debounce: 250}" required></input>
+            <input type="submit" ng-click="$ctrl.addStalker()" class="hidden"></input>
+          </div>
+          <span>{{$ctrl.formatNumber($ctrl.normalize($ctrl.phone))}}</span>
+          <mark ng-show="$ctrl.invalidate($ctrl.normalize($ctrl.phone))">
+            {{$ctrl.invalidate($ctrl.normalize($ctrl.phone))}}
+          </mark>
+        </form>
+
+        <div ng-show="$ctrl.stalkers.length > 0">
+          <h4>Existing phone numbers</h4>
+        <ul class="list-group">
+          <li ng-repeat="stalker in $ctrl.stalkers" class="list-group-item">
+            <span class="glyphicon glyphicon-trash" ng-click="$ctrl.removeStalker(stalker)"></span>
+            {{stalker}}
+          </li>
+        </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
