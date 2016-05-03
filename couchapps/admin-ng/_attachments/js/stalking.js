@@ -85,11 +85,6 @@ function StalkingController($scope, dbService, stateService, $timeout) {
       return translate("Number too long");
   };
 
-  this.setLang = lang => {
-    console.log("Setting lang to", lang);
-    this.lang = lang;
-  };
-
   this.addStalker = () => {
     var normalized = this.normalize(this.phone);
     if (!this.invalidate(normalized)) {
@@ -107,5 +102,6 @@ angular.module("steenwerck.stalking",
     ["steenwerck.database", "steenwerck.state", "steenwerck.search", "changes"])
   .component("stalking", {
     templateUrl: "partials/stalking.html",
-    controller: StalkingController
+    controller: StalkingController,
+    bindings: { "lang": "@?" }
   });
