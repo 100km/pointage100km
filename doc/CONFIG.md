@@ -102,9 +102,12 @@ $ docker rm -f steenwerck-replicate
       - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
   - foreach checkpoint pc X:
     - launch sudo rm -rf /var/lib/puppet
+    - launch `docker volume ls -q | grep -x steenwerck-data | xargs -r docker volume rm` to clear previous race data
     - launch sudo puppet agent --test
     - open screen
-    - in screen, launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate checkpoint X`; Stick the post-it with X and the name on the pc;
+    - in screen, launch
+        - `docker ps -a -q -f name=steenwerck-replicate | xargs -r docker rm -f` to ensure no previous containers
+        - `docker run --rm --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/usr/local/var/lib/couchdb rfc1149/pointage100km replicate checkpoint X`; Stick the post-it with X and the name on the pc;
     - in screen, launch `./couchsync --watch`
     - in screen, launch the appropriate command for getting 3G Internet:
        - `pon SFR /dev/ttyUSB3` for SFR keys (white) 1, 2, 3, 5
