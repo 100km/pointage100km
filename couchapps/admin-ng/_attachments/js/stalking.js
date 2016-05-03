@@ -95,7 +95,26 @@ function StalkingController($scope, dbService, stateService, $timeout) {
 
   this.removeStalker = stalker =>
     dbService.removeStalker(this.bib, stalker).then(response => this.stalkers = response.data);
+}
 
+function StalkersListController($scope, changesService, dbService, stateService) {
+
+  stateService.installInfos($scope);
+
+  this.totalItems = 0;
+  this.currentPage = 1;
+  this.itemsPerPage = 20;
+
+  this.loadWithStalkers = changesService.serializedFunFactory(() =>
+        dbService.getWithStalkersFrom((this.currentPage - 1) * this.itemsPerPage, this.itemsPerPage)
+          .then(response => {
+            this.totalItems = response.data.total_rows;
+            this.contestants = response.data.rows.map(row => row.value);
+          }));
+
+  changesService.filterChanges($scope, change => change.doc.type === "contestant", this.loadWithStalkers);
+
+  this.loadWithStalkers();
 }
 
 angular.module("steenwerck.stalking",
@@ -104,4 +123,12 @@ angular.module("steenwerck.stalking",
     templateUrl: "partials/stalking.html",
     controller: StalkingController,
     bindings: { "lang": "@?" }
+  })
+  .component("stalkersList", {
+    templateUrl: "partials/stalkers-list.html",
+    controller: StalkersListController
+  })
+  .component("stalkers", {
+    templateUrl: "partials/stalkers.html",
+    bindings: { "bib": "<", "stalkers": "<", infos: "<" }
   });

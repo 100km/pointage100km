@@ -1,0 +1,7 @@
+<uib-pagination total-items="$ctrl.totalItems" ng-model="$ctrl.currentPage" ng-change="$ctrl.loadWithStalkers()" items-per-page="$ctrl.itemsPerPage" max-size="10" class="pagination-sm" boundary-link-numbers="true" force-ellipses="true"></uib-pagination>
+
+<ul class="list-group">
+  <li ng-repeat="contestant in $ctrl.contestants" class="list-group-item">
+    <stalkers bib="contestant.bib" stalkers="contestant.stalkers"></stalkers>
+  </li>
+</ul>

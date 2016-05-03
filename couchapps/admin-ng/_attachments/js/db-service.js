@@ -85,6 +85,11 @@ angular.module("steenwerck.database", []).factory("dbService",
 
         removeStalker: function(bib, stalker) {
           return $http.put(updateStalker(bib), {operation: "remove", stalker: stalker});
+        },
+
+        getWithStalkersFrom: function(offset, limit) {
+          return $http.get(database + "/_design/admin-ng/_view/with-stalkers?skip=" + offset +
+             "&limit=" + limit);
         }
 
       };
