@@ -53,7 +53,7 @@ object Infos {
     val name = infos.races_names(raceId)
     val laps = infos.races_laps(raceId)
     val startTime = infos.start_times(raceId)
-    val endTime = startTime + infos.races_hours(raceId) * 24 * 3600 * 1000
+    val endTime = startTime + infos.races_hours(raceId) * 3600 * 1000
 
     def isCheckpointTimeInRace(time: Long): Boolean = time >= startTime && time <= endTime
   }

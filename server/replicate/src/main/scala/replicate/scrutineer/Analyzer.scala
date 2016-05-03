@@ -105,7 +105,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int, originalPoints: Seq[Point]
   }
 
   private[this] def dropLate: KeepRemoveFilter = { points ⇒
-    val kept = points.filter(_.timestamp <= raceInfo.endTime)
+    val kept = points.takeWhile(_.timestamp <= raceInfo.endTime)
     val late = points.drop(kept.size).map(p ⇒ RemovePoint(p.point, "Race is already finished"))
     (kept, late)
   }

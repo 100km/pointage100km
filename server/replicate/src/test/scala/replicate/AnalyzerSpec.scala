@@ -167,6 +167,13 @@ class AnalyzerSpec extends Specification with ResultMatchers {
       }
     }
 
+    "be able to use consistent race duration" in {
+      infos.races(1).endTime - infos.races(1).startTime must be equalTo 24.hours.toMillis
+      infos.races(2).endTime - infos.races(2).startTime must be equalTo 13.hours.toMillis
+      infos.races(3).endTime - infos.races(3).startTime must be equalTo 24.hours.toMillis
+      infos.races(5).endTime - infos.races(5).startTime must be equalTo 13.hours.toMillis
+    }
+
   }
 
 }
