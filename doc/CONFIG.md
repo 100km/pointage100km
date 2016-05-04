@@ -124,6 +124,7 @@ $ docker rm -f steenwerck-replicate
     - launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate slave`
     - launch friends app
       - go to /usr/local/var/lib/node/100km-results
+      - run grunt browserify (to build the webapp)
       - mv the old 100km.sqlite to 100km-<year>.sqlite
       - run grunt create-database (to recreate 100km.sqlite)
       - systemctl restart node-100kmresults-server
