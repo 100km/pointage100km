@@ -50,7 +50,7 @@ backup_replicate() {
 # Replicate from a database to another one. Args: <couch uri> <source> <target>
 replicate() {
   request POST $1/_replicate \
-    --data-binary "{\"source\":\"$2\",\"target\":\"$3\",\"filter\":\"common/to-replicate\"}" \
+    --data-binary "{\"source\":\"$2\",\"target\":\"$3\",\"filter\":\"replicate/no-local\"}" \
     -H "Content-Type: application/json" > /dev/null
 }
 
