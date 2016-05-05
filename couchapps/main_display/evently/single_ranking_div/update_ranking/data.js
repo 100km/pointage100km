@@ -53,6 +53,7 @@ function(data) {
       item.zipcode    = current_contestant.zipcode;
       item.city       = current_contestant.city;
       item.cat_name   = app.cat_names[current_contestant.cat];
+      item.sex        = current_contestant.sex;
 
       // default font
       item.font_weight = "normal";
