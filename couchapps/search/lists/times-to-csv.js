@@ -39,9 +39,11 @@ function(head, req) {
       if ((row.value.bib >= 662  && row.value.bib <= 664) ||
           (row.value.bib >= 1159 && row.value.bib <= 1161) )
         race_id = race_id - 1;
-      if (row.value.bib == 663 || row.value.bib == 1160)
+      if (row.value.bib == 662 || row.value.bib == 1160)
+        lap = 0;
+      if (row.value.bib == 663 || row.value.bib == 1159)
         lap = 1;
-      if (row.value.bib == 664 || row.value.bib == 1162)
+      if (row.value.bib == 664 || row.value.bib == 1161)
         lap = 2;
 
       // race_description is hard-coded

@@ -1,4 +1,5 @@
-//Unused ?
+//Use with search/lists/times-to-csv.js to export times in sql with include_docs=true:
+// <host/db>/_design/search/_list/times-to-csv/all-times-and-infos?include_docs=true
 //TODO teams
 function(doc) {
   if (doc._id == "infos")
