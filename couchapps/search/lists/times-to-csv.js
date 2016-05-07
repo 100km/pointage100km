@@ -36,15 +36,15 @@ function(head, req) {
 
       // Special case for teams... (order was 566, 564, 565) change race_id and lap...
       // in 2016, there are 2 teams, order was 662, 663, 664 and 1159, 1160, 1161
-      if ((row.value.bib >= 662  && row.value.bib <= 664) ||
-          (row.value.bib >= 1159 && row.value.bib <= 1161) )
-        race_id = race_id - 1;
-      if (row.value.bib == 662 || row.value.bib == 1160)
-        lap = 0;
-      if (row.value.bib == 663 || row.value.bib == 1159)
-        lap = 1;
-      if (row.value.bib == 664 || row.value.bib == 1161)
-        lap = 2;
+      //if ((row.value.bib >= 662  && row.value.bib <= 664) ||
+      //    (row.value.bib >= 1159 && row.value.bib <= 1161) )
+      //  race_id = race_id - 1;
+      //if (row.value.bib == 662 || row.value.bib == 1160)
+      //  lap = 0;
+      //if (row.value.bib == 663 || row.value.bib == 1159)
+      //  lap = 1;
+      //if (row.value.bib == 664 || row.value.bib == 1161)
+      //  lap = 2;
 
       // race_description is hard-coded
       send("(" + [63 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
