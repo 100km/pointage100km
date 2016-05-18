@@ -8,12 +8,12 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 SbtScalariform.scalariformSettings
 
 lazy val akka =
-  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.4",
-                                  "com.typesafe.akka" %% "akka-slf4j" % "2.4.4",
-                                  "com.typesafe.akka" %% "akka-agent" % "2.4.4",
-                                  "com.typesafe.akka" %% "akka-stream" % "2.4.4",
-                                  "com.typesafe.akka" %% "akka-http-core" % "2.4.4",
-                                  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.4" % "test",
+  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.5",
+                                  "com.typesafe.akka" %% "akka-slf4j" % "2.4.5",
+                                  "com.typesafe.akka" %% "akka-agent" % "2.4.5",
+                                  "com.typesafe.akka" %% "akka-stream" % "2.4.5",
+                                  "com.typesafe.akka" %% "akka-http-core" % "2.4.5",
+                                  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.5" % "test",
                                   "com.iheart" %% "ficus" % "1.2.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.7"))
 
