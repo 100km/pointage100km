@@ -15,7 +15,10 @@ import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.stalking.StalkingService.{InitialFailure, InitialNotifications}
 import replicate.state.ContestantState
+import replicate.utils.Types._
 import replicate.utils.{FormatUtils, Global, Glyphs}
+
+import scalaz.@@
 
 /**
  * This class will keep the list of stalkers for every contestant up-to-date, and will also maintain
@@ -29,12 +32,12 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
   override val requestStrategy = OneByOneRequestStrategy
 
   // Map of contestant to signalled distance
-  private[this] var stalkingInfo: Map[Int, Double] = Map()
+  private[this] var stalkingInfo: Map[Int @@ ContestantId, Double] = Map()
 
   override def preStart = {
     context.watch(textService)
     context.become(receiveInitial)
-    database.view[Int, JsObject]("replicate", "sms-distance", List("group" → "true")).map(_.map {
+    database.view[Int @@ ContestantId, JsObject]("replicate", "sms-distance", List("group" → "true")).map(_.map {
       case (k, v) ⇒ (k, (v \ "max").as[Double])
     }).transform(InitialNotifications, InitialFailure).pipeTo(self)
   }
@@ -119,7 +122,7 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
 
 object StalkingService {
 
-  private case class InitialNotifications(notifications: Seq[(Int, Double)])
+  private case class InitialNotifications(notifications: Seq[(Int @@ ContestantId, Double)])
   private case class InitialFailure(throwable: Throwable) extends Exception
 
   def stalkingServiceSink(database: Database, textService: ActorRef)(implicit context: ActorRefFactory) =

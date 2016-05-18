@@ -2,8 +2,11 @@ package replicate.models
 
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import replicate.utils.Types._
 
-case class CheckpointData(raceId: Int, contestantId: Int, siteId: Int, timestamps: List[Long],
+import scalaz.@@
+
+case class CheckpointData(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId, siteId: Int @@ SiteId, timestamps: List[Long],
     deletedTimestamps: List[Long], insertedTimestamps: List[Long]) {
 
   /**
@@ -40,9 +43,9 @@ object CheckpointData {
   // administration tools may not insert them initially.
   implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js ⇒
     try {
-      val raceId = (js \ "race_id").as[Int]
-      val contestantId = (js \ "bib").as[Int]
-      val siteId = (js \ "site_id").as[Int]
+      val raceId = RaceId((js \ "race_id").as[Int])
+      val contestantId = ContestantId((js \ "bib").as[Int])
+      val siteId = SiteId((js \ "site_id").as[Int])
       val timestamps = (js \ "times").as[List[Long]]
       val deletedTimestamps = (js \ "deleted_times").asOpt[List[Long]].getOrElse(Nil)
       val insertedTimestamps = (js \ "artificial_times").asOpt[List[Long]].getOrElse(Nil)
@@ -53,9 +56,9 @@ object CheckpointData {
   }
 
   implicit val checkpointDataWrites: Writes[CheckpointData] = (
-    (JsPath \ "race_id").write[Int] and
-    (JsPath \ "bib").write[Int] and
-    (JsPath \ "site_id").write[Int] and
+    (JsPath \ "race_id").write[Int @@ RaceId] and
+    (JsPath \ "bib").write[Int @@ ContestantId] and
+    (JsPath \ "site_id").write[Int @@ SiteId] and
     (JsPath \ "times").write[List[Long]] and
     (JsPath \ "deleted_times").write[List[Long]] and
     (JsPath \ "artificial_times").write[List[Long]]

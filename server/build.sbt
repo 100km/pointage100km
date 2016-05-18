@@ -37,6 +37,8 @@ lazy val mysql =
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
                                   "mysql" % "mysql-connector-java" % "6.0.2"))
 
+lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.2")
+
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.8",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
@@ -57,7 +59,7 @@ lazy val stats =
 
 lazy val replicate =
   Project("replicate", file("replicate"), settings = common ++ akka ++ scopt ++ specs2 ++
-    csv ++ Revolver.settings) dependsOn(canape, steenwerck, rxtelegram, octopush)
+    csv ++ scalaz ++ Revolver.settings) dependsOn(canape, steenwerck, rxtelegram, octopush)
 
 lazy val loader =
   Project("loader", file("loader"), settings = common ++ akka ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)

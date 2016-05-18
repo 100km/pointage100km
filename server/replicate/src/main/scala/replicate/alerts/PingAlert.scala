@@ -14,10 +14,12 @@ import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.state.PingState
 import replicate.utils.Global.CheckpointAlerts._
+import replicate.utils.Types.SiteId
 import replicate.utils._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scalaz.@@
 
 object PingAlert {
 
@@ -33,7 +35,7 @@ object PingAlert {
   case object Warning extends State
   case object Critical extends State
 
-  private class CheckpointWatcher(siteId: Int, database: Database) extends Actor with ActorLogging {
+  private class CheckpointWatcher(siteId: Int @@ SiteId, database: Database) extends Actor with ActorLogging {
 
     import CheckpointWatcher._
     private[this] var currentNotification: Option[UUID] = None
@@ -144,9 +146,9 @@ object PingAlert {
   /**
    * Return the timestamp corresponding to the last proof of live of a site.
    */
-  private def lastPing(siteId: Int, database: Database)(implicit ec: ExecutionContext): Future[Option[Long]] =
+  private def lastPing(siteId: Int @@ SiteId, database: Database)(implicit ec: ExecutionContext): Future[Option[Long]] =
     database.view[Int, JsObject]("admin", "alive",
-      Seq("startkey" → siteId.toString, "endkey" → siteId.toString, "group" → "true")).map { rows ⇒
+      Seq("startkey" → SiteId.unwrap(siteId).toString, "endkey" → SiteId.unwrap(siteId).toString, "group" → "true")).map { rows ⇒
         rows.headOption.map(row ⇒ (row._2 \ "max").as[Long])
       }
 
@@ -155,7 +157,7 @@ object PingAlert {
   private def docToSite(js: JsObject): Option[Int] =
     siteRegex.findFirstMatchIn((js \ "_id").as[String]).map(_.group(2).toInt)
 
-  private def docToMaxTimestamp(siteId: Int, database: Database): Flow[JsObject, Long, NotUsed] =
+  private def docToMaxTimestamp(siteId: Int @@ SiteId, database: Database): Flow[JsObject, Long, NotUsed] =
     Flow[JsObject].flatMapConcat { doc ⇒
       if ((doc \ "_deleted").asOpt[Boolean].contains(true))
         Source.fromFuture(lastPing(siteId, database).map(_.getOrElse(-1)))
@@ -189,9 +191,9 @@ object PingAlert {
 
     in ~> Flow[JsObject].map(js ⇒ (js \ "doc").as[JsObject]) ~> partition
     for (siteId ← 0 until sites) {
-      val actorRef = context.actorOf(Props(new CheckpointWatcher(siteId, database)))
+      val actorRef = context.actorOf(Props(new CheckpointWatcher(SiteId(siteId), database)))
       partition.out(siteId) ~> Flow[JsObject].prepend(Source.single(Json.obj("_deleted" → true))) ~>
-        docToMaxTimestamp(siteId, database) ~> Sink.actorRefWithAck[Long](actorRef, Initial, Ack, Complete)
+        docToMaxTimestamp(SiteId(siteId), database) ~> Sink.actorRefWithAck[Long](actorRef, Initial, Ack, Complete)
     }
     partition.out(sites) ~> Sink.ignore
     ClosedShape

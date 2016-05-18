@@ -3,6 +3,10 @@ package replicate.utils
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Query
 import play.api.libs.json.{Json, Reads}
+import replicate.utils.Types._
+
+import scalaz.@@
+import scalaz.Scalaz._
 
 case class Infos(
     cat_names: Array[String],
@@ -19,24 +23,24 @@ case class Infos(
 
   import Infos._
 
-  val races: Map[Int, RaceInfo] =
-    races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(id ⇒ id → new RaceInfo(id, this)).toMap
+  val races: Map[Int @@ RaceId, RaceInfo] =
+    races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(RaceId[Int]).map(id ⇒ id → new RaceInfo(id, this)).toMap
 
-  val checkpoints: Map[Int, CheckpointInfo] =
-    sites.indices.map(id ⇒ id → new CheckpointInfo(id, this)).toMap
+  val checkpoints: Map[Int @@ SiteId, CheckpointInfo] =
+    sites.indices.map(SiteId[Int]).map(id ⇒ id → new CheckpointInfo(id, this)).toMap
 
   /**
    * Mapping of distances in kilometers from (siteId, lap)
    */
-  val distances: Map[(Int, Int), Double] = {
-    var d: Map[(Int, Int), Double] = Map()
-    for (lap ← 1 to races_laps.max; siteId ← sites.indices) {
+  val distances: Map[(Int @@ SiteId, Int @@ Lap), Double] = {
+    var d: Map[(Int @@ SiteId, Int @@ Lap), Double] = Map()
+    for (lap ← (1 |-> races_laps.max).map(Lap[Int]); siteId ← sites.indices.map(SiteId[Int])) {
       d += (siteId, lap) → distance(siteId, lap)
     }
     d
   }
 
-  def distance(siteId: Int, lap: Int): Double = kms_lap * (lap - 1) + kms_offset(siteId)
+  def distance(siteId: Int @@ SiteId, lap: Int @@ Lap): Double = kms_lap * (Lap.unwrap(lap) - 1) + kms_offset(SiteId.unwrap(siteId))
 
 }
 
@@ -49,19 +53,19 @@ object Infos {
   implicit val coordinatesRead: Reads[Coordinates] = Json.reads[Coordinates]
   implicit val infosReads: Reads[Infos] = Json.reads[Infos]
 
-  class RaceInfo(val raceId: Int, infos: Infos) {
-    val name = infos.races_names(raceId)
-    val laps = infos.races_laps(raceId)
-    val startTime = infos.start_times(raceId)
-    val endTime = startTime + infos.races_hours(raceId) * 3600 * 1000
+  class RaceInfo(val raceId: Int @@ RaceId, infos: Infos) {
+    val name = infos.races_names(RaceId.unwrap(raceId))
+    val laps = infos.races_laps(RaceId.unwrap(raceId))
+    val startTime = infos.start_times(RaceId.unwrap(raceId))
+    val endTime = startTime + infos.races_hours(RaceId.unwrap(raceId)) * 3600 * 1000
 
     def isCheckpointTimeInRace(time: Long): Boolean = time >= startTime && time <= endTime
   }
 
-  class CheckpointInfo(val checkpointId: Int, infos: Infos) {
-    val name = infos.sites(checkpointId)
-    val kms = infos.kms_offset(checkpointId)
-    val coordinates = infos.sites_coordinates(checkpointId)
+  class CheckpointInfo(val checkpointId: Int @@ SiteId, infos: Infos) {
+    val name = infos.sites(SiteId.unwrap(checkpointId))
+    val kms = infos.kms_offset(SiteId.unwrap(checkpointId))
+    val coordinates = infos.sites_coordinates(SiteId.unwrap(checkpointId))
   }
 
 }

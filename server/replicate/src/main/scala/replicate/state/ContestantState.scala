@@ -9,12 +9,15 @@ import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import replicate.models.Contestant
+import replicate.utils.Types.ContestantId
+
+import scalaz.@@
 
 object ContestantState {
 
   import replicate.utils.Global.dispatcher
 
-  private val contestantAgent = Agent(Map[Int, Contestant]())
+  private val contestantAgent = Agent(Map[Int @@ ContestantId, Contestant]())
 
   def startContestantAgent(database: Database)(implicit log: LoggingAdapter, fm: Materializer): Unit =
     database.viewWithUpdateSeq[JsValue, Contestant]("common", "all_contestants").foreach {
@@ -42,7 +45,7 @@ object ContestantState {
    * @param contestantId the bib
    * @return the contestant if it exists
    */
-  def contestantFromId(contestantId: Int): Option[Contestant] =
+  def contestantFromId(contestantId: Int @@ ContestantId): Option[Contestant] =
     contestantAgent().get(contestantId)
 
 }

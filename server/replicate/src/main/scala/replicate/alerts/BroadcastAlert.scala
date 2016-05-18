@@ -7,7 +7,10 @@ import net.rfc1149.canape.Database
 import play.api.libs.json._
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity
+import replicate.utils.Types._
 import replicate.utils.{Global, Glyphs}
+
+import scalaz.@@
 
 private class BroadcastAlert {
 
@@ -40,7 +43,7 @@ private class BroadcastAlert {
 
 object BroadcastAlert {
 
-  case class Broadcast(_id: String, message: String, target: Option[Int], addedTS: Long, deletedTS: Option[Long]) {
+  case class Broadcast(_id: String, message: String, target: Option[Int @@ SiteId], addedTS: Long, deletedTS: Option[Long]) {
 
     val isDeleted: Boolean = deletedTS.isDefined
 

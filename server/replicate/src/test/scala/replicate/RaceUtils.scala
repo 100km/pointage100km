@@ -3,6 +3,7 @@ package replicate
 import play.api.libs.json.Json
 import replicate.models.CheckpointData
 import replicate.state.CheckpointsState
+import replicate.utils.Types.RaceId
 import replicate.utils.{Global, Infos}
 
 import scala.concurrent.Future
@@ -20,7 +21,7 @@ object RaceUtils {
   def installFullRace(pristine: Boolean = false): Future[Int] = {
     val infos = loadInfos
     CheckpointsState.reset()
-    Future.sequence(for (checkpointData ← loadRaceData if checkpointData.raceId > 0) yield {
+    Future.sequence(for (checkpointData ← loadRaceData if RaceId.unwrap(checkpointData.raceId) > 0) yield {
       CheckpointsState.setTimes(if (pristine) checkpointData.pristine else checkpointData)
     }).map(_.size)
   }

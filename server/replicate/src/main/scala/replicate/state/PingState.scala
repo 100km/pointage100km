@@ -2,14 +2,16 @@ package replicate.state
 
 import akka.Done
 import akka.agent.Agent
+import replicate.utils.Types.SiteId
 
 import scala.concurrent.Future
+import scalaz.@@
 
 object PingState {
 
   import replicate.utils.Global.dispatcher
 
-  val lastPings: Agent[Map[Int, Long]] = Agent(Map())
+  val lastPings: Agent[Map[Int @@ SiteId, Long]] = Agent(Map())
 
   /**
    * Set the timestamp of the last ping seen for a given site.
@@ -18,7 +20,7 @@ object PingState {
    * @param timestamp the latest timestamp for this site
    * @return a future completed when the write has been performed
    */
-  def setLastPing(siteId: Int, timestamp: Long): Future[Done] =
+  def setLastPing(siteId: Int @@ SiteId, timestamp: Long): Future[Done] =
     lastPings.alter(_ + (siteId → timestamp)).map(_ ⇒ Done)
 
   /**
@@ -27,7 +29,7 @@ object PingState {
    * @param siteId the site id
    * @return a future completed when the removal has been performed
    */
-  def removePing(siteId: Int): Future[Done] =
+  def removePing(siteId: Int @@ SiteId): Future[Done] =
     lastPings.alter(_ - siteId).map(_ ⇒ Done)
 
   /**
@@ -36,7 +38,7 @@ object PingState {
    * @param siteId the site id
    * @return a Future containing an Option with the last timestamp
    */
-  def getLastPing(siteId: Int): Future[Option[Long]] = lastPings.future.map(_.get(siteId))
+  def getLastPing(siteId: Int @@ SiteId): Future[Option[Long]] = lastPings.future.map(_.get(siteId))
 
   /**
    * Get the latest timestamp for a time without waiting for the current writes to be performed.
@@ -44,6 +46,6 @@ object PingState {
    * @param siteId the site id
    * @return an Option with the last timestamp
    */
-  def getLastPingImmediate(siteId: Int): Option[Long] = lastPings().get(siteId)
+  def getLastPingImmediate(siteId: Int @@ SiteId): Option[Long] = lastPings().get(siteId)
 
 }

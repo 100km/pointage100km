@@ -1,8 +1,10 @@
 package replicate
 
 import org.specs2.mutable._
+
 import play.api.libs.json.Json
 import replicate.models.CheckpointData
+import replicate.utils.Types._
 
 class CheckpointDataSpec extends Specification {
 
@@ -38,9 +40,9 @@ class CheckpointDataSpec extends Specification {
 
     "be readable from a Json document" in {
       val cpd = js.as[CheckpointData]
-      cpd.raceId must be equalTo 2
-      cpd.contestantId must be equalTo 42
-      cpd.siteId must be equalTo 3
+      cpd.raceId must be equalTo RaceId(2)
+      cpd.contestantId must be equalTo ContestantId(42)
+      cpd.siteId must be equalTo SiteId(3)
       cpd.timestamps must be equalTo List(1000, 1001)
       cpd.deletedTimestamps must be equalTo List(1002)
       cpd.insertedTimestamps must be equalTo List(1001)
@@ -48,9 +50,9 @@ class CheckpointDataSpec extends Specification {
 
     "be readable from an incomplete Json document" in {
       val cpd = partialJs.as[CheckpointData]
-      cpd.raceId must be equalTo 2
-      cpd.contestantId must be equalTo 42
-      cpd.siteId must be equalTo 3
+      cpd.raceId must be equalTo RaceId(2)
+      cpd.contestantId must be equalTo ContestantId(42)
+      cpd.siteId must be equalTo SiteId(3)
       cpd.timestamps must be equalTo List(1000, 1001)
       cpd.deletedTimestamps must be equalTo Nil
       cpd.insertedTimestamps must be equalTo Nil
@@ -70,9 +72,9 @@ class CheckpointDataSpec extends Specification {
 
     "be transformable into a pristine object" in {
       val cpd = js.as[CheckpointData].pristine
-      cpd.raceId must be equalTo 2
-      cpd.contestantId must be equalTo 42
-      cpd.siteId must be equalTo 3
+      cpd.raceId must be equalTo RaceId(2)
+      cpd.contestantId must be equalTo ContestantId(42)
+      cpd.siteId must be equalTo SiteId(3)
       cpd.timestamps must be equalTo List(1000, 1002)
       cpd.deletedTimestamps must be equalTo Nil
       cpd.insertedTimestamps must be equalTo Nil
@@ -80,8 +82,8 @@ class CheckpointDataSpec extends Specification {
 
     "be mergeable with another checkpoint" in {
       val cpd = js.as[CheckpointData]
-      val cpd2 = CheckpointData(2, 42, 3, List(1002, 1003, 1004), List(1000), List(1004))
-      cpd.merge(cpd2) must be equalTo CheckpointData(2, 42, 3, List(1001, 1003, 1004), List(1000, 1002), List(1001, 1004))
+      val cpd2 = CheckpointData(RaceId(2), ContestantId(42), SiteId(3), List(1002, 1003, 1004), List(1000), List(1004))
+      cpd.merge(cpd2) must be equalTo CheckpointData(RaceId(2), ContestantId(42), SiteId(3), List(1001, 1003, 1004), List(1000, 1002), List(1001, 1004))
     }
 
     "be idempotent while merging itself" in {
