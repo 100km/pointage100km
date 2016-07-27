@@ -8,13 +8,13 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 SbtScalariform.scalariformSettings
 
 lazy val akka =
-  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.5",
-                                  "com.typesafe.akka" %% "akka-slf4j" % "2.4.5",
-                                  "com.typesafe.akka" %% "akka-agent" % "2.4.5",
-                                  "com.typesafe.akka" %% "akka-stream" % "2.4.5",
-                                  "com.typesafe.akka" %% "akka-http-core" % "2.4.5",
-                                  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.5" % "test",
-                                  "com.iheart" %% "ficus" % "1.2.2",
+  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.4.8",
+                                  "com.typesafe.akka" %% "akka-slf4j" % "2.4.8",
+                                  "com.typesafe.akka" %% "akka-agent" % "2.4.8",
+                                  "com.typesafe.akka" %% "akka-stream" % "2.4.8",
+                                  "com.typesafe.akka" %% "akka-http-core" % "2.4.8",
+                                  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.8" % "test",
+                                  "com.iheart" %% "ficus" % "1.2.6",
                                   "ch.qos.logback" % "logback-classic" % "1.1.7"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
@@ -25,19 +25,19 @@ lazy val assemble =
       assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript)),
       test in assembly := {})
 
-lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.4.0")
+lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0")
 
-lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.7" % "test",
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.8.4" % "test",
                       fork in Test := true)
 
-lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.0")
+lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.3")
 
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("org.apache.commons" % "commons-dbcp2" % "2.1.1",
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
-                                  "mysql" % "mysql-connector-java" % "6.0.2"))
+                                  "mysql" % "mysql-connector-java" % "6.0.3"))
 
-lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.2")
+lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.4")
 
 lazy val common = Project.defaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.8",
