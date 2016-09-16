@@ -83,9 +83,10 @@ class ReplicateSpec extends Specification with After {
       val id = "checkpoint-98-11000"
       val base = Json.obj("_id" → id, "bib" → 11000, "race_id" → 19, "site_id" → 98,
         "uuid" → UUID.randomUUID().toString, "type" → "checkpoint")
-      val cp1 = base ++ Json.obj("times" → Array(1, 2, 8), "deleted_times" → Array(4), "_rev" → "0-cp1")
-      val cp2 = base ++ Json.obj("times" → Array(4, 5, 7), "artificial_times" → Array(5), "_rev" → "0-cp2")
-      val cp3 = base ++ Json.obj("times" → Array(3, 6, 9), "_rev" → "0-cp3")
+      val timeBase = System.currentTimeMillis() / 1000
+      val cp1 = base ++ Json.obj("times" → Array(1, 2, 8), "deleted_times" → Array(4), "_rev" → s"$timeBase-cp1")
+      val cp2 = base ++ Json.obj("times" → Array(4, 5, 7), "artificial_times" → Array(5), "_rev" → s"$timeBase-cp2")
+      val cp3 = base ++ Json.obj("times" → Array(3, 6, 9), "_rev" → s"$timeBase-cp3")
       waitForResult(bulkDelInsert(id, cp1, cp2, cp3))
       Thread.sleep(6000)
       val c = waitForResult(get(cp1))
