@@ -3,7 +3,7 @@ package replicate.alerts
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import akka.NotUsed
+import akka.{Done, NotUsed}
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRefFactory, Cancellable, Props}
 import akka.stream._
@@ -178,7 +178,7 @@ object PingAlert {
         }
     }
 
-  private def pingAlerts(database: Database)(implicit context: ActorRefFactory) = RunnableGraph.fromGraph(GraphDSL.create() { implicit b ⇒
+  private def pingAlerts(database: Database)(implicit context: ActorRefFactory): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore, Sink.ignore) { case (s1, s2) => s1 } { implicit b ⇒ (sink, s2) =>
     import CheckpointWatcher._
     import GraphDSL.Implicits._
 
@@ -189,13 +189,14 @@ object PingAlert {
       case None    ⇒ sites
     }))
 
+
     in ~> Flow[JsObject].map(js ⇒ (js \ "doc").as[JsObject]) ~> partition
     for (siteId ← 0 until sites) {
       val actorRef = context.actorOf(Props(new CheckpointWatcher(SiteId(siteId), database)))
       partition.out(siteId) ~> Flow[JsObject].prepend(Source.single(Json.obj("_deleted" → true))) ~>
         docToMaxTimestamp(SiteId(siteId), database) ~> Sink.actorRefWithAck[Long](actorRef, Initial, Ack, Complete)
     }
-    partition.out(sites) ~> Sink.ignore
+    partition.out(sites) ~> sink
     ClosedShape
   })
 
