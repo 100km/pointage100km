@@ -27,7 +27,7 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0")
 
-lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.8.4" % "test",
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.8.5" % "test",
                       fork in Test := true)
 
 lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.3")
@@ -35,7 +35,7 @@ lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" 
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("org.apache.commons" % "commons-dbcp2" % "2.1.1",
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
-                                  "mysql" % "mysql-connector-java" % "6.0.3"))
+                                  "mysql" % "mysql-connector-java" % "6.0.4"))
 
 lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.4")
 
