@@ -178,7 +178,7 @@ object PingAlert {
         }
     }
 
-  private def pingAlerts(database: Database)(implicit context: ActorRefFactory): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore, Sink.ignore) { case (s1, s2) => s1 } { implicit b ⇒ (sink, s2) =>
+  private def pingAlerts(database: Database)(implicit context: ActorRefFactory): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore, Sink.ignore) { case (s1, s2) ⇒ s1 } { implicit b ⇒ (sink, s2) ⇒
     import CheckpointWatcher._
     import GraphDSL.Implicits._
 
@@ -188,7 +188,6 @@ object PingAlert {
       case Some(n) ⇒ n
       case None    ⇒ sites
     }))
-
 
     in ~> Flow[JsObject].map(js ⇒ (js \ "doc").as[JsObject]) ~> partition
     for (siteId ← 0 until sites) {
