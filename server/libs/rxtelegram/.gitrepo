@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:samueltardieu/rxtelegram
+	branch = master
+	commit = 12e70e8f0a887fd00f00cfeaed136bd2d0e59f05
+	parent = 6e78560bea58b67cb8014f995f2c88b835f2553f
+	cmdver = 0.3.0
