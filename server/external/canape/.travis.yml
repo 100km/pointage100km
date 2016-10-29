@@ -1,0 +1,18 @@
+language: scala
+jdk:
+  - oraclejdk8
+sudo: false
+scala:
+  - 2.11.8
+services:
+  - docker
+env:
+  matrix:
+    - DOCKERIMAGE=rfc1149/couchdb:1.x.x
+    - DOCKERIMAGE=klaemo/couchdb:2.0.0
+  global:
+    secure: ALtSdAp4wFe55/RY2+XYL8zkpwmxlIUpklbfIVzfvB+8rMMOyRxDnVbQX8DAZEqgTvQpddghOJLbqJTXwfF1MuuSVMsRpa8/iCgl6dB4fCv4YlHaLK0mb96ca0vFV0dUnp+gy9u3tNkuVAWzqlDkPf2lMreYkKlNqiqGELsFOp4=
+before_install:
+  - docker run -d -p 5984:5984 $DOCKERIMAGE
+script:
+  - sbt clean coverage test coverageReport codacyCoverage
