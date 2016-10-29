@@ -66,10 +66,10 @@ lazy val loader =
 
 lazy val wipe = Project("wipe", file("wipe"), settings = common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
-lazy val canape = RootProject(file("libs/canape"))
+lazy val canape = RootProject(file("external/canape"))
 
-lazy val octopush = RootProject(file("libs/octopush-akka"))
+lazy val octopush = RootProject(file("external/octopush-akka"))
 
 lazy val steenwerck = Project("steenwerck", file("libs/steenwerck"), settings = common ++ akka) dependsOn(canape)
 
-lazy val rxtelegram = RootProject(file("libs/rxtelegram"))
+lazy val rxtelegram = RootProject(file("external/rxtelegram"))
