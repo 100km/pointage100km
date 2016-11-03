@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   "de.heikoseeberger" %% "akka-http-play-json" % "1.10.1",
   "com.iheart" %% "ficus" % "1.2.6",
   "commons-io" % "commons-io" % "2.5",
-  "org.specs2" %% "specs2-core" % "3.8.5" % "test"
+  "org.specs2" %% "specs2-core" % "3.8.5.1" % "test"
 )
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")

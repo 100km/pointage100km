@@ -31,8 +31,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-experimental" % "2.4.11",
   "de.heikoseeberger" %% "akka-http-play-json" % "1.10.1",
   "com.iheart" %% "ficus" % "1.2.6",
-  "org.specs2" %% "specs2-core" % "3.8.5" % "test",
-  "org.specs2" %% "specs2-mock" % "3.8.5" % "test"
+  "org.specs2" %% "specs2-core" % "3.8.5.1" % "test",
+  "org.specs2" %% "specs2-mock" % "3.8.5.1" % "test"
 )
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
