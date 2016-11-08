@@ -1,17 +1,13 @@
 package net.rfc1149.rxtelegram
 
-import akka.actor.Actor
+import akka.actor.{Actor, Stash}
 import net.rfc1149.rxtelegram.Bot._
 import net.rfc1149.rxtelegram.model._
 
-trait ChatActorBot extends Actor {
+trait ChatActorBot extends Actor with Stash {
 
-  protected[this] var me: User = _
-  protected[this] var chat: Chat = null
-  protected[this] var target: To = _
-
-  def ready_to_send(): Unit = {}
-  def ready(): Unit = {}
+  protected[this] var me: Option[User] = None
+  protected[this] var chat: Option[Chat] = None
 
   def handleMessage(message: Message): Unit
 
@@ -20,20 +16,19 @@ trait ChatActorBot extends Actor {
 
   def receive = {
     case (user: User, chat_id: Long) ⇒
-      me = user
-      target = To(chat_id)
-      ready_to_send()
+      me = Some(user)
+      context.become(receiveWork(To(chat_id)))
+      unstashAll()
+    case _ ⇒
+      stash()
+  }
 
+  private[this] def receiveWork(target: Target): Receive = {
     case message: Message ⇒
-      if (chat == null) {
-        chat = message.chat
-        ready()
-      }
+      chat = chat.orElse(Some(message.chat))
       handleMessage(message)
-
     case action: Action ⇒
       context.parent.forward(Targetted(target, action))
-
     case other ⇒
       handleOther(other)
   }

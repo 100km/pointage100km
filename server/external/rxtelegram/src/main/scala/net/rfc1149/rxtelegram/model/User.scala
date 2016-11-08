@@ -6,7 +6,10 @@ case class User(id: Long, first_name: String, last_name: Option[String], usernam
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[User]
 
-  override def equals(other: Any): Boolean = id == other.asInstanceOf[User].id
+  override def equals(other: Any): Boolean = other match {
+    case that: User ⇒ id == that.id
+    case _          ⇒ false
+  }
 
   def fullName: String = first_name + last_name.fold("")(' ' + _)
 }
