@@ -6,6 +6,6 @@
 [subrepo]
 	remote = git@github.com:samueltardieu/rxtelegram
 	branch = master
-	commit = 313cb55706503dbfefeab034d0e77c8771b82cf1
-	parent = 088ffb48724ef6f8e04a04040d81104e01283976
+	commit = 10433086053fa977f3f69d55652e86e79c279cc5
+	parent = ec81cd1955659eef3410a6096c91368f33a20ab2
 	cmdver = 0.3.0
