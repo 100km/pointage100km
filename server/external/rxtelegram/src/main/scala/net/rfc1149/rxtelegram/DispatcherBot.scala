@@ -9,13 +9,17 @@ abstract class DispatcherBot(token: String) extends ActorBot(token) with ChatDis
 
   def createActor(chat: Chat, message: Message, context: ActorContext): Option[ActorRef]
 
+  private[this] def registerChatActor(chat_id: Long, actorRef: ActorRef): Unit = {
+    actorRef ! (me, chat_id)
+    addChat(chat_id, actorRef)
+  }
+
   override def handleMessage(message: Message): Unit = {
     val chat = message.chat
     val chat_id = chat.id
     actorRef(chat_id).fold {
       for (actorRef ← createActor(chat, message, context)) {
-        addChat(chat_id, actorRef)
-        actorRef ! (me, chat_id)
+        registerChatActor(chat_id, actorRef)
         actorRef ! message
       }
     } {
@@ -25,9 +29,7 @@ abstract class DispatcherBot(token: String) extends ActorBot(token) with ChatDis
 
   override def handleOther(other: Any): Unit = other match {
     case CreateChat(chat_id: Long, props: Props, name: String) ⇒
-      val actorRef = context.actorOf(props, name)
-      addChat(chat_id, actorRef)
-      actorRef ! (me, chat_id)
+      registerChatActor(chat_id, context.actorOf(props, name))
     case RemoveChat(id) ⇒
       removeChat(id)
     case _ ⇒
@@ -37,9 +39,6 @@ abstract class DispatcherBot(token: String) extends ActorBot(token) with ChatDis
 }
 
 object DispatcherBot {
-
-  case class RemoveChat(chat_id: Long)
-
   case class CreateChat(chat_id: Long, props: Props, name: String)
-
+  case class RemoveChat(chat_id: Long)
 }

@@ -1,22 +1,20 @@
 package net.rfc1149.rxtelegram
 
-import akka.NotUsed
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Stash}
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
-import akka.stream.{ActorMaterializer, Materializer, ThrottleMode}
+import akka.stream.{ActorMaterializer, Materializer}
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.rxtelegram.Bot.{ActionAnswerInlineQuery, Command}
 import net.rfc1149.rxtelegram.model._
-import net.rfc1149.rxtelegram.model.inlinequeries.InlineQuery
 import net.rfc1149.rxtelegram.model.media.Media
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class ActorBot(val token: String, val config: Config = ConfigFactory.load()) extends Actor with ActorLogging with Stash with Bot {
+abstract class ActorBot(val token: String, val config: Config = ConfigFactory.load()) extends Actor with ActorLogging with Stash with Bot with UpdateHandler {
 
   import ActorBot._
 
@@ -27,12 +25,6 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
   private[this] val httpErrorRetryDelay = config.as[FiniteDuration]("rxtelegram.http-error-retry-delay")
 
   protected[this] var me: User = _
-
-  protected[this] def handleMessage(message: Message): Unit
-
-  protected[this] def handleInlineQuery(inlineQuery: InlineQuery): Unit = sys.error("unhandled inline query")
-
-  protected[this] def handleChosenInlineResult(chosenInlineResult: ChosenInlineResult): Unit = sys.error("unhandled chosen inline result")
 
   protected[this] def handleOther(other: Any): Unit = {
     log.info("received unknown content: {}", other)
@@ -50,8 +42,7 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
       setWebhook("")
       unstashAll()
       context.become(receiveIKnowMe)
-      // There is no backpressure here so we have to throttle manually
-      UpdateSource(token, config).throttle(10, 1.second, 20, ThrottleMode.Shaping).runWith(Sink.actorRef(self, NotUsed))
+      UpdateSource(token, config).runWith(Sink.actorRefWithAck(self, Init, Ack, Complete, Fail))
 
     case Failure(t) ⇒
       log.error(t, "error when getting information about myself, will retry in {}", httpErrorRetryDelay)
@@ -64,14 +55,26 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
   private[this] var ongoingSend: Boolean = false
   private[this] val sendQueue = new scala.collection.mutable.Queue[(() ⇒ Future[_], ActorRef)]
 
-  private[this] def computeAndSendResult(f: Future[_], r: ActorRef) = {
+  /**
+   * Perform one send operation and send a `Done` message to `self`.
+   *
+   * @param f the send operation
+   * @param r the actor to send the result of the operation to
+   */
+  private[this] def computeAndSendResult(f: Future[_], r: ActorRef): Unit = {
     assert(!ongoingSend)
     ongoingSend = true
-    f.pipeTo(r)
+    pipe(f).to(r)
     f.onComplete(_ ⇒ self ! Done)
   }
 
-  private[this] def attemptSend(f: () ⇒ Future[_], r: ActorRef) =
+  /**
+   * Serialize send operations so that they happen in order.
+   *
+   * @param f the send operation
+   * @param r the actor to send the result of the operation to
+   */
+  private[this] def attemptSend(f: () ⇒ Future[_], r: ActorRef): Unit =
     if (ongoingSend)
       sendQueue += ((f, r))
     else
@@ -81,10 +84,20 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
     case GetMe ⇒
       sender ! me
 
+    case Init ⇒
+      sender ! Ack
+
+    case Complete ⇒
+      log.debug("end of updates stream from Telegram")
+      context.stop(self)
+
+    case Fail(t) ⇒
+      log.error(t, "error when fetching updates stream from Telegram")
+      throw t
+
     case update: Update ⇒
-      update.message foreach handleMessage
-      update.inline_query foreach handleInlineQuery
-      update.chosen_inline_result foreach handleChosenInlineResult
+      sender ! Ack
+      handleUpdate(update)
 
     case data: ActionAnswerInlineQuery ⇒
       attemptSend(() ⇒ send(data), sender())
@@ -93,6 +106,7 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
       attemptSend(() ⇒ sendToMessage(data), sender())
 
     case Done ⇒
+      // End of a serialized operation. Start next one if needed.
       ongoingSend = false
       sendQueue.dequeueFirst(_ ⇒ true).foreach { case (f, r) ⇒ computeAndSendResult(f(), r) }
 
@@ -112,6 +126,12 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
 }
 
 object ActorBot {
+
+  // ActorRefWithAck protocol
+  case object Init
+  case object Ack
+  case object Complete
+  case class Fail(t: Throwable)
 
   case object GetMe
   private case object GetMyself
