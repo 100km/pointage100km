@@ -1,7 +1,7 @@
 package net.rfc1149.rxtelegram
 
 import akka.actor.Status.Failure
-import akka.actor.{ActorLogging, ActorRef, ActorSystem, Props}
+import akka.actor.{ActorLogging, ActorRef, ActorSystem, Cancellable, Props}
 import akka.pattern.pipe
 import akka.stream.actor.ActorPublisher
 import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
@@ -23,6 +23,7 @@ class UpdateSource(val token: String, val config: Config = ConfigFactory.load())
 
   private[this] val httpErrorRetryDelay = config.as[FiniteDuration]("rxtelegram.http-error-retry-delay")
   private[this] val longPollingDelay = config.as[FiniteDuration]("rxtelegram.long-polling-delay")
+  private[this] var scheduledRetry: Option[Cancellable] = None
 
   /**
    * `true` if a connection is either in progress or has been scheduled. `false` when there is no connection
@@ -43,6 +44,8 @@ class UpdateSource(val token: String, val config: Config = ConfigFactory.load())
         connect()
 
     case Cancel ⇒
+      scheduledRetry.foreach(_.cancel())
+      scheduledRetry = None
       context.stop(self)
 
     case Updates(updates) ⇒
@@ -58,10 +61,12 @@ class UpdateSource(val token: String, val config: Config = ConfigFactory.load())
 
     case Failure(UpdateError(throwable)) ⇒
       log.error(throwable, "error when getting updates")
-      context.system.scheduler.scheduleOnce(httpErrorRetryDelay, self, Reconnect)
+      scheduledRetry = Some(context.system.scheduler.scheduleOnce(httpErrorRetryDelay, self, Reconnect))
 
     case Reconnect ⇒
-      connect()
+      // Only connect if the scheduled retry has not been cancelled in the meantime
+      scheduledRetry.foreach(_ ⇒ connect())
+      scheduledRetry = None
   }
 
 }
