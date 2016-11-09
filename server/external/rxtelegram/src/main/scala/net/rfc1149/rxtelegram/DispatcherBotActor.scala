@@ -3,9 +3,9 @@ package net.rfc1149.rxtelegram
 import akka.actor.{ActorContext, ActorRef, Props}
 import net.rfc1149.rxtelegram.model.{Chat, Message}
 
-abstract class DispatcherBot(token: String) extends ActorBot(token) with ChatDispatcher {
+abstract class DispatcherBotActor(token: String, options: Options) extends BotActor(token, options) with ChatDispatcher {
 
-  import DispatcherBot._
+  import DispatcherBotActor._
 
   def createActor(chat: Chat, message: Message, context: ActorContext): Option[ActorRef]
 
@@ -38,7 +38,7 @@ abstract class DispatcherBot(token: String) extends ActorBot(token) with ChatDis
 
 }
 
-object DispatcherBot {
+object DispatcherBotActor {
   case class CreateChat(chat_id: Long, props: Props, name: String)
   case class RemoveChat(chat_id: Long)
 }

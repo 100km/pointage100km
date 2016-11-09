@@ -4,7 +4,7 @@ import akka.actor.{Actor, Stash}
 import net.rfc1149.rxtelegram.Bot._
 import net.rfc1149.rxtelegram.model._
 
-trait ChatActorBot extends Actor with Stash {
+trait ChatActor extends Actor with Stash {
 
   protected[this] var me: Option[User] = None
   protected[this] var chat: Option[Chat] = None

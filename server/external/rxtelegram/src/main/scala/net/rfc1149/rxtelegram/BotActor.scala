@@ -5,24 +5,19 @@ import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Stash}
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
 import akka.stream.{ActorMaterializer, Materializer}
-import com.typesafe.config.{Config, ConfigFactory}
-import net.ceedubs.ficus.Ficus._
 import net.rfc1149.rxtelegram.Bot.{ActionAnswerInlineQuery, Command}
 import net.rfc1149.rxtelegram.model._
 import net.rfc1149.rxtelegram.model.media.Media
 
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class ActorBot(val token: String, val config: Config = ConfigFactory.load()) extends Actor with ActorLogging with Stash with Bot with UpdateHandler {
+abstract class BotActor(val token: String, val options: Options) extends Actor with ActorLogging with Stash with Bot with UpdateHandler {
 
-  import ActorBot._
+  import BotActor._
 
   implicit val actorSystem: ActorSystem = context.system
   implicit val ec: ExecutionContext = context.dispatcher
   implicit val fm: Materializer = ActorMaterializer()
-
-  private[this] val httpErrorRetryDelay = config.as[FiniteDuration]("rxtelegram.http-error-retry-delay")
 
   protected[this] var me: User = _
 
@@ -42,11 +37,11 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
       setWebhook("")
       unstashAll()
       context.become(receiveIKnowMe)
-      UpdateSource(token, config).runWith(Sink.actorRefWithAck(self, Init, Ack, Complete, Fail))
+      UpdateSource(token, options).runWith(Sink.actorRefWithAck(self, Init, Ack, Complete, Fail))
 
     case Failure(t) ⇒
-      log.error(t, "error when getting information about myself, will retry in {}", httpErrorRetryDelay)
-      context.system.scheduler.scheduleOnce(httpErrorRetryDelay, self, GetMyself)
+      log.error(t, "cannot get information about myself")
+      throw t
 
     case other ⇒
       stash()
@@ -125,7 +120,7 @@ abstract class ActorBot(val token: String, val config: Config = ConfigFactory.lo
 
 }
 
-object ActorBot {
+object BotActor {
 
   // ActorRefWithAck protocol
   case object Init
