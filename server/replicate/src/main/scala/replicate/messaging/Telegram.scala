@@ -3,7 +3,7 @@ package replicate.messaging
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.http.scaladsl.util.FastFuture
 import net.rfc1149.rxtelegram.Bot.{ActionMessage, ParseModeMarkdown, Targetted, To}
-import net.rfc1149.rxtelegram.{ActorBot, model}
+import net.rfc1149.rxtelegram.{BotActor, Options, model}
 import replicate.utils.Global
 
 import scala.concurrent.Future
@@ -20,7 +20,7 @@ class Telegram(id: String) extends Actor with ActorLogging with Messaging {
 
 object Telegram {
 
-  private class TelegramBot extends ActorBot(Global.replicateConfig.getString("telegram.token")) with ActorLogging {
+  private class TelegramBot extends BotActor(Global.replicateConfig.getString("telegram.token"), new Options(Global.replicateConfig)) with ActorLogging {
 
     override protected[this] def handleMessage(message: model.Message) = {
       message.from.fold(log.info("received unknown message without sender")) { from ⇒
