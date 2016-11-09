@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-core" % "2.4.11",
   "com.typesafe.akka" %% "akka-http-experimental" % "2.4.11",
   "com.typesafe.akka" %% "akka-http-xml-experimental" % "2.4.11",
-  "com.iheart" %% "ficus" % "1.2.6",
+  "com.iheart" %% "ficus" % "1.3.2",
   "org.specs2" %% "specs2-core" % "3.8.5.1" % "test"
 )
 
