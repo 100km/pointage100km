@@ -13,7 +13,7 @@ import scala.concurrent.duration.FiniteDuration
 object Global {
   private val config: Config = steenwerck.config.withFallback(ConfigFactory.load())
 
-  private[replicate] val replicateConfig = config.getConfig("replicate")
+  private[replicate] val replicateConfig = config.getConfig("replicate").withFallback(config)
   implicit val system = ActorSystem("replicator", replicateConfig)
   implicit val dispatcher = system.dispatcher
   implicit val flowMaterializer = ActorMaterializer()
