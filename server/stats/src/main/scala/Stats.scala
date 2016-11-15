@@ -57,13 +57,13 @@ object Stats extends App {
   }
 
   try {
-    for (bib ← 0 to 1000) {
+    for (bib ← 1 to 1000) {
       val bibStr = Integer.toString(bib)
       try {
         val id = "contestant-" + bibStr
         val doc = Json.obj("_id" → id, "race" → (1 << nextInt(3)), "type" → "contestant", "name" → s"Bob_$bibStr",
           "first_name" → s"bobbie$bibStr", "bib" → bib, "birth" → (1920 + nextInt(75)).toString(),
-          "sex" → (if (nextBoolean) "M" else "F"))
+          "sex" → (if (nextBoolean) "M" else "F"), "stalkers" → List[String]())
         db.insert(doc).execute()
         println("Inserted " + bibStr)
       } catch {
