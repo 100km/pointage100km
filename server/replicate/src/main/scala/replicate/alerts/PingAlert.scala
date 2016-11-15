@@ -38,6 +38,7 @@ object PingAlert {
   private class CheckpointWatcher(siteId: Int @@ SiteId, database: Database) extends Actor with ActorLogging {
 
     import CheckpointWatcher._
+
     private[this] var currentNotification: Option[UUID] = None
     private[this] val checkpointInfo = checkpoints(siteId)
     private[this] var currentState: State = Starting
@@ -178,12 +179,12 @@ object PingAlert {
         }
     }
 
-  private def pingAlerts(database: Database)(implicit context: ActorRefFactory): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore, Sink.ignore) { case (s1, s2) ⇒ s1 } { implicit b ⇒ (sink, s2) ⇒
+  private def pingAlerts(database: Database)(implicit context: ActorRefFactory): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore) { implicit b ⇒ sink ⇒
     import CheckpointWatcher._
     import GraphDSL.Implicits._
 
     val sites = checkpoints.size
-    val in = database.changesSource(Map("filter" → "admin/liveness-info", "include_docs" → "true"))
+    val in = b.add(database.changesSource(Map("filter" → "admin/liveness-info", "include_docs" → "true")))
     val partition = b.add(Partition[JsObject](sites + 1, docToSite(_) match {
       case Some(n) ⇒ n
       case None    ⇒ sites
