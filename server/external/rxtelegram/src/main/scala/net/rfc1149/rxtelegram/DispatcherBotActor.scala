@@ -34,7 +34,7 @@ abstract class DispatcherBotActor(token: String, options: Options) extends BotAc
 }
 
 object DispatcherBotActor {
-  case class CreateChat(chat_id: Long, propsCreator: Long => Props, name: String)
+  case class CreateChat(chat_id: Long, propsCreator: Long ⇒ Props, name: String)
   case class RemoveChat(chat_id: Long)
 }
 
