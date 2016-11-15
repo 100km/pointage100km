@@ -59,11 +59,11 @@ class Replicate(options: Options.Config) extends LoggingError {
     }
   }
 
-  private val localCouch = steenwerck.localCouch
+  private val localCouch = steenwerck.localCouch(Global.replicateConfig)
 
   val localDatabase = localCouch.db(steenwerck.localDbName)
 
-  lazy private val hubCouch = steenwerck.masterCouch()
+  lazy private val hubCouch = steenwerck.masterCouch(Global.replicateConfig)
 
   lazy private val cfgDatabase = hubCouch.db("steenwerck-config")
 

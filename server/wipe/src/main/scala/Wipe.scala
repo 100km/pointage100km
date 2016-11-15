@@ -26,7 +26,7 @@ object Wipe extends App {
   private implicit val system = ActorSystem()
   private implicit val dispatcher = system.dispatcher
 
-  val hubCouch = steenwerck.masterCouch(Some(options.login, options.password))
+  val hubCouch = steenwerck.masterCouch(auth = Some(options.login, options.password))
 
   val cfgDatabase = hubCouch.db("steenwerck-config")
 

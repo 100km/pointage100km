@@ -38,7 +38,7 @@ package object steenwerck {
     case n ⇒ s"..${File.separator}${upper(n - 1, baseName)}"
   }
 
-  lazy val config: Config = {
+  lazy val steenwerckRootConfig: Config = {
     val options = ConfigParseOptions.defaults().setAllowMissing(false)
     var baseName = "steenwerck"
     (0 to 3).foldLeft(None: Option[Config]) {
@@ -52,26 +52,27 @@ package object steenwerck {
             None
         }
     } getOrElse ConfigFactory.empty()
-  }
+  }.withFallback(ConfigFactory.load())
 
-  def couchFromConfig(basePath: String, actorSystem: ActorSystem, auth: Option[(String, String)] = None): Couch =
+  def couchFromConfig(config: Config, basePath: String, actorSystem: ActorSystem, auth: Option[(String, String)] = None): Couch =
     new Couch(
       host   = config.as[Option[String]](s"$basePath.host").getOrElse("localhost"),
       port   = config.as[Option[Int]](s"$basePath.port").getOrElse(5984),
       secure = config.as[Option[Boolean]](s"$basePath.secure").getOrElse(false),
       auth   = auth orElse config.as[Option[String]](s"$basePath.user").flatMap(user ⇒
-        config.as[Option[String]](s"$basePath.password").map((user, _)))
+        config.as[Option[String]](s"$basePath.password").map((user, _))),
+      config = config
     )(actorSystem)
 
-  def localCouch(implicit actorSystem: ActorSystem): Couch =
-    couchFromConfig("steenwerck.local", actorSystem)
+  def localCouch(config: Config = steenwerckRootConfig)(implicit actorSystem: ActorSystem): Couch =
+    couchFromConfig(config, "steenwerck.local", actorSystem)
 
   def proxyUrl(implicit actorSystem: ActorSystem): Option[String] =
-    config.as[Option[String]]("steenwerck.master.proxy-url")
+    steenwerckRootConfig.as[Option[String]]("steenwerck.master.proxy-url")
 
   val localDbName = "steenwerck100km"
 
-  def masterCouch(auth: Option[(String, String)] = None)(implicit actorSystem: ActorSystem): Couch =
-    couchFromConfig("steenwerck.master", actorSystem, auth)
+  def masterCouch(config: Config = steenwerckRootConfig, auth: Option[(String, String)] = None)(implicit actorSystem: ActorSystem): Couch =
+    couchFromConfig(config, "steenwerck.master", actorSystem, auth)
 
 }

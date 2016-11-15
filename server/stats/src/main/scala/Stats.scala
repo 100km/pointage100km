@@ -33,7 +33,7 @@ object Stats extends App {
 
   private implicit val timeout: Duration = (5, SECONDS)
 
-  val db: Database = steenwerck.localCouch.db(steenwerck.localDbName)
+  val db: Database = steenwerck.localCouch().db(steenwerck.localDbName)
 
   def update(checkpoint: Int, bib: Int, race: Int) {
     val id = "checkpoints-" + checkpoint + "-" + bib

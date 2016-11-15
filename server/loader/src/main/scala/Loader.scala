@@ -53,8 +53,8 @@ object Loader extends App {
   implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  val config = steenwerck.config.withFallback(ConfigFactory.load()).as[Config]("loader")
-  val db = steenwerck.localCouch.db(steenwerck.localDbName)
+  val config = steenwerck.steenwerckRootConfig.withFallback(ConfigFactory.load()).as[Config]("loader")
+  val db = steenwerck.localCouch(config).db(steenwerck.localDbName)
 
   private def capitalize(name: String) = {
     val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
@@ -114,7 +114,7 @@ object Loader extends App {
         val id = "contestant-" + bib
         val firstName = capitalize(contestant("first_name").asInstanceOf[String])
         val name = contestant("name").asInstanceOf[String]
-        val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
+        // Team id is never used; val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
         val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
           Json.obj(
             "_id" → id,

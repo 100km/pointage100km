@@ -11,7 +11,7 @@ import replicate.scrutineer.Analyzer.ContestantAnalysis
 import scala.concurrent.duration.FiniteDuration
 
 object Global {
-  private val config: Config = steenwerck.config.withFallback(ConfigFactory.load())
+  private val config: Config = steenwerck.steenwerckRootConfig.withFallback(ConfigFactory.load())
 
   private[replicate] val replicateConfig = config.getConfig("replicate").withFallback(config)
   implicit val system = ActorSystem("replicator", replicateConfig)
