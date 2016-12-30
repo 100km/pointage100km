@@ -4,3 +4,6 @@ jdk:
 sudo: false
 scala:
   - 2.11.8
+cache:
+  directories:
+    - $HOME/.ivy2/cache
