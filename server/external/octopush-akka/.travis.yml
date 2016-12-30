@@ -6,6 +6,9 @@ scala:
   - 2.11.8
 script:
   - sbt clean coverage test coverageReport codacyCoverage
+cache:
+  directories:
+    - $HOME/.ivy2/cache
 env:
   global:
     - secure: Y7oCfOdNkt5pxqakNS4aWIAYOW/7X4nZ7S+vzXgh3aR0QDG9iHMRNWthxLRa6fBBeDgJashdvUMk6qllHFI39/Xwy+rrjRGRmaEk0l+YA/VO77iFwb1UMrfUs2rI8ybFQzj20PkYlgjARNIeMNgpar/F/6xCqTUFxlhJq+6aHRz3poxW3oSbFGcowSeSkHI+L8gU4ia57NgAJIOyPukI3oxC8uhxyaysNMQGSXM1Vw6cZ0XH8iLNY2JKoDGoy/ha4ikecwHwTQ7WPDhSGDYyfEaCNmbR4KtSkUXSu3IFfMRTOOgPncAKIzHRXezZhCy9IXMAzhn5jV9fdU75UFd/dpXY8XmRzJbxb9rlDl/nd3QaYzllWmMWF/KOaj3KU8djboOZhoJ11jK2do4Cw7gTa0Wm0WawKaXpchX061k3v9xQdM+9AfaA9FjkYz/Wlqr/ynPtBHikqcYAEts6Sy40uSgPEO/IBBxEVcG4v/hGZRrYks3rCX/l4YPW0npbS/kMIL+HEI5YWFnhZK1RwBuuJHWumyKbmdWnlHGjYn1kyu7FFCz6oTnZ7uXNDwfaDG12B/rcZpNp2YlQ6miOp4L2jgYeLMcI6a6g+v743dhqoxYuCcwuR6fgdCAL0Y9+R7bBpjUYWtL0QcmMw4H6TtgYI58QVu1b5s+hZE6ZadRXGpA=
