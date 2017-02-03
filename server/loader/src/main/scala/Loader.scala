@@ -14,7 +14,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler
 import play.api.libs.json._
 import scopt.OptionParser
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
@@ -73,6 +73,7 @@ object Loader extends App {
     case ("id", id: String)           ⇒ "mysql_id" → JsString(id)
     case (k, v: Boolean)              ⇒ k → JsBoolean(v)
     case (k, v: String)               ⇒ k → JsString(v)
+    case (k, v)                       ⇒ throw new IllegalArgumentException(s"unable to decode non-string value `$v' for key `$k'")
   })
 
   private def containsAll(doc: JsObject, original: JsObject): Boolean = {
@@ -105,7 +106,7 @@ object Loader extends App {
         "SELECT registrations.*, teams.name as team_name FROM registrations LEFT JOIN teams ON registrations.team_id = teams.id WHERE registrations.year = ?",
         new MapListHandler,
         new java.lang.Integer(options.year)
-      ).toList
+      ).asScala.toList.map(_.asScala)
       println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
       // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
       // be overloaded and that we will encounter no timeouts.

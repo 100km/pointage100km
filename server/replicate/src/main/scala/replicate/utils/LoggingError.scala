@@ -11,9 +11,7 @@ trait LoggingError {
   val log: LoggingAdapter
 
   def withError[T](future: Future[T], message: String): Future[Any] = {
-    future onFailure {
-      case e: Exception ⇒ log.error(e, message)
-    }
+    future.failed.foreach(log.error(_, message))
     future
   }
 

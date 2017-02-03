@@ -15,7 +15,7 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-http-core" % "10.0.3",
                                   "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.16" % "test",
                                   "com.iheart" %% "ficus" % "1.4.0",
-                                  "ch.qos.logback" % "logback-classic" % "1.1.7"))
+                                  "ch.qos.logback" % "logback-classic" % "1.1.9"))
 
 lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
 
@@ -27,10 +27,10 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0")
 
-lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.8.5.1" % "test",
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "3.8.7" % "test",
                       fork in Test := true)
 
-lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.3")
+lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.4")
 
 lazy val mysql =
   Seq(libraryDependencies ++= Seq("org.apache.commons" % "commons-dbcp2" % "2.1.1",
@@ -40,7 +40,7 @@ lazy val mysql =
 lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.8")
 
 lazy val common = Defaults.coreDefaultSettings ++ assemble ++
-  Seq(scalaVersion := "2.11.8",
+  Seq(scalaVersion := "2.12.1",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
       resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo),
       ScalariformKeys.preferences := ScalariformKeys.preferences.value

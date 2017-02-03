@@ -37,7 +37,7 @@ class ChangesSource(database: Database, params: Map[String, String] = Map(), ext
     assert(!sendInProgress, "send in progress while reconnecting")
     ongoingConnection = true
     queue = Some(database.continuousChanges(params + ("since" → sinceSeq.toString), extraParams)
-      .mapMaterializedValue(done ⇒ done.onSuccess { case d ⇒ connectionEstablished.trySuccess(d) })
+      .mapMaterializedValue(_.foreach(connectionEstablished.trySuccess))
       .toMat(Sink.queue())(Keep.right).run())
     sendFromQueue()
   }

@@ -44,10 +44,7 @@ class OnChanges(options: Options.Config, local: Database)
 
   private[this] def trigger() = {
     val f = futures()
-    f.onFailure {
-      case e: Exception ⇒
-        log.error(e, "error when running onChanges task")
-    }
+    f.failed.foreach(log.error(_, "error when running onChanges task"))
     f.onComplete(_ ⇒ self ! 'reset)
   }
 

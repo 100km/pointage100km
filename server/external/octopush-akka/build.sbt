@@ -16,9 +16,9 @@ name := "octopush-akka"
 
 organization := "net.rfc1149"
 
-version := "0.0.1"
+version := "0.0.2"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.1"
 
 resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
                   Resolver.jcenterRepo)
@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-core" % "10.0.3",
   "com.typesafe.akka" %% "akka-http-xml" % "10.0.3",
   "com.iheart" %% "ficus" % "1.4.0",
-  "org.specs2" %% "specs2-core" % "3.8.5.1" % "test"
+  "org.specs2" %% "specs2-core" % "3.8.7" % "test"
 )
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
