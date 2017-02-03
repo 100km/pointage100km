@@ -12,7 +12,7 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.4.16",
                                   "com.typesafe.akka" %% "akka-agent" % "2.4.16",
                                   "com.typesafe.akka" %% "akka-stream" % "2.4.16",
-                                  "com.typesafe.akka" %% "akka-http-core" % "10.0.1",
+                                  "com.typesafe.akka" %% "akka-http-core" % "10.0.3",
                                   "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.16" % "test",
                                   "com.iheart" %% "ficus" % "1.3.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.7"))
@@ -37,7 +37,7 @@ lazy val mysql =
                                   "commons-dbutils" % "commons-dbutils" % "1.6",
                                   "mysql" % "mysql-connector-java" % "6.0.5"))
 
-lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.7")
+lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.8")
 
 lazy val common = Defaults.coreDefaultSettings ++ assemble ++
   Seq(scalaVersion := "2.11.8",
