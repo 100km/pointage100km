@@ -12,7 +12,7 @@ lazy val akka =
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.4.17",
                                   "com.typesafe.akka" %% "akka-agent" % "2.4.17",
                                   "com.typesafe.akka" %% "akka-stream" % "2.4.17",
-                                  "com.typesafe.akka" %% "akka-http-core" % "10.0.3",
+                                  "com.typesafe.akka" %% "akka-http-core" % "10.0.5",
                                   "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.17" % "test",
                                   "com.iheart" %% "ficus" % "1.4.0",
                                   "ch.qos.logback" % "logback-classic" % "1.1.9"))

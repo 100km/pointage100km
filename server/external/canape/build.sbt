@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.4.17",
   "com.typesafe.akka" %% "akka-stream" % "2.4.17",
   "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.17" % "test",
-  "com.typesafe.akka" %% "akka-http-core" % "10.0.3",
+  "com.typesafe.akka" %% "akka-http-core" % "10.0.5",
   "de.heikoseeberger" %% "akka-http-play-json" % "1.12.0",
   "com.iheart" %% "ficus" % "1.4.0",
   "org.specs2" %% "specs2-core" % "3.8.7" % "test",
