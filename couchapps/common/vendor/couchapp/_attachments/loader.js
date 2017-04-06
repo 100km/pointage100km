@@ -7,11 +7,11 @@ function couchapp_load(scripts) {
 
 
 couchapp_load(([
-  "/_utils/script/sha1.js",
-  "/_utils/script/json2.js",
+  "../common/lib/sha1.js",
+  "../common/lib/json2.js",
 ]).concat(
   (typeof (window.jQuery) == 'undefined' ) ?
-  [ "/_utils/script/jquery.js" ] : [ ]
+  [ "../common/lib/jquery.js" ] : [ ]
 ).concat([
   "../common/lib/db_api/app-info.js",
   "../common/lib/db_api/checkpoints.js",
