@@ -59,6 +59,15 @@ class Replicate(options: Options.Config) extends LoggingError {
     }
   }
 
+  private def createSystemDatabases() = {
+    for (systemDb ← Seq("_global_changes", "_metadata", "_replicator", "_users"))
+      localCouch.db(systemDb).create().onComplete {
+        case Success(_)                      ⇒ log.info("created database {}", systemDb)
+        case Failure(StatusError(412, _, _)) ⇒
+        case Failure(f)                      ⇒ log.info("could not create database {}: {}", systemDb, f)
+      }
+  }
+
   private val localCouch = steenwerck.localCouch(Global.replicateConfig)
 
   val localDatabase = localCouch.db(steenwerck.localDbName)
@@ -95,6 +104,8 @@ class Replicate(options: Options.Config) extends LoggingError {
     }
 
   private lazy val hubDatabase = hubCouch.db(remoteDbName)
+
+  createSystemDatabases()
 
   if (options.replicate) {
     if (previousDbName.contains(remoteDbName))
