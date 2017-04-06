@@ -53,7 +53,7 @@ object Loader extends App {
   implicit val system = ActorSystem()
   implicit val dispatcher = system.dispatcher
   implicit val materializer = ActorMaterializer()
-  val config = steenwerck.steenwerckRootConfig.withFallback(ConfigFactory.load()).as[Config]("loader")
+  val config = steenwerck.steenwerckRootConfig.as[Config]("loader").withFallback(ConfigFactory.load())
   val db = steenwerck.localCouch(config).db(steenwerck.localDbName)
 
   private def capitalize(name: String) = {
