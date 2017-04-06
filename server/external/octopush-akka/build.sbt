@@ -24,9 +24,9 @@ resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/re
                   Resolver.jcenterRepo)
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-actor" % "2.4.16",
-  "com.typesafe.akka" %% "akka-stream" % "2.4.16",
-  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.16" % "test",
+  "com.typesafe.akka" %% "akka-actor" % "2.4.17",
+  "com.typesafe.akka" %% "akka-stream" % "2.4.17",
+  "com.typesafe.akka" %% "akka-stream-testkit" % "2.4.17" % "test",
   "com.typesafe.akka" %% "akka-http-core" % "10.0.3",
   "com.typesafe.akka" %% "akka-http-xml" % "10.0.3",
   "com.iheart" %% "ficus" % "1.4.0",
