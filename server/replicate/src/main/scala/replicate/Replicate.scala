@@ -131,23 +131,34 @@ class Replicate(options: Options.Config) extends LoggingError {
       log.info("not creating local information on slave")
     if (options.replicate) {
       log.info("starting initial replication")
-      try {
-        localDatabase.replicateFrom(hubDatabase, proxyOptions).execute()(initialReplicationTimeout)
-        log.info("initial replication done")
-        val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
-          case Success(i) ⇒
-            Global.infos = Some(i)
-            log.info("race information loaded from database")
-          case Failure(t) ⇒
-            log.error(t, "unable to read race information from database")
-            exit(1)
+      val replicationDeadline = initialReplicationTimeout.fromNow
+      var loaded = false
+      while (!loaded)
+        try {
+          localDatabase.replicateFrom(hubDatabase, proxyOptions).execute()(initialReplicationTimeout)
+          log.info("initial replication done")
+          val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
+            case Success(i) ⇒
+              Global.infos = Some(i)
+              log.info("race information loaded from database")
+            case Failure(t) ⇒
+              log.error(t, "unable to read race information from database")
+              exit(1)
+          }
+          loadInfos.execute()
+          loaded = true
+        } catch {
+          case t: Exception ⇒
+            // Sometimes, since nothing passes on the TCP stream, the connection aborts while the
+            // replication is still in progress. We can just restart it as it will be an idempotent
+            // operation.
+            if (replicationDeadline.hasTimeLeft()) {
+              log.info("initial replication failed, retrying")
+            } else {
+              log.error(t, "initial replication failed")
+              exit(1)
+            }
         }
-        loadInfos.execute()
-      } catch {
-        case t: Exception ⇒
-          log.error(t, "initial replication failed")
-          exit(1)
-      }
     }
   } catch {
     case t: Exception ⇒
