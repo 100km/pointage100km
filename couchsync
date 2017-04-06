@@ -17,7 +17,7 @@ dbdockername=steenwerck-replicate
 dockerimage=rfc1149/pointage100km
 
 # Path of the database files in containers created by $dockerimage
-dockerdbdir=/usr/local/var/lib/couchdb
+dockerdbdir=/opt/couchdb/data
 
 # Command to pass to the docker image to start only couchdb
 dockercommand=couchdb

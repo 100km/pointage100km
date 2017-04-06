@@ -1,11 +1,11 @@
-FROM rfc1149/couchdb:1.x.x
+FROM klaemo/couchdb:2.0.0
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
 ADD webupd8team-java.list /etc/apt/sources.list.d/
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
 
-ADD cors.ini /usr/local/etc/couchdb/local.d/
+ADD cors.ini /opt/couchdb/etc/local.d/
 
 RUN apt-get update && \
     apt-get install -y --force-yes --no-install-recommends oracle-java8-installer oracle-java8-set-default git make && \
@@ -30,4 +30,4 @@ ENTRYPOINT [ "/start.sh" ]
 # It is likely that you will want to extend this Dockerfile by adding a configuration
 # file with -v source:target when creating the container. Also, you might need to
 # create CouchDB administrators by extending this Dockerfile and adding new *.ini files
-# into /usr/local/etc/couchdb/local.d/.
+# into /opt/couchdb/etc/local.d/.
