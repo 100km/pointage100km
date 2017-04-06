@@ -9,8 +9,16 @@ ADD cors.ini /opt/couchdb/etc/local.d/
 
 RUN sed -ie s/https/http/ /etc/apt/sources.list.d/nodesource.list && \
     apt-get update && \
-    apt-get install -y --force-yes --no-install-recommends oracle-java8-installer oracle-java8-set-default git make && \
+    apt-get install -y --force-yes --no-install-recommends oracle-java8-installer oracle-java8-set-default git make \
+       build-essential libtool autoconf automake autoconf-archive pkg-config \
+       libnspr4 libnspr4-0d libnspr4-dev libcurl4-openssl-dev libicu-dev python zip unzip && \
     rm -rf /var/cache/oracle-jdk-installer
+
+# Override mozjs installation for grsec compatibility
+RUN (cd /tmp && curl http://tomobox.fr/js185-1.0.0.tar.gz | tar zxf - && \
+     cd js-1.8.5 && curl http://tomobox.fr/libmozjs185-grsec.patch | patch -p1 && \
+     cd js/src && ./configure --prefix=/usr && make && make install) && \
+    rm -rf /tmp/js-1.8.5
 
 RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
 
