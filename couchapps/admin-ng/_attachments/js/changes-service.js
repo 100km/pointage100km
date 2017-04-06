@@ -4,33 +4,34 @@ angular.module("changes", ["pubsub"]).factory("changesService", ["database", "$h
 
       var onChange = (scope, params, callback) => {
         var ev;
-        var allParams = angular.merge({feed: "eventsource"}, params);
+        var allParams = angular.merge({feed: "longpoll"}, params);
 
         // The reconnection delay after an error will start at 10ms
         // and will be doubled until it reaches 20.48s.
+        var aborted = false;
         var reconnectionDelay;
 
-        var reconnect = () => {
-          ev = new EventSource(database + "/_changes?" + $httpParamSerializer(allParams));
-          ev.onopen = () => reconnectionDelay = undefined;
-          ev.onmessage = event => {
-            allParams.since = event.lastEventId;
-            scope.$applyAsync(function() { callback(JSON.parse(event.data)); });
-          };
-          ev.onerror = event => {
-            if (ev.readyState === EventSource.CLOSED) {
-              if (!reconnectionDelay)
-                reconnectionDelay = 10;
-              else if (reconnectionDelay < 20480)
-                reconnectionDelay *= 2;
-              ev.close();
-              $timeout(reconnect, reconnectionDelay, false);
-            }
-          };
-        };
+        var reconnect = () =>
+          $http.get(database + "/_changes?" + $httpParamSerializer(allParams))
+                .then(response => {
+                  if (!aborted) {
+                    allParams.since = response.data.last_seq;
+                    scope.$applyAsync(() => angular.forEach(response.data.results, callback));
+                    reconnectionDelay = 0;
+                    reconnect();
+                  }
+                }).catch(() => {
+                  if (!aborted) {
+                    if (!reconnectionDelay)
+                      reconnectionDelay = 10;
+                    else if (reconnectionDelay < 20480)
+                      reconnectionDelay *= 2;
+                    $timeout(reconnect, reconnectionDelay, false);
+                  }
+                });
 
         reconnect();
-        scope.$on("$destroy", () => ev.close());
+        scope.$on("$destroy", () => aborted = true);
       };
 
       // Get the initial value of a document, install it in the given scope,
@@ -84,13 +85,13 @@ angular.module("changes", ["pubsub"]).factory("changesService", ["database", "$h
             change => {
               if (afterResolved === undefined)
                 prematureChanges.push(change);
-              else if (change.seq > afterResolved)
+              else if (toSeqNumber(change.seq) > afterResolved)
                 callback(change);
             });
         return after.then(value => {
           afterResolved = value;
           angular.forEach(prematureChanges, change => {
-            if (change.seq > afterResolved)
+            if (toSeqNumber(change.seq) > afterResolved)
               callback(change);
           });
           prematuresChanges = undefined;
@@ -109,7 +110,7 @@ angular.module("changes", ["pubsub"]).factory("changesService", ["database", "$h
                 "?include_docs=true&reduce=false&update_seq=true")
               .then(response => {
                 initCallback(response.data);
-                resolve(response.data.update_seq);
+                resolve(toSeqNumber(response.data.update_seq));
               })));
 
       // Same than initThenFilter, except the same callback will be called
@@ -156,6 +157,9 @@ angular.module("changes", ["pubsub"]).factory("changesService", ["database", "$h
         return f;
         };
 
+      // Transform a sequence string into a sequence number.
+      var toSeqNumber = seq => parseInt(seq.substr(0, seq.indexOf('-')));
+
       return {
         initThenFilter: initThenFilter,
         initThenFilterEach: initThenFilterEach,
@@ -163,6 +167,7 @@ angular.module("changes", ["pubsub"]).factory("changesService", ["database", "$h
         globalChangesStart: globalChangesStart,
         filterChanges: filterChanges,
         filterChangesAfter: filterChangesAfter,
-        serializedFunFactory: serializedFunFactory
+        serializedFunFactory: serializedFunFactory,
+        toSeqNumber: toSeqNumber
       };
     }]);
