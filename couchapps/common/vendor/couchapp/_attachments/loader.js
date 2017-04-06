@@ -13,7 +13,6 @@ couchapp_load(([
   (typeof (window.jQuery) == 'undefined' ) ?
   [ "/_utils/script/jquery.js" ] : [ ]
 ).concat([
-  "/_utils/script/jquery.couch.js",
   "../common/lib/db_api/app-info.js",
   "../common/lib/db_api/checkpoints.js",
   "../common/lib/db_api/global.js",
@@ -26,6 +25,7 @@ couchapp_load(([
   "../common/lib/utils.js",
   "../common/lib/uuid.js",
   "../common/lib/underscore-min.js",
+  "../common/vendor/couchapp/lib/jquery.couch.js",
   "../common/vendor/couchapp/jquery.couch.app.js",
   "../common/vendor/couchapp/jquery.couch.app.util.js",
   "../common/vendor/couchapp/jquery.mustache.js",
