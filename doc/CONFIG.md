@@ -110,7 +110,7 @@ $ docker rm -f steenwerck-replicate
     - open screen
     - in screen, launch
         - `docker ps -a -q -f name=steenwerck-replicate | xargs -r docker rm -f` to ensure no previous containers
-        - `docker run --rm --add-host steenwerck.rfc1149.net:10.8.0.1 --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/usr/local/var/lib/couchdb rfc1149/pointage100km replicate checkpoint X`
+        - `docker run --rm --add-host steenwerck.rfc1149.net:10.8.0.1 --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/opt/couchdb/data rfc1149/pointage100km replicate checkpoint X`
     - in screen, launch `./couchsync --watch`
     - in screen, launch the appropriate command for getting 3G Internet:
        - !! if X == 6 || X == 3, no need for USB key, use the wifi network
