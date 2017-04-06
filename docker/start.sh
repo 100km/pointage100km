@@ -3,7 +3,7 @@
 
 start_couchdb() {
   while true; do
-    /entrypoint.sh couchdb
+    /docker-entrypoint.sh /opt/couchdb/bin/couchdb
     echo CouchDB crashed 2>&1
     sleep 5
   done
