@@ -30,7 +30,7 @@ function LivenessController($scope, $interval, dbService, changesService, stateS
     return dbService.checkSites()
       .then(data => {
         angular.forEach(data.rows, row => this.setSite(row.key, row.value.max));
-        return data.update_seq;
+        return changesService.toSeqNumber(data.update_seq);
       });
   };
 
