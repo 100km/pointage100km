@@ -62,7 +62,7 @@ trait Bot {
     sendRaw(request, potentiallyBlocking = potentiallyBlocking).flatMap { response ⇒
       response.status match {
         case status if status.isFailure() ⇒ throw HTTPException(status.toString())
-        case status ⇒
+        case _ ⇒
           try {
             Unmarshal(response.entity).to[JsValue]
           } catch {
@@ -138,7 +138,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class MediaParameter(fieldName: String, media: Media) {
-    def toBodyPart = media.toBodyPart(fieldName)
+    def toBodyPart: BodyPart = media.toBodyPart(fieldName)
   }
 
   def checkResult(js: JsValue): JsValue =
@@ -163,8 +163,8 @@ object Bot extends PlayJsonSupport {
       inlineMessageId: Option[String] = None, disableNotification: Boolean = false) {
     def toFields: List[(String, String)] = disableNotification.toField("disable_notification", false) ++
       (inlineMessageId match {
-        case Some(id) ⇒ inlineMessageId.toField("inline_message_id")
-        case None     ⇒ chatId.toField("chat_id") ++ messageId.toField("in_reply_to_message_id")
+        case Some(_) ⇒ inlineMessageId.toField("inline_message_id")
+        case None    ⇒ chatId.toField("chat_id") ++ messageId.toField("in_reply_to_message_id")
       })
 
     def isInlineMessageId: Boolean = inlineMessageId.isDefined
@@ -202,7 +202,7 @@ object Bot extends PlayJsonSupport {
     val fields: List[(String, String)]
     val media: Option[MediaParameter] = None
 
-    def buildEntity(target: Target, includeMethod: Boolean) = {
+    def buildEntity(target: Target, includeMethod: Boolean): MEntity = {
       assert(!target.isInlineMessageId || supportsInlineMessageId, "this action does not support inline_message_id targets")
       val allFields = fields ++ replyMarkup.toField("reply_markup") ++ target.toFields ++ (if (includeMethod) Seq("method" → methodName) else Seq())
       Bot.buildEntity(allFields, media)

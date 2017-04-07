@@ -3,8 +3,8 @@ package net.rfc1149.canape
 import akka.actor.Props
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.{Path, Query}
-import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.{Flow, Framing, Sink, Source}
 import akka.util.ByteString
@@ -13,7 +13,7 @@ import net.ceedubs.ficus.Ficus._
 import play.api.libs.json._
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Future, Promise}
 
 case class Database(couch: Couch, databaseName: String) {
 
@@ -324,7 +324,7 @@ case class Database(couch: Couch, databaseName: String) {
    */
   def deleteAll(id: String): Future[Seq[String]] = {
     this(id, Seq("conflicts" → "true")).map(doc ⇒ (doc \ "_rev").as[String] :: (doc \ "_conflicts").asOpt[List[String]].getOrElse(Nil)) flatMap {
-      delete(id, _, allOrNothing = false)
+      delete(id, _)
     }
   }
 
@@ -423,8 +423,8 @@ case class Database(couch: Couch, databaseName: String) {
     val promise = Promise[Done]
     val requestParams = {
       val heartBeatParam = (params.get("timeout"), params.get("heartbeat")) match {
-        case (Some(t), Some(h)) if h.nonEmpty ⇒ Map("heartbeat" → h) // Timeout will be ignored by the DB, but the user has chosen
-        case (Some(t), _)                     ⇒ Map() // Use provided timeout only
+        case (Some(_), Some(h)) if h.nonEmpty ⇒ Map("heartbeat" → h) // Timeout will be ignored by the DB, but the user has chosen
+        case (Some(_), _)                     ⇒ Map() // Use provided timeout only
         case (None, Some(""))                 ⇒ Map() // Disable heartbeat
         case (None, Some(h))                  ⇒ Map("heartbeat" → h) // Use provided heartbeat
         case (None, None) ⇒ Map("heartbeat" → // Use default heartbeat from configuration
@@ -540,7 +540,7 @@ object Database {
   }
 
   final case class UpdateSequenceString(override val toString: String) extends UpdateSequence {
-    def toLong = toString.split("-", 2).head.toLong
+    def toLong: Long = toString.split("-", 2).head.toLong
   }
 
   final case class UpdateSequenceLong(toLong: Long) extends UpdateSequence {
@@ -555,12 +555,10 @@ object Database {
     }
   }
 
-  implicit val updateSequenceReads: Reads[UpdateSequence] = Reads { js ⇒
-    js match {
-      case JsNumber(n) ⇒ JsSuccess(UpdateSequenceLong(n.toLongExact))
-      case JsString(s) ⇒ JsSuccess(UpdateSequenceString(s))
-      case _           ⇒ JsError("update sequence must be number or string")
-    }
+  implicit val updateSequenceReads: Reads[UpdateSequence] = Reads {
+    case JsNumber(n) ⇒ JsSuccess(UpdateSequenceLong(n.toLongExact))
+    case JsString(s) ⇒ JsSuccess(UpdateSequenceString(s))
+    case _           ⇒ JsError("update sequence must be number or string")
   }
 
   val FromNow = UpdateSequenceString("now")

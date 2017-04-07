@@ -10,7 +10,7 @@ case class Result(
     update_seq: Option[UpdateSequence]
 ) {
 
-  lazy val ids = rows map (_.id)
+  lazy val ids: List[String] = rows map (_.id)
 
   def keys[K: Reads]: Seq[K] = rows map (_.key.as[K])
 

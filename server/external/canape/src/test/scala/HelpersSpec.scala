@@ -10,7 +10,7 @@ class HelpersSpec extends WithDbSpecification("helpers") {
     implicit val extraFormat = Json.format[Extra]
   }
 
-  def makeConflicts(db: Database) =
+  def makeConflicts(db: Database): Unit =
     for ((element, idx) ← Seq("one", "other", "yet-another").zipWithIndex)
       waitForResult(db.insert(Json.obj("extra" → List(element), "_rev" → s"1-$idx"), id = "docid", newEdits = false))
 

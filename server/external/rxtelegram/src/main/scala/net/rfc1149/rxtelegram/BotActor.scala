@@ -43,7 +43,7 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
       log.error(t, "cannot get information about myself")
       throw t
 
-    case other ⇒
+    case _ ⇒
       stash()
   }
 

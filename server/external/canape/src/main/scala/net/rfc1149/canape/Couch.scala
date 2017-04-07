@@ -50,7 +50,7 @@ class Couch(
   private[canape] implicit val dispatcher = system.dispatcher
   private[canape] implicit val fm = ActorMaterializer()
 
-  val canapeConfig = config.getConfig("canape")
+  val canapeConfig: Config = config.getConfig("canape")
   private[this] val userAgent = `User-Agent`(canapeConfig.as[String]("user-agent"))
   private[this] implicit val timeout: Timeout = canapeConfig.as[FiniteDuration]("request-timeout")
 
@@ -221,7 +221,7 @@ class Couch(
   }
 
   /** URI that refers to the database */
-  val uri = buildURI(auth)
+  val uri: Uri = buildURI(auth)
 
   protected def canEqual(that: Any) = that.isInstanceOf[Couch]
 
