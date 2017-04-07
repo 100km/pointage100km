@@ -59,11 +59,15 @@ class Replicate(options: Options.Config) extends LoggingError {
     }
   }
 
+  /**
+   * Asynchronously create system databases needed in CouchDB 2.0.0 if they don't exist .This
+   * is not an error if we cannot create them since CouchDB works fine without them.
+   */
   private def createSystemDatabases() = {
     for (systemDb ← Seq("_global_changes", "_metadata", "_replicator", "_users"))
       localCouch.db(systemDb).create().onComplete {
         case Success(_)                      ⇒ log.info("created database {}", systemDb)
-        case Failure(StatusError(412, _, _)) ⇒
+        case Failure(StatusError(412, _, _)) ⇒ // Nothing to do
         case Failure(f)                      ⇒ log.info("could not create database {}: {}", systemDb, f)
       }
   }
