@@ -72,6 +72,13 @@ object Wipe extends App {
     val md = java.security.MessageDigest.getInstance("SHA-1")
     val ha = new sun.misc.BASE64Encoder().encode(md.digest(key))
     hubDatabase.insert(Json.obj("key" → ha), "couchsync").execute()
+    for (extraDoc ← cfgDatabase.allDocs(Map("include_docs" → "true")).execute().docs[JsObject]) {
+      val id = (extraDoc \ "_id").as[String]
+      if (id != "configuration" && !id.startsWith("_")) {
+        println(s"Copying extra document $id")
+        hubDatabase.insert(extraDoc - "_rev", id).execute()
+      }
+    }
     println("All things done")
   } catch {
     case Couch.StatusError(401, _, _) ⇒
