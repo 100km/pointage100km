@@ -39,6 +39,12 @@ function(data) {
 
   p.count = i;
 
+  if (p.race_id == 2) { // 1 tour du soir
+    p.items.sort(function(a,b) {
+      return a.localeCompare(b, "fr");
+    });
+  }
+
   if (p.items.length>10) {
     for (var j = 0; j<10; j++)
       p.items.unshift({});
