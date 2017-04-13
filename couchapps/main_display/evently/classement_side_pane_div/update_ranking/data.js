@@ -39,11 +39,11 @@ function(data) {
 
   p.count = i;
 
-  if (p.race_id == 2) { // 1 tour du soir
+  if (p.race_id == 3) { // 1 tour du soir
     p.items.sort(function(a,b) {
       return (
-           a.item.name.localeCompare(b.item.name, "fr")
-        || a.item.first_name.localeCompare(b.item.first_name, "fr")
+           a.name.localeCompare(b.name, "fr")
+        || a.first_name.localeCompare(b.first_name, "fr")
       );
     });
   }
@@ -56,7 +56,7 @@ function(data) {
       p.items.push({});
   }
 
-  p.displayrank = (p.race_id != 2);
+  p.displayrank = (p.race_id != 3);
   //$.log("p: " + JSON.stringify(p));
 
   return p;
