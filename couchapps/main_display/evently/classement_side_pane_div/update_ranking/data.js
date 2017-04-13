@@ -41,7 +41,10 @@ function(data) {
 
   if (p.race_id == 2) { // 1 tour du soir
     p.items.sort(function(a,b) {
-      return a.localeCompare(b, "fr");
+      return (
+           a.item.name.localeCompare(b.item.name, "fr")
+        || a.item.first_name.localeCompare(b.item.first_name, "fr")
+      );
     });
   }
 
@@ -53,6 +56,7 @@ function(data) {
       p.items.push({});
   }
 
+  p.displayrank = (p.race_id != 2);
   //$.log("p: " + JSON.stringify(p));
 
   return p;
