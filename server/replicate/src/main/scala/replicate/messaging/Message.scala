@@ -25,6 +25,7 @@ object Message {
   sealed trait Category {
     override val toString = {
       val name = getClass.getSimpleName.dropRight(1)
+      // Transform CamelCase into snake_case
       (name.head +: "[A-Z]".r.replaceAllIn(name.tail, m ⇒ s"_${m.group(0)}")).mkString.toLowerCase
     }
 
