@@ -40,7 +40,7 @@ lazy val mysql =
 lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.10")
 
 lazy val common = Defaults.coreDefaultSettings ++ assemble ++
-  Seq(scalaVersion := "2.12.1",
+  Seq(scalaVersion := "2.12.2",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
       resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo),
       ScalariformKeys.preferences := ScalariformKeys.preferences.value

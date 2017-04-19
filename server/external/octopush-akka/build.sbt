@@ -18,7 +18,7 @@ organization := "net.rfc1149"
 
 version := "0.0.2"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
 resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
                   Resolver.jcenterRepo)
