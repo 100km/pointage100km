@@ -8,6 +8,7 @@ import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json._
 import replicate.models.{CheckpointData, Contestant}
 import replicate.utils.Global._
+import replicate.utils.Types.RaceId
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -22,7 +23,7 @@ trait IncompleteCheckpoints {
         val cpd = doc.as[CheckpointData]
         db(s"contestant-${cpd.contestantId}").map(_.as[Contestant]) flatMap {
           contestant ⇒
-            if (contestant.raceId != 0) {
+            if (contestant.raceId != RaceId(0)) {
               val newCpd = cpd.copy(raceId = contestant.raceId)
               val inserter = db.insert(newCpd.withIdRev(doc))
               inserter onComplete {

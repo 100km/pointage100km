@@ -9,6 +9,7 @@ import play.api.libs.json.JsObject
 import replicate.models.CheckpointData
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.state.CheckpointsState
+import replicate.utils.Types.RaceId
 
 import scala.concurrent.Future
 
@@ -28,7 +29,7 @@ object CheckpointScrutineer {
     val source = Source.fromFuture(database.viewWithUpdateSeq[Int, CheckpointData]("replicate", "checkpoint", Seq("include_docs" → "true")))
       .flatMapConcat {
         case (lastSeq, checkpoints) ⇒
-          val groupedByContestants = Source(checkpoints.filterNot(_._2.raceId == 0).groupBy(_._1).map(_._2.map(_._2)))
+          val groupedByContestants = Source(checkpoints.filterNot(_._2.raceId == RaceId(0)).groupBy(_._1).map(_._2.map(_._2)))
           val enterAndKeepLatest = groupedByContestants.mapAsync(1)(cps ⇒ Future.sequence(cps.dropRight(1).map(CheckpointsState.setTimes)).map(_ ⇒ cps.last))
           val changes =
             database.changesSource(Map("filter" → "_view", "view" → "replicate/checkpoint", "include_docs" → "true"), sinceSeq = lastSeq)
