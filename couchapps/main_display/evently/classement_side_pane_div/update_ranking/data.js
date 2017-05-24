@@ -46,12 +46,6 @@ function(data) {
         || a.first_name.localeCompare(b.first_name, "fr")
       );
     });
-    i = 0;
-    while (p.items[i]) {
-      i++;
-      p.items[i].is_odd  = ((i%2) == 0);
-    }
-
   }
 
   if (p.items.length>10) {
