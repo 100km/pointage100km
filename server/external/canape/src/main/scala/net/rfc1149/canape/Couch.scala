@@ -38,12 +38,11 @@ import scala.util.Try
  */
 
 class Couch(
-    val host: String = "localhost",
-    val port: Int = 5984,
-    val auth: Option[(String, String)] = None,
-    val secure: Boolean = false,
-    val config: Config = ConfigFactory.load()
-)(implicit private[canape] val system: ActorSystem) extends PlayJsonSupport {
+  val host: String = "localhost",
+  val port: Int = 5984,
+  val auth: Option[(String, String)] = None,
+  val secure: Boolean = false,
+  val config: Config = ConfigFactory.load())(implicit private[canape] val system: ActorSystem) extends PlayJsonSupport {
 
   import Couch._
 
@@ -380,13 +379,11 @@ object Couch extends PlayJsonSupport {
   case class Status(
     couchdb: String,
     version: String,
-    vendor: Option[VendorInfo]
-  )
+    vendor: Option[VendorInfo])
 
   case class VendorInfo(
     name: String,
-    version: Option[String]
-  )
+    version: Option[String])
 
   implicit val vendorInfoRead: Reads[VendorInfo] = Json.reads[VendorInfo]
   implicit val statusRead: Reads[Status] = Json.reads[Status]

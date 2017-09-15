@@ -41,7 +41,7 @@ class URISpec extends Specification {
     "mask the password in toString" in {
       (new Couch().toString mustEqual "http://localhost:5984") &&
         (new Couch(auth = Some("admin", "xyzzy")).toString mustEqual "http://admin:********@localhost:5984") &&
-        (new Couch(auth = Some("admin", "xyzzy"), secure = true).toString mustEqual "https://admin:********@localhost:5984") &&
+        (new Couch(auth   = Some("admin", "xyzzy"), secure = true).toString mustEqual "https://admin:********@localhost:5984") &&
         (new Couch("db.example.com", 80, Some("admin", "xyzzy")).toString mustEqual "http://admin:********@db.example.com") &&
         (new Couch("db.example.com", 443, Some("admin", "xyzzy"), true).toString mustEqual "https://admin:********@db.example.com")
     }

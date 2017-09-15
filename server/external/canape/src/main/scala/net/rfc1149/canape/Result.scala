@@ -4,11 +4,10 @@ import net.rfc1149.canape.Database.UpdateSequence
 import play.api.libs.json._
 
 case class Result(
-    total_rows: Long,
-    offset: Long,
-    rows: List[Row],
-    update_seq: Option[UpdateSequence]
-) {
+  total_rows: Long,
+  offset: Long,
+  rows: List[Row],
+  update_seq: Option[UpdateSequence]) {
 
   lazy val ids: List[String] = rows map (_.id)
 

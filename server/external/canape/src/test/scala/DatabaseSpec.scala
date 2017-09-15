@@ -90,8 +90,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
     val common = Json.obj(
       "updates" → Json.obj("upd" → upd, "updError" → updError, "replace" → replace),
       "views" → Json.obj("persons" → Json.obj("map" → personsMap, "reduce" → personsReduce)),
-      "lists" → Json.obj("list" → list)
-    )
+      "lists" → Json.obj("list" → list))
     waitForResult(db.insert(common, "_design/common"))
     waitForResult(Future.sequence(for (
       (f, l, a) ← List(("Arthur", "Dent", 20), ("Zaphod", "Beeblebrox", 40),
@@ -308,8 +307,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
       val id = "docid"
       waitForEnd(
         db.insert(Json.obj("_rev" → "0-0"), id = id, newEdits = false),
-        db.insert(Json.obj("_rev" → "1-1"), id = id, newEdits = false)
-      )
+        db.insert(Json.obj("_rev" → "1-1"), id = id, newEdits = false))
       waitForResult(db.delete(id, Seq("0-0", "1-1"))) must be equalTo Seq("0-0", "1-1")
       waitForResult(db(id)) must throwA[StatusError]
     }
@@ -318,8 +316,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
       val id = "docid"
       waitForEnd(
         db.insert(Json.obj("_rev" → "0-0"), id = id, newEdits = false),
-        db.insert(Json.obj("_rev" → "1-1"), id = id, newEdits = false)
-      )
+        db.insert(Json.obj("_rev" → "1-1"), id = id, newEdits = false))
       waitForResult(db.delete(id, Seq("0-0", "2-2", "1-1"))) must be equalTo Seq("0-0", "1-1")
       waitForResult(db(id)) must throwA[StatusError]
     }
@@ -329,8 +326,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
       waitForEnd(
         db.insert(Json.obj("_rev" → "0-0"), id = id, newEdits = false),
         db.insert(Json.obj("_rev" → "1-1"), id = id, newEdits = false),
-        db.insert(Json.obj("_rev" → "2-2"), id = id, newEdits = false)
-      )
+        db.insert(Json.obj("_rev" → "2-2"), id = id, newEdits = false))
       waitForResult(db.delete(id, Seq("0-0", "2-2"))) must be equalTo Seq("0-0", "2-2")
       (waitForResult(db(id)) \ "_rev").as[String] must be equalTo "1-1"
     }
@@ -350,8 +346,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
       pendingUnlessAllOrNothing()
       val revs = waitForResult(db.bulkDocs(
         List("foo", "bar", "baz").map(v ⇒ Json.obj("_id" → "docid", "value" → v)),
-        allOrNothing = true
-      )).map(doc ⇒ (doc \ "rev").as[String])
+        allOrNothing = true)).map(doc ⇒ (doc \ "rev").as[String])
       waitForResult(db.delete("docid", revs.drop(1))) must have size 2
       waitForResult(db.delete("docid", revs.take(1))) must have size 1
       waitForResult(db.delete("docid", revs.take(1))) must beEmpty
@@ -367,8 +362,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
       pendingUnlessAllOrNothing()
       waitForResult(db.bulkDocs(
         List("foo", "bar", "baz").map(v ⇒ Json.obj("_id" → "docid", "value" → v)),
-        allOrNothing = true
-      ))
+        allOrNothing = true))
       waitForResult(db.deleteAll("docid")) must have size 3
       waitForResult(db.deleteAll("docid")) must throwA[StatusError]
     }
@@ -397,8 +391,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
     "fail to insert a duplicate document at once" in new freshDb {
       (waitForResult(db.bulkDocs(Seq(
         Json.obj("_id" → "docid"),
-        Json.obj("_id" → "docid", "extra" → "other")
-      )))(1) \ "error").as[String] must be equalTo "conflict"
+        Json.obj("_id" → "docid", "extra" → "other"))))(1) \ "error").as[String] must be equalTo "conflict"
     }
 
     "accept to insert a duplicate document in batch mode" in new freshDb {
@@ -406,10 +399,8 @@ class DatabaseSpec extends WithDbSpecification("db") {
       (waitForResult(db.bulkDocs(
         Seq(
           Json.obj("_id" → "docid"),
-          Json.obj("_id" → "docid", "extra" → "other")
-        ),
-        allOrNothing = true
-      ))(1) \ "id").as[String] must be equalTo "docid"
+          Json.obj("_id" → "docid", "extra" → "other")),
+        allOrNothing = true))(1) \ "id").as[String] must be equalTo "docid"
     }
 
     "reject allOrNothing queries in CouchDB 2.0" in new freshDb {
@@ -418,10 +409,8 @@ class DatabaseSpec extends WithDbSpecification("db") {
       (waitForResult(db.bulkDocs(
         Seq(
           Json.obj("_id" → "docid"),
-          Json.obj("_id" → "docid", "extra" → "other")
-        ),
-        allOrNothing = true
-      ))(1) \ "id").as[String] must throwA[IllegalArgumentException]
+          Json.obj("_id" → "docid", "extra" → "other")),
+        allOrNothing = true))(1) \ "id").as[String] must throwA[IllegalArgumentException]
     }
 
     "generate conflicts when inserting duplicate documents in batch mode" in new freshDb {
@@ -430,10 +419,8 @@ class DatabaseSpec extends WithDbSpecification("db") {
         Seq(
           Json.obj("_id" → "docid"),
           Json.obj("_id" → "docid", "extra" → "other"),
-          Json.obj("_id" → "docid", "extra" → "yetAnother")
-        ),
-        allOrNothing = true
-      ))
+          Json.obj("_id" → "docid", "extra" → "yetAnother")),
+        allOrNothing = true))
       (waitForResult(db("docid", Map("conflicts" → "true"))) \ "_conflicts").as[Array[JsValue]] must have size 2
     }
 

@@ -18,8 +18,7 @@ class MangoSpec extends WithDbSpecification("mango") {
       waitForEnd(
         db.insert(Json.obj("name" → "Doe", "firstName" → "John")),
         db.insert(Json.obj("name" → "Doe", "firstName" → "Joan")),
-        db.insert(Json.obj("name" → "Summers", "firstName" → "Buffy"))
-      )
+        db.insert(Json.obj("name" → "Summers", "firstName" → "Buffy")))
       waitForResult(db.find(Json.obj("selector" → Json.obj("name" → "Doe"), "fields" → List("firstName"))))
         .map(js ⇒ (js \ "firstName").as[String]).sorted should be equalTo List("Joan", "John")
     }
@@ -34,8 +33,7 @@ class MangoSpec extends WithDbSpecification("mango") {
         db.insert(Json.obj("name" → "Doe", "firstName" → "John")),
         db.insert(Json.obj("name" → "Doe", "firstName" → "Joan")),
         db.insert(Json.obj("name" → "Summers", "firstName" → "Buffy")),
-        db.index(Json.obj("index" → Json.obj("fields" → List("name", "firstName"))))
-      )
+        db.index(Json.obj("index" → Json.obj("fields" → List("name", "firstName")))))
       waitForResult(db.find(Json.obj("selector" → Json.obj("name" → "Doe"), "sort" → List("name", "firstName"), "fields" → List("firstName"))))
         .map(js ⇒ (js \ "firstName").as[String]) should be equalTo List("Joan", "John")
       waitForResult(db.find(Json.obj("selector" → Json.obj("name" → "Doe"), "sort" → List(Json.obj("name" → "desc"), Json.obj("firstName" → "desc")), "fields" → List("firstName"))))
@@ -51,8 +49,7 @@ class MangoSpec extends WithDbSpecification("mango") {
         db.insert(Json.obj("name" → "Doe", "firstName" → "John")),
         db.insert(Json.obj("name" → "Doe", "firstName" → "Joan")),
         db.insert(Json.obj("name" → "Summers", "firstName" → "Buffy")),
-        db.index(Json.obj("index" → Json.obj("fields" → List("name", "firstName"))))
-      )
+        db.index(Json.obj("index" → Json.obj("fields" → List("name", "firstName")))))
       waitForResult(db.explain(Json.obj("selector" → Json.obj("name" → "Doe"), "sort" → List("name", "firstName"), "fields" → List("firstName")))).keys must contain("index")
     }
   }
