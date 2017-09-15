@@ -1,6 +1,6 @@
 package replicate.utils
 
-import akka.actor.{ Actor, Cancellable }
+import akka.actor.{ Actor, Timers }
 import akka.event.Logging
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ThrottleMode
@@ -16,7 +16,9 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class OnChanges(options: Options.Config, local: Database)
-  extends Actor with IncompleteCheckpoints with ConflictsSolver with LoggingError {
+  extends Actor with IncompleteCheckpoints with ConflictsSolver with LoggingError with Timers {
+
+  import OnChanges._
 
   val log = Logging(context.system, this)
 
@@ -56,23 +58,20 @@ class OnChanges(options: Options.Config, local: Database)
 
   override def postRestart(reason: Throwable) = {}
 
-  private[this] var timer: Option[Cancellable] = None
-
   override def receive() = {
     case js: JsObject ⇒
-      if (timer.isEmpty)
+      if (!timers.isTimerActive(Timer))
         // We do not want to start the conflicts and incomplete checkpoints resolution
         // more than once every 5 seconds (rate limiting).
-        timer = Some(context.system.scheduler.scheduleOnce(
-          nextRun - now,
-          self,
-          'trigger))
+        timers.startSingleTimer(Timer, 'trigger, nextRun - now)
     case 'trigger ⇒
       trigger()
     case 'reset ⇒
-      timer = None
       nextRun = now + 5.seconds
   }
 
 }
 
+object OnChanges {
+  private case object Timer
+}

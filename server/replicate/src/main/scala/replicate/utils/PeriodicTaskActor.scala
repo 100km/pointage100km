@@ -1,7 +1,7 @@
 package replicate.utils
 
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{ Actor, ActorLogging, Timers }
 import akka.pattern.pipe
 
 import scala.concurrent.Future
@@ -10,9 +10,10 @@ import scala.concurrent.duration.FiniteDuration
 // The PeriodicTask is different from a scheduler-launched repetitive task
 // as it will enforce the delay between invocations of act().
 
-trait PeriodicTaskActor extends Actor with ActorLogging {
+trait PeriodicTaskActor extends Actor with ActorLogging with Timers {
 
   import Global.dispatcher
+  import PeriodicTaskActor._
 
   /**
    * Time to wait between invocations.
@@ -45,7 +46,7 @@ trait PeriodicTaskActor extends Actor with ActorLogging {
       Future.sequence(futures).pipeTo(self)
     case 'wait ⇒
       log.debug("waiting for {}", period)
-      context.system.scheduler.scheduleOnce(period, self, 'act)
+      timers.startSingleTimer(Timer, 'act, period)
     case Failure(e) ⇒
       log.error(e, "error in execution")
       self ! 'wait
@@ -54,4 +55,8 @@ trait PeriodicTaskActor extends Actor with ActorLogging {
       self ! 'wait
   }
 
+}
+
+object PeriodicTaskActor {
+  private case object Timer
 }

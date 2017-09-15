@@ -3,11 +3,11 @@ package replicate.alerts
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import akka.{ Done, NotUsed }
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorLogging, ActorRefFactory, Cancellable, Props }
+import akka.actor.{ Actor, ActorLogging, ActorRefFactory, Props, Timers }
 import akka.stream._
 import akka.stream.scaladsl._
+import akka.{ Done, NotUsed }
 import net.rfc1149.canape.Database
 import play.api.libs.json.{ JsObject, Json }
 import replicate.messaging.Message
@@ -23,9 +23,11 @@ import scalaz.@@
 
 object PingAlert {
 
-  private[this] lazy val checkpoints = Global.infos.get.checkpoints
+  private lazy val checkpoints = Global.infos.get.checkpoints
 
-  private[this] implicit val dispatcher = Global.system.dispatcher
+  private implicit val dispatcher = Global.system.dispatcher
+
+  private case object RecheckTimer
 
   sealed trait State
   case object Starting extends State
@@ -35,7 +37,7 @@ object PingAlert {
   case object Warning extends State
   case object Critical extends State
 
-  private class CheckpointWatcher(siteId: Int @@ SiteId, database: Database) extends Actor with ActorLogging {
+  private class CheckpointWatcher(siteId: Int @@ SiteId, database: Database) extends Actor with ActorLogging with Timers {
 
     import CheckpointWatcher._
 
@@ -43,7 +45,6 @@ object PingAlert {
     private[this] val checkpointInfo = checkpoints(siteId)
     private[this] var currentState: State = Starting
     private[this] var currentTimestamp: Long = -1
-    private[this] var currentRecheckTimer: Option[Cancellable] = None
 
     private[this] def alert(severity: Severity.Severity, message: String, icon: String): Unit = {
       currentNotification.foreach(Alerts.cancelAlert)
@@ -55,14 +56,12 @@ object PingAlert {
       alert(severity, s"Site has been unresponsive for ${duration.toCoarsest}", icon)
 
     private[this] def scheduleRecheck(nextDuration: FiniteDuration, currentDuration: FiniteDuration): Unit = {
-      currentRecheckTimer.foreach(_.cancel())
-      currentRecheckTimer =
-        if (nextDuration > currentDuration)
-          Some(context.system.scheduler.scheduleOnce(
-            nextDuration - currentDuration,
-            self, Recheck(currentTimestamp)))
-        else
-          None
+      timers.cancel(RecheckTimer)
+      if (nextDuration > currentDuration)
+        timers.startSingleTimer(
+          RecheckTimer,
+          Recheck(currentTimestamp),
+          nextDuration - currentDuration)
     }
 
     private[this] def checkTimestamp(ts: Long): Unit = {
