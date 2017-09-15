@@ -72,11 +72,11 @@ object Octopush {
   }
 
   case class SMS(smsRecipients: List[String], smsText: String,
-      smsType: SmsType, smsSender: Option[String] = None, sendingTime: Option[DateTime] = None, sendingPeriod: Option[Duration] = None,
-      recipientFirstNames: Option[List[String]] = None, recipientLastNames: Option[List[String]] = None,
-      smsFields1: Option[List[String]] = None, smsFields2: Option[List[String]] = None, smsFields3: Option[List[String]] = None,
-      simulation: Boolean = false, requestId: Option[String] = None, withReplies: Boolean = false, transactional: Boolean = false,
-      msisdnSender: Boolean = false, requestKeys: String = "") {
+    smsType: SmsType, smsSender: Option[String] = None, sendingTime: Option[DateTime] = None, sendingPeriod: Option[Duration] = None,
+    recipientFirstNames: Option[List[String]] = None, recipientLastNames: Option[List[String]] = None,
+    smsFields1: Option[List[String]] = None, smsFields2: Option[List[String]] = None, smsFields3: Option[List[String]] = None,
+    simulation: Boolean = false, requestId: Option[String] = None, withReplies: Boolean = false, transactional: Boolean = false,
+    msisdnSender: Boolean = false, requestKeys: String = "") {
 
     import SMS._
 
@@ -144,8 +144,7 @@ object Octopush {
   val balanceUnmarshaller: Unmarshaller[NodeSeq, Balance] = Unmarshaller.strict { xml ⇒
     Balance(
       lowCostFrance = (xml \ "balance" filter (_ \@ "type" == "XXX")).text.toDouble,
-      premiumFrance = (xml \ "balance" filter (_ \@ "type" == "FR")).text.toDouble
-    )
+      premiumFrance = (xml \ "balance" filter (_ \@ "type" == "FR")).text.toDouble)
   }
 
   val creditUnmarshaller: Unmarshaller[NodeSeq, Double] = Unmarshaller.strict { xml ⇒
@@ -164,10 +163,8 @@ object Octopush {
         SMSSuccess(
           recipient   = (success \ "recipient").text,
           countryCode = (success \ "country_code").text,
-          cost        = (success \ "cost").text.toDouble
-        )
-      }
-    )
+          cost        = (success \ "cost").text.toDouble)
+      })
   }
 
   sealed trait SmsType
