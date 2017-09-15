@@ -1,12 +1,12 @@
 package replicate
 
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{ Sink, Source }
 import org.specs2.mutable._
 import play.api.libs.json.Json
 import replicate.scrutineer.Analyzer
-import replicate.state.{CheckpointsState, PingState, RankingState}
+import replicate.state.{ CheckpointsState, PingState, RankingState }
 import replicate.utils.Types._
-import replicate.utils.{Global, Infos}
+import replicate.utils.{ Global, Infos }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -14,7 +14,7 @@ import scalaz.@@
 
 class RankingStateSpec extends Specification {
 
-  import Global.{dispatcher, flowMaterializer}
+  import Global.{ dispatcher, flowMaterializer }
 
   sequential
 

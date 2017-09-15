@@ -1,9 +1,9 @@
 package replicate.messaging
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{ Actor, ActorLogging, Props }
 import akka.http.scaladsl.util.FastFuture
-import net.rfc1149.rxtelegram.Bot.{ActionMessage, ParseModeMarkdown, Targetted, To}
-import net.rfc1149.rxtelegram.{BotActor, Options, model}
+import net.rfc1149.rxtelegram.Bot.{ ActionMessage, ParseModeMarkdown, Targetted, To }
+import net.rfc1149.rxtelegram.{ BotActor, Options, model }
 import replicate.utils.Global
 
 import scala.concurrent.Future

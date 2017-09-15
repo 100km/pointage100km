@@ -5,10 +5,10 @@ import org.specs2.matcher.ResultMatchers
 import org.specs2.mutable._
 import play.api.libs.json.Json
 import replicate.scrutineer.Analyzer
-import replicate.scrutineer.Analyzer.{ArtificialPoint, DeletedPoint, GenuinePoint, KeepPoint, MissingPoint, RemovePoint}
-import replicate.state.{CheckpointsState, PingState}
+import replicate.scrutineer.Analyzer.{ ArtificialPoint, DeletedPoint, GenuinePoint, KeepPoint, MissingPoint, RemovePoint }
+import replicate.state.{ CheckpointsState, PingState }
 import replicate.utils.Types._
-import replicate.utils.{Global, Infos}
+import replicate.utils.{ Global, Infos }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

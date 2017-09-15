@@ -1,6 +1,6 @@
 package replicate.models
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{ Json, Reads }
 import replicate.utils.Types._
 
 import scalaz.@@

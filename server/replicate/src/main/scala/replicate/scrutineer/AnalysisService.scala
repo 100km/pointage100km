@@ -3,14 +3,14 @@ package replicate.scrutineer
 import akka.Done
 import akka.stream.Attributes.Name
 import akka.stream._
-import akka.stream.scaladsl.{Flow, Keep, Sink}
+import akka.stream.scaladsl.{ Flow, Keep, Sink }
 import net.rfc1149.canape.Database
 import replicate.alerts.Alerts
 import replicate.messaging.Message
-import replicate.messaging.Message.{Checkpoint, Severity}
+import replicate.messaging.Message.{ Checkpoint, Severity }
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 object AnalysisService {
 

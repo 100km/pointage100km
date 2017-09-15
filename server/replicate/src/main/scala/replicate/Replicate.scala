@@ -2,23 +2,23 @@ package replicate
 
 import akka.actor.Props
 import akka.event.Logging
-import akka.stream.scaladsl.{Broadcast, Flow, Sink}
+import akka.stream.scaladsl.{ Broadcast, Flow, Sink }
 import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape._
-import play.api.libs.json.{JsObject, Json}
-import replicate.alerts.{Alerts, RankingAlert}
+import play.api.libs.json.{ JsObject, Json }
+import replicate.alerts.{ Alerts, RankingAlert }
 import replicate.maintenance.RemoveObsoleteDocuments
 import replicate.messaging.sms.TextService
 import replicate.scrutineer.Analyzer.ContestantAnalysis
-import replicate.scrutineer.{AnalysisService, CheckpointScrutineer}
+import replicate.scrutineer.{ AnalysisService, CheckpointScrutineer }
 import replicate.stalking.StalkingService
-import replicate.state.{ContestantState, RankingState}
-import replicate.utils.Options.{Checkpoint, Master}
+import replicate.state.{ ContestantState, RankingState }
+import replicate.utils.Options.{ Checkpoint, Master }
 import replicate.utils._
 import steenwerck._
 
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 object Replicate extends App {
 
@@ -66,9 +66,9 @@ class Replicate(options: Options.Config) extends LoggingError {
   private def createSystemDatabases() = {
     for (systemDb ← Seq("_global_changes", "_metadata", "_replicator", "_users"))
       localCouch.db(systemDb).create().onComplete {
-        case Success(_)                      ⇒ log.info("created database {}", systemDb)
+        case Success(_) ⇒ log.info("created database {}", systemDb)
         case Failure(StatusError(412, _, _)) ⇒ // Nothing to do
-        case Failure(f)                      ⇒ log.info("could not create database {}: {}", systemDb, f)
+        case Failure(f) ⇒ log.info("could not create database {}: {}", systemDb, f)
       }
   }
 
@@ -191,8 +191,7 @@ class Replicate(options: Options.Config) extends LoggingError {
           val sites = Global.infos.get.sites.length
           val queryParams = Json.obj(
             "site_id" → options.siteId.toString,
-            "prev_site_id" → ((options.siteId + sites - 1) % sites).toString
-          )
+            "prev_site_id" → ((options.siteId + sites - 1) % sites).toString)
           (Json.obj("filter" → "replicate/to-download", "query_params" → queryParams), Json.obj("filter" → "replicate/to-upload"))
         } else
           (Json.obj("filter" → "replicate/no-local"), Json.obj("filter" → "replicate/no-local"))
@@ -217,8 +216,7 @@ class Replicate(options: Options.Config) extends LoggingError {
       system.scheduler.schedule(obsoleteRemoveInterval, obsoleteRemoveInterval) {
         withError(
           RemoveObsoleteDocuments.removeObsoleteDocuments(localDatabase, log),
-          "cannot remove obsolete documents"
-        )
+          "cannot remove obsolete documents")
       }
 
     if (options.onChanges)

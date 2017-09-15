@@ -8,11 +8,11 @@ import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Database
 import play.api.libs.json.Json
-import replicate.messaging.Message.{Administrativia, Severity}
+import replicate.messaging.Message.{ Administrativia, Severity }
 import replicate.messaging._
-import replicate.utils.{Global, Glyphs}
+import replicate.utils.{ Global, Glyphs }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 class Alerts(database: Database) extends Actor with ActorLogging {
 
@@ -37,10 +37,10 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     val service = config.as[String]("type")
     val props = service match {
       case "freemobile-sms" ⇒ Props(new FreeMobileSMS(config.as[String]("user"), config.as[String]("password")))
-      case "pushbullet"     ⇒ Props(new Pushbullet(config.as[String]("token")))
-      case "system"         ⇒ Props(new SystemLogger)
-      case "telegram"       ⇒ Props(new Telegram(config.as[String]("id")))
-      case s                ⇒ sys.error(s"Unknown officer type $s for officer $officerId")
+      case "pushbullet" ⇒ Props(new Pushbullet(config.as[String]("token")))
+      case "system" ⇒ Props(new SystemLogger)
+      case "telegram" ⇒ Props(new Telegram(config.as[String]("id")))
+      case s ⇒ sys.error(s"Unknown officer type $s for officer $officerId")
     }
     log.debug("starting actor for {}", officerId)
     context.actorOf(props, if (service == officerId) service else s"$service-$officerId")

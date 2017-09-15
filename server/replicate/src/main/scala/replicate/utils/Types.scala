@@ -1,8 +1,8 @@
 package replicate.utils
 
-import play.api.libs.json.{Reads, Writes}
+import play.api.libs.json.{ Reads, Writes }
 
-import scalaz.{@@, Tag}
+import scalaz.{ @@, Tag }
 
 object Types {
 

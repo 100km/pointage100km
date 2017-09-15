@@ -3,12 +3,12 @@ import java.io.File
 import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.typesafe.config.{Config, ConfigException, ConfigFactory, ConfigParseOptions}
+import com.typesafe.config.{ Config, ConfigException, ConfigFactory, ConfigParseOptions }
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape._
 import play.api.libs.json._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 package object steenwerck {
 
@@ -42,7 +42,7 @@ package object steenwerck {
     val options = ConfigParseOptions.defaults().setAllowMissing(false)
     var baseName = "steenwerck"
     (0 to 3).foldLeft(None: Option[Config]) {
-      case (s@Some(config), _) ⇒
+      case (s @ Some(config), _) ⇒
         s
       case (None, level) ⇒
         try {
@@ -56,13 +56,12 @@ package object steenwerck {
 
   def couchFromConfig(config: Config, basePath: String, actorSystem: ActorSystem, auth: Option[(String, String)] = None): Couch =
     new Couch(
-      host   = config.as[Option[String]](s"$basePath.host").getOrElse("localhost"),
-      port   = config.as[Option[Int]](s"$basePath.port").getOrElse(5984),
+      host = config.as[Option[String]](s"$basePath.host").getOrElse("localhost"),
+      port = config.as[Option[Int]](s"$basePath.port").getOrElse(5984),
       secure = config.as[Option[Boolean]](s"$basePath.secure").getOrElse(false),
-      auth   = auth orElse config.as[Option[String]](s"$basePath.user").flatMap(user ⇒
+      auth = auth orElse config.as[Option[String]](s"$basePath.user").flatMap(user ⇒
         config.as[Option[String]](s"$basePath.password").map((user, _))),
-      config = config
-    )(actorSystem)
+      config = config)(actorSystem)
 
   def localCouch(config: Config = steenwerckRootConfig)(implicit actorSystem: ActorSystem): Couch =
     couchFromConfig(config, "steenwerck.local", actorSystem)

@@ -56,8 +56,7 @@ object Message {
     Severity.Info → None,
     Severity.Warning → Some(Glyphs.warningSign),
     Severity.Error → Some(Glyphs.bomb),
-    Severity.Critical → Some(Glyphs.collisionSymbol)
-  )
+    Severity.Critical → Some(Glyphs.collisionSymbol))
 
   implicit val messageReads: Reads[Message] = (
     (JsPath \ "category").read[String].map(categories) and
@@ -65,8 +64,7 @@ object Message {
     (JsPath \ "title").read[String] and
     (JsPath \ "body").read[String] and
     (JsPath \ "url").readNullable[String].map(_.map(Uri.apply)) and
-    (JsPath \ "icon").readNullable[String]
-  )(Message.apply _)
+    (JsPath \ "icon").readNullable[String])(Message.apply _)
 
   implicit val categoryWrites: Writes[Category] = Writes { category ⇒ JsString(category.toString) }
   implicit val severityWrites: Writes[Severity.Severity] = Writes { severity ⇒ JsString(severity.toString.toLowerCase) }
@@ -77,6 +75,5 @@ object Message {
     (JsPath \ "title").write[String] and
     (JsPath \ "body").write[String] and
     (JsPath \ "url").writeNullable[Uri] and
-    (JsPath \ "icon").writeNullable[String]
-  )(unlift(Message.unapply))
+    (JsPath \ "icon").writeNullable[String])(unlift(Message.unapply))
 }

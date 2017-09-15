@@ -8,7 +8,7 @@ import play.api.libs.json._
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity
 import replicate.utils.Types._
-import replicate.utils.{Global, Glyphs}
+import replicate.utils.{ Global, Glyphs }
 
 import scalaz.@@
 

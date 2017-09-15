@@ -6,7 +6,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import replicate.models.CheckpointData
 import replicate.utils.Types._
-import replicate.utils.{FormatUtils, Global}
+import replicate.utils.{ FormatUtils, Global }
 
 import scala.concurrent.Future
 import scalaz.@@
@@ -22,8 +22,7 @@ object CheckpointsState {
   object Point {
     implicit val pointWrites: Writes[Point] = (
       (JsPath \ "site_id").write[Int @@ SiteId] and
-      (JsPath \ "time").write[Long]
-    )(unlift(Point.unapply))
+      (JsPath \ "time").write[Long])(unlift(Point.unapply))
   }
 
   type Race = Map[Int @@ ContestantId, Seq[CheckpointData]]

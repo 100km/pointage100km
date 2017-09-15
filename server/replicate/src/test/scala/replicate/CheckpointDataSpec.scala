@@ -20,8 +20,7 @@ class CheckpointDataSpec extends Specification {
       |   "deleted_times": [1002],
       |   "artificial_times": [1001]
       | }
-    """.stripMargin
-  )
+    """.stripMargin)
 
   private val partialJs = Json.parse(
     """
@@ -33,8 +32,7 @@ class CheckpointDataSpec extends Specification {
       |   "site_id": 3,
       |   "times": [1000, 1001]
       | }
-    """.stripMargin
-  )
+    """.stripMargin)
 
   "CheckpointData" should {
 

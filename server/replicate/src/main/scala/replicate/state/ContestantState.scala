@@ -7,7 +7,7 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
+import play.api.libs.json.{ JsError, JsSuccess, JsValue }
 import replicate.models.Contestant
 import replicate.utils.Types.ContestantId
 

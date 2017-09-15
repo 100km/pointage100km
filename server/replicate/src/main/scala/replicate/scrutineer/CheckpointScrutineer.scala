@@ -2,8 +2,8 @@ package replicate.scrutineer
 
 import akka.NotUsed
 import akka.event.LoggingAdapter
-import akka.stream.scaladsl.{Flow, Source}
-import akka.stream.{ActorAttributes, Attributes, Materializer, Supervision}
+import akka.stream.scaladsl.{ Flow, Source }
+import akka.stream.{ ActorAttributes, Attributes, Materializer, Supervision }
 import net.rfc1149.canape.Database
 import play.api.libs.json.JsObject
 import replicate.models.CheckpointData

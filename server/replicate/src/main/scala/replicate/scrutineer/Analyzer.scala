@@ -2,10 +2,10 @@ package replicate.scrutineer
 
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import play.api.libs.json.{JsObject, Json, Writes}
+import play.api.libs.json.{ JsObject, Json, Writes }
 import replicate.models.CheckpointData
 import replicate.state.CheckpointsState.Point
-import replicate.state.{CheckpointsState, PingState}
+import replicate.state.{ CheckpointsState, PingState }
 import replicate.utils.FormatUtils._
 import replicate.utils.Global
 import replicate.utils.Infos.RaceInfo
@@ -95,8 +95,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPo
         // Rerun the checks with the new maximum speed
         (firstKept, firstRemoved) >> dropSuspiciousStart(maxSpeed) >> dropWhile(findMinVarianceExtraPoint(maxSpeed))
       else
-        (firstKept, firstRemoved)
-    ) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
+        (firstKept, firstRemoved)) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     val added = missingPoints(kept)
     val points = kept.map(p ⇒ GenuinePoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
     points.sortBy(_.point.timestamp)
@@ -132,8 +131,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPo
         if (previousSpeed > maxSpeed)
           (points.dropRight(1), Seq(RemovePoint(
             points.last.point,
-            s"${q(maxSpeed)} speed on the last section (${formatSpeed(end.speed)}) and the two last sections (${formatSpeed(previousSpeed)})"
-          )))
+            s"${q(maxSpeed)} speed on the last section (${formatSpeed(end.speed)}) and the two last sections (${formatSpeed(previousSpeed)})")))
         else
           (points, Seq())
       case _ ⇒
@@ -248,7 +246,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPo
    */
   private[this] def enrichPoints(points: Seq[Point]): Seq[EnrichedPoint] = {
     points.scanLeft((startingPoint.point, Lap(0), 0.0, 0.0)) {
-      case ((prevPoint, prevLap, prevDistance, prevSpeed), point@Point(siteId, timestamp)) ⇒
+      case ((prevPoint, prevLap, prevDistance, prevSpeed), point @ Point(siteId, timestamp)) ⇒
         val lap = if (SiteId.unwrap(siteId) <= SiteId.unwrap(prevPoint.siteId)) Lap(Lap.unwrap(prevLap) + 1) else prevLap
         val distance = infos.distance(siteId, lap)
         val speed = speedBetween(prevDistance, distance, prevPoint.timestamp, timestamp)
@@ -363,14 +361,14 @@ object Analyzer {
   }
 
   final case class DownPoint(point: Point, lap: Int @@ Lap, distance: Double, speed: Double, lastPing: Option[Long])
-      extends ExtraPoint {
+    extends ExtraPoint {
     private def reason = lastPing.fold("Site has never been up")(downSince ⇒ s"Site is down since ${formatDate(downSince)}")
     override def toJson = super.toJson ++ Json.obj("type" → "down", "reason" → reason)
     override def toString = s"DownPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)}, $reason)"
   }
 
   case class ContestantAnalysis(contestantId: Int @@ ContestantId, raceId: Int @@ RaceId, checkpoints: Seq[AnalyzedPoint],
-      before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
+    before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
     val anomalies = countAnomalies(checkpoints)
     val consecutiveAnomalies = countConsecutiveAnomalies(checkpoints)
     val valid = anomalies < maxAnomalies && consecutiveAnomalies < maxConsecutiveAnomalies

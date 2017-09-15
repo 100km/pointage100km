@@ -1,11 +1,11 @@
 package replicate.messaging.sms
 
-import akka.actor.{Actor, ActorLogging}
-import play.api.libs.json.{JsObject, Json}
+import akka.actor.{ Actor, ActorLogging }
+import play.api.libs.json.{ JsObject, Json }
 import replicate.messaging.Pushbullet
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class PushbulletSMS(bearerToken: String, userIden: String, deviceIden: String) extends Actor with ActorLogging {
 
@@ -17,8 +17,7 @@ class PushbulletSMS(bearerToken: String, userIden: String, deviceIden: String) e
       "type" → "push",
       "push" → Json.obj("type" → "messaging_extension_reply", "package_name" → "com.pushbullet.android",
         "source_user_iden" → userIden, "target_device_iden" → deviceIden, "conversation_iden" → recipient,
-        "message" → message)
-    ))
+        "message" → message)))
 
   override val receive: Receive = {
     case (recipient: String, message: String) ⇒

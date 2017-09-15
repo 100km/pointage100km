@@ -1,9 +1,9 @@
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.stream.testkit.scaladsl.{TestSink, TestSource}
-import akka.stream.testkit.{TestPublisher, TestSubscriber}
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.scaladsl.{ Keep, Sink, Source }
+import akka.stream.testkit.scaladsl.{ TestSink, TestSource }
+import akka.stream.testkit.{ TestPublisher, TestSubscriber }
+import akka.stream.{ ActorMaterializer, Materializer }
 import org.specs2.mutable._
 import replicate.utils.StreamUtils._
 

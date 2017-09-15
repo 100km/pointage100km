@@ -2,19 +2,19 @@ package replicate
 
 import java.util.UUID
 
-import net.rfc1149.canape.{Database, helpers}
+import net.rfc1149.canape.{ Database, helpers }
 import org.specs2.mutable._
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{ JsObject, JsValue, Json }
 import replicate.utils.Options
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ReplicateSpec extends Specification with After {
 
   val options = Options.Config(compactLocal = false, dryRun = false, _fixConflicts = true, _fixIncomplete = true,
-    _obsolete      = false, replicate = true, siteId = 1000, _ping = false)
+    _obsolete = false, replicate = true, siteId = 1000, _ping = false)
 
   val replicate: Replicate = new Replicate(options)
 

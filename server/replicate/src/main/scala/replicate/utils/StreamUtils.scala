@@ -5,10 +5,10 @@ import java.util.concurrent.TimeUnit
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import akka.stream.stage._
-import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+import akka.stream.{ Attributes, FlowShape, Inlet, Outlet }
 
 import scala.collection.immutable.Queue
-import scala.concurrent.duration.{Deadline, FiniteDuration}
+import scala.concurrent.duration.{ Deadline, FiniteDuration }
 
 trait StreamUtils {
 

@@ -4,7 +4,7 @@ import play.api.libs.json.Json
 import replicate.models.CheckpointData
 import replicate.state.CheckpointsState
 import replicate.utils.Types.RaceId
-import replicate.utils.{Global, Infos}
+import replicate.utils.{ Global, Infos }
 
 import scala.concurrent.Future
 import scala.io.Source

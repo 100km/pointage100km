@@ -2,11 +2,11 @@ package replicate
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{ Actor, ActorLogging }
 import replicate.alerts.Alerts
 import replicate.messaging.Message.Severity.Severity
-import replicate.messaging.Message.{Severity, TextMessage}
-import replicate.utils.{FormatUtils, Glyphs}
+import replicate.messaging.Message.{ Severity, TextMessage }
+import replicate.utils.{ FormatUtils, Glyphs }
 
 package object messaging {
 
@@ -46,8 +46,8 @@ package object messaging {
         val current = FormatUtils.formatEuros(balance)
         val message = (currentStatus, status) match {
           case (null, Ok) ⇒ s"Current balance is $current"
-          case (_, Ok)    ⇒ s"Balance has been restored to $current"
-          case _          ⇒ s"Balance is $current, below the limit of ${FormatUtils.formatEuros(limit)}"
+          case (_, Ok) ⇒ s"Balance has been restored to $current"
+          case _ ⇒ s"Balance is $current, below the limit of ${FormatUtils.formatEuros(limit)}"
         }
         currentStatus = status
         latestAlert.foreach(Alerts.cancelAlert)

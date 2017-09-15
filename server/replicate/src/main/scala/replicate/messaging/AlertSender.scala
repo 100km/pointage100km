@@ -2,14 +2,14 @@ package replicate.messaging
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{ Actor, ActorLogging, ActorRef }
 import akka.pattern.pipe
 import net.rfc1149.canape.Database
 import play.api.libs.json._
 import replicate.utils.Global
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
  * Actor in charge of delivering an alert and handling its immediate or future cancellation.

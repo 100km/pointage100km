@@ -2,11 +2,11 @@ package replicate.maintenance
 
 import akka.Done
 import akka.event.Logging
-import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
-import akka.stream.{ActorAttributes, Materializer, Supervision}
+import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
+import akka.stream.{ ActorAttributes, Materializer, Supervision }
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
-import replicate.utils.{Global, LoggingError}
+import replicate.utils.{ Global, LoggingError }
 
 import scala.concurrent.Future
 import scala.language.postfixOps

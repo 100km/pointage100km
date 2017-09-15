@@ -2,22 +2,22 @@ package replicate.messaging.sms
 
 import akka.NotUsed
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{ Actor, ActorLogging }
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.Accept
-import akka.http.scaladsl.model.{FormData, HttpResponse, MediaTypes, Uri}
+import akka.http.scaladsl.model.{ FormData, HttpResponse, MediaTypes, Uri }
 import akka.pattern.pipe
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{ Sink, Source }
 import net.rfc1149.canape.Couch
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsObject, JsPath, Reads}
+import play.api.libs.json.{ JsObject, JsPath, Reads }
 import replicate.alerts.Alerts
-import replicate.messaging.Message.{Severity, TextMessage}
-import replicate.messaging.{Balance, BalanceError, BalanceTracker, Message ⇒ Msg}
-import replicate.utils.{FormatUtils, Glyphs, Networks}
+import replicate.messaging.Message.{ Severity, TextMessage }
+import replicate.messaging.{ Balance, BalanceError, BalanceTracker, Message ⇒ Msg }
+import replicate.utils.{ FormatUtils, Glyphs, Networks }
 
 import scala.concurrent.Future
 
@@ -36,8 +36,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
     val request = RequestBuilding.Post(
       SMSEndpoint,
       FormData("from" → senderId, "to" → recipient.stripPrefix("+"),
-        "text" → message, "api_key" → apiKey, "api_secret" → apiSecret)
-    ).addHeader(Accept(MediaTypes.`application/json`))
+        "text" → message, "api_key" → apiKey, "api_secret" → apiSecret)).addHeader(Accept(MediaTypes.`application/json`))
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
 
@@ -100,7 +99,7 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
 object NexmoSMS {
 
   private case class Message(_status: String, errorText: Option[String], _remainingBalance: Option[String],
-      _messagePrice: Option[String], network: Option[String], to: Option[String]) {
+    _messagePrice: Option[String], network: Option[String], to: Option[String]) {
     val status = _status.toInt
     val remainingBalance = _remainingBalance.map(_.toDouble)
     val messagePrice = _messagePrice.map(_.toDouble)
@@ -112,8 +111,7 @@ object NexmoSMS {
     (JsPath \ "remaining-balance").readNullable[String] and
     (JsPath \ "message-price").readNullable[String] and
     (JsPath \ "network").readNullable[String] and
-    (JsPath \ "to").readNullable[String]
-  )(Message.apply _)
+    (JsPath \ "to").readNullable[String])(Message.apply _)
 
   private case class Response(_messageCount: String, messages: List[Message]) {
     val messageCount = _messageCount.toInt

@@ -1,6 +1,6 @@
 package replicate.utils
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{ Json, Reads }
 
 case class Configuration(dbname: String, tests_allowed: Boolean)
 

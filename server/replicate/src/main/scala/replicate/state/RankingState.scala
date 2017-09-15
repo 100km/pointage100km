@@ -1,7 +1,7 @@
 package replicate.state
 
 import akka.agent.Agent
-import replicate.scrutineer.Analyzer.{ContestantAnalysis, KeepPoint}
+import replicate.scrutineer.Analyzer.{ ContestantAnalysis, KeepPoint }
 import replicate.utils.Global
 import replicate.utils.SortUtils._
 import replicate.utils.Types._
@@ -58,7 +58,7 @@ object RankingState {
     val contestantId = analysis.contestantId
     val allRanks = analysis.bestPoint match {
       case Some(bestPoint) ⇒ enterBestPoint(raceId, contestantId, bestPoint)
-      case None            ⇒ removePoints(raceId, contestantId)
+      case None ⇒ removePoints(raceId, contestantId)
     }
     allRanks.map(_.getOrElse(raceId, Vector()))
   }
@@ -66,7 +66,7 @@ object RankingState {
   private def rankFor(ranks: Ranks, contestantId: Int @@ ContestantId): Option[Int] =
     ranks.indexWhere(_.contestantId == contestantId) match {
       case -1 ⇒ None
-      case n  ⇒ Some(n + 1)
+      case n ⇒ Some(n + 1)
     }
 
   def enterContestant(analysis: ContestantAnalysis): Future[RankingInfo] = {

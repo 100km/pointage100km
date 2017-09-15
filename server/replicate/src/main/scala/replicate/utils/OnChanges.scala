@@ -1,13 +1,13 @@
 package replicate.utils
 
-import akka.actor.{Actor, Cancellable}
+import akka.actor.{ Actor, Cancellable }
 import akka.event.Logging
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
-import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
+import replicate.maintenance.{ ConflictsSolver, IncompleteCheckpoints, PingService }
 import replicate.utils.Global._
 
 import scala.concurrent.Future
@@ -16,21 +16,19 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class OnChanges(options: Options.Config, local: Database)
-    extends Actor with IncompleteCheckpoints with ConflictsSolver with LoggingError {
+  extends Actor with IncompleteCheckpoints with ConflictsSolver with LoggingError {
 
   val log = Logging(context.system, this)
 
   private[this] def incompleteCheckpoints =
     withError(
       fixIncompleteCheckpoints(local),
-      "unable to get incomplete checkpoints"
-    )
+      "unable to get incomplete checkpoints")
 
   private[this] def conflictingCheckpoints =
     withError(
       fixConflictingCheckpoints(local),
-      "unable to get conflicting checkpoints"
-    )
+      "unable to get conflicting checkpoints")
 
   private[this] def futures() = {
     val fc = if (options.fixConflicts) conflictingCheckpoints
@@ -68,8 +66,7 @@ class OnChanges(options: Options.Config, local: Database)
         timer = Some(context.system.scheduler.scheduleOnce(
           nextRun - now,
           self,
-          'trigger
-        ))
+          'trigger))
     case 'trigger ⇒
       trigger()
     case 'reset ⇒

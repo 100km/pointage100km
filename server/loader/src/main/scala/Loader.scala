@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape._
 import org.apache.commons.dbcp2.BasicDataSource
@@ -17,7 +17,7 @@ import scopt.OptionParser
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
+import scala.language.{ implicitConversions, postfixOps, reflectiveCalls }
 
 // Usage: loader dbfile
 
@@ -60,26 +60,26 @@ object Loader extends App {
     val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
     capitalized.zip(name) map {
       case (_, '-') ⇒ '-'
-      case (c, _)   ⇒ c
+      case (c, _) ⇒ c
     } mkString
   }
 
   private def fix(m: Map[String, Any]): JsObject = JsObject(m.toSeq map {
-    case ("year", v: java.sql.Date)   ⇒ "year" → JsNumber(v.get(Calendar.YEAR))
+    case ("year", v: java.sql.Date) ⇒ "year" → JsNumber(v.get(Calendar.YEAR))
     case (k, v: java.math.BigDecimal) ⇒ k → JsNumber(v.doubleValue())
-    case (k, v: java.lang.Long)       ⇒ k → JsNumber(v.toLong)
-    case (k, v: java.lang.Integer)    ⇒ k → JsNumber(v.toInt)
-    case (k, v: java.util.Date)       ⇒ k → JsString(v.toString)
-    case ("id", id: String)           ⇒ "mysql_id" → JsString(id)
-    case (k, v: Boolean)              ⇒ k → JsBoolean(v)
-    case (k, v: String)               ⇒ k → JsString(v)
-    case (k, v)                       ⇒ throw new IllegalArgumentException(s"unable to decode non-string value `$v' for key `$k'")
+    case (k, v: java.lang.Long) ⇒ k → JsNumber(v.toLong)
+    case (k, v: java.lang.Integer) ⇒ k → JsNumber(v.toInt)
+    case (k, v: java.util.Date) ⇒ k → JsString(v.toString)
+    case ("id", id: String) ⇒ "mysql_id" → JsString(id)
+    case (k, v: Boolean) ⇒ k → JsBoolean(v)
+    case (k, v: String) ⇒ k → JsString(v)
+    case (k, v) ⇒ throw new IllegalArgumentException(s"unable to decode non-string value `$v' for key `$k'")
   })
 
   private def containsAll(doc: JsObject, original: JsObject): Boolean = {
     doc.fields.forall {
       case (k, v) if original \ k == JsDefined(v) ⇒ true
-      case _                                      ⇒ false
+      case _ ⇒ false
     }
   }
 
@@ -105,8 +105,7 @@ object Loader extends App {
       val q = run.query(
         "SELECT registrations.*, teams.name as team_name FROM registrations LEFT JOIN teams ON registrations.team_id = teams.id WHERE registrations.year = ?",
         new MapListHandler,
-        new java.lang.Integer(options.year)
-      ).asScala.toList.map(_.asScala)
+        new java.lang.Integer(options.year)).asScala.toList.map(_.asScala)
       println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
       // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
       // be overloaded and that we will encounter no timeouts.
@@ -121,8 +120,7 @@ object Loader extends App {
             "_id" → id,
             "type" → "contestant",
             "name" → name,
-            "first_name" → firstName
-          )
+            "first_name" → firstName)
         val desc = s"bib $bib ($firstName $name)"
         existing.get(bib) match {
           case Some(original) ⇒

@@ -1,14 +1,14 @@
 package replicate.messaging.sms
 
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{ Actor, ActorLogging }
 import akka.pattern.pipe
 import net.rfc1149.octopush.Octopush
-import net.rfc1149.octopush.Octopush.{PremiumFrance, SMS, SMSResult, WWW}
+import net.rfc1149.octopush.Octopush.{ PremiumFrance, SMS, SMSResult, WWW }
 import replicate.alerts.Alerts
-import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.messaging.Message.{ Severity, TextMessage }
 import replicate.messaging._
-import replicate.utils.{FormatUtils, Glyphs}
+import replicate.utils.{ FormatUtils, Glyphs }
 
 class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) extends Actor with ActorLogging with BalanceTracker {
 
@@ -39,8 +39,7 @@ class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) ext
     case SendOk(sms, result) ⇒
       log.debug(
         "SMS to {} sent succesfully with {} SMS (cost: {}): {}",
-        sms.smsRecipients.head, result.numberOfSendings, FormatUtils.formatEuros(result.cost), sms.smsText
-      )
+        sms.smsRecipients.head, result.numberOfSendings, FormatUtils.formatEuros(result.cost), sms.smsText)
       self ! Balance(result.balance)
 
     case Failure(SendError(sms, failure)) ⇒

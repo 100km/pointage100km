@@ -7,7 +7,7 @@ import replicate.utils.Types._
 import scalaz.@@
 
 case class CheckpointData(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId, siteId: Int @@ SiteId, timestamps: List[Long],
-    deletedTimestamps: List[Long], insertedTimestamps: List[Long]) {
+  deletedTimestamps: List[Long], insertedTimestamps: List[Long]) {
 
   /**
    * Create a pristine checkpoint, with only the original times. Deleted times are reinstated,
@@ -17,10 +17,9 @@ case class CheckpointData(raceId: Int @@ RaceId, contestantId: Int @@ Contestant
    */
   def pristine: CheckpointData =
     copy(
-      timestamps         = (timestamps ++ deletedTimestamps).diff(insertedTimestamps).distinct.sorted,
-      deletedTimestamps  = Nil,
-      insertedTimestamps = Nil
-    )
+      timestamps = (timestamps ++ deletedTimestamps).diff(insertedTimestamps).distinct.sorted,
+      deletedTimestamps = Nil,
+      insertedTimestamps = Nil)
 
   /**
    * Merge the times of another checkpoint into this one. The other fields will not be checked
@@ -61,6 +60,5 @@ object CheckpointData {
     (JsPath \ "site_id").write[Int @@ SiteId] and
     (JsPath \ "times").write[List[Long]] and
     (JsPath \ "deleted_times").write[List[Long]] and
-    (JsPath \ "artificial_times").write[List[Long]]
-  )(unlift(CheckpointData.unapply))
+    (JsPath \ "artificial_times").write[List[Long]])(unlift(CheckpointData.unapply))
 }
