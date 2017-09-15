@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model.inlinequeries
 
-import play.api.libs.json.{ Json, Writes }
+import play.api.libs.json.{Json, Writes}
 
 case class InlineQueryResultVideo(id: String, video_url: String, mime_type: String,
   video_width: Option[Long] = None, video_height: Option[Long] = None,

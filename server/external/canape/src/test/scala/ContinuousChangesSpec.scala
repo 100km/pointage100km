@@ -1,7 +1,7 @@
 import java.util.concurrent.TimeoutException
 
 import akka.Done
-import akka.stream.scaladsl.{ Keep, Sink }
+import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.testkit.scaladsl.TestSink
 import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape._
@@ -84,7 +84,7 @@ class ContinuousChangesSpec extends WithDbSpecification("db") {
       val changes = db.continuousChanges(Map("filter" → "d/f"))
       val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-        Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid3")
     }
 
@@ -93,7 +93,7 @@ class ContinuousChangesSpec extends WithDbSpecification("db") {
       val changes = db.continuousChangesByDocIds(List("docid1", "docid4"))
       val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-        Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid4")
     }
 

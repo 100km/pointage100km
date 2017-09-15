@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model
 
-import play.api.libs.json.{ Json, Reads }
+import play.api.libs.json.{Json, Reads}
 
 case class Sticker(file_id: String, width: Long, height: Long, thumb: Option[PhotoSize], emoji: Option[String], file_size: Option[Long])
 

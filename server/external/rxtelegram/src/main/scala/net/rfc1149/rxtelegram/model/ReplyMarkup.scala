@@ -6,8 +6,8 @@ trait ReplyMarkup
 
 object ReplyMarkup {
   implicit val replyMarkupWrites: Writes[ReplyMarkup] = Writes {
-    case fr: ForceReply ⇒ ForceReply.forceReplyWrites.writes(fr)
-    case rkh: ReplyKeyboardHide ⇒ ReplyKeyboardHide.replyKeyboardHideWrites.writes(rkh)
+    case fr: ForceReply           ⇒ ForceReply.forceReplyWrites.writes(fr)
+    case rkh: ReplyKeyboardHide   ⇒ ReplyKeyboardHide.replyKeyboardHideWrites.writes(rkh)
     case rkm: ReplyKeyboardMarkup ⇒ ReplyKeyboardMarkup.replyKeyboardMarkupWrites.writes(rkm)
   }
 }

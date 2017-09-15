@@ -1,7 +1,7 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import net.rfc1149.octopush.Octopush._
-import net.rfc1149.octopush.{ ErrorCodes, Octopush }
+import net.rfc1149.octopush.{ErrorCodes, Octopush}
 import org.specs2.mutable._
 import org.specs2.specification.Scope
 
@@ -141,7 +141,7 @@ class OctopushSpec extends Specification {
 
     "accept a SMS in test mode with SHA1 checksum" in new ValidOctopushScope {
       val sms = SMS(smsRecipients = List("+33601010101"), smsText = "Hi, this is a SMS", smsType = LowCostFrance, simulation = true,
-        requestKeys = "TRY")
+                    requestKeys   = "TRY")
       val result = Await.result(octopush.sms(sms), 5.seconds)
       result.numberOfSendings should be equalTo 1
       result.successes must have size 1

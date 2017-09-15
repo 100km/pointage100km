@@ -4,24 +4,24 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.marshalling.{ Marshal, ToEntityMarshaller }
+import akka.http.scaladsl.marshalling.{Marshal, ToEntityMarshaller}
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.MediaTypes.`application/json`
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers._
-import akka.http.scaladsl.settings.{ ClientConnectionSettings, ConnectionPoolSettings }
+import akka.http.scaladsl.settings.{ClientConnectionSettings, ConnectionPoolSettings}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.scaladsl.{ Flow, Keep, Sink, Source }
-import akka.stream.{ ActorMaterializer, Materializer }
+import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
+import akka.stream.{ActorMaterializer, Materializer}
 import akka.util.Timeout
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.ceedubs.ficus.Ficus._
 import play.api.libs.json._
 
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 import scala.util.Try
 
@@ -38,11 +38,11 @@ import scala.util.Try
  */
 
 class Couch(
-  val host: String = "localhost",
-  val port: Int = 5984,
-  val auth: Option[(String, String)] = None,
-  val secure: Boolean = false,
-  val config: Config = ConfigFactory.load())(implicit private[canape] val system: ActorSystem) extends PlayJsonSupport {
+    val host: String = "localhost",
+    val port: Int = 5984,
+    val auth: Option[(String, String)] = None,
+    val secure: Boolean = false,
+    val config: Config = ConfigFactory.load())(implicit private[canape] val system: ActorSystem) extends PlayJsonSupport {
 
   import Couch._
 
@@ -226,7 +226,7 @@ class Couch(
 
   override def equals(that: Any) = that match {
     case other: Couch if other.canEqual(this) ⇒ uri == other.uri
-    case _ ⇒ false
+    case _                                    ⇒ false
   }
 
   override def hashCode() = toString.hashCode()
@@ -377,13 +377,13 @@ object Couch extends PlayJsonSupport {
 
   /**The Couch instance current status. */
   case class Status(
-    couchdb: String,
-    version: String,
-    vendor: Option[VendorInfo])
+      couchdb: String,
+      version: String,
+      vendor: Option[VendorInfo])
 
   case class VendorInfo(
-    name: String,
-    version: Option[String])
+      name: String,
+      version: Option[String])
 
   implicit val vendorInfoRead: Reads[VendorInfo] = Json.reads[VendorInfo]
   implicit val statusRead: Reads[Status] = Json.reads[Status]
