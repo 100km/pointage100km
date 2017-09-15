@@ -57,8 +57,7 @@ trait Bot {
       method  = HttpMethods.POST,
       uri     = s"https://api.telegram.org/bot$token/$methodName",
       headers = List(`Accept`(MediaTypes.`application/json`)),
-      entity  = entity
-    )
+      entity  = entity)
     sendRaw(request, potentiallyBlocking = potentiallyBlocking).flatMap { response ⇒
       response.status match {
         case status if status.isFailure() ⇒ throw HTTPException(status.toString())
@@ -91,8 +90,8 @@ trait Bot {
     send("getFile", file_id.toField("file_id")).map { json ⇒ (json \ "result").as[File] }.flatMap { file ⇒
       file.file_path match {
         case Some(path) ⇒
-          sendRaw(HttpRequest(method = HttpMethods.GET, uri = s"https://api.telegram.org/file/bot$token/$path",
-            headers = List(Accept(MediaRanges.`*/*`)))).map(response ⇒ (file, Some(response.entity)))
+          sendRaw(HttpRequest(method  = HttpMethods.GET, uri = s"https://api.telegram.org/file/bot$token/$path",
+                              headers = List(Accept(MediaRanges.`*/*`)))).map(response ⇒ (file, Some(response.entity)))
         case None ⇒
           FastFuture.successful((file, None))
       }
@@ -160,7 +159,7 @@ object Bot extends PlayJsonSupport {
   }
 
   sealed abstract class Target(chatId: Option[String] = None, messageId: Option[Long] = None,
-      inlineMessageId: Option[String] = None, disableNotification: Boolean = false) {
+    inlineMessageId: Option[String] = None, disableNotification: Boolean = false) {
     def toFields: List[(String, String)] = disableNotification.toField("disable_notification", false) ++
       (inlineMessageId match {
         case Some(_) ⇒ inlineMessageId.toField("inline_message_id")
@@ -172,7 +171,7 @@ object Bot extends PlayJsonSupport {
     require(inlineMessageId.isDefined == chatId.isEmpty, "exactly one of inlineMessageId or chatId must be defined")
   }
 
-  case class To(chatId: String, disableNotification: Boolean = false) extends Target(chatId = Some(chatId), disableNotification = disableNotification)
+  case class To(chatId: String, disableNotification: Boolean = false) extends Target(chatId              = Some(chatId), disableNotification = disableNotification)
 
   object To {
     def apply(chat_id: Long): To = To(chat_id.toString)
@@ -181,7 +180,7 @@ object Bot extends PlayJsonSupport {
     def apply(user: User): To = To(user.id)
   }
 
-  case class Reply(chatId: String, messageId: Long) extends Target(chatId = Some(chatId), messageId = Some(messageId))
+  case class Reply(chatId: String, messageId: Long) extends Target(chatId    = Some(chatId), messageId = Some(messageId))
 
   object Reply {
     def apply(message: Message): Reply = Reply(message.chat.id.toString, message.message_id)
@@ -234,7 +233,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionMessage(text: String, disable_web_page_preview: Boolean = false,
-      parse_mode: ParseMode = ParseModeDefault, replyMarkup: Option[ReplyMarkup] = None) extends Action {
+    parse_mode: ParseMode = ParseModeDefault, replyMarkup: Option[ReplyMarkup] = None) extends Action {
     val methodName = "sendMessage"
     val fields = text.toField("text") ++ disable_web_page_preview.toField("disable_web_page_preview", false) ++
       parse_mode.option.toField("parse_mode")
@@ -247,7 +246,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionAudio(audio: Media, duration: Option[FiniteDuration] = None,
-      performer: Option[String], title: Option[String], replyMarkup: Option[ReplyMarkup] = None) extends Action {
+    performer: Option[String], title: Option[String], replyMarkup: Option[ReplyMarkup] = None) extends Action {
     val methodName = "sendAudio"
     val fields = duration.toField("duration") ++ performer.toField("performer") ++ title.toField("title")
     override val media = namedMedia("audio", audio)
@@ -272,7 +271,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionVideo(video: Media, duration: Option[FiniteDuration] = None,
-      caption: Option[String], replyMarkup: Option[ReplyMarkup] = None) extends Action {
+    caption: Option[String], replyMarkup: Option[ReplyMarkup] = None) extends Action {
     val methodName = "sendVideo"
     val fields = duration.map(_.toSeconds).toField("duration") ++ caption.toField("caption")
     override val media = namedMedia("video", video)
@@ -290,7 +289,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionVenue(location: (Double, Double), title: String, address: String, foursquareId: Option[String] = None,
-      replyMarkup: Option[ReplyMarkup] = None) extends Action {
+    replyMarkup: Option[ReplyMarkup] = None) extends Action {
     val methodName = "sendVenue"
     val fields = location._1.toField("latitude") ++ location._2.toField("longitude") ++ title.toField("title") ++
       address.toField("address") ++ foursquareId.toField("foursquare_id")
@@ -310,8 +309,8 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionAnswerInlineQuery(inlineQueryId: String, results: Seq[InlineQueryResult],
-      cacheTime: Long = 300, isPersonal: Boolean = false, nextOffset: Option[String] = None,
-      switchPmTextAndParameter: Option[(String, String)] = None) extends Action {
+    cacheTime: Long = 300, isPersonal: Boolean = false, nextOffset: Option[String] = None,
+    switchPmTextAndParameter: Option[(String, String)] = None) extends Action {
 
     require(results.size <= 50, "answerInlineQuery cannot return more than 50 results")
 
@@ -331,7 +330,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionEditMessageText(text: String, parseMode: Option[ParseMode] = None,
-      disableWebPagePreview: Boolean = false, replyMarkup: Option[ReplyMarkup] = None) extends Action {
+    disableWebPagePreview: Boolean = false, replyMarkup: Option[ReplyMarkup] = None) extends Action {
     val methodName = "editMessageText"
     val fields = text.toField("text") ++
       parseMode.toField("parse_mode") ++ disableWebPagePreview.toField("disable_web_page_preview", false) ++

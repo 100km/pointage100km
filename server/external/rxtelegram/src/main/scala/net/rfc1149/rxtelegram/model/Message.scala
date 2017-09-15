@@ -54,8 +54,7 @@ object Message {
       channel_chat_created    = (js \ "channel_chat_created").asOpt[Boolean],
       migrate_to_chat_id      = (js \ "migrate_to_chat_id").asOpt[Long],
       migrate_from_chat_id    = (js \ "migrate_from_chat_id").asOpt[Long],
-      pinned_message          = (js \ "pinned_message").asOpt[Message]
-    ))
+      pinned_message          = (js \ "pinned_message").asOpt[Message]))
   }
 
 }

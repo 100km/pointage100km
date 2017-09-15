@@ -24,7 +24,7 @@ class UpdateSource(val token: String, val options: Options, val queue: SourceQue
 
     case Request(toAcknowledge) ⇒
       toAcknowledge.foreach(acknowledgeUpdate)
-      getUpdates(limit = options.updatesBatchSize, timeout = options.longPollingDelay).transform(Updates, UpdateError).pipeTo(self)
+      getUpdates(limit   = options.updatesBatchSize, timeout = options.longPollingDelay).transform(Updates, UpdateError).pipeTo(self)
 
     case Updates(updates) ⇒
       updates.foldLeft(FastFuture.successful[QueueOfferResult](QueueOfferResult.Enqueued)) {
@@ -51,7 +51,7 @@ object UpdateSource {
     Source.queue[Update](16, OverflowStrategy.backpressure).mapMaterializedValue { sourceQueue ⇒
       val updateSourceProps = Props(new UpdateSource(token, options, sourceQueue))
       val backoffSupervisorProps = BackoffSupervisor.props(Backoff.onFailure(updateSourceProps, "update-source",
-        options.httpMinErrorRetryDelay, options.httpMaxErrorRetryDelay, 0.2))
+                                                                             options.httpMinErrorRetryDelay, options.httpMaxErrorRetryDelay, 0.2))
       af.actorOf(backoffSupervisorProps)
       sourceQueue
     }
