@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{ Json, Reads }
 
 case class Chat(id: Long, `type`: String, title: Option[String], username: Option[String],
   first_name: Option[String], last_name: Option[String])

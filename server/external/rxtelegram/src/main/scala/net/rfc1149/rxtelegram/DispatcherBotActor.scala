@@ -1,7 +1,7 @@
 package net.rfc1149.rxtelegram
 
-import akka.actor.{ActorContext, ActorRef, Props}
-import net.rfc1149.rxtelegram.model.{Chat, Message}
+import akka.actor.{ ActorContext, ActorRef, Props }
+import net.rfc1149.rxtelegram.model.{ Chat, Message }
 
 abstract class DispatcherBotActor(token: String, options: Options) extends BotActor(token, options) with ChatDispatcher {
 

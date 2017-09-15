@@ -4,15 +4,15 @@ import java.util.concurrent.TimeoutException
 
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
-import akka.{Done, NotUsed}
+import akka.{ Done, NotUsed }
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Couch.StatusError
-import net.rfc1149.canape.Database.{FromNow, UpdateSequence}
+import net.rfc1149.canape.Database.{ FromNow, UpdateSequence }
 import net.rfc1149.canape.utils.DelayedSource._
-import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
+import play.api.libs.json.{ JsError, JsObject, JsSuccess, Json }
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ Future, Promise }
 
 object ChangesSource {
 

@@ -1,17 +1,17 @@
 import akka.Done
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.scaladsl.{Keep, Sink, Source}
+import akka.stream.scaladsl.{ Keep, Sink, Source }
 import akka.stream.testkit.scaladsl.TestSink
-import akka.stream.{OverflowStrategy, ThrottleMode}
+import akka.stream.{ OverflowStrategy, ThrottleMode }
 import com.typesafe.config.ConfigFactory
 import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape.Database.FromStart
-import net.rfc1149.canape.{ChangesSource, Couch, Database}
+import net.rfc1149.canape.{ ChangesSource, Couch, Database }
 import org.specs2.mock._
 import play.api.libs.json._
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
 
@@ -155,7 +155,7 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart, params = Map("filter" → "common/namedfoo"))
       val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+        Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid3")
     }
 
@@ -164,7 +164,7 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       val changes: Source[JsObject, Future[Done]] = db.changesSourceByDocIds(List("docid1", "docid4"), sinceSeq = FromStart)
       val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+        Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid4")
     }
 

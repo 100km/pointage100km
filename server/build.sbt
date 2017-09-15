@@ -52,19 +52,19 @@ lazy val common = Defaults.coreDefaultSettings ++ assemble ++
         .setPreference(SpacesAroundMultiImports, false))
 
 lazy val pointage100km =
-  Project("pointage100km", file(".")) aggregate(replicate, wipe, stats, loader)
+  (project in file(".")) settings(name := "pointage100km") aggregate(replicate, wipe, stats, loader)
 
 lazy val stats =
-  Project("stats", file("stats")) settings(common ++ akka ++ scopt) dependsOn(canape, steenwerck)
+  (project in file("stats")) settings(name := "stats", common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val replicate =
-  Project("replicate", file("replicate")) settings(common ++ akka ++ scopt ++ specs2 ++
+  (project in file("replicate")) settings(name := "replicate", common ++ akka ++ scopt ++ specs2 ++
     csv ++ scalaz ++ Revolver.settings) dependsOn(canape, steenwerck, rxtelegram, octopush)
 
 lazy val loader =
-  Project("loader", file("loader")) settings(common ++ akka ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
+  (project in file("loader")) settings(name := "loader", common ++ akka ++ mysql ++ scopt ++ Revolver.settings) dependsOn(canape, steenwerck)
 
-lazy val wipe = Project("wipe", file("wipe")) settings(common ++ akka ++ scopt) dependsOn(canape, steenwerck)
+lazy val wipe = (project in file("wipe")) settings(name := "wipe", common ++ akka ++ scopt) dependsOn(canape, steenwerck)
 
 lazy val canape = RootProject(file("external/canape"))
 

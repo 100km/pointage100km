@@ -7,7 +7,7 @@ import net.rfc1149.canape._
 import org.specs2.mutable._
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 // This requires a local standard CouchDB instance. The "canape-test-*" databases
 // will be created, destroyed and worked into.

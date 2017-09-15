@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model.inlinequeries
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{ Json, Writes }
 
 case class InlineQueryResultPhoto(id: String, photo_url: String, photo_width: Option[Long] = None, photo_height: Option[Long] = None,
   thumb_url: Option[String] = None, title: Option[String] = None,

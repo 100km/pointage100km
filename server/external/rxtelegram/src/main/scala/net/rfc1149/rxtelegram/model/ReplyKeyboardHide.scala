@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{ Json, Writes }
 
 case class ReplyKeyboardHide(hide_keyboard: Boolean = true, selective: Option[Boolean] = None) extends ReplyMarkup
 

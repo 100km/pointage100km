@@ -1,10 +1,10 @@
 package net.rfc1149.rxtelegram
 
-import akka.actor.{Actor, ActorLogging, ActorRefFactory, Props}
+import akka.actor.{ Actor, ActorLogging, ActorRefFactory, Props }
 import akka.http.scaladsl.util.FastFuture
-import akka.pattern.{Backoff, BackoffSupervisor, pipe}
-import akka.stream.scaladsl.{Source, SourceQueue, SourceQueueWithComplete}
-import akka.stream.{ActorMaterializer, OverflowStrategy, QueueOfferResult}
+import akka.pattern.{ Backoff, BackoffSupervisor, pipe }
+import akka.stream.scaladsl.{ Source, SourceQueue, SourceQueueWithComplete }
+import akka.stream.{ ActorMaterializer, OverflowStrategy, QueueOfferResult }
 import net.rfc1149.rxtelegram.model._
 
 class UpdateSource(val token: String, val options: Options, val queue: SourceQueue[Update]) extends Actor with ActorLogging with Bot {
@@ -24,7 +24,7 @@ class UpdateSource(val token: String, val options: Options, val queue: SourceQue
 
     case Request(toAcknowledge) ⇒
       toAcknowledge.foreach(acknowledgeUpdate)
-      getUpdates(limit   = options.updatesBatchSize, timeout = options.longPollingDelay).transform(Updates, UpdateError).pipeTo(self)
+      getUpdates(limit = options.updatesBatchSize, timeout = options.longPollingDelay).transform(Updates, UpdateError).pipeTo(self)
 
     case Updates(updates) ⇒
       updates.foldLeft(FastFuture.successful[QueueOfferResult](QueueOfferResult.Enqueued)) {
@@ -51,7 +51,7 @@ object UpdateSource {
     Source.queue[Update](16, OverflowStrategy.backpressure).mapMaterializedValue { sourceQueue ⇒
       val updateSourceProps = Props(new UpdateSource(token, options, sourceQueue))
       val backoffSupervisorProps = BackoffSupervisor.props(Backoff.onFailure(updateSourceProps, "update-source",
-                                                                             options.httpMinErrorRetryDelay, options.httpMaxErrorRetryDelay, 0.2))
+        options.httpMinErrorRetryDelay, options.httpMaxErrorRetryDelay, 0.2))
       af.actorOf(backoffSupervisorProps)
       sourceQueue
     }

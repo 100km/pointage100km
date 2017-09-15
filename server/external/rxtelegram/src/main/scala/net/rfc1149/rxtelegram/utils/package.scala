@@ -9,10 +9,10 @@ package object utils {
     def toField(name: String): List[(String, String)] = value match {
       case Some(v) ⇒ v match {
         case markup: ReplyMarkup ⇒ List(name → Json.stringify(ReplyMarkup.replyMarkupWrites.writes(markup)))
-        case _                   ⇒ List(name → v.toString)
+        case _ ⇒ List(name → v.toString)
       }
       case v if v == None ⇒ Nil
-      case v              ⇒ List(name → v.toString)
+      case v ⇒ List(name → v.toString)
     }
     def toField(name: String, default: T): List[(String, String)] =
       if (value != default) List(name → value.toString) else Nil

@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram
 
-import net.rfc1149.rxtelegram.model.{ChosenInlineResult, Message, Update}
+import net.rfc1149.rxtelegram.model.{ ChosenInlineResult, Message, Update }
 import net.rfc1149.rxtelegram.model.inlinequeries.InlineQuery
 
 trait UpdateHandler {

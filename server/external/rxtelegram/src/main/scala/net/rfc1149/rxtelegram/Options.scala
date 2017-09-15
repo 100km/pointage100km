@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import net.ceedubs.ficus.Ficus._
 
 import scala.concurrent.duration.FiniteDuration

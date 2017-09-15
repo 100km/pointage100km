@@ -2,7 +2,7 @@ package net.rfc1149.canape
 package utils
 
 import akka.stream._
-import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.stage.{ GraphStage, GraphStageLogic, InHandler, OutHandler }
 
 object ExhaustInput {
   def apply[T](): ExhaustInput[T] = new ExhaustInput[T]

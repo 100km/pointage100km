@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model.inlinequeries
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.json.{ Json, Writes }
 
 case class InlineKeyboardButton(text: String, url: Option[String] = None, callback_data: Option[String] = None,
   switch_inline_query: Option[String] = None) {

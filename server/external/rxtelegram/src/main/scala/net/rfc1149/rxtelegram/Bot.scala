@@ -3,12 +3,12 @@ package net.rfc1149.rxtelegram
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
-import akka.http.scaladsl.model.{MessageEntity ⇒ MEntity, _}
+import akka.http.scaladsl.model.{ MessageEntity ⇒ MEntity, _ }
 import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{ Sink, Source }
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.rxtelegram.model._
 import net.rfc1149.rxtelegram.model.inlinequeries.InlineQueryResult
@@ -17,7 +17,7 @@ import net.rfc1149.rxtelegram.utils._
 import play.api.libs.json._
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait Bot {
 
@@ -54,10 +54,10 @@ trait Bot {
 
   private[this] def sendInternal(methodName: String, entity: MEntity, potentiallyBlocking: Boolean = false): Future[JsValue] = {
     val request = HttpRequest(
-      method  = HttpMethods.POST,
-      uri     = s"https://api.telegram.org/bot$token/$methodName",
+      method = HttpMethods.POST,
+      uri = s"https://api.telegram.org/bot$token/$methodName",
       headers = List(`Accept`(MediaTypes.`application/json`)),
-      entity  = entity)
+      entity = entity)
     sendRaw(request, potentiallyBlocking = potentiallyBlocking).flatMap { response ⇒
       response.status match {
         case status if status.isFailure() ⇒ throw HTTPException(status.toString())
@@ -90,8 +90,8 @@ trait Bot {
     send("getFile", file_id.toField("file_id")).map { json ⇒ (json \ "result").as[File] }.flatMap { file ⇒
       file.file_path match {
         case Some(path) ⇒
-          sendRaw(HttpRequest(method  = HttpMethods.GET, uri = s"https://api.telegram.org/file/bot$token/$path",
-                              headers = List(Accept(MediaRanges.`*/*`)))).map(response ⇒ (file, Some(response.entity)))
+          sendRaw(HttpRequest(method = HttpMethods.GET, uri = s"https://api.telegram.org/file/bot$token/$path",
+            headers = List(Accept(MediaRanges.`*/*`)))).map(response ⇒ (file, Some(response.entity)))
         case None ⇒
           FastFuture.successful((file, None))
       }
@@ -163,7 +163,7 @@ object Bot extends PlayJsonSupport {
     def toFields: List[(String, String)] = disableNotification.toField("disable_notification", false) ++
       (inlineMessageId match {
         case Some(_) ⇒ inlineMessageId.toField("inline_message_id")
-        case None    ⇒ chatId.toField("chat_id") ++ messageId.toField("in_reply_to_message_id")
+        case None ⇒ chatId.toField("chat_id") ++ messageId.toField("in_reply_to_message_id")
       })
 
     def isInlineMessageId: Boolean = inlineMessageId.isDefined
@@ -171,7 +171,7 @@ object Bot extends PlayJsonSupport {
     require(inlineMessageId.isDefined == chatId.isEmpty, "exactly one of inlineMessageId or chatId must be defined")
   }
 
-  case class To(chatId: String, disableNotification: Boolean = false) extends Target(chatId              = Some(chatId), disableNotification = disableNotification)
+  case class To(chatId: String, disableNotification: Boolean = false) extends Target(chatId = Some(chatId), disableNotification = disableNotification)
 
   object To {
     def apply(chat_id: Long): To = To(chat_id.toString)
@@ -180,7 +180,7 @@ object Bot extends PlayJsonSupport {
     def apply(user: User): To = To(user.id)
   }
 
-  case class Reply(chatId: String, messageId: Long) extends Target(chatId    = Some(chatId), messageId = Some(messageId))
+  case class Reply(chatId: String, messageId: Long) extends Target(chatId = Some(chatId), messageId = Some(messageId))
 
   object Reply {
     def apply(message: Message): Reply = Reply(message.chat.id.toString, message.message_id)
@@ -323,7 +323,7 @@ object Bot extends PlayJsonSupport {
   }
 
   case class ActionAnswerCallbackQuery(callbackQueryId: String, text: Option[String] = None, showAlert: Boolean = false)
-      extends Action {
+    extends Action {
     val methodName = "answerCallbackQuery"
     val replyMarkup = None
     val fields = callbackQueryId.toField("callback_query_id") ++ text.toField("text") ++ showAlert.toField("show_alert", false)

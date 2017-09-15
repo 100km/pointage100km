@@ -6,7 +6,7 @@ import play.api.libs.json._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 class DatabaseSpec extends WithDbSpecification("db") {
 
@@ -207,8 +207,8 @@ class DatabaseSpec extends WithDbSpecification("db") {
       waitForResult(db.insert(JsObject(Nil), "docid"))
       Try(waitForResult(db.insert(Json.obj("foo" → "bar"), "docid"))) match {
         case Failure(Couch.StatusError(409, _, _)) ⇒ success
-        case Failure(t)                            ⇒ failure(s"unexpected exception thrown: $t")
-        case Success(s)                            ⇒ failure(s"unexpected value returned: $s")
+        case Failure(t) ⇒ failure(s"unexpected exception thrown: $t")
+        case Success(s) ⇒ failure(s"unexpected value returned: $s")
       }
     }
 

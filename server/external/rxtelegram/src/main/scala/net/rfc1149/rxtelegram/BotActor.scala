@@ -1,15 +1,15 @@
 package net.rfc1149.rxtelegram
 
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Stash}
+import akka.actor.{ Actor, ActorLogging, ActorRef, ActorSystem, Stash }
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
-import akka.stream.{ActorMaterializer, Materializer}
-import net.rfc1149.rxtelegram.Bot.{ActionAnswerInlineQuery, Command}
+import akka.stream.{ ActorMaterializer, Materializer }
+import net.rfc1149.rxtelegram.Bot.{ ActionAnswerInlineQuery, Command }
 import net.rfc1149.rxtelegram.model._
 import net.rfc1149.rxtelegram.model.media.Media
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 abstract class BotActor(val token: String, val options: Options) extends Actor with ActorLogging with Stash with Bot with UpdateHandler {
 

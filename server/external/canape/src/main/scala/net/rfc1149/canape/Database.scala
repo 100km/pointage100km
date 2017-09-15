@@ -1,18 +1,18 @@
 package net.rfc1149.canape
 
 import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.Uri.{Path, Query}
+import akka.http.scaladsl.model.Uri.{ Path, Query }
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.scaladsl.{Flow, Framing, Sink, Source}
+import akka.stream.scaladsl.{ Flow, Framing, Sink, Source }
 import akka.util.ByteString
-import akka.{Done, NotUsed}
+import akka.{ Done, NotUsed }
 import net.ceedubs.ficus.Ficus._
 import play.api.libs.json._
 
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ Future, Promise }
 
 case class Database(couch: Couch, databaseName: String) {
 
@@ -33,7 +33,7 @@ case class Database(couch: Couch, databaseName: String) {
 
   override def equals(that: Any): Boolean = that match {
     case other: Database if other.canEqual(this) ⇒ uri == other.uri
-    case _                                       ⇒ false
+    case _ ⇒ false
   }
 
   def uriFrom(other: Couch): String = if (couch == other) databaseName else uri.toString()
@@ -285,7 +285,7 @@ case class Database(couch: Couch, databaseName: String) {
       revs match {
         case Nil ⇒
           FastFuture.successful(Nil)
-        case revs@(rev :: Nil) ⇒
+        case revs @ (rev :: Nil) ⇒
           delete(id, rev).map(_ ⇒ revs).recover { case _ ⇒ Seq() }
         case _ ⇒
           bulkDocs(revs.map(rev ⇒ Json.obj("_id" → id, "_rev" → rev, "_deleted" → true)), allOrNothing = allOrNothing)
@@ -423,9 +423,9 @@ case class Database(couch: Couch, databaseName: String) {
     val requestParams = {
       val heartBeatParam = (params.get("timeout"), params.get("heartbeat")) match {
         case (Some(_), Some(h)) if h.nonEmpty ⇒ Map("heartbeat" → h) // Timeout will be ignored by the DB, but the user has chosen
-        case (Some(_), _)                     ⇒ Map() // Use provided timeout only
-        case (None, Some(""))                 ⇒ Map() // Disable heartbeat
-        case (None, Some(h))                  ⇒ Map("heartbeat" → h) // Use provided heartbeat
+        case (Some(_), _) ⇒ Map() // Use provided timeout only
+        case (None, Some("")) ⇒ Map() // Disable heartbeat
+        case (None, Some(h)) ⇒ Map("heartbeat" → h) // Use provided heartbeat
         case (None, None) ⇒ Map("heartbeat" → // Use default heartbeat from configuration
           couch.canapeConfig.as[FiniteDuration]("continuous-changes.heartbeat-interval").toMillis.toString)
       }
@@ -545,14 +545,14 @@ object Database {
     def apply(js: JsValue): UpdateSequence = js match {
       case JsNumber(n) ⇒ UpdateSequenceLong(n.toLongExact)
       case JsString(s) ⇒ UpdateSequenceString(s)
-      case _           ⇒ throw new IllegalArgumentException("update sequence must be number or string")
+      case _ ⇒ throw new IllegalArgumentException("update sequence must be number or string")
     }
   }
 
   implicit val updateSequenceReads: Reads[UpdateSequence] = Reads {
     case JsNumber(n) ⇒ JsSuccess(UpdateSequenceLong(n.toLongExact))
     case JsString(s) ⇒ JsSuccess(UpdateSequenceString(s))
-    case _           ⇒ JsError("update sequence must be number or string")
+    case _ ⇒ JsError("update sequence must be number or string")
   }
 
   val FromNow = UpdateSequenceString("now")

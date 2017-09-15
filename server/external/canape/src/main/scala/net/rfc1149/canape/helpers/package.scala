@@ -5,7 +5,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 package object helpers {
 
@@ -22,7 +22,7 @@ package object helpers {
       val rev = mergedDoc \ "_rev"
       val bulkDocs = documents map {
         case d if (d \ "_rev") == rev ⇒ mergedDoc.transform(unconflicter).get
-        case d                        ⇒ d.transform(deleter).get
+        case d ⇒ d.transform(deleter).get
       }
       // Use best effort if CouchDB 2.x, and allOrNOthing if CouchDB 1.x
       db.couch.isCouchDB1.flatMap { isCouchDB1 ⇒ db.bulkDocs(bulkDocs, allOrNothing = isCouchDB1) }
