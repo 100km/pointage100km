@@ -16,7 +16,7 @@ abstract class WithDbSpecification(dbSuffix: String) extends Specification {
 
   implicit val system = ActorSystem("canape-test")
   implicit val dispatcher = system.dispatcher
-  implicit val timeout: Duration = (5, SECONDS)
+  implicit val timeout: Duration = (6, SECONDS)
   implicit val materializer = ActorMaterializer.create(system)
 
   val couch = new Couch

@@ -1,6 +1,5 @@
 package net.rfc1149.canape
 
-import akka.actor.Props
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model._
@@ -439,12 +438,12 @@ case class Database(couch: Couch, databaseName: String) {
     else
       couch.Post(encode("_changes", (requestParams + ("feed" → "continuous")).toSeq), extraParams)
     couch.sendPotentiallyBlockingRequest(request)
-      .recoverWithRetries(-1, {
+      .mapError {
         case t ⇒
           // The promise might have been already completed if the error happens after the connection
           promise.tryFailure(t)
-          Source.failed(t)
-      })
+          t
+      }
       .flatMapConcat {
         case response if response.status.isSuccess() ⇒
           promise.success(Done)
@@ -480,12 +479,7 @@ case class Database(couch: Couch, databaseName: String) {
    */
   def changesSource(params: Map[String, String] = Map(), extraParams: JsObject = Json.obj(),
     sinceSeq: UpdateSequence = FromNow): Source[JsObject, Future[Done]] = {
-    Source.actorPublisher(Props(new ChangesSource(this, params, extraParams, sinceSeq)))
-      .mapMaterializedValue { actorRef ⇒
-        val promise = Promise[Done]
-        actorRef ! ChangesSource.ConnectionPromise(promise)
-        promise.future
-      }
+    ChangesSource.changesSource(this, params, extraParams, sinceSeq)(couch.system)
   }
 
   /**

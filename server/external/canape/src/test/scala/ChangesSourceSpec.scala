@@ -1,13 +1,12 @@
 import akka.Done
-import akka.actor.{ActorRef, Props}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.testkit.scaladsl.TestSink
 import akka.stream.{OverflowStrategy, ThrottleMode}
 import com.typesafe.config.ConfigFactory
 import net.rfc1149.canape.Couch.StatusError
-import net.rfc1149.canape.{ChangesSource, Couch, Database}
 import net.rfc1149.canape.Database.FromStart
+import net.rfc1149.canape.{ChangesSource, Couch, Database}
 import org.specs2.mock._
 import play.api.libs.json._
 
@@ -103,7 +102,7 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
         addDone(sourceWithError)
       mockedDb.couch returns mockedCouch
 
-      val changes: Source[JsObject, ActorRef] = Source.actorPublisher(Props(new ChangesSource(mockedDb, sinceSeq = FromStart)))
+      val changes: Source[JsObject, Future[Done]] = ChangesSource.changesSource(mockedDb, sinceSeq = FromStart)
       val result = changes.map(j ⇒ (j \ "id").as[String]).take(950).runFold(0) { case (n, _) ⇒ n + 1 }
       waitForResult(result) must be equalTo 950
       there was atLeast(10)(mockedDb).continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())
@@ -122,7 +121,7 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
         addDone(Source(1 to 5).map(n ⇒ Json.obj("seq" → JsNumber(n))))
       mockedDb.couch returns mockedCouch
 
-      val changes: Source[JsObject, ActorRef] = Source.actorPublisher(Props(new ChangesSource(mockedDb, sinceSeq = FromStart)))
+      val changes: Source[JsObject, Future[Done]] = ChangesSource.changesSource(mockedDb, sinceSeq = FromStart)
       val result = changes.map(j ⇒ (j \ "seq").as[Long]).take(15).runFold(0L) { case (n, e) ⇒ n.max(e) }
       waitForResult(result) must be equalTo 40
       there was atLeast(2)(mockedDb).continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())
@@ -130,16 +129,16 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
 
     "handle errors due to backpressure" in new freshDb {
 
-      val config = ConfigFactory.parseString("changes-source.reconnection-delay=200ms")
+      val config = ConfigFactory.parseString("changes-source.reconnection-delay=1ms")
       val mockedCouch: Couch = mock[Couch].canapeConfig returns config
       val mockedDb = mock[Database]
       mockedDb.continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()) returns
         addDone(Source.repeat(Json.obj("seq" → 42, "id" → "someid")).buffer(10, OverflowStrategy.fail))
       mockedDb.couch returns mockedCouch
 
-      val changes: Source[JsObject, ActorRef] = Source.actorPublisher(Props(new ChangesSource(mockedDb, sinceSeq = FromStart)))
-      val result = changes.throttle(100, 1.second, 100, ThrottleMode.Shaping).map(j ⇒ (j \ "id").as[String]).take(120).runFold(0) { case (n, _) ⇒ n + 1 }
-      Await.result(result, 15.seconds) must be equalTo 120
+      val changes: Source[JsObject, Future[Done]] = ChangesSource.changesSource(mockedDb, sinceSeq = FromStart)
+      val result = changes.throttle(100, 1.second, 100, ThrottleMode.Shaping).map(j ⇒ (j \ "id").as[String]).take(37).runFold(0) { case (n, _) ⇒ n + 1 }
+      Await.result(result, 15.seconds) must be equalTo 37
       there was atLeast(2)(mockedDb).continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())
     }
 
