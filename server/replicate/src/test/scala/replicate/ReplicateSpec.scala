@@ -2,6 +2,7 @@ package replicate
 
 import java.util.UUID
 
+import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape.{Database, helpers}
 import org.specs2.mutable._
 import play.api.libs.json.{JsObject, JsValue, Json}
@@ -31,7 +32,9 @@ class ReplicateSpec extends Specification with After {
     def get(doc: JsObject): Future[JsObject] = db((doc \ "_id").as[String])
 
     def delete(id: String): Future[Seq[String]] = {
-      helpers.getRevs(db, id).map(_.filterNot(_.keys.contains("_deleted"))).flatMap(ds ⇒ Future.sequence(ds.map(db.delete)))
+      helpers.getRevs(db, id).recover {
+        case StatusError(404, _, _) ⇒ Seq()
+      }.map(_.filterNot(_.keys.contains("_deleted"))).flatMap(ds ⇒ Future.sequence(ds.map(db.delete)))
     }
 
     def delete(doc: JsObject): Future[Seq[String]] = delete((doc \ "_id").as[String])
