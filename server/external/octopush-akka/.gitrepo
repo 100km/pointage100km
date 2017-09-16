@@ -6,6 +6,6 @@
 [subrepo]
 	remote = git@github.com:samueltardieu/octopush-akka
 	branch = master
-	commit = ed92060683b060679be3012880da59bd1470b5da
-	parent = 030efa6ee86e267f1af1e8b4ef20180dc94754eb
+	commit = ccd67083823218b3aa794dc3a2b323a503ec2d05
+	parent = e7e0ace313ebf0cb513eefb867e53c57c7be9274
 	cmdver = 0.3.0
