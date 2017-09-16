@@ -22,14 +22,14 @@ $(DIST): $(BINFILES)
 	tar Jcvf $(DIST) $(BINFILES)
 
 clean::
-	cd $(ROOTDIR) && $(SBT) root/clean
+	cd $(ROOTDIR) && $(SBT) pointage100km/clean
 
 distclean::
 	$(MAKE) clean
 	$(RM) $(JARFILES)
 
 check::
-	cd $(ROOTDIR) && $(SBT) root/test
+	cd $(ROOTDIR) && $(SBT) pointage100km/test
 
 $(BINFILES): ALWAYS
 	cd $(ROOTDIR) && $(SBT) `basename ${@:.jar=}`/assembly

@@ -2,6 +2,7 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
+import sbtassembly.AssemblyPlugin.defaultShellScript
 
 import scalariform.formatter.preferences._
 
@@ -16,12 +17,10 @@ lazy val akka =
                                   "com.iheart" %% "ficus" % "1.4.2",
                                   "ch.qos.logback" % "logback-classic" % "1.1.9"))
 
-lazy val defaultShellScript = Seq("#! /bin/sh", """exec java -jar "$0" "$@"""")
-
 lazy val assemble =
   Seq(assemblyJarName in assembly := name.value,
       target in assembly := new File("../bin/"),
-      assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript)),
+      assemblyOption in assembly := (assemblyOption in assembly).value.copy(cacheOutput = false, prependShellScript = Some(defaultShellScript :+ "")),
       test in assembly := {})
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.0")
