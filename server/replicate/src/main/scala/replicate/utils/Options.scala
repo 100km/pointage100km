@@ -13,19 +13,19 @@ object Options {
   case object Tests extends Mode
 
   case class Config(
-    compactLocal: Boolean = true,
-    compactMaster: Boolean = false,
-    dryRun: Boolean = false,
-    _fixConflicts: Boolean = false,
-    _fixIncomplete: Boolean = false,
-    _obsolete: Boolean = false,
-    replicate: Boolean = true,
-    alerts: Boolean = false,
-    stalking: Boolean = false,
-    resetSiteId: Boolean = true,
-    siteId: Int = -1,
-    modes: List[Mode] = Nil,
-    _ping: Boolean = true) {
+      compactLocal: Boolean = true,
+      compactMaster: Boolean = false,
+      dryRun: Boolean = false,
+      _fixConflicts: Boolean = false,
+      _fixIncomplete: Boolean = false,
+      _obsolete: Boolean = false,
+      replicate: Boolean = true,
+      alerts: Boolean = false,
+      stalking: Boolean = false,
+      resetSiteId: Boolean = true,
+      siteId: Int = -1,
+      modes: List[Mode] = Nil,
+      _ping: Boolean = true) {
 
     def fixConflicts: Boolean = _fixConflicts && !isSlave
     def fixIncomplete: Boolean = _fixIncomplete && !isSlave
@@ -82,16 +82,16 @@ object Options {
         }
       }
       cmd("init") text "checkpoint initialization" action { (_, c) ⇒
-        c.copy(compactLocal = false, compactMaster = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
-          replicate = false, _ping = false, modes = Init +: c.modes)
+        c.copy(compactLocal   = false, compactMaster = false, _fixConflicts = false, _fixIncomplete = false, _obsolete = false,
+               replicate      = false, _ping = false, modes = Init +: c.modes)
       } children {
         arg[Int]("<site-id>") text "numerical id of the current site" action { (x, c) ⇒
           c.copy(siteId = x)
         }
       }
       cmd("master") text "main server procedures" action { (_, c) ⇒
-        c.copy(compactLocal = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
-          replicate = true, _ping = false, alerts = true, stalking = true, modes = Master +: c.modes)
+        c.copy(compactLocal   = true, compactMaster = true, _fixConflicts = true, _fixIncomplete = true, _obsolete = true,
+               replicate      = true, _ping = false, alerts = true, stalking = true, modes = Master +: c.modes)
       } text "turn on every service but ping" children {
         opt[Unit]("no-conflicts") abbr "nc" text "do not fix conflicts as they appear" action { (_, c) ⇒
           c.copy(_fixConflicts = false)

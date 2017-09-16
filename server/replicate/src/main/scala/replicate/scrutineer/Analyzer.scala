@@ -2,10 +2,10 @@ package replicate.scrutineer
 
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import play.api.libs.json.{ JsObject, Json, Writes }
+import play.api.libs.json.{JsObject, Json, Writes}
 import replicate.models.CheckpointData
 import replicate.state.CheckpointsState.Point
-import replicate.state.{ CheckpointsState, PingState }
+import replicate.state.{CheckpointsState, PingState}
 import replicate.utils.FormatUtils._
 import replicate.utils.Global
 import replicate.utils.Infos.RaceInfo
@@ -246,7 +246,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPo
    */
   private[this] def enrichPoints(points: Seq[Point]): Seq[EnrichedPoint] = {
     points.scanLeft((startingPoint.point, Lap(0), 0.0, 0.0)) {
-      case ((prevPoint, prevLap, prevDistance, prevSpeed), point @ Point(siteId, timestamp)) ⇒
+      case ((prevPoint, prevLap, prevDistance, prevSpeed), point@Point(siteId, timestamp)) ⇒
         val lap = if (SiteId.unwrap(siteId) <= SiteId.unwrap(prevPoint.siteId)) Lap(Lap.unwrap(prevLap) + 1) else prevLap
         val distance = infos.distance(siteId, lap)
         val speed = speedBetween(prevDistance, distance, prevPoint.timestamp, timestamp)
@@ -368,7 +368,7 @@ object Analyzer {
   }
 
   case class ContestantAnalysis(contestantId: Int @@ ContestantId, raceId: Int @@ RaceId, checkpoints: Seq[AnalyzedPoint],
-    before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
+      before: Seq[EnrichedPoint], after: Seq[EnrichedPoint]) {
     val anomalies = countAnomalies(checkpoints)
     val consecutiveAnomalies = countConsecutiveAnomalies(checkpoints)
     val valid = anomalies < maxAnomalies && consecutiveAnomalies < maxConsecutiveAnomalies

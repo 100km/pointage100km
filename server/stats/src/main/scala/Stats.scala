@@ -38,7 +38,7 @@ object Stats extends App {
   def update(checkpoint: Int, bib: Int, race: Int) {
     val id = "checkpoints-" + checkpoint + "-" + bib
     val r = db.updateForm("bib_input", "add-checkpoint", id,
-      Map("ts" → System.currentTimeMillis.toString), keepBody = true).flatMap(Couch.checkResponse[JsObject]).execute()
+                                                         Map("ts" → System.currentTimeMillis.toString), keepBody = true).flatMap(Couch.checkResponse[JsObject]).execute()
     if ((r \ "need_more").asOpt[Boolean].getOrElse(false)) {
       val d = db(id).execute() ++ Json.obj("race_id" → race, "bib" → bib, "site_id" → checkpoint)
       db.insert(d).execute()

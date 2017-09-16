@@ -1,22 +1,22 @@
 package replicate.stalking
 
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorLogging, ActorRef, ActorRefFactory, Props, Stash, Terminated }
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorRefFactory, Props, Stash, Terminated}
 import akka.pattern.pipe
 import akka.stream.ActorMaterializer
-import akka.stream.actor.ActorSubscriberMessage.{ OnComplete, OnError, OnNext }
-import akka.stream.actor.{ ActorSubscriber, OneByOneRequestStrategy }
+import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
+import akka.stream.actor.{ActorSubscriber, OneByOneRequestStrategy}
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{JsObject, Json}
 import replicate.alerts.Alerts
 import replicate.messaging.Message
-import replicate.messaging.Message.{ Severity, TextMessage }
+import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.scrutineer.Analyzer.ContestantAnalysis
-import replicate.stalking.StalkingService.{ InitialFailure, InitialNotifications }
+import replicate.stalking.StalkingService.{InitialFailure, InitialNotifications}
 import replicate.state.ContestantState
 import replicate.utils.Types._
-import replicate.utils.{ FormatUtils, Global, Glyphs }
+import replicate.utils.{FormatUtils, Global, Glyphs}
 
 import scalaz.@@
 

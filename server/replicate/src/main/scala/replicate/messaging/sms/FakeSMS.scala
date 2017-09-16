@@ -1,6 +1,6 @@
 package replicate.messaging.sms
 
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{Actor, ActorLogging}
 
 class FakeSMS extends Actor with ActorLogging {
 

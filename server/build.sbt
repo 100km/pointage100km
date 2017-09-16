@@ -5,8 +5,6 @@ import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
-SbtScalariform.scalariformSettings
-
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.4",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.5.4",
@@ -40,16 +38,17 @@ lazy val mysql =
 lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.15")
 
 lazy val common = Defaults.coreDefaultSettings ++ assemble ++
+  scalariformSettings(autoformat = true) ++
   Seq(scalaVersion := "2.12.3",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
       resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo),
       ScalariformKeys.preferences := ScalariformKeys.preferences.value
-        .setPreference(AlignArguments, true)
-        .setPreference(AlignSingleLineCaseStatements, true)
-        .setPreference(DoubleIndentClassDeclaration, true)
-        .setPreference(RewriteArrowSymbols, true)
-        .setPreference(SpacesWithinPatternBinders, false)
-        .setPreference(SpacesAroundMultiImports, false))
+      .setPreference(AlignArguments, true)
+      .setPreference(AlignSingleLineCaseStatements, true)
+      .setPreference(DoubleIndentConstructorArguments, true)
+      .setPreference(RewriteArrowSymbols, true)
+      .setPreference(SpacesWithinPatternBinders, false)
+      .setPreference(SpacesAroundMultiImports, false))
 
 lazy val pointage100km =
   (project in file(".")) settings(name := "pointage100km") aggregate(replicate, wipe, stats, loader)

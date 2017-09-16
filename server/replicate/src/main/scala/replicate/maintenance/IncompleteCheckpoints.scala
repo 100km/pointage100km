@@ -2,16 +2,16 @@ package replicate.maintenance
 
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.util.FastFuture
-import akka.{ Done, NotUsed }
+import akka.{Done, NotUsed}
 import net.rfc1149.canape.helpers._
-import net.rfc1149.canape.{ Couch, Database }
+import net.rfc1149.canape.{Couch, Database}
 import play.api.libs.json._
-import replicate.models.{ CheckpointData, Contestant }
+import replicate.models.{CheckpointData, Contestant}
 import replicate.utils.Global._
 import replicate.utils.Types.RaceId
 
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 trait IncompleteCheckpoints {
 

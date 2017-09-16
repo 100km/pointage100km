@@ -1,6 +1,6 @@
 package replicate.messaging
 
-import akka.actor.{ Actor, ActorLogging }
+import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.util.FastFuture
 import replicate.messaging.Message.Severity
 

@@ -4,21 +4,21 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorLogging, ActorRefFactory, Props, Timers }
+import akka.actor.{Actor, ActorLogging, ActorRefFactory, Props, Timers}
 import akka.stream._
 import akka.stream.scaladsl._
-import akka.{ Done, NotUsed }
+import akka.{Done, NotUsed}
 import net.rfc1149.canape.Database
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{JsObject, Json}
 import replicate.messaging.Message
-import replicate.messaging.Message.{ Checkpoint, Severity }
+import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.state.PingState
 import replicate.utils.Global.CheckpointAlerts._
 import replicate.utils.Types.SiteId
 import replicate.utils._
 
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scalaz.@@
 
 object PingAlert {
@@ -49,7 +49,7 @@ object PingAlert {
     private[this] def alert(severity: Severity.Severity, message: String, icon: String): Unit = {
       currentNotification.foreach(Alerts.cancelAlert)
       currentNotification = Some(Alerts.sendAlert(Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
-        url = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
+                                                          url   = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
     }
 
     private[this] def alertDuration(severity: Severity.Severity, duration: FiniteDuration, icon: String): Unit =
@@ -72,7 +72,7 @@ object PingAlert {
         currentTimestamp = ts
         (oldState, currentState) match {
           case (before, after) if before == after ⇒
-          case (Starting, _) ⇒
+          case (Starting, _)                      ⇒
           case (Inactive, Up) ⇒
             alert(Severity.Verbose, "Site went up for the first time", Glyphs.beatingHeart)
           case (_, Notice) ⇒
@@ -89,10 +89,10 @@ object PingAlert {
             log.error("Impossible checkpoint state transition from {} to {}", oldState, currentState)
         }
         currentState match {
-          case Up ⇒ scheduleRecheck(noticeDelay, elapsed)
-          case Notice ⇒ scheduleRecheck(warningDelay, elapsed)
+          case Up      ⇒ scheduleRecheck(noticeDelay, elapsed)
+          case Notice  ⇒ scheduleRecheck(warningDelay, elapsed)
           case Warning ⇒ scheduleRecheck(criticalDelay, elapsed)
-          case _ ⇒
+          case _       ⇒
         }
         if (currentState == Inactive)
           PingState.removePing(siteId)
@@ -170,7 +170,7 @@ object PingAlert {
             val realTimes = times.diff(artificialTimes)
             realTimes.lastOption match {
               case Some(ts) ⇒ Source.single(ts)
-              case None ⇒ Source.empty[Long]
+              case None     ⇒ Source.empty[Long]
             }
           case _ ⇒
             Source.empty[Long]
@@ -185,7 +185,7 @@ object PingAlert {
     val in = b.add(database.changesSource(Map("filter" → "admin/liveness-info", "include_docs" → "true")))
     val partition = b.add(Partition[JsObject](sites + 1, docToSite(_) match {
       case Some(n) ⇒ n
-      case None ⇒ sites
+      case None    ⇒ sites
     }))
 
     in ~> Flow[JsObject].map(js ⇒ (js \ "doc").as[JsObject]) ~> partition

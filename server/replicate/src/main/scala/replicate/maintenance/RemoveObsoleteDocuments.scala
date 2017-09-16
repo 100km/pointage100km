@@ -2,10 +2,10 @@ package replicate.maintenance
 
 import akka.event.LoggingAdapter
 import net.rfc1149.canape._
-import play.api.libs.json.{ JsObject, JsValue }
+import play.api.libs.json.{JsObject, JsValue}
 import replicate.utils.Global
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 object RemoveObsoleteDocuments {
@@ -18,7 +18,7 @@ object RemoveObsoleteDocuments {
       val toDelete = docs map (_._2) filter { js ⇒
         (js \ "time").asOpt[Long] match {
           case Some(time) ⇒ time < deadline
-          case None ⇒ false
+          case None       ⇒ false
         }
       }
       val future = Future.traverse(toDelete)(db.delete)

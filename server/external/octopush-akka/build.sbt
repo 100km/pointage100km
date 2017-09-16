@@ -1,13 +1,14 @@
 import scalariform.formatter.preferences._
-import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
-SbtScalariform.scalariformSettings
+import scalariform.formatter.preferences._
+
+scalariformSettings(autoformat = true)
 
 ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(AlignArguments, true)
   .setPreference(AlignSingleLineCaseStatements, true)
-  .setPreference(DoubleIndentClassDeclaration, true)
+  .setPreference(DoubleIndentConstructorArguments, true)
   .setPreference(RewriteArrowSymbols, true)
   .setPreference(SpacesWithinPatternBinders, false)
   .setPreference(SpacesAroundMultiImports, false)

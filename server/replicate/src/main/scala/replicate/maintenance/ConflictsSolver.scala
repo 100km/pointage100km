@@ -9,7 +9,7 @@ import replicate.models.CheckpointData
 import replicate.utils.Global._
 
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 trait ConflictsSolver {
 
@@ -21,7 +21,7 @@ trait ConflictsSolver {
         val f = solve(db, docs)(makeSolver[CheckpointData](_.reduce(_.merge(_))))
         f.onComplete {
           case Success(result) ⇒ log.info("solved conflicts for {} ({} documents)", id, revs.size)
-          case Failure(t) ⇒ log.error(t, "unable to solve conflicts for {} ({} documents)", id, revs.size)
+          case Failure(t)      ⇒ log.error(t, "unable to solve conflicts for {} ({} documents)", id, revs.size)
         }
         f
     }

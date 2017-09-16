@@ -1,6 +1,6 @@
 package replicate.utils
 
-import java.util.{ Calendar, TimeZone }
+import java.util.{Calendar, TimeZone}
 
 object FormatUtils {
 

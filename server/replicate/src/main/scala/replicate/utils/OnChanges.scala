@@ -1,13 +1,13 @@
 package replicate.utils
 
-import akka.actor.{ Actor, Timers }
+import akka.actor.{Actor, Timers}
 import akka.event.Logging
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ThrottleMode
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape._
 import play.api.libs.json.JsObject
-import replicate.maintenance.{ ConflictsSolver, IncompleteCheckpoints, PingService }
+import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
 import replicate.utils.Global._
 
 import scala.concurrent.Future

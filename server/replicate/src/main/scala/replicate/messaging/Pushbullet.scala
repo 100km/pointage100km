@@ -5,11 +5,11 @@ import akka.actor.Actor
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers._
-import akka.http.scaladsl.model.{ HttpMethods, HttpRequest, MediaTypes, RequestEntity }
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, MediaTypes, RequestEntity}
+import akka.stream.scaladsl.{Sink, Source}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.canape.Couch
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{JsObject, Json}
 import replicate.utils.Global
 
 import scala.concurrent.Future

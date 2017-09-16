@@ -1,12 +1,12 @@
 package replicate.messaging.sms
 
-import akka.actor.{ Actor, ActorLogging, ActorRef, Props }
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import replicate.alerts.Alerts
 import replicate.messaging.Message
-import replicate.messaging.Message.{ Severity, TextMessage }
-import replicate.utils.{ Global, Glyphs }
+import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.utils.{Global, Glyphs}
 
 class TextService extends Actor with ActorLogging {
 
@@ -49,12 +49,12 @@ class TextService extends Actor with ActorLogging {
   override def preStart() = {
     startTextService() match {
       case Some(service) ⇒ textService = service
-      case None ⇒ context.stop(self)
+      case None          ⇒ context.stop(self)
     }
   }
 
   def receive = {
-    case m @ (recipient: String, message: String) ⇒
+    case m@(recipient: String, message: String) ⇒
       val alert = Message(TextMessage, Severity.Verbose, s"SMS for $recipient", message, None, Some(Glyphs.envelope))
       Alerts.sendAlert(alert)
       textService.forward(m)

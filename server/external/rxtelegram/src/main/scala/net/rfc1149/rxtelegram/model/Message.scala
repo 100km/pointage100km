@@ -3,19 +3,19 @@ package net.rfc1149.rxtelegram.model
 import play.api.libs.json.{JsSuccess, Reads}
 
 case class Message(message_id: Long, from: Option[User], date: Long, chat: Chat,
-  forward_from: Option[User], forward_from_chat: Option[Chat], forward_date: Option[Long],
-  reply_to_message: Option[Message], text: Option[String],
-  entities: Option[Array[MessageEntity]],
-  audio: Option[Audio], voice: Option[Voice], document: Option[Document],
-  photo: Option[Array[PhotoSize]], sticker: Option[Sticker],
-  video: Option[Video], caption: Option[String],
-  contact: Option[Contact], location: Option[Location], venue: Option[Venue],
-  new_chat_member: Option[User], left_chat_member: Option[User],
-  new_chat_title: Option[String], new_chat_photo: Option[Array[PhotoSize]],
-  delete_chat_photo: Option[Boolean], group_chat_created: Option[Boolean],
-  supergroup_chat_created: Option[Boolean], channel_chat_created: Option[Boolean],
-  migrate_to_chat_id: Option[Long], migrate_from_chat_id: Option[Long],
-  pinned_message: Option[Message])
+    forward_from: Option[User], forward_from_chat: Option[Chat], forward_date: Option[Long],
+    reply_to_message: Option[Message], text: Option[String],
+    entities: Option[Array[MessageEntity]],
+    audio: Option[Audio], voice: Option[Voice], document: Option[Document],
+    photo: Option[Array[PhotoSize]], sticker: Option[Sticker],
+    video: Option[Video], caption: Option[String],
+    contact: Option[Contact], location: Option[Location], venue: Option[Venue],
+    new_chat_member: Option[User], left_chat_member: Option[User],
+    new_chat_title: Option[String], new_chat_photo: Option[Array[PhotoSize]],
+    delete_chat_photo: Option[Boolean], group_chat_created: Option[Boolean],
+    supergroup_chat_created: Option[Boolean], channel_chat_created: Option[Boolean],
+    migrate_to_chat_id: Option[Long], migrate_from_chat_id: Option[Long],
+    pinned_message: Option[Message])
 
 object Message {
 

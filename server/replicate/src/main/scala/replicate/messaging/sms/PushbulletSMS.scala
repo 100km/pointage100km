@@ -1,11 +1,11 @@
 package replicate.messaging.sms
 
-import akka.actor.{ Actor, ActorLogging }
-import play.api.libs.json.{ JsObject, Json }
+import akka.actor.{Actor, ActorLogging}
+import play.api.libs.json.{JsObject, Json}
 import replicate.messaging.Pushbullet
 
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 class PushbulletSMS(bearerToken: String, userIden: String, deviceIden: String) extends Actor with ActorLogging {
 

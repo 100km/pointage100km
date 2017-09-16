@@ -9,14 +9,14 @@ import akka.http.scaladsl.client.RequestBuilding.Post
 import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.Accept
-import akka.http.scaladsl.unmarshalling.{ Unmarshal, Unmarshaller }
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.{Sink, Source}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 import scala.xml.NodeSeq
 
 class Octopush(userLogin: String, apiKey: String)(implicit system: ActorSystem) extends ScalaXmlSupport {
@@ -72,11 +72,11 @@ object Octopush {
   }
 
   case class SMS(smsRecipients: List[String], smsText: String,
-    smsType: SmsType, smsSender: Option[String] = None, sendingTime: Option[DateTime] = None, sendingPeriod: Option[Duration] = None,
-    recipientFirstNames: Option[List[String]] = None, recipientLastNames: Option[List[String]] = None,
-    smsFields1: Option[List[String]] = None, smsFields2: Option[List[String]] = None, smsFields3: Option[List[String]] = None,
-    simulation: Boolean = false, requestId: Option[String] = None, withReplies: Boolean = false, transactional: Boolean = false,
-    msisdnSender: Boolean = false, requestKeys: String = "") {
+      smsType: SmsType, smsSender: Option[String] = None, sendingTime: Option[DateTime] = None, sendingPeriod: Option[Duration] = None,
+      recipientFirstNames: Option[List[String]] = None, recipientLastNames: Option[List[String]] = None,
+      smsFields1: Option[List[String]] = None, smsFields2: Option[List[String]] = None, smsFields3: Option[List[String]] = None,
+      simulation: Boolean = false, requestId: Option[String] = None, withReplies: Boolean = false, transactional: Boolean = false,
+      msisdnSender: Boolean = false, requestKeys: String = "") {
 
     import SMS._
 
@@ -109,7 +109,7 @@ object Octopush {
             case Some(key) ⇒
               params.get(key) match {
                 case Some(value) ⇒ str += value
-                case None ⇒ throw new IllegalArgumentException(s"no value defined for key $key ($c)")
+                case None        ⇒ throw new IllegalArgumentException(s"no value defined for key $key ($c)")
               }
             case None ⇒
               throw new IllegalArgumentException(s"unknown key $c")
@@ -138,8 +138,8 @@ object Octopush {
 
   // XXX Find definition and include failures
   case class SMSResult(cost: Double, balance: Double,
-    ticket: String, sendingDate: Long, numberOfSendings: Int,
-    currencyCode: String, successes: Seq[SMSSuccess])
+      ticket: String, sendingDate: Long, numberOfSendings: Int,
+      currencyCode: String, successes: Seq[SMSSuccess])
 
   val balanceUnmarshaller: Unmarshaller[NodeSeq, Balance] = Unmarshaller.strict { xml ⇒
     Balance(
@@ -153,17 +153,17 @@ object Octopush {
 
   val smsResultUnmarshaller: Unmarshaller[NodeSeq, SMSResult] = Unmarshaller.strict { xml ⇒
     SMSResult(
-      cost = (xml \ "cost").text.toDouble,
-      balance = (xml \ "balance").text.toDouble,
-      ticket = (xml \ "ticket").text,
-      sendingDate = (xml \ "sending_date").text.toLong,
+      cost             = (xml \ "cost").text.toDouble,
+      balance          = (xml \ "balance").text.toDouble,
+      ticket           = (xml \ "ticket").text,
+      sendingDate      = (xml \ "sending_date").text.toLong,
       numberOfSendings = (xml \ "number_of_sendings").text.toInt,
-      currencyCode = (xml \ "currency_code").text,
-      successes = (xml \ "successs" \ "success").map { success ⇒
+      currencyCode     = (xml \ "currency_code").text,
+      successes        = (xml \ "successs" \ "success").map { success ⇒
         SMSSuccess(
-          recipient = (success \ "recipient").text,
+          recipient   = (success \ "recipient").text,
           countryCode = (success \ "country_code").text,
-          cost = (success \ "cost").text.toDouble)
+          cost        = (success \ "cost").text.toDouble)
       })
   }
 

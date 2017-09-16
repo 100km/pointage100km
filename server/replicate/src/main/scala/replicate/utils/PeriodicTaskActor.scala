@@ -1,7 +1,7 @@
 package replicate.utils
 
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorLogging, Timers }
+import akka.actor.{Actor, ActorLogging, Timers}
 import akka.pattern.pipe
 
 import scala.concurrent.Future

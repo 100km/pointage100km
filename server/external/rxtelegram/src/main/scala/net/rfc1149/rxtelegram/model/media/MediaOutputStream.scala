@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram.model.media
 
-import java.io.{ ByteArrayOutputStream, OutputStream }
+import java.io.{ByteArrayOutputStream, OutputStream}
 
 import akka.http.scaladsl.model.MediaType
 

@@ -2,23 +2,23 @@ package replicate.utils
 
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Query
-import play.api.libs.json.{ Json, Reads }
+import play.api.libs.json.{Json, Reads}
 import replicate.utils.Types._
 
 import scalaz.@@
 import scalaz.Scalaz._
 
 case class Infos(
-  cat_names: Array[String],
-  kms_lap: Double,
-  kms_offset: Array[Double],
-  races_hours: Array[Int],
-  races_laps: Array[Int],
-  races_names: Array[String],
-  sites: Array[String],
-  sites_coordinates: Array[Infos.Coordinates],
-  start_times: Array[Long],
-  timezone: String) {
+    cat_names: Array[String],
+    kms_lap: Double,
+    kms_offset: Array[Double],
+    races_hours: Array[Int],
+    races_laps: Array[Int],
+    races_names: Array[String],
+    sites: Array[String],
+    sites_coordinates: Array[Infos.Coordinates],
+    start_times: Array[Long],
+    timezone: String) {
 
   import Infos._
 

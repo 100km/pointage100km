@@ -1,6 +1,6 @@
 package net.rfc1149.rxtelegram
 
-import akka.actor.{ Actor, Stash }
+import akka.actor.{Actor, Stash}
 import net.rfc1149.rxtelegram.Bot._
 import net.rfc1149.rxtelegram.BotActor.GetMe
 import net.rfc1149.rxtelegram.model._
