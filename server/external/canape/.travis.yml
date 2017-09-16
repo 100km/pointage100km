@@ -15,7 +15,7 @@ env:
 before_install:
   - docker run -d -p 5984:5984 $DOCKERIMAGE
 script:
-  - sbt clean coverage test coverageReport codacyCoverage
+  - sbt clean coverage test coverageReport
 cache:
   directories:
     - $HOME/.ivy2/cache

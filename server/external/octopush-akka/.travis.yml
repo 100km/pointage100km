@@ -5,7 +5,7 @@ sudo: false
 scala:
   - 2.12.2
 script:
-  - sbt clean coverage test coverageReport codacyCoverage
+  - sbt clean coverage test coverageReport
 cache:
   directories:
     - $HOME/.ivy2/cache
