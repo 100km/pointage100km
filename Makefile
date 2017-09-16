@@ -1,7 +1,7 @@
 BINFILES = bin/replicate bin/wipe bin/loader bin/stats
 DIST = bin.tar.xz
 ROOTDIR = server
-SBT = ./sbt
+SBT = bin/sbt
 GITVER := $(shell git describe --long --always)
 
 all:: assembly
