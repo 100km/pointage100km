@@ -11,6 +11,8 @@ import replicate.utils.Global
 import replicate.utils.Infos.RaceInfo
 import replicate.utils.Types._
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scalaz.@@
 
 class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPoints: Seq[Point]) {
@@ -18,7 +20,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPo
   import Analyzer._
 
   private[this] val infos = Global.infos.get
-  private[this] val pings = PingState.lastPings()
+  private[this] val pings = Await.result(PingState.lastPings.future(), Duration.Inf)
   private[this] val checkpoints = infos.checkpoints.size
   private[this] val startingPoint = EnrichedPoint(Point(SiteId(checkpoints - 1), raceInfo.startTime), Lap(0), 0, 0)
 

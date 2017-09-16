@@ -1,7 +1,6 @@
 package replicate.state
 
 import akka.NotUsed
-import akka.agent.Agent
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
@@ -9,8 +8,11 @@ import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import replicate.models.Contestant
+import replicate.utils.Agent
 import replicate.utils.Types.ContestantId
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scalaz.@@
 
 object ContestantState {
@@ -46,6 +48,6 @@ object ContestantState {
    * @return the contestant if it exists
    */
   def contestantFromId(contestantId: Int @@ ContestantId): Option[Contestant] =
-    contestantAgent().get(contestantId)
+    Await.result(contestantAgent.future().map(_.get(contestantId)), Duration.Inf)
 
 }

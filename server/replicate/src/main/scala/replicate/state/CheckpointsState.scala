@@ -1,12 +1,11 @@
 package replicate.state
 
 import akka.Done
-import akka.agent.Agent
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import replicate.models.CheckpointData
 import replicate.utils.Types._
-import replicate.utils.{FormatUtils, Global}
+import replicate.utils.{Agent, FormatUtils, Global}
 
 import scala.concurrent.Future
 import scalaz.@@

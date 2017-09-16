@@ -1,7 +1,7 @@
 package replicate.state
 
 import akka.Done
-import akka.agent.Agent
+import replicate.utils.Agent
 import replicate.utils.Types.SiteId
 
 import scala.concurrent.Future
@@ -11,7 +11,7 @@ object PingState {
 
   import replicate.utils.Global.dispatcher
 
-  val lastPings: Agent[Map[Int @@ SiteId, Long]] = Agent(Map())
+  val lastPings = Agent(Map[Int @@ SiteId, Long]())
 
   /**
    * Set the timestamp of the last ping seen for a given site.
@@ -39,13 +39,5 @@ object PingState {
    * @return a Future containing an Option with the last timestamp
    */
   def getLastPing(siteId: Int @@ SiteId): Future[Option[Long]] = lastPings.future.map(_.get(siteId))
-
-  /**
-   * Get the latest timestamp for a time without waiting for the current writes to be performed.
-   *
-   * @param siteId the site id
-   * @return an Option with the last timestamp
-   */
-  def getLastPingImmediate(siteId: Int @@ SiteId): Option[Long] = lastPings().get(siteId)
 
 }

@@ -1,10 +1,9 @@
 package replicate.state
 
-import akka.agent.Agent
 import replicate.scrutineer.Analyzer.{ContestantAnalysis, KeepPoint}
-import replicate.utils.Global
 import replicate.utils.SortUtils._
 import replicate.utils.Types._
+import replicate.utils.{Agent, Global}
 
 import scala.concurrent.Future
 import scalaz.@@

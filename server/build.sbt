@@ -1,12 +1,13 @@
-import sbt._
-import Keys._
-import sbtassembly.AssemblyPlugin.autoImport._
-import scalariform.formatter.preferences._
-import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import sbt.Keys._
+import sbt._
+import sbtassembly.AssemblyPlugin.autoImport._
+
+import scalariform.formatter.preferences._
 
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.4",
+                                  "com.typesafe.akka" %% "akka-typed" % "2.5.4",
                                   "com.typesafe.akka" %% "akka-slf4j" % "2.5.4",
                                   "com.typesafe.akka" %% "akka-agent" % "2.5.4",
                                   "com.typesafe.akka" %% "akka-stream" % "2.5.4",
