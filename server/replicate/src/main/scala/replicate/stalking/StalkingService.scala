@@ -1,11 +1,9 @@
 package replicate.stalking
 
+import akka.NotUsed
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorRefFactory, Props, Stash, Terminated}
 import akka.pattern.pipe
-import akka.stream.ActorMaterializer
-import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
-import akka.stream.actor.{ActorSubscriber, OneByOneRequestStrategy}
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
@@ -13,7 +11,6 @@ import replicate.alerts.Alerts
 import replicate.messaging.Message
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.scrutineer.Analyzer.ContestantAnalysis
-import replicate.stalking.StalkingService.{InitialFailure, InitialNotifications}
 import replicate.state.ContestantState
 import replicate.utils.Types._
 import replicate.utils.{FormatUtils, Global, Glyphs}
@@ -24,12 +21,10 @@ import scalaz.@@
  * This class will keep the list of stalkers for every contestant up-to-date, and will also maintain
  * the information on the last status for which a text message has been sent for a contestant.
  */
-class StalkingService(database: Database, textService: ActorRef) extends Actor with Stash with ActorSubscriber with ActorLogging {
+class StalkingService(database: Database, textService: ActorRef) extends Actor with Stash with ActorLogging {
 
-  private implicit val fm = ActorMaterializer.create(context)
-  private implicit val ec = fm.executionContext
-
-  override val requestStrategy = OneByOneRequestStrategy
+  import StalkingService._
+  import context.dispatcher
 
   // Map of contestant to signalled distance
   private[this] var stalkingInfo: Map[Int @@ ContestantId, Double] = Map()
@@ -93,7 +88,13 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
 
   def receive = {
 
-    case OnNext(analysis: ContestantAnalysis) ⇒
+    case OnInit ⇒
+      // Request an initial analysis
+      sender() ! Ack
+
+    case analysis: ContestantAnalysis ⇒
+      // Request another analysis
+      sender() ! Ack
       // Do not send an empty analysis (last point removed)
       if (analysis.after.nonEmpty)
         sendToStalkers(analysis)
@@ -102,9 +103,9 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
       log.info("end of stream, terminating")
       context.stop(self)
 
-    case OnError(throwable: Throwable) ⇒
+    case Failure(throwable: Throwable) ⇒
       log.error(throwable, "stream terminating on error")
-      throw throwable
+      context.stop(self)
 
     case Terminated(`textService`) ⇒
       Alerts.sendAlert(Message(TextMessage, Severity.Critical, "No stalker service",
@@ -113,7 +114,7 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
       context.stop(self)
 
     case other ⇒
-      log.info(s"Received $other")
+      log.warning(s"Received $other")
   }
 
 }
@@ -123,7 +124,13 @@ object StalkingService {
   private case class InitialNotifications(notifications: Seq[(Int @@ ContestantId, Double)])
   private case class InitialFailure(throwable: Throwable) extends Exception
 
-  def stalkingServiceSink(database: Database, textService: ActorRef)(implicit context: ActorRefFactory) =
-    Sink.actorSubscriber[ContestantAnalysis](Props(new StalkingService(database, textService)))
+  private case object Ack
+  private case object OnInit
+  private case object OnComplete
+
+  def stalkingServiceSink(database: Database, textService: ActorRef)(implicit context: ActorRefFactory): Sink[ContestantAnalysis, NotUsed] = {
+    val actorRef = context.actorOf(Props(new StalkingService(database, textService)), "stalking")
+    Sink.actorRefWithAck[ContestantAnalysis](actorRef, OnInit, Ack, OnComplete)
+  }
 }
 
