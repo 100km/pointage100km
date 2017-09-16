@@ -1,65 +1,33 @@
 package net.rfc1149.rxtelegram
 
-import akka.actor.{Actor, ActorLogging, ActorRefFactory, Props}
-import akka.http.scaladsl.util.FastFuture
-import akka.pattern.{Backoff, BackoffSupervisor, pipe}
-import akka.stream.scaladsl.{Source, SourceQueue, SourceQueueWithComplete}
-import akka.stream.{ActorMaterializer, OverflowStrategy, QueueOfferResult}
+import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{RestartSource, Source}
 import net.rfc1149.rxtelegram.model._
 
-class UpdateSource(val token: String, val options: Options, val queue: SourceQueue[Update]) extends Actor with ActorLogging with Bot {
-
-  import UpdateSource._
-
-  implicit val actorSystem = context.system
-  implicit val fm = ActorMaterializer.create(context)
-  implicit val ec = context.dispatcher
-
-  override def preStart = {
-    super.preStart()
-    self ! Request(None)
-  }
-
-  override def receive = {
-
-    case Request(toAcknowledge) ⇒
-      toAcknowledge.foreach(acknowledgeUpdate)
-      getUpdates(limit   = options.updatesBatchSize, timeout = options.longPollingDelay).transform(Updates, UpdateError).pipeTo(self)
-
-    case Updates(updates) ⇒
-      updates.foldLeft(FastFuture.successful[QueueOfferResult](QueueOfferResult.Enqueued)) {
-        case (qor, update) ⇒
-          qor flatMap {
-            case QueueOfferResult.Enqueued | QueueOfferResult.Dropped ⇒
-              queue.offer(update)
-            case QueueOfferResult.QueueClosed | QueueOfferResult.Failure(_) ⇒
-              context.stop(self)
-              qor
-          }
-      }.andThen { case _ ⇒ self ! Request(updates.lastOption) }
-
-    case UpdateError(throwable) ⇒
-      log.error(throwable, "could not get updates")
-      throw throwable
-  }
-
-}
+import scala.concurrent.Future
 
 object UpdateSource {
 
-  def apply(token: String, options: Options)(implicit af: ActorRefFactory): Source[Update, SourceQueueWithComplete[Update]] = {
-    Source.queue[Update](16, OverflowStrategy.backpressure).mapMaterializedValue { sourceQueue ⇒
-      val updateSourceProps = Props(new UpdateSource(token, options, sourceQueue))
-      val backoffSupervisorProps = BackoffSupervisor.props(Backoff.onFailure(updateSourceProps, "update-source",
-                                                                             options.httpMinErrorRetryDelay, options.httpMaxErrorRetryDelay, 0.2))
-      af.actorOf(backoffSupervisorProps)
-      sourceQueue
-    }
+  private class UpdatesIterator(val token: String, val options: Options)(implicit val actorSystem: ActorSystem) extends Bot with Iterator[Future[List[Update]]] {
+    implicit val ec = actorSystem.dispatcher
+    implicit val fm = ActorMaterializer.create(actorSystem)
+    override def hasNext: Boolean = true
+    override def next(): Future[List[Update]] =
+      getUpdates(limit   = options.updatesBatchSize, timeout = options.longPollingDelay)
+        .map { l ⇒ l.lastOption.foreach(acknowledgeUpdate); l }
   }
 
-  private case class Request(toAcknowledge: Option[Update])
-  private case class Updates(updates: List[Update])
-  private case class UpdateError(throwable: Throwable) extends Exception
+  private def source(token: String, options: Options)(implicit system: ActorSystem): Source[Update, NotUsed] =
+    Source.fromIterator(() ⇒ new UpdatesIterator(token, options))
+      .mapAsync(parallelism = 1)(identity)
+      .mapConcat(identity)
+
+  def apply(token: String, options: Options)(implicit system: ActorSystem): Source[Update, NotUsed] =
+    RestartSource.withBackoff(minBackoff   = options.httpMinErrorRetryDelay, maxBackoff = options.httpMaxErrorRetryDelay, randomFactor = 0.2) {
+      () ⇒ source(token, options)
+    }
 
 }
 
