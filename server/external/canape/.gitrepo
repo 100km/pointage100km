@@ -6,6 +6,6 @@
 [subrepo]
 	remote = git@github.com:samueltardieu/canape
 	branch = master
-	commit = 38ddfea88377ca72afbb1bbf83c526942a2e563c
-	parent = 68130d03a81f707cb0f81119e7c04264579f6f70
+	commit = 1af4df1c76685906e517bc605dbecc01996a2b23
+	parent = 0a9936841d1bc1a6fe9316c57795e5f998882455
 	cmdver = 0.3.0
