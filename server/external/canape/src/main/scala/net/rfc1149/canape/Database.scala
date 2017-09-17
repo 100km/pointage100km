@@ -479,7 +479,7 @@ case class Database(couch: Couch, databaseName: String) {
    */
   def changesSource(params: Map[String, String] = Map(), extraParams: JsObject = Json.obj(),
     sinceSeq: UpdateSequence = FromNow): Source[JsObject, Future[Done]] = {
-    ChangesSource.changesSource(this, params, extraParams, sinceSeq)(couch.system)
+    ChangesSource.changesSource(this, params, extraParams, sinceSeq)
   }
 
   /**
