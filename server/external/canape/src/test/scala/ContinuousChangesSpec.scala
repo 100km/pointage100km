@@ -137,7 +137,7 @@ class ContinuousChangesSpec extends WithDbSpecification("db") {
     "terminate properly if the database is deleted during the request" in new freshDb {
       // CouchDB 2.0.0-RC4 sends garbage on the connection if the database is deleted during the request.
       // See issue COUCHDB-3132.
-      pendingIfNotCouchDB1("garbage will be sent on the connection")
+      pendingIfCouchDB20("garbage will be sent on the connection")
       val result = db.continuousChanges().runFold[List[JsObject]](Nil)(_ :+ _)
       waitForResult(db.insert(JsObject(Nil), "docid1"))
       waitForResult(db.insert(JsObject(Nil), "docid2"))
@@ -145,7 +145,10 @@ class ContinuousChangesSpec extends WithDbSpecification("db") {
       waitForResult(db.delete())
       val changes = waitForResult(result)
       changes must haveSize(4)
-      (changes.last \ "last_seq").as[Long] must beEqualTo(3)
+      if (isCouchDB1)
+        (changes.last \ "last_seq").as[Long] must beEqualTo(3)
+      else
+        (changes.last \ "last_seq").as[String] must startWith("3-")
     }
 
   }

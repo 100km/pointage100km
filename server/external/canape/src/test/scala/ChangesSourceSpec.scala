@@ -53,7 +53,7 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
     }
 
     "terminate on error if the database is deleted" in new freshDb {
-      pendingIfNotCouchDB1("garbage will be sent on the connection")
+      pendingIfCouchDB20("garbage will be sent on the connection")
       waitForResult(db.insert(JsObject(Nil), "docid0"))
       val changes: Source[JsObject, Future[Done]] = db.changesSource()
       val result = changes.runWith(Sink.ignore)
@@ -61,13 +61,13 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       waitForResult(db.insert(JsObject(Nil), "docid2"))
       waitForResult(db.insert(JsObject(Nil), "docid3"))
       waitForResult(db.delete())
-      waitForResult(result) must throwA[StatusError]("404 no_db_file: not_found")
+      waitForResult(result) must throwA[StatusError]("404 .*not_found")
     }
 
     "return the existing documents before the error if the database is deleted" in new freshDb {
       // CouchDB 2.0.0-RC4 sends garbage on the connection if the database is deleted during the request.
       // See issue COUCHDB-3132.
-      pendingIfNotCouchDB1("garbage will be sent on the connection")
+      pendingIfCouchDB20("garbage will be sent on the connection")
       waitForResult(db.insert(JsObject(Nil), "docid0"))
       val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart).recoverWithRetries(-1, { case _ ⇒ Source.empty })
       val result = changes.map(j ⇒ (j \ "id").as[String]).runFold[List[String]](Nil)(_ :+ _)
