@@ -1,4 +1,4 @@
-FROM klaemo/couchdb:2.0.0
+FROM apache/couchdb:2.1.0
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
 ADD webupd8team-java.list /etc/apt/sources.list.d/
@@ -7,8 +7,7 @@ RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true 
 
 ADD cors.ini /opt/couchdb/etc/local.d/
 
-RUN sed -ie s/https/http/ /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --force-yes --no-install-recommends oracle-java8-installer oracle-java8-set-default git make \
        build-essential libtool autoconf automake autoconf-archive pkg-config \
        libnspr4 libnspr4-0d libnspr4-dev libcurl4-openssl-dev libicu-dev python zip unzip && \
