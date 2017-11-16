@@ -1,4 +1,4 @@
-FROM apache/couchdb:2.1.0
+FROM apache/couchdb:2.1.1
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 
 ADD webupd8team-java.list /etc/apt/sources.list.d/
