@@ -243,7 +243,7 @@ class Couch(
    * @throws CouchError if an error occurs
    */
   def replicate(source: Database, target: Database, params: JsObject = Json.obj()): Future[JsObject] = {
-    makePostRequest[JsObject]("/_replicate", params ++ Json.obj("source" → source.uriFrom(this), "target" → target.uriFrom(this)))
+    makePostRequest[JsObject]("/_replicate", params ++ Json.obj("source" → source.uri.toString, "target" → target.uri.toString))
   }
 
   /**
