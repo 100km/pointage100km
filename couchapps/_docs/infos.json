@@ -1,19 +1,111 @@
 {
-"sites":["La blanche", "La gare", "La menegatte", "La salle des sports, boucle 1", "La Croix du Bac", "Le froid nid", "La salle des sports, boucle 2"],
-"sites_short":["Blanche", "Gare", "Menegatte", "Boucle 1", "Croix du Bac", "Froid nid", "Boucle 2"],
-"kms_offset":[10.000,15.000,17.500,21.700,25.820,30.910,37.140],
-"kms_lap":31.43,
-"races_names":["", "100 km Open", "100 km Course", "1 tour du soir", "Course des jeunes", "100 km relais", "Marathon"],
-"races_laps": [-1, 3            , 3              , 1               , -1                 , 1             ,  -1],
-"races_hours": [-1, 24,           13,              24,               -1,                  13,              -1],
-"start_times":[0, 1495645200000, 1495684800000,   1495645200000,     0,                   0,    0],
-"cat_names":["Eve.", "Poussins", "Benjamins", "Minimes", "Cadets", "Juniors", "Espoirs", "Séniors", "Masters 1", "Masters 2", "Masters 3", "Masters 4"],
-"sites_coordinates":[{"latitude": 50.702567, "longitude": 2.736555},
-                     {"latitude": 50.71255, "longitude": 2.78678},
-                     {"latitude": 50.696444, "longitude": 2.798444},
-                     {"latitude": 50.701045, "longitude": 2.779363},
-                     {"latitude": 50.675542, "longitude": 2.790285},
-                     {"latitude": 50.682368, "longitude": 2.748249},
-                     {"latitude": 50.700161, "longitude": 2.779041}],
-"timezone": "Europe/Paris"
+  "sites": [
+    "La blanche",
+    "La gare",
+    "La menegatte",
+    "La salle des sports, boucle 1",
+    "La Croix du Bac",
+    "Le froid nid",
+    "La salle des sports, boucle 2"
+  ],
+  "sites_short": [
+    "Blanche",
+    "Gare",
+    "Menegatte",
+    "Boucle 1",
+    "Croix du Bac",
+    "Froid nid",
+    "Boucle 2"
+  ],
+  "kms_offset": [
+    10,
+    15,
+    17.5,
+    21.7,
+    25.82,
+    30.91,
+    37.14
+  ],
+  "kms_lap": 31.43,
+  "races_names": [
+    "",
+    "100 km Open",
+    "100 km Course",
+    "1 tour du soir",
+    "Course des jeunes",
+    "100 km relais",
+    "Marathon"
+  ],
+  "races_laps": [
+    -1,
+    3,
+    3,
+    1,
+    -1,
+    1,
+    -1
+  ],
+  "races_hours": [
+    -1,
+    24,
+    13,
+    24,
+    -1,
+    13,
+    -1
+  ],
+  "start_times": [
+    0,
+    1520975459000,
+    1520976359000,
+    1520975459000,
+    0,
+    0,
+    0
+  ],
+  "cat_names": [
+    "Eve.",
+    "Poussins",
+    "Benjamins",
+    "Minimes",
+    "Cadets",
+    "Juniors",
+    "Espoirs",
+    "Séniors",
+    "Masters 1",
+    "Masters 2",
+    "Masters 3",
+    "Masters 4"
+  ],
+  "sites_coordinates": [
+    {
+      "latitude": 50.702567,
+      "longitude": 2.736555
+    },
+    {
+      "latitude": 50.71255,
+      "longitude": 2.78678
+    },
+    {
+      "latitude": 50.696444,
+      "longitude": 2.798444
+    },
+    {
+      "latitude": 50.701045,
+      "longitude": 2.779363
+    },
+    {
+      "latitude": 50.675542,
+      "longitude": 2.790285
+    },
+    {
+      "latitude": 50.682368,
+      "longitude": 2.748249
+    },
+    {
+      "latitude": 50.700161,
+      "longitude": 2.779041
+    }
+  ],
+  "timezone": "Europe/Paris"
 }

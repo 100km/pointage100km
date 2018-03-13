@@ -45,6 +45,7 @@ for i in */_attachments; do
 done
 
 echo Pushing into $dbname at $host
+./set-start-times.sh
 full_name=http://$auth$host/$dbname
 couchapp pushapps . $full_name
 couchapp pushdocs _docs $full_name
