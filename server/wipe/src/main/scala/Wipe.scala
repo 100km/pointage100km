@@ -65,7 +65,8 @@ object Wipe extends App {
     println("Copying security document")
     hubDatabase.insert(cfgDatabase("_security").execute(), "_security").execute()
     println("Inserting configuration document")
-    hubDatabase.insert(Json.obj("dbname" → newName, "tests_allowed" → false), "configuration").execute()
+    hubDatabase.insert(Json.obj("dbname" → newName, "tests_allowed" → false,
+      "created" → (System.currentTimeMillis() / 1000).toInt), "configuration").execute()
     println("Generating random identification for couchsync")
     val key = new Array[Byte](256)
     scala.util.Random.nextBytes(key)
