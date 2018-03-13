@@ -9,9 +9,13 @@ function(data) {
   var race_name = app.races_names[race_id];
   var res = { race_name: race_name };
   var final_time = new Date()-open_date_offset;
-  if (final_time >= 0)
+  if (final_time >= 0) {
     res.time = int_to_datestring(final_time);
-  else
-    res.time = int_to_datestring(0);
+    res.started = true;
+  }
+  else {
+    res.time = int_to_datestring(-final_time);
+    res.started = false;
+  }
   return res;
 }
