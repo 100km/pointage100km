@@ -53,7 +53,7 @@ application can be overridden in a `replicate` section.
 Ensure that the main server is running:
 
 ```bash
-server% /kvm/launch-steenwerck
+server$ /kvm/launch-steenwerck
 ```
 
 Ensure that you have a `steenwerck.conf` file containing at least the `steenwerck` and `loader` sections.
