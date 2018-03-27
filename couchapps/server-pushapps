@@ -27,7 +27,7 @@ else
 fi
 if [ -z "$4" ]; then
   if [ "$1" = server ]; then
-    dbname=`curl -s http://$auth$host/steenwerck-config/configuration |
+    dbname=`curl -s https://$auth$host/steenwerck-config/configuration |
       sed -e 's/^.*dbname":"//' -e 's/".*//'`
   else
     dbname=steenwerck100km
@@ -46,6 +46,6 @@ done
 
 echo Pushing into $dbname at $host
 ./set-start-times.sh
-full_name=http://$auth$host/$dbname
+full_name=https://$auth$host/$dbname
 couchapp pushapps . $full_name
 couchapp pushdocs _docs $full_name
