@@ -31,6 +31,7 @@ On each client, you need:
 ##steenwerck.conf
 
 This file is not commited on git. It is a file containing the information to log on the server couchdb.
+
 ```
 master {
   host = <server hosting the couchdb>
@@ -40,20 +41,68 @@ master {
 }
 ```
 
+and many more things.
+
 Similarly, a `local` section can be added in this file to override local database information. Parameters for the `replicate`
 application can be overridden in a `replicate` section.
 
-##Launching a race
-On a dev pc:
+## Preparing a new race
+
+**This may be a duplicate of the next section but is hopefully more up-to-date.**
+
+Ensure that the main server is running:
+
+```bash
+server% /kvm/launch-steenwerck
 ```
-$ bin/wipe login password
-$ couchapps/server-pushapps server login password
-$ bin/replicate mirror
+
+Ensure that you have a `steenwerck.conf` file containing at least the `steenwerck` and `loader` sections.
+
+On a developer PC, ensure that `infos.json` contains the right starting date for the race:
+
+```bash
+dev% cd couchapps
+dev% ./set-start-times.sh DAY
+dev% ./set-start-times.sh  # To control
+dev% git commit -m "Set start times" _docs/infos.json
+dev% git push
+dev% cd ..
 ```
 
-$ /kvm/launch-steenwerck
+On a developer PC, rotate the database and load the scripts:
 
+```bash
+dev% bin/wipe login password
+dev% couchapps/server-pushapps server login password
+```
 
+On the server, restart the `steenwerck-replicate` docker:
+
+```bash
+server% docker kill steenwerck-replicate
+server% /kvm/launch-steenwerck
+server% docker ps
+```
+
+You should see `steenwerck-couchdb` and `steenwerck-replicate` containers running.
+
+On a developer PC, start a mysql tunnel towards the main database:
+
+```bash
+dev% ssh -L 3306:localhost:3306 100kmsteenwerck.fr
+```
+
+In another terminal, start the loader script:
+
+```bash
+dev% bin/loader -r 1 YEAR
+```
+
+This will block and reload the contestants list every minute.
+
+Then restart the docker container on the web site.
+
+## Launching a race
 
 If a bib has been input in the bib_input couchapp before the contestant had been transfered from the website db to couchdb, (for example you forgot to run bin/loader, or a contestant registered after the begining of the race), you need to have a bin/replicate launched in master mode to fix the checkpoint document
 
