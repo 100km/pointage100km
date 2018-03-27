@@ -1,6 +1,6 @@
-#Configuration
+# Configuration
 
-##infos.json
+## infos.json
 
 This file is a global file common to all sites. For the following we consider N to be your number of sites where the programm will run. Here are the different keys to configure for your race :
 
@@ -12,7 +12,7 @@ This file is a global file common to all sites. For the following we consider N 
  * "cat_names": an array with the name of the category
 
 
-##server configuration
+## server configuration
 
 On the main server, you need:
  * couchdb running
@@ -22,13 +22,13 @@ On the main server, you need:
    * a security configuration allowing the main user to read this database.
  * a database with the name indicated in "steenwerck-config" database containing the couchapp
 
-##client configuration
+## client configuration
 
 On each client, you need:
  * couchdb running
  * nautilus shouldn't open a window when inserting USB drive : `gsettings set org.gnome.desktop.media-handling automount-open false`
 
-##steenwerck.conf
+## steenwerck.conf
 
 This file is not commited on git. It is a file containing the information to log on the server couchdb.
 
@@ -199,11 +199,11 @@ to keep in mind:
 - When you push a couchapp to be used in the race, you must push all your changes to github, else they will be overwritten (even info.json)
 - main_display loads all the contestants names at the opening of the page, so you MUST reload main_display every time you load new contestants using loader (if you do not, the new constestants will still show in main_display, but their names will be blank)
 
-##After the race
+## After the race
 - make sure to fix all problems in http://localhost:5984/steenwerck100km/_design/admin/admin.html
 - go to http://localhost:5984/steenwerck100km/_design/search/_list/times-to-csv/all-times-and-infos?include_docs=true to have the detailed results and put ino MySQL. DOn't forget to change the last `,` into a `;`
 
-##Troubleshooting:
+## Troubleshooting:
    - If you get
 ```
 [Replicator-akka.actor.default-dispatcher-3] ERROR Replicate(akka://Replicator) - deletion failed: java.net.ConnectException: Connection refused
@@ -211,6 +211,6 @@ to keep in mind:
 ```
 Did you forget to launch couchdb on the local computer ? Is it in admin party mode (no explicit administrator account defined)?
 
-##Notes
+## Notes
 
 For now, all the tool expects to be in admin party mode. Maybe we should change that in the future…
