@@ -61,27 +61,27 @@ Ensure that you have a `steenwerck.conf` file containing at least the `steenwerc
 On a developer PC, ensure that `infos.json` contains the right starting date for the race:
 
 ```bash
-dev% cd couchapps
-dev% ./set-start-times.sh DAY
-dev% ./set-start-times.sh  # To control
-dev% git commit -m "Set start times" _docs/infos.json
-dev% git push
-dev% cd ..
+dev$ cd couchapps
+dev$ ./set-start-times.sh DAY
+dev$ ./set-start-times.sh  # To control
+dev$ git commit -m "Set start times" _docs/infos.json
+dev$ git push
+dev$ cd ..
 ```
 
 On a developer PC, rotate the database and load the scripts:
 
 ```bash
-dev% bin/wipe login password
-dev% couchapps/server-pushapps server login password
+dev$ bin/wipe login password
+dev$ couchapps/server-pushapps server login password
 ```
 
 On the server, restart the `steenwerck-replicate` docker:
 
 ```bash
-server% docker kill steenwerck-replicate
-server% /kvm/launch-steenwerck
-server% docker ps
+server$ docker kill steenwerck-replicate
+server$ /kvm/launch-steenwerck
+server$ docker ps
 ```
 
 You should see `steenwerck-couchdb` and `steenwerck-replicate` containers running.
@@ -89,13 +89,13 @@ You should see `steenwerck-couchdb` and `steenwerck-replicate` containers runnin
 On a developer PC, start a mysql tunnel towards the main database:
 
 ```bash
-dev% ssh -L 3306:localhost:3306 100kmsteenwerck.fr
+dev$ ssh -L 3306:localhost:3306 100kmsteenwerck.fr
 ```
 
 In another terminal, start the loader script:
 
 ```bash
-dev% bin/loader -r 1 YEAR
+dev$ bin/loader -r 1 YEAR
 ```
 
 This will block and reload the contestants list every minute.
