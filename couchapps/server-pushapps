@@ -36,6 +36,7 @@ else
   dbname="$4"
 fi
 
+which bower 2>&1 > /dev/null || { echo "This script needs bower. Please install it." ; exit 1 ; }
 echo Updating modules with bower
 for i in */_attachments; do
   if [ -f "$i"/bower.json ]; then
