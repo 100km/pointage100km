@@ -14,8 +14,10 @@ function print_start_time()
         echo "DÉPARTS DES COURSES dans infos.json:"
         echo "  Course du soir  : $cur_date1"
         echo "  Course du matin : $cur_date2"
-        echo
-        echo "Pour changer, $0 --test OU $0 <DAY>"
+        if [ -z $1 ]; then
+          echo
+          echo "Pour changer, $0 --test OU $0 <DAY>"
+        fi
 }
 
 if [ "$1" = "--help" ]
@@ -29,9 +31,9 @@ if no argument is given, display the date in the current infos.json
 EXAMPLE: $0 "9 May 2018"
 EOF
         exit 0
-elif [ -z "$1" ]
+elif [ -z "$1" ] || [ $1 == "--info" ]
 then
-        print_start_time
+        print_start_time $1
         exit 0
 elif [ "$1" = "--test" ]
 then
