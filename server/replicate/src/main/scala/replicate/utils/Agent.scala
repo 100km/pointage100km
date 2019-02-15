@@ -1,9 +1,9 @@
 package replicate.utils
 
-import akka.typed._
-import akka.typed.scaladsl.Actor
-import akka.typed.scaladsl.AskPattern._
-import akka.typed.scaladsl.adapter._
+import akka.actor.typed._
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
 
 import scala.concurrent.Future
@@ -19,7 +19,7 @@ case class Agent[T](initialValue: T) {
   private[this] case class Get(replyTo: ActorRef[T]) extends Command
 
   private[this] def agent(value: T): Behavior[Command] =
-    Actor.immutable[Command] { (ctx, msg) ⇒
+    Behaviors.receive { (ctx, msg) ⇒
       msg match {
         case Alter(f, replyTo) ⇒
           val newValue = f(value)
@@ -27,7 +27,7 @@ case class Agent[T](initialValue: T) {
           agent(newValue)
         case Get(replyTo) ⇒
           replyTo ! value
-          Actor.same
+          Behaviors.same
       }
 
     }
