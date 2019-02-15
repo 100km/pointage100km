@@ -12,7 +12,7 @@ start_couchdb() {
 start_replicate() {
   cd /home/steenwerck
   while true; do
-     gosu steenwerck pointage100km/bin/replicate "$@"
+     gosu steenwerck /usr/local/bin/replicate "$@"
      if [ $? = 0 ]; then
        echo Replicate exited with status 0
        # Let couchdb some time to persist the data in any case
