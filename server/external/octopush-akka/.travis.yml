@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 sudo: false
 scala:
-  - 2.12.2
+  - 2.12.8
 script:
   - sbt clean coverage test coverageReport
 cache:
