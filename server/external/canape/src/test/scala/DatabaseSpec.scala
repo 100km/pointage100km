@@ -516,12 +516,15 @@ class DatabaseSpec extends WithDbSpecification("db") {
       ((waitForResult(db.changes()) \ "results").as[List[JsObject]].head \ "id").as[String] must be equalTo id
     }
 
+    // Disable this test for now
+    /*
     "return the change in long-polling state" in new freshDb {
       val changes = db.changes(Map("feed" → "longpoll"))
       changes.isCompleted must beFalse
       val id = waitForResult(insertedId(db.insert(Json.obj())))
       ((waitForResult(changes) \ "results").as[List[JsObject]].head \ "id").as[String] must be equalTo id
     }
+    */
   }
 
   "db.revs_limit()" should {

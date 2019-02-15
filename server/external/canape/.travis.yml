@@ -1,9 +1,14 @@
 language: scala
+branches:
+  only:
+    - staging
+    - trying
 jdk:
   - oraclejdk8
+  - oraclejdk11
 sudo: false
 scala:
-  - 2.12.2
+  - 2.12.8
 services:
   - docker
 env:
@@ -11,6 +16,7 @@ env:
     - DOCKERIMAGE=rfc1149/couchdb:1.x.x
     - DOCKERIMAGE=klaemo/couchdb:2.0.0
     - DOCKERIMAGE=apache/couchdb:2.1.0
+    - DOCKERIMAGE=apache/couchdb:2.3.0
   global:
     secure: ALtSdAp4wFe55/RY2+XYL8zkpwmxlIUpklbfIVzfvB+8rMMOyRxDnVbQX8DAZEqgTvQpddghOJLbqJTXwfF1MuuSVMsRpa8/iCgl6dB4fCv4YlHaLK0mb96ca0vFV0dUnp+gy9u3tNkuVAWzqlDkPf2lMreYkKlNqiqGELsFOp4=
 before_install:

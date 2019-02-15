@@ -33,8 +33,6 @@ import scala.util.Try
  * @param auth an optional (login, password) pair
  * @param secure use HTTPS instead of HTTP
  * @param config alternate configuration to use
- * @note HTTPS does not work with virtual servers using SNI with Akka 2.4.2-RC2,
- *       see [[https://github.com/akka/akka/issues/19287#issuecomment-183680774]].
  */
 
 class Couch(

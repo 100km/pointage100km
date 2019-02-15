@@ -256,8 +256,10 @@ case class Database(couch: Couch, databaseName: String) {
   def latestRev(id: String): Future[String] =
     couch.sendRequest(RequestBuilding.Head(encode(id))).map {
       case response if response.status.isSuccess ⇒
+        response.entity.discardBytes()
         response.header[ETag].map(_.value()).get.stripPrefix("\"").stripSuffix("\"")
       case response ⇒
+        response.entity.discardBytes()
         throw new StatusError(response.status)
     }
 
