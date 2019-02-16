@@ -20,7 +20,7 @@ class RankingStateSpec extends Specification {
 
   "RankingState" should {
 
-    val infos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
+    val infos: Infos = Json.parse(getClass.getResourceAsStream("/infos.json")).as[Infos]
     Global.infos = Some(infos)
     (0 to 6).map(SiteId[Int]).foreach(PingState.setLastPing(_, System.currentTimeMillis()))
     RaceUtils.installFullRace(pristine = true)

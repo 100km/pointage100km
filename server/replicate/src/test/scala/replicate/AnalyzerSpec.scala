@@ -12,6 +12,7 @@ import replicate.utils.{Global, Infos}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.io.Source
 import scalaz.@@
 import scalaz.Scalaz._
 
@@ -19,7 +20,7 @@ class AnalyzerSpec extends Specification with ResultMatchers {
 
   sequential
 
-  private val infos: Infos = Json.parse(classOf[ClassLoader].getResourceAsStream("/infos.json")).as[Infos]
+  private val infos: Infos = Json.parse(getClass.getResourceAsStream("/infos.json")).as[Infos]
   Global.infos = Some(infos)
   (0 to 6).map(SiteId[Int]).foreach(PingState.setLastPing(_, System.currentTimeMillis()))
   RaceUtils.installFullRace(pristine = false)
