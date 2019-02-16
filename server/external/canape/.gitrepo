@@ -6,8 +6,8 @@
 [subrepo]
 	remote = git@github.com:samueltardieu/canape
 	branch = master
-	commit = fe50d877152e57fc4b2e2ed93fea265f6442f2c2
-	parent = 6d82e4ebcb570ec62894dfb5bc142a1b8e702a61
+	commit = 5f2798ee76a00f1adabb0718fe94efeb9bbb755f
+	parent = 3e21a20cc06eec2532d14c9e43023e9840922acc
 	cmdver = 0.4.1
 	method = merge
 	update = auto
