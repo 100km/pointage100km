@@ -74,7 +74,7 @@ class StreamUtilsSpec extends Specification {
     "let a single element go through" in new WithActorSystem {
       val (upstream, downstream) = probes()
       upstream.sendNext("foobar").sendComplete()
-      downstream.request(2).expectNoMsg(50.milliseconds).expectNext("foobar").expectComplete()
+      downstream.request(2).expectNoMessage(50.milliseconds).expectNext("foobar").expectComplete()
     }
 
     "propagate errors immediately" in new WithActorSystem {
@@ -87,13 +87,13 @@ class StreamUtilsSpec extends Specification {
     "let elements flow through in order if keys are distincts" in new WithActorSystem {
       val (upstream, downstream) = probes()
       upstream.sendNext("foo").sendNext("bar").sendNext("xyzzy").sendComplete()
-      downstream.request(4).expectNoMsg(50.milliseconds).expectNext("foo", "bar", "xyzzy").expectComplete()
+      downstream.request(4).expectNoMessage(50.milliseconds).expectNext("foo", "bar", "xyzzy").expectComplete()
     }
 
     "replace elements with the same key" in new WithActorSystem {
       val (upstream, downstream) = probes()
       upstream.sendNext("foo").sendNext("bar").sendNext("final").sendNext("xyzzy").sendComplete()
-      downstream.request(5).expectNoMsg(50.milliseconds).expectNext("bar", "final", "xyzzy").expectComplete()
+      downstream.request(5).expectNoMessage(50.milliseconds).expectNext("bar", "final", "xyzzy").expectComplete()
     }
 
     "replace elements with the same key if the delay has expired if they have not been pulled downstream" in new WithActorSystem {
@@ -119,7 +119,7 @@ class StreamUtilsSpec extends Specification {
         upstream.sendNext(s)
       upstream.sendComplete()
       downstream.request(20).expectNext("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
-      downstream.expectNoMsg(50.milliseconds).expectNext("k", "l", "m").expectComplete()
+      downstream.expectNoMessage(50.milliseconds).expectNext("k", "l", "m").expectComplete()
     }
   }
 
