@@ -68,11 +68,8 @@ object Wipe extends App {
     hubDatabase.insert(Json.obj("dbname" → newName, "tests_allowed" → false,
       "created" → (System.currentTimeMillis() / 1000).toInt), "configuration").execute()
     println("Generating random identification for couchsync")
-    val key = new Array[Byte](256)
-    scala.util.Random.nextBytes(key)
-    val md = java.security.MessageDigest.getInstance("SHA-1")
-    val ha = new sun.misc.BASE64Encoder().encode(md.digest(key))
-    hubDatabase.insert(Json.obj("key" → ha), "couchsync").execute()
+    val key = scala.util.Random.alphanumeric.take(64).mkString
+    hubDatabase.insert(Json.obj("key" → key), "couchsync").execute()
     for (extraDoc ← cfgDatabase.allDocs(Map("include_docs" → "true")).execute().docs[JsObject]) {
       val id = (extraDoc \ "_id").as[String]
       if (id != "configuration" && !id.startsWith("_")) {
