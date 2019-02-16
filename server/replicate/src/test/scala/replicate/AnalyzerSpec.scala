@@ -12,7 +12,6 @@ import replicate.utils.{Global, Infos}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.io.Source
 import scalaz.@@
 import scalaz.Scalaz._
 
