@@ -259,8 +259,10 @@ function cat_from_year(year) {
     return 9; // master 2
   else if (age <= 69)
     return 10; // master 3
-  else
+  else if (age <= 79)
     return 11; // master 4
+  else
+    return 12; // master 5
 }
 
 
