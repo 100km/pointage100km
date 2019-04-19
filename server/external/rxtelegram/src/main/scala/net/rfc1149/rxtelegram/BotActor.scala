@@ -5,7 +5,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Stash}
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
 import akka.stream.{ActorMaterializer, Materializer}
-import net.rfc1149.rxtelegram.Bot.{ActionAnswerInlineQuery, Command}
+import net.rfc1149.rxtelegram.Bot.{ActionAnswerInlineQuery, ActionDeleteMessage, Command, RedirectedCommand}
 import net.rfc1149.rxtelegram.model._
 import net.rfc1149.rxtelegram.model.media.Media
 
@@ -97,8 +97,20 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
     case data: ActionAnswerInlineQuery ⇒
       attemptSend(() ⇒ send(data), sender())
 
+    case data: ActionDeleteMessage ⇒
+      attemptSend(() ⇒ sendTo[Boolean](data), sender())
+
     case data: Command ⇒
-      attemptSend(() ⇒ sendToMessage(data), sender())
+      attemptSend(() ⇒ sendTo[Message](data), sender())
+
+    case RedirectedCommand(data: ActionAnswerInlineQuery, target) ⇒
+      attemptSend(() ⇒ send(data), target)
+
+    case RedirectedCommand(data: ActionDeleteMessage, target) ⇒
+      attemptSend(() ⇒ sendTo[Boolean](data), target)
+
+    case RedirectedCommand(command, target) ⇒
+      attemptSend(() ⇒ sendTo[Message](command), target)
 
     case Done ⇒
       // End of a serialized operation. Start next one if needed.

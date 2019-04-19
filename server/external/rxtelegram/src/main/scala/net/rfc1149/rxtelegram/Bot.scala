@@ -1,10 +1,10 @@
 package net.rfc1149.rxtelegram
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
-import akka.http.scaladsl.model.{MessageEntity ⇒ MEntity, _}
 import akka.http.scaladsl.model.headers.Accept
+import akka.http.scaladsl.model.{MessageEntity ⇒ MEntity, _}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
@@ -35,7 +35,7 @@ trait Bot {
     potentiallyBlocking: Boolean = false): Future[JsValue] =
     sendInternal(methodName, buildEntity(fields, media), potentiallyBlocking = potentiallyBlocking)
 
-  def sendToMessage(data: Command): Future[Message] = send(data).map(_.as[Message])
+  def sendTo[T: Reads](data: Command): Future[T] = send(data).map(_.as[T])
 
   def send(data: Command): Future[JsValue] = {
     sendInternal(data.methodName, data.buildEntity(includeMethod = false)).map(checkResult)
@@ -188,9 +188,12 @@ object Bot extends PlayJsonSupport {
 
   case class InlineMessageId(inlineMessageId: String) extends Target(inlineMessageId = Some(inlineMessageId))
 
+  case class RedirectedCommand(command: Command, sendResponseTo: ActorRef)
+
   sealed trait Command {
     def buildEntity(includeMethod: Boolean): MEntity
     val methodName: String
+    def redirectResponseTo(actorRef: ActorRef): RedirectedCommand = RedirectedCommand(this, actorRef)
   }
 
   sealed trait Action extends Command {
@@ -237,6 +240,12 @@ object Bot extends PlayJsonSupport {
     val methodName = "sendMessage"
     val fields = text.toField("text") ++ disable_web_page_preview.toField("disable_web_page_preview", false) ++
       parse_mode.option.toField("parse_mode")
+  }
+
+  case class ActionDeleteMessage(message_id: Long) extends Action {
+    val methodName = "deleteMessage"
+    val replyMarkup = None
+    val fields = message_id.toField("message_id")
   }
 
   case class ActionPhoto(photo: Media, caption: Option[String] = None, replyMarkup: Option[ReplyMarkup] = None) extends Action {
