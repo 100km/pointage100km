@@ -158,7 +158,7 @@ class Couch(
    * @throws CouchError if an error occurs
    */
   def makeRawPostRequest(query: Uri, data: FormData): Future[HttpResponse] = {
-    val payload = HttpEntity(ContentType(MediaTypes.`application/x-www-form-urlencoded`, HttpCharsets.`UTF-8`), data.fields.toString())
+    val payload = HttpEntity(ContentType(MediaTypes.`application/x-www-form-urlencoded`), data.fields.toString())
     Post(query, payload).flatMap(sendRequest)
   }
 

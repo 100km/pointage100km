@@ -7,14 +7,13 @@ import sbtassembly.AssemblyPlugin.defaultShellScript
 import scalariform.formatter.preferences._
 
 lazy val akka =
-  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.21",
-    "com.typesafe.akka" %% "akka-actor-typed" % "2.5.21",
-    "com.typesafe.akka" %% "akka-slf4j" % "2.5.21",
-    "com.typesafe.akka" %% "akka-agent" % "2.5.21",
-    "com.typesafe.akka" %% "akka-stream" % "2.5.21",
-    "com.typesafe.akka" %% "akka-stream-typed" % "2.5.21",
-    "com.typesafe.akka" %% "akka-http-core" % "10.1.7",
-    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.21" % "test",
+  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.22",
+    "com.typesafe.akka" %% "akka-actor-typed" % "2.5.22",
+    "com.typesafe.akka" %% "akka-slf4j" % "2.5.22",
+    "com.typesafe.akka" %% "akka-stream" % "2.5.22",
+    "com.typesafe.akka" %% "akka-stream-typed" % "2.5.22",
+    "com.typesafe.akka" %% "akka-http-core" % "10.1.8",
+    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.22" % "test",
     "com.iheart" %% "ficus" % "1.4.4",
     "ch.qos.logback" % "logback-classic" % "1.2.3"))
 
