@@ -1,14 +1,16 @@
 package replicate.messaging.sms
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.typed.Behavior
+import akka.actor.typed.scaladsl.Behaviors
 
-class FakeSMS extends Actor with ActorLogging {
+object FakeSMS {
 
-  override def preStart = log.info("fake SMS service starting")
-
-  def receive = {
-    case (recipient: String, message: String) ⇒
-      log.info("sending fake SMS to {}: {}", recipient, message)
+  val fakeSMS: Behavior[SMSMessage] = Behaviors.setup { context ⇒
+    context.log.info("fake SMS service starting")
+    Behaviors.receiveMessagePartial {
+      case SMSMessage(recipient, message) ⇒
+        context.log.info("sending fake SMS to {}: {}", recipient, message)
+        Behaviors.same
+    }
   }
-
 }

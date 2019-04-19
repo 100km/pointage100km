@@ -5,7 +5,7 @@ import replicate.utils.Types._
 
 import scalaz.@@
 
-case class Contestant(first_name: String, name: String, bib: Int @@ ContestantId, race: Int @@ RaceId, stalkers: List[String]) {
+case class Contestant(first_name: String, name: String, bib: Int @@ ContestantId, race: Int @@ RaceId, stalkers: List[String @@ PhoneNumber]) {
   def full_name = s"$first_name $name"
   def full_name_and_bib = s"$full_name ($bib)"
   def contestantId = bib

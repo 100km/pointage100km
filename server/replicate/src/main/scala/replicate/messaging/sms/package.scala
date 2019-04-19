@@ -2,11 +2,13 @@ package replicate.messaging
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.typed.Logger
 import replicate.alerts.Alerts
 import replicate.messaging
 import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.utils.Types.PhoneNumber
 import replicate.utils.{FormatUtils, Glyphs}
+import scalaz.@@
 
 package object sms {
 
@@ -22,9 +24,11 @@ package object sms {
       (Ok, 0)
   }
 
-  private[sms] trait BalanceTracker extends Actor with ActorLogging {
+  private[sms] trait BalanceTracker {
 
+    val log: Logger
     val messageTitle: String
+
     private[this] var currentStatus: Status = null
     private[this] var latestAlert: Option[UUID] = None
 
@@ -54,7 +58,9 @@ package object sms {
 
   }
 
-  case class Balance(balance: Double)
-  case class BalanceError(failure: Throwable) extends Exception(failure)
+  private[sms] trait SMSProtocol
+  case class SMSMessage(recipient: String @@ PhoneNumber, text: String) extends SMSProtocol
+  case class Balance(balance: Double) extends SMSProtocol
+  case class BalanceError(failure: Throwable) extends Exception(failure) with SMSProtocol
 
 }

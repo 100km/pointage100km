@@ -18,6 +18,9 @@ object Types {
   sealed trait SiteId
   val SiteId = Tag.of[SiteId]
 
+  sealed trait PhoneNumber
+  val PhoneNumber = Tag.of[PhoneNumber]
+
   // Tagged instances are read and written without their tag
   implicit def taggedReads[A: Reads, T]: Reads[A @@ T] = Reads { js ⇒ js.validate[A].map(Tag.of[T](_)) }
   implicit def taggedWrites[A: Writes, T]: Writes[A @@ T] = Writes { a ⇒ implicitly[Writes[A]].writes(Tag.of[T].unwrap(a)) }

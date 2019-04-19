@@ -1,14 +1,14 @@
 package replicate.messaging.sms
 
 import akka.NotUsed
-import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.typed.Behavior
+import akka.actor.typed.scaladsl.adapter._
+import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.{FormData, HttpResponse, MediaTypes, Uri}
-import akka.pattern.pipe
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import net.rfc1149.canape.Couch
@@ -17,25 +17,29 @@ import play.api.libs.json.{JsObject, JsPath, Reads}
 import replicate.alerts.Alerts
 import replicate.messaging.Message
 import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.utils.Types.PhoneNumber
 import replicate.utils.{FormatUtils, Glyphs, Networks}
+import scalaz.@@
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Actor with ActorLogging with BalanceTracker {
+class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: String, apiSecret: String) extends AbstractBehavior[SMSProtocol] with BalanceTracker {
 
   import NexmoSMS.{Message ⇒ _, _}
 
-  private[this] implicit val system = context.system
-  private[this] implicit val executionContext = system.dispatcher
-  private[this] implicit val materializer = ActorMaterializer.create(context)
+  private[this] implicit val system = context.system.toUntyped
+  private[this] implicit val executionContext = context.executionContext
+  private[this] implicit val materializer = ActorMaterializer()(context.toUntyped)
   val messageTitle = "Nexmo"
+  val log = context.log
 
   private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
 
-  private[this] def sendSMS(recipient: String, message: String): Future[HttpResponse] = {
+  private[this] def sendSMS(recipient: String @@ PhoneNumber, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(
       SMSEndpoint,
-      FormData("from" → senderId, "to" → recipient.stripPrefix("+"),
+      FormData("from" → senderId, "to" → PhoneNumber.unwrap(recipient).stripPrefix("+"),
         "text" → message, "api_key" → apiKey, "api_secret" → apiSecret)).addHeader(Accept(MediaTypes.`application/json`))
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
@@ -45,22 +49,23 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
     Source.single((RequestBuilding.Get(uri), NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
 
-  override def preStart =
-    log.debug("NexmoSMS service started")
+  log.debug("NexmoSMS service started")
   checkBalance().flatMap(Couch.checkResponse[JsObject]).map(js ⇒ (js \ "value").as[Double])
     .transform(Balance, BalanceError)
-    .pipeTo(self)
+    .foreach(context.self ! _)
 
-  def receive = {
-    case (recipient: String, message: String) ⇒
-      sendSMS(recipient, message).flatMap(Couch.checkResponse[Response])
-        .transform(DeliveryReport(recipient, message, _), DeliveryError(recipient, message, _))
-        .pipeTo(self)
+  override def onMessage(msg: SMSProtocol) = msg match {
+    case SMSMessage(recipient, message) ⇒
+      sendSMS(recipient, message).flatMap(Couch.checkResponse[Response]).onComplete {
+        case Success(response) ⇒ context.self ! DeliveryReport(recipient, message, response)
+        case Failure(e)        ⇒ context.self ! DeliveryError(recipient, message, e)
+      }
+      Behavior.same
 
     case DeliveryReport(recipient, text, response) ⇒
       val parts = response.messageCount
       if (parts == 0)
-        log.error("no message in response")
+        context.log.error("no message in response")
       else {
         var remaining = Double.MaxValue
         for ((message, idx) ← response.messages.zipWithIndex) {
@@ -83,15 +88,19 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
         if (remaining != Double.MaxValue)
           trackBalance(remaining)
       }
+      Behavior.same
 
-    case Failure(DeliveryError(recipient, text, t)) ⇒
-      log.error(t, "Error when sending SMS to {} through Nexmo: {}", recipient, text)
+    case DeliveryError(recipient, text, t) ⇒
+      context.log.error(t, "Error when sending SMS to {} through Nexmo: {}", recipient, text)
+      Behavior.same
 
     case Balance(balance) ⇒
       trackBalance(balance)
+      Behavior.same
 
-    case Failure(BalanceError(failure)) ⇒
+    case BalanceError(failure) ⇒
       balanceError(failure)
+      Behavior.same
   }
 
 }
@@ -120,10 +129,14 @@ object NexmoSMS {
   private implicit val responseReads: Reads[Response] =
     ((JsPath \ "message-count").read[String] and (JsPath \ "messages").read[List[Message]])(Response.apply _)
 
-  private case class DeliveryReport(recipient: String, text: String, response: Response)
-  private case class DeliveryError(recipient: String, text: String, throwable: Throwable) extends Exception
+  private case class DeliveryReport(recipient: String @@ PhoneNumber, text: String, response: Response) extends SMSProtocol
+  private case class DeliveryError(recipient: String @@ PhoneNumber, text: String, throwable: Throwable) extends SMSProtocol
 
   private val SMSEndpoint = "/sms/json"
   private val accountEndpoint = "/account/"
+
+  def nexmoSMS(senderId: String, apiKey: String, apiSecret: String): Behavior[SMSMessage] = Behaviors.setup[SMSProtocol] { context ⇒
+    new NexmoSMS(context, senderId, apiKey, apiSecret)
+  }.narrow
 
 }

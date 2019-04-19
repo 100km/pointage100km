@@ -9,8 +9,8 @@ import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
 import replicate.alerts.Alerts
 import replicate.messaging
-import replicate.messaging.Message
 import replicate.messaging.Message.{Severity, TextMessage}
+import replicate.messaging.sms.SMSMessage
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.state.ContestantState
 import replicate.utils.Types._
@@ -55,7 +55,7 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
               stalkingInfo += analysis.contestantId → point.distance
               val message = s"${contestant.full_name_and_bib} : passage à ${FormatUtils.formatDate(point.timestamp, withSeconds = true)} " +
                 s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, $distanceStr)"""
-              contestant.stalkers.foreach(textService ! (_, message))
+              contestant.stalkers.foreach(textService ! SMSMessage(_, message))
               database.insert(Json.obj("type" → "sms", "bib" → contestantId, "distance" → point.distance,
                 "timestamp" → System.currentTimeMillis(), "recipients" → contestant.stalkers,
                 "message" → message, "_id" → s"sms-$contestantId-${point.distance}"))
