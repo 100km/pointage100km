@@ -1,21 +1,27 @@
 package replicate.messaging.alerts
 
-import akka.actor.Actor
+import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
+import akka.actor.{ActorRef ⇒ UntypedActorRef}
 import replicate.messaging.Message
 import replicate.utils.Global
 
 import scala.concurrent.Future
+import scala.util.Try
 
-trait Messaging { this: Actor ⇒
+abstract class Messaging(context: ActorContext[Messaging.Protocol]) extends AbstractBehavior[Messaging.Protocol] {
+
+  import Messaging._
 
   implicit val dispatcher = Global.dispatcher
 
-  override val receive: Receive = {
-    case ('deliver, message: Message, token) ⇒
-      val s = sender()
-      sendMessage(message).onComplete(r ⇒ s ! ('deliveryReceipt, r, token))
-    case ('cancel, cancellationId: String) ⇒
+  override def onMessage(msg: Protocol) = msg match {
+    case Deliver(message, token, respondTo) ⇒
+      sendMessage(message).onComplete(r ⇒ respondTo ! DeliveryReceipt(r, token, context.self))
+      Behaviors.same
+    case Cancel(cancellationId) ⇒
       cancelMessage(cancellationId)
+      Behaviors.same
   }
 
   /**
@@ -36,4 +42,13 @@ trait Messaging { this: Actor ⇒
   def cancelMessage(identifier: String): Future[Boolean] =
     sys.error("Current backend does not support message cancellation")
 
+}
+
+object Messaging {
+
+  sealed trait Protocol
+  private[alerts] case class Deliver(message: Message, token: String, respondTo: UntypedActorRef) extends Protocol
+  private[alerts] case class Cancel(cancellationId: String) extends Protocol
+
+  private[alerts] case class DeliveryReceipt(result: Try[Option[String]], token: String, deliveredBy: ActorRef[Protocol])
 }

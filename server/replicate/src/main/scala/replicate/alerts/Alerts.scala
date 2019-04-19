@@ -2,7 +2,8 @@ package replicate.alerts
 
 import java.util.UUID
 
-import akka.actor._
+import akka.actor.{Actor, ActorLogging, PoisonPill, Props, ActorRef ⇒ UntypedActorRef}
+import akka.actor.typed.ActorRef
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
@@ -11,7 +12,7 @@ import play.api.libs.json.Json
 import replicate.messaging
 import replicate.messaging.Message.{Administrativia, Severity}
 import replicate.messaging._
-import replicate.messaging.alerts.AlertSender
+import replicate.messaging.alerts.{AlertSender, Messaging}
 import replicate.utils.{Global, Glyphs}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,14 +29,14 @@ class Alerts(database: Database) extends Actor with ActorLogging {
    * Cache for alerts whose delivery actor is still alive and may be able to stop the diffusion
    * immediately.
    */
-  private[this] var deliveryInProgress: Map[UUID, ActorRef] = Map()
+  private[this] var deliveryInProgress: Map[UUID, UntypedActorRef] = Map()
 
-  lazy private[this] val officers: Map[String, ActorRef] =
+  lazy private[this] val officers: Map[String, ActorRef[Messaging.Protocol]] =
     Global.replicateConfig.as[Map[String, Config]]("officers").collect {
       case (officerId, config) if !config.as[Option[Boolean]]("disabled").contains(true) ⇒ (officerId, startOfficerActor(officerId, config))
     }
 
-  private[this] def startOfficerActor(officerId: String, config: Config): ActorRef = {
+  private[this] def startOfficerActor(officerId: String, config: Config): ActorRef[Messaging.Protocol] = {
     val actorRef = alerts.startFromConfig(officerId, config)
     log.debug("started actor for {}", officerId)
     actorRef

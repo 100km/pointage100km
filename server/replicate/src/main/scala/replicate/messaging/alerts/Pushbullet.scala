@@ -1,7 +1,7 @@
 package replicate.messaging.alerts
 
 import akka.NotUsed
-import akka.actor.Actor
+import akka.actor.typed.scaladsl.ActorContext
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers._
@@ -11,11 +11,12 @@ import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.canape.Couch
 import play.api.libs.json.{JsObject, Json}
 import replicate.messaging.Message
+import replicate.messaging.alerts.Messaging.Protocol
 import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class Pushbullet(bearerToken: String) extends Actor with Messaging {
+class Pushbullet(context: ActorContext[Protocol], bearerToken: String) extends Messaging(context) {
 
   import Pushbullet._
 

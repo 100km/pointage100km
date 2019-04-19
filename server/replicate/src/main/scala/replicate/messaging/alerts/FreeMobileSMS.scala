@@ -1,18 +1,19 @@
 package replicate.messaging.alerts
 
 import akka.NotUsed
-import akka.actor.Actor
+import akka.actor.typed.scaladsl.ActorContext
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.stream.scaladsl.{Sink, Source}
 import net.rfc1149.canape.Couch
 import replicate.messaging.Message
+import replicate.messaging.alerts.Messaging.Protocol
 import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class FreeMobileSMS(user: String, password: String) extends Actor with Messaging {
+class FreeMobileSMS(context: ActorContext[Protocol], user: String, password: String) extends Messaging(context) {
 
   import Global._
 
@@ -23,7 +24,7 @@ class FreeMobileSMS(user: String, password: String) extends Actor with Messaging
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get match {
       case r if r.status.isSuccess() ⇒ None
       case r                         ⇒ throw new Couch.StatusError(r.status)
-    })(context.system.dispatcher)
+    })(context.executionContext)
   }
 
 }

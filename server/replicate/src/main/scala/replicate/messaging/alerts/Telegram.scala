@@ -1,15 +1,17 @@
 package replicate.messaging.alerts
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.typed.scaladsl.ActorContext
+import akka.actor.{ActorLogging, Props}
 import akka.http.scaladsl.util.FastFuture
 import net.rfc1149.rxtelegram.Bot.{ActionMessage, ParseModeMarkdown, Targetted, To}
 import net.rfc1149.rxtelegram.{BotActor, Options, model}
 import replicate.messaging.Message
+import replicate.messaging.alerts.Messaging.Protocol
 import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class Telegram(id: String) extends Actor with ActorLogging with Messaging {
+class Telegram(context: ActorContext[Protocol], id: String) extends Messaging(context) {
 
   override def sendMessage(message: Message): Future[Option[String]] = {
     val mdUrl = message.url.fold("")(uri ⇒ s" [(link)]($uri)")
