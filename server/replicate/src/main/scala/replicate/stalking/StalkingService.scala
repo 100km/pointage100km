@@ -2,26 +2,24 @@ package replicate.stalking
 
 import akka.NotUsed
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorRefFactory, Props, Stash, Terminated}
+import akka.actor.typed.ActorRef
+import akka.actor.{Actor, ActorLogging, ActorRefFactory, Props, Stash}
 import akka.pattern.pipe
 import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
-import replicate.alerts.Alerts
-import replicate.messaging
-import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.messaging.sms.SMSMessage
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.state.ContestantState
 import replicate.utils.Types._
-import replicate.utils.{FormatUtils, Global, Glyphs}
+import replicate.utils.{FormatUtils, Global}
 import scalaz.@@
 
 /**
  * This class will keep the list of stalkers for every contestant up-to-date, and will also maintain
  * the information on the last status for which a text message has been sent for a contestant.
  */
-class StalkingService(database: Database, textService: ActorRef) extends Actor with Stash with ActorLogging {
+class StalkingService(database: Database, textService: ActorRef[SMSMessage]) extends Actor with Stash with ActorLogging {
 
   import StalkingService._
   import context.dispatcher
@@ -30,7 +28,6 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
   private[this] var stalkingInfo: Map[Int @@ ContestantId, Double] = Map()
 
   override def preStart = {
-    context.watch(textService)
     context.become(receiveInitial)
     database.view[Int @@ ContestantId, JsObject]("replicate", "sms-distance", List("group" → "true")).map(_.map {
       case (k, v) ⇒ (k, (v \ "max").as[Double])
@@ -107,12 +104,6 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
       log.error(throwable, "stream terminating on error")
       context.stop(self)
 
-    case Terminated(`textService`) ⇒
-      Alerts.sendAlert(messaging.Message(TextMessage, Severity.Critical, "No stalker service",
-        "Text service actor has terminated, stalker service will not run", icon = Some(Glyphs.telephoneReceiver)))
-      log.error("No text service is available, stopping StalkingService actor")
-      context.stop(self)
-
     case other ⇒
       log.warning(s"Received $other")
   }
@@ -128,7 +119,7 @@ object StalkingService {
   private case object OnInit
   private case object OnComplete
 
-  def stalkingServiceSink(database: Database, textService: ActorRef)(implicit context: ActorRefFactory): Sink[ContestantAnalysis, NotUsed] = {
+  def stalkingServiceSink(database: Database, textService: ActorRef[SMSMessage])(implicit context: ActorRefFactory): Sink[ContestantAnalysis, NotUsed] = {
     val actorRef = context.actorOf(Props(new StalkingService(database, textService)), "stalking")
     Sink.actorRefWithAck[ContestantAnalysis](actorRef, OnInit, Ack, OnComplete)
   }

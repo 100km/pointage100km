@@ -234,11 +234,15 @@ class Replicate(options: Options.Config) extends LoggingError {
 
       // If we have activated the stalking service, build a sink for it, or ignore
       val stalkingSink = if (options.stalking) {
-        val textService = system.actorOf(Props(new TextService), "text-service")
-        // Include initial data as we may have missed some text messages to send while we were out.
-        Flow[(ContestantAnalysis, Boolean)].map(_._1)
-          .via(Global.TextMessages.ifAnalysisUnchanged)
-          .to(StalkingService.stalkingServiceSink(localDatabase, textService))
+        TextService.startTextService(system) match {
+          case Some(textService) ⇒
+            Flow[(ContestantAnalysis, Boolean)].map(_._1)
+              .via(Global.TextMessages.ifAnalysisUnchanged)
+              .to(StalkingService.stalkingServiceSink(localDatabase, textService))
+          case None ⇒
+            log.info("Not starting stalking service because no text service is configured")
+            Sink.ignore
+        }
       } else
         Sink.ignore
 
