@@ -1,6 +1,7 @@
-package replicate.messaging
+package replicate.messaging.alerts
 
 import akka.actor.Actor
+import replicate.messaging.Message
 import replicate.utils.Global
 
 import scala.concurrent.Future
@@ -36,4 +37,3 @@ trait Messaging { this: Actor ⇒
     sys.error("Current backend does not support message cancellation")
 
 }
-

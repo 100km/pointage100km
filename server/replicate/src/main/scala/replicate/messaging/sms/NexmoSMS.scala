@@ -15,15 +15,15 @@ import net.rfc1149.canape.Couch
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Reads}
 import replicate.alerts.Alerts
+import replicate.messaging.Message
 import replicate.messaging.Message.{Severity, TextMessage}
-import replicate.messaging.{Message ⇒ Msg}
 import replicate.utils.{FormatUtils, Glyphs, Networks}
 
 import scala.concurrent.Future
 
 class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Actor with ActorLogging with BalanceTracker {
 
-  import NexmoSMS._
+  import NexmoSMS.{Message ⇒ _, _}
 
   private[this] implicit val system = context.system
   private[this] implicit val executionContext = system.dispatcher
@@ -68,15 +68,15 @@ class NexmoSMS(senderId: String, apiKey: String, apiSecret: String) extends Acto
             val network = message.network.flatMap(Networks.byMCCMNC.get).fold("unknown network")(op ⇒ s"${op.network} (${op.country})")
             val cost = message.messagePrice.fold("an unknown cost")(FormatUtils.formatEuros)
             val dst = message.to.fold("unknown recipient")('+' + _)
-            val msg = Msg(TextMessage, Severity.Debug, s"Text message delivered to $dst (${idx + 1}/$parts)",
+            val msg = Message(TextMessage, Severity.Debug, s"Text message delivered to $dst (${idx + 1}/$parts)",
               s"Delivered through $network for $cost", icon = Some(Glyphs.telephoneReceiver))
             Alerts.sendAlert(msg)
             message.remainingBalance.foreach(b ⇒ remaining = remaining.min(b))
           } else {
             val errorMessage = message.errorText.fold(s"${message.status}")(explanation ⇒ s"${message.status}: $explanation")
-            val msg = Msg(TextMessage, Severity.Error, s"Error when delivering text message to $recipient",
+            val msg = Message(TextMessage, Severity.Error, s"Error when delivering text message to $recipient",
               s"$errorMessage (message was: $text)",
-                          icon = Some(Glyphs.telephoneReceiver))
+                              icon = Some(Glyphs.telephoneReceiver))
             Alerts.sendAlert(msg)
           }
         }

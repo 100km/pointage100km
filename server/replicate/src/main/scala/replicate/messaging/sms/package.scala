@@ -4,6 +4,7 @@ import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging}
 import replicate.alerts.Alerts
+import replicate.messaging
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.utils.{FormatUtils, Glyphs}
 
@@ -48,7 +49,7 @@ package object sms {
     def balanceError(failure: Throwable) = {
       log.error(failure, "Unable to get balance for {}", messageTitle)
       latestAlert.foreach(Alerts.cancelAlert)
-      latestAlert = Some(Alerts.sendAlert(Message(TextMessage, Severity.Critical, messageTitle, s"Unable to get balance", icon = icon)))
+      latestAlert = Some(Alerts.sendAlert(messaging.Message(TextMessage, Severity.Critical, messageTitle, s"Unable to get balance", icon = icon)))
     }
 
   }

@@ -6,8 +6,8 @@ import akka.pattern.pipe
 import net.rfc1149.octopush.Octopush
 import net.rfc1149.octopush.Octopush.{PremiumFrance, SMS, SMSResult, WWW}
 import replicate.alerts.Alerts
+import replicate.messaging
 import replicate.messaging.Message.{Severity, TextMessage}
-import replicate.messaging._
 import replicate.utils.{FormatUtils, Glyphs}
 
 class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) extends Actor with ActorLogging with BalanceTracker {
@@ -44,7 +44,7 @@ class OctopushSMS(userLogin: String, apiKey: String, sender: Option[String]) ext
 
     case Failure(SendError(sms, failure)) ⇒
       log.error(failure, "SMS to {} ({}) failed", sms.smsRecipients.head, sms.smsText)
-      Alerts.sendAlert(Message(TextMessage, Severity.Error, s"Unable to send SMS to ${sms.smsRecipients.head}",
+      Alerts.sendAlert(messaging.Message(TextMessage, Severity.Error, s"Unable to send SMS to ${sms.smsRecipients.head}",
         s"${failure.getMessage}", icon = Some(Glyphs.telephoneReceiver)))
 
     case Balance(balance) ⇒

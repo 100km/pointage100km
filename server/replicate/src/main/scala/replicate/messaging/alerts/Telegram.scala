@@ -1,9 +1,10 @@
-package replicate.messaging
+package replicate.messaging.alerts
 
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.http.scaladsl.util.FastFuture
 import net.rfc1149.rxtelegram.Bot.{ActionMessage, ParseModeMarkdown, Targetted, To}
 import net.rfc1149.rxtelegram.{BotActor, Options, model}
+import replicate.messaging.Message
 import replicate.utils.Global
 
 import scala.concurrent.Future

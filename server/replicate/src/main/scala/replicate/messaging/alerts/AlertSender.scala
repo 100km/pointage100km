@@ -1,4 +1,4 @@
-package replicate.messaging
+package replicate.messaging.alerts
 
 import java.util.UUID
 
@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.pattern.pipe
 import net.rfc1149.canape.Database
 import play.api.libs.json._
+import replicate.messaging.Message
 import replicate.utils.Global
 
 import scala.concurrent.Future

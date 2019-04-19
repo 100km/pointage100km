@@ -1,7 +1,8 @@
-package replicate.messaging
+package replicate.messaging.alerts
 
 import akka.actor.{Actor, ActorLogging}
 import akka.http.scaladsl.util.FastFuture
+import replicate.messaging.Message
 import replicate.messaging.Message.Severity
 
 import scala.concurrent.Future

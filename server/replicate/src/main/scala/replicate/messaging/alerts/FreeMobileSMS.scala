@@ -1,4 +1,4 @@
-package replicate.messaging
+package replicate.messaging.alerts
 
 import akka.NotUsed
 import akka.actor.Actor
@@ -7,6 +7,7 @@ import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.stream.scaladsl.{Sink, Source}
 import net.rfc1149.canape.Couch
+import replicate.messaging.Message
 import replicate.utils.Global
 
 import scala.concurrent.Future

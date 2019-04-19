@@ -13,6 +13,7 @@ import akka.stream.typed.scaladsl._
 import akka.{Done, NotUsed}
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
+import replicate.messaging
 import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.state.PingState
@@ -52,8 +53,8 @@ object PingAlert {
 
       def alert(severity: Severity.Severity, message: String, icon: String): Unit = {
         currentNotification.foreach(Alerts.cancelAlert)
-        currentNotification = Some(Alerts.sendAlert(Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
-                                                            url   = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
+        currentNotification = Some(Alerts.sendAlert(messaging.Message(Checkpoint, severity, title = checkpointInfo.name, body = message,
+                                                                      url   = Some(checkpointInfo.coordinates.url), icon = Some(icon))))
       }
 
       def alertDuration(severity: Severity.Severity, duration: FiniteDuration, icon: String): Unit =

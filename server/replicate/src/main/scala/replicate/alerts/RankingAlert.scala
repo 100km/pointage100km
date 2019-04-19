@@ -2,6 +2,7 @@ package replicate.alerts
 
 import akka.stream.scaladsl.{Flow, Keep, Sink}
 import akka.{Done, NotUsed}
+import replicate.messaging
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{RaceInfo, Severity}
@@ -22,8 +23,8 @@ object RankingAlert {
     val raceId = rankingInfo.raceId
     val name = ContestantState.contestantFromId(contestantId).fold(s"Contestant $contestantId")(_.full_name_and_bib)
     val raceName = Global.infos.fold(s"Race $raceId")(_.races_names(RaceId.unwrap(raceId)))
-    Message(RaceInfo, severity, title = rankingInfo.currentRank.fold(raceName)(rank ⇒ s"$raceName rank $rank"),
-            body  = s"$name $message", icon = Some(Glyphs.runner))
+    messaging.Message(RaceInfo, severity, title = rankingInfo.currentRank.fold(raceName)(rank ⇒ s"$raceName rank $rank"),
+                      body  = s"$name $message", icon = Some(Glyphs.runner))
   }
 
   private val rankingInfoToMessage: Flow[RankingInfo, Message, NotUsed] = Flow[RankingInfo].mapConcat { rankingInfo ⇒

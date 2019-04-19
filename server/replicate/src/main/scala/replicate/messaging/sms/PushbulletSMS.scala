@@ -2,7 +2,7 @@ package replicate.messaging.sms
 
 import akka.actor.{Actor, ActorLogging}
 import play.api.libs.json.{JsObject, Json}
-import replicate.messaging.Pushbullet
+import replicate.messaging.alerts.Pushbullet
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}

@@ -5,11 +5,11 @@ import java.util.UUID
 import akka.stream.Materializer
 import net.rfc1149.canape.Database
 import play.api.libs.json._
-import replicate.messaging.Message
+import replicate.messaging
 import replicate.messaging.Message.Severity
+import replicate.messaging.{Message, alerts}
 import replicate.utils.Types._
 import replicate.utils.{Global, Glyphs}
-
 import scalaz.@@
 
 private class BroadcastAlert {
@@ -50,7 +50,7 @@ object BroadcastAlert {
     lazy val toMessage: Message = {
       val title = target.fold("Broadcast message")(siteId ⇒ s"Message for ${Global.infos.get.checkpoints(siteId).name}")
       val icon = if (target.isDefined) Glyphs.telephoneReceiver else Glyphs.publicAddressLoudspeaker
-      Message(Message.Broadcast, Severity.Info, title = title, body = message, url = None, icon = Some(icon))
+      messaging.Message(Message.Broadcast, Severity.Info, title = title, body = message, url = None, icon = Some(icon))
     }
   }
 

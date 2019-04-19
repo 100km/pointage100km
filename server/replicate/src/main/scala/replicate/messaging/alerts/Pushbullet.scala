@@ -1,4 +1,4 @@
-package replicate.messaging
+package replicate.messaging.alerts
 
 import akka.NotUsed
 import akka.actor.Actor
@@ -10,6 +10,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.canape.Couch
 import play.api.libs.json.{JsObject, Json}
+import replicate.messaging.Message
 import replicate.utils.Global
 
 import scala.concurrent.Future

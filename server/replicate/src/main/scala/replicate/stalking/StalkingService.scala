@@ -8,13 +8,13 @@ import akka.stream.scaladsl.Sink
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
 import replicate.alerts.Alerts
+import replicate.messaging
 import replicate.messaging.Message
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 import replicate.state.ContestantState
 import replicate.utils.Types._
 import replicate.utils.{FormatUtils, Global, Glyphs}
-
 import scalaz.@@
 
 /**
@@ -108,7 +108,7 @@ class StalkingService(database: Database, textService: ActorRef) extends Actor w
       context.stop(self)
 
     case Terminated(`textService`) ⇒
-      Alerts.sendAlert(Message(TextMessage, Severity.Critical, "No stalker service",
+      Alerts.sendAlert(messaging.Message(TextMessage, Severity.Critical, "No stalker service",
         "Text service actor has terminated, stalker service will not run", icon = Some(Glyphs.telephoneReceiver)))
       log.error("No text service is available, stopping StalkingService actor")
       context.stop(self)

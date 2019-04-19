@@ -1,10 +1,10 @@
 package replicate.messaging
 
 import akka.http.scaladsl.model.Uri
-import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-import replicate.messaging.Message._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
+import replicate.messaging.Message.{Category, Severity}
 import replicate.utils.Glyphs
 
 case class Message(category: Category, severity: Severity.Severity, title: String, body: String, url: Option[Uri] = None, icon: Option[String] = None) {
