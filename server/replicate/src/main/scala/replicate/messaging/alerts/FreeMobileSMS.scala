@@ -13,13 +13,13 @@ import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class FreeMobileSMS(context: ActorContext[Protocol], user: String, password: String) extends Messaging(context) {
+class FreeMobileSMS(user: String, password: String) extends Messaging {
 
   import Global._
 
   private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("smsapi.free-mobile.fr")
 
-  override def sendMessage(message: Message): Future[Option[String]] = {
+  override def sendMessage(context: ActorContext[Protocol], message: Message): Future[Option[String]] = {
     val request = HttpRequest().withUri(Uri("/sendmsg").withQuery(Query("user" → user, "pass" → password, "msg" → message.toString)))
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get match {
       case r if r.status.isSuccess() ⇒ None

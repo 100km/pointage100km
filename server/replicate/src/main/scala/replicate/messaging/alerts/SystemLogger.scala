@@ -8,9 +8,9 @@ import replicate.messaging.alerts.Messaging.Protocol
 
 import scala.concurrent.Future
 
-class SystemLogger(context: ActorContext[Protocol]) extends Messaging(context) {
+class SystemLogger extends Messaging {
 
-  override def sendMessage(message: Message): Future[Option[String]] = {
+  override def sendMessage(context: ActorContext[Protocol], message: Message): Future[Option[String]] = {
     val strMessage = s"${message.category}/${message.severity.toString.toLowerCase} $message"
     message.severity match {
       case Severity.Debug | Severity.Verbose |

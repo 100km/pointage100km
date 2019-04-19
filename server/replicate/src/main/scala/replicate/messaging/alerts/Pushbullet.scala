@@ -16,19 +16,19 @@ import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class Pushbullet(context: ActorContext[Protocol], bearerToken: String) extends Messaging(context) {
+class Pushbullet(bearerToken: String) extends Messaging {
 
   import Pushbullet._
 
-  override def sendMessage(message: Message): Future[Option[String]] = {
+  override def sendMessage(context: ActorContext[Protocol], message: Message): Future[Option[String]] = {
     val body = message.severityOrMessageIcon.fold("")(_ + ' ') + message.body
     val basePayload = Json.obj("title" → message.titleWithSeverity, "body" → body)
     val payload = basePayload ++ message.url.fold(Json.obj("type" → "note"))(l ⇒ Json.obj("type" → "link", "url" → l.toString))
-    post("/pushes", bearerToken, payload).map(js ⇒ Some((js \ "iden").as[String]))
+    post("/pushes", bearerToken, payload).map(js ⇒ Some((js \ "iden").as[String]))(context.executionContext)
   }
 
-  override def cancelMessage(identifier: String): Future[Boolean] =
-    delete(s"/pushes/$identifier", bearerToken).map(_ ⇒ true)
+  override def cancelMessage(context: ActorContext[Protocol], identifier: String): Future[Boolean] =
+    delete(s"/pushes/$identifier", bearerToken).map(_ ⇒ true)(context.executionContext)
 }
 
 object Pushbullet extends PlayJsonSupport {

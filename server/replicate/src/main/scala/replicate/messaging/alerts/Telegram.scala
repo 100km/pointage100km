@@ -11,9 +11,9 @@ import replicate.utils.Global
 
 import scala.concurrent.Future
 
-class Telegram(context: ActorContext[Protocol], id: String) extends Messaging(context) {
+class Telegram(id: String) extends Messaging {
 
-  override def sendMessage(message: Message): Future[Option[String]] = {
+  override def sendMessage(context: ActorContext[Protocol], message: Message): Future[Option[String]] = {
     val mdUrl = message.url.fold("")(uri ⇒ s" [(link)]($uri)")
     val mdMsg = message.severityOrMessageIcon.fold("")(_ + ' ') + s"*[${message.title}]* ${message.body} $mdUrl"
     Telegram.bot ! Targetted(To(id), ActionMessage(mdMsg, parse_mode = ParseModeMarkdown))
@@ -25,7 +25,7 @@ object Telegram {
 
   private class TelegramBot extends BotActor(Global.replicateConfig.getString("telegram.token"), new Options(Global.replicateConfig)) with ActorLogging {
 
-    override protected[this] def handleMessage(message: model.Message) = {
+    override protected[this] def handleMessage(message: model.Message) {
       message.from.fold(log.info("received unknown message without sender")) { from ⇒
         log.info("received unknown message from {} ({})", from.fullName, from.id)
       }
