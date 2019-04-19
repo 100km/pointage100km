@@ -1,6 +1,6 @@
 package replicate.maintenance
 
-import akka.event.LoggingAdapter
+import akka.actor.typed.Logger
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
 import play.api.libs.json.Reads._
@@ -13,7 +13,7 @@ import scala.util.{Failure, Success}
 
 trait ConflictsSolver {
 
-  val log: LoggingAdapter
+  val log: Logger
 
   private def solveConflicts(db: Database, id: String, revs: List[String]): Future[Seq[JsObject]] =
     getRevs(db, id, revs) flatMap {

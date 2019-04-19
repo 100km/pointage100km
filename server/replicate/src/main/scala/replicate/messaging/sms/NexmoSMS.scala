@@ -9,8 +9,8 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.{FormData, HttpResponse, MediaTypes, Uri}
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.typed.scaladsl.ActorMaterializer
 import net.rfc1149.canape.Couch
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Reads}
@@ -28,13 +28,12 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
 
   import NexmoSMS.{Message ⇒ _, _}
 
-  private[this] implicit val system = context.system.toUntyped
   private[this] implicit val executionContext = context.executionContext
-  private[this] implicit val materializer = ActorMaterializer()(context.toUntyped)
+  private[this] implicit val materializer = ActorMaterializer.boundToActor(context)
   val messageTitle = "Nexmo"
   val log = context.log
 
-  private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
+  private[this] val apiPool = Http()(context.system.toUntyped).cachedHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
 
   private[this] def sendSMS(recipient: String @@ PhoneNumber, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(

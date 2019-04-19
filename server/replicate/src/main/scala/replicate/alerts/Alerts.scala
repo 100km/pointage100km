@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.scaladsl.{Behaviors, StashBuffer}
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.stream.ActorMaterializer
+import akka.stream.typed.scaladsl.ActorMaterializer
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape.Database
@@ -22,7 +22,7 @@ object Alerts {
 
   val alertsBehavior: Behavior[Protocol] = Behaviors.setup[Protocol] { context ⇒
 
-    implicit val materializer = ActorMaterializer()(context.system.toUntyped)
+    implicit val materializer = ActorMaterializer.boundToActor(context)
 
     import Global.dispatcher
 

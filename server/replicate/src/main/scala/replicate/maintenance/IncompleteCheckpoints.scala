@@ -1,6 +1,6 @@
 package replicate.maintenance
 
-import akka.event.LoggingAdapter
+import akka.actor.typed.Logger
 import akka.http.scaladsl.util.FastFuture
 import akka.{Done, NotUsed}
 import net.rfc1149.canape.helpers._
@@ -15,7 +15,7 @@ import scala.util.{Failure, Success}
 
 trait IncompleteCheckpoints {
 
-  val log: LoggingAdapter
+  val log: Logger
 
   def fixIncompleteCheckpoints(db: Database): Future[Done] =
     db.view[String, JsObject]("common", "incomplete-checkpoints").flatMap(Future.traverse(_) {

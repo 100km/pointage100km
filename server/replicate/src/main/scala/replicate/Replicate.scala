@@ -1,6 +1,6 @@
 package replicate
 
-import akka.actor.Props
+import akka.actor.typed.scaladsl.adapter._
 import akka.event.Logging
 import akka.stream.scaladsl.{Broadcast, Flow, Sink}
 import net.rfc1149.canape.Couch.StatusError
@@ -220,7 +220,7 @@ class Replicate(options: Options.Config) extends LoggingError {
       }
 
     if (options.onChanges)
-      system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
+      system.spawn(OnChanges.onChanges(options, localDatabase), "onChanges")
 
     if (options.alerts)
       Alerts.initializeAlertsService(localDatabase)
