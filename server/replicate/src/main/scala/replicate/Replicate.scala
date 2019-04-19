@@ -223,7 +223,7 @@ class Replicate(options: Options.Config) extends LoggingError {
       system.actorOf(Props(new OnChanges(options, localDatabase)), "onChanges")
 
     if (options.alerts)
-      system.actorOf(Props(new Alerts(localDatabase)), "alerts")
+      Alerts.initializeAlertsService(localDatabase)
 
     if (options.mode == Master) {
       // Load the contestant information

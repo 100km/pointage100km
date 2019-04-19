@@ -3,9 +3,7 @@ package replicate.alerts
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import akka.actor.ActorContext
 import akka.actor.typed.scaladsl._
-import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.stream.ClosedShape
 import akka.stream.scaladsl.{Flow, GraphDSL, Partition, RunnableGraph, Sink, Source}
@@ -14,7 +12,6 @@ import akka.{Done, NotUsed}
 import net.rfc1149.canape.Database
 import play.api.libs.json.{JsObject, Json}
 import replicate.messaging
-import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.state.PingState
 import replicate.utils.Global.CheckpointAlerts._
@@ -190,7 +187,7 @@ object PingAlert {
         }
     }
 
-  private def pingAlerts(database: Database)(implicit context: ActorContext): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore) { implicit b ⇒ sink ⇒
+  private def pingAlerts(database: Database)(implicit context: ActorContext[_]): RunnableGraph[Future[Done]] = RunnableGraph.fromGraph(GraphDSL.create(Sink.ignore) { implicit b ⇒ sink ⇒
     import CheckpointWatcher._
     import akka.stream.scaladsl.GraphDSL.Implicits._
 
@@ -214,7 +211,7 @@ object PingAlert {
     ClosedShape
   })
 
-  def runPingAlerts(database: Database)(implicit context: ActorContext) =
-    pingAlerts(database).run()(ActorMaterializer()(context.system.toTyped))
+  def runPingAlerts(database: Database)(implicit context: ActorContext[_]) =
+    pingAlerts(database).run()(ActorMaterializer()(context.system))
 
 }

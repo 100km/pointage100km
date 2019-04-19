@@ -4,7 +4,6 @@ import java.util.UUID
 
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.actor.{ActorRef ⇒ UntypedActorRef}
 import net.rfc1149.canape.Database
 import play.api.libs.json._
 import replicate.messaging.Message
@@ -21,7 +20,7 @@ import scala.util.{Failure, Success, Try}
  * @param uuid the unique ID to use when cancelling the message
  * @param officers the officers to deliver the message to
  */
-class AlertSender(context: ActorContext[AlertSender.Protocol], parent: UntypedActorRef, database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]) extends AbstractBehavior[AlertSender.Protocol] {
+class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[AlertSender.Persisted], database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]) extends AbstractBehavior[AlertSender.Protocol] {
 
   import AlertSender._
   import Global.dispatcher
@@ -110,12 +109,12 @@ class AlertSender(context: ActorContext[AlertSender.Protocol], parent: UntypedAc
         Json.toJson(message).as[JsObject] ++
         JsObject(cancelledTimestamp.map(ts ⇒ ("cancelledTS", JsNumber(ts))).toSeq)
       context.log.debug("writing to database with id {}: {}", uuidToId(uuid), doc)
-      database.insert(doc, uuidToId(uuid)).foreach(_ ⇒ context.self ! Persisted)
+      database.insert(doc, uuidToId(uuid)).foreach(_ ⇒ context.self ! Stored)
       Behaviors.same
 
-    case Persisted ⇒
+    case Stored ⇒
       persisted = true
-      parent ! ('persisted, uuid)
+      parent ! Persisted(uuid, context.self)
       // The document has been persisted. If a cancellation has happened between the write and the persisted phases,
       // we will start a database-based cancellation even though the cancellation ids are available since we need
       // to update the document in the database.
@@ -136,6 +135,9 @@ class AlertSender(context: ActorContext[AlertSender.Protocol], parent: UntypedAc
         cancellationIds = Seq()
       }
       Behaviors.same
+
+    case Stop ⇒
+      Behaviors.stopped
   }
 
 }
@@ -146,7 +148,7 @@ object AlertSender {
 
   private def uuidToId(uuid: UUID): String = s"alert-$uuid"
 
-  def apply(parent: UntypedActorRef, database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]): Behavior[Protocol] =
+  def apply(parent: ActorRef[Persisted], database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]): Behavior[Protocol] =
     Behaviors.setup(context ⇒ new AlertSender(context, parent, database, message, uuid, officers))
 
   /**
@@ -179,7 +181,9 @@ object AlertSender {
   private case class Officers(targetOfficers: Seq[String]) extends Protocol
   private case class DeliveryReceipt(response: Try[Option[String]], officerId: String, deliveredBy: ActorRef[Messaging.Protocol]) extends Protocol
   private case object Write extends Protocol
-  private case object Persisted extends Protocol
+  private case object Stored extends Protocol
   case object Cancel extends Protocol
+  case object Stop extends Protocol
 
+  case class Persisted(uuid: UUID, persistedBy: ActorRef[Protocol])
 }

@@ -2,12 +2,13 @@ package replicate.alerts
 
 import java.util.UUID
 
-import akka.stream.Materializer
+import akka.actor.typed.scaladsl.ActorContext
+import akka.stream.typed.scaladsl._
 import net.rfc1149.canape.Database
 import play.api.libs.json._
 import replicate.messaging
+import replicate.messaging.Message
 import replicate.messaging.Message.Severity
-import replicate.messaging.{Message, alerts}
 import replicate.utils.Types._
 import replicate.utils.{Global, Glyphs}
 import scalaz.@@
@@ -56,10 +57,10 @@ object BroadcastAlert {
 
   implicit val broadcastReads: Reads[Broadcast] = Json.reads[Broadcast]
 
-  def runBroadcastAlerts(database: Database)(implicit materializer: Materializer) = {
+  def runBroadcastAlerts(database: Database)(context: ActorContext[_]) = {
     val broadcaster = new BroadcastAlert
     database.changesSource(Map("filter" → "replicate/messages", "include_docs" → "true"))
-      .runForeach(broadcaster.sendOrCancelBroadcast)
+      .runForeach(broadcaster.sendOrCancelBroadcast)(ActorMaterializer()(context.system))
   }
 
 }
