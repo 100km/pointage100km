@@ -1,25 +1,15 @@
-package replicate
+package replicate.messaging
 
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging}
 import replicate.alerts.Alerts
-import replicate.messaging.Message.Severity.Severity
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.utils.{FormatUtils, Glyphs}
 
-package object messaging {
+package object sms {
 
-  private[messaging] sealed trait Status
-  private[messaging] case object Ok extends Status
-  private[messaging] case object Notice extends Status
-  private[messaging] case object Warning extends Status
-  private[messaging] case object Critical extends Status
-
-  private[messaging] val severities: Map[Status, Severity] =
-    Map(Ok → Severity.Info, Notice → Severity.Info, Warning → Severity.Warning, Critical → Severity.Critical)
-
-  private[messaging] def amountToStatus(amount: Double): (Status, Double) = {
+  private[sms] def amountToStatus(amount: Double): (Status, Double) = {
     import replicate.utils.Global.TextMessages.TopUp._
     if (amount < criticalAmount)
       (Critical, criticalAmount)
@@ -31,7 +21,7 @@ package object messaging {
       (Ok, 0)
   }
 
-  private[messaging] trait BalanceTracker extends Actor with ActorLogging {
+  private[sms] trait BalanceTracker extends Actor with ActorLogging {
 
     val messageTitle: String
     private[this] var currentStatus: Status = null
