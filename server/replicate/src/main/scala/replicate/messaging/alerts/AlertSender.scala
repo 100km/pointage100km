@@ -2,9 +2,9 @@ package replicate.messaging.alerts
 
 import java.util.UUID
 
-import akka.actor.typed.ActorRef
-import akka.actor.{Actor, ActorLogging}
-import akka.pattern.pipe
+import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.{ActorRef ⇒ UntypedActorRef}
 import net.rfc1149.canape.Database
 import play.api.libs.json._
 import replicate.messaging.Message
@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
  * @param uuid the unique ID to use when cancelling the message
  * @param officers the officers to deliver the message to
  */
-class AlertSender(database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]) extends Actor with ActorLogging {
+class AlertSender(context: ActorContext[AlertSender.Protocol], parent: UntypedActorRef, database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]) extends AbstractBehavior[AlertSender.Protocol] {
 
   import AlertSender._
   import Global.dispatcher
@@ -60,34 +60,31 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
 
   private[this] def cancelled = cancelledTimestamp.isDefined
 
-  override def preStart() = {
-    super.preStart()
-    officersFor(database, message) map (('officers, _)) pipeTo self
-  }
+  // Determine officers for this message
+  officersFor(database, message).foreach(officers ⇒ context.self ! Officers(officers))
 
-  override val receive: Receive = {
+  override def onMessage(msg: Protocol) = msg match {
 
     case Officers(targetOfficers) ⇒
-      log.debug("Got targets for {}: {}", message, targetOfficers)
+      context.log.debug("Got targets for {}: {}", message, targetOfficers)
       targets = targetOfficers.intersect(officers.keys.toSeq)
       // Do not send the message if it has been cancelled already
       if (!cancelled) {
         missingConfirmations = targets.size
-        targets.foreach(officerId ⇒ officers(officerId) ! Messaging.Deliver(message, officerId, self))
+        targets.foreach(officerId ⇒ officers(officerId) ! Messaging.Deliver(message, officerId, context.messageAdapter {
+          case Messaging.DeliveryReceipt(response, officerId, deliveredBy) ⇒ DeliveryReceipt(response, officerId, deliveredBy)
+        }))
       }
       if (missingConfirmations == 0)
-        self ! Write
-
-    // Adapter
-    case Messaging.DeliveryReceipt(result, token, deliveredBy) ⇒
-      self ! DeliveryReceipt(result, token, deliveredBy)
+        context.self ! Write
+      Behaviors.same
 
     case DeliveryReceipt(response, officerId, deliveredBy) ⇒
       // Receive delivery information for an officer
-      log.debug("confirmation for {} received ({}): {}", officerId, response, message)
+      context.log.debug("confirmation for {} received ({}): {}", officerId, response, message)
       response match {
         case Failure(t) ⇒
-          log.warning("cannot send to {}: {}", officerId, message)
+          context.log.warning("cannot send to {}: {}", officerId, message)
         case Success(Some(cancellationId)) ⇒
           if (cancelled)
             // Cancel delivery immediately as the message has been cancelled
@@ -100,7 +97,8 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
       }
       missingConfirmations -= 1
       if (missingConfirmations == 0)
-        self ! 'write
+        context.self ! Write
+      Behaviors.same
 
     case Write ⇒
       // The documentation with the delivery and cancellation information can be persisted to the database.
@@ -111,20 +109,22 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
         "targets" → JsArray(targets.map(JsString))) ++
         Json.toJson(message).as[JsObject] ++
         JsObject(cancelledTimestamp.map(ts ⇒ ("cancelledTS", JsNumber(ts))).toSeq)
-      log.debug("writing to database with id {}: {}", uuidToId(uuid), doc)
-      pipe(database.insert(doc, uuidToId(uuid)).map(_ ⇒ 'persisted)) to self
+      context.log.debug("writing to database with id {}: {}", uuidToId(uuid), doc)
+      database.insert(doc, uuidToId(uuid)).foreach(_ ⇒ context.self ! Persisted)
+      Behaviors.same
 
     case Persisted ⇒
       persisted = true
-      context.parent ! ('persisted, uuid)
+      parent ! ('persisted, uuid)
       // The document has been persisted. If a cancellation has happened between the write and the persisted phases,
       // we will start a database-based cancellation even though the cancellation ids are available since we need
       // to update the document in the database.
       if (cancelled && cancellationIds.nonEmpty)
         cancelPersisted(database, officers, uuid)
+      Behaviors.same
 
-    case 'cancel ⇒
-      log.debug("cancelling {}", message)
+    case Cancel ⇒
+      context.log.debug("cancelling {}", message)
       cancelledTimestamp = Some(System.currentTimeMillis())
       if (persisted)
         // The message is persisted already, start a database-based cancellation
@@ -135,6 +135,7 @@ class AlertSender(database: Database, message: Message, uuid: UUID, officers: Ma
         cancellationIds.foreach { case (officerId, cancellationId) ⇒ cancelAlert(officers(officerId), cancellationId) }
         cancellationIds = Seq()
       }
+      Behaviors.same
   }
 
 }
@@ -144,6 +145,9 @@ object AlertSender {
   import Global.system.dispatcher
 
   private def uuidToId(uuid: UUID): String = s"alert-$uuid"
+
+  def apply(parent: UntypedActorRef, database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]): Behavior[Protocol] =
+    Behaviors.setup(context ⇒ new AlertSender(context, parent, database, message, uuid, officers))
 
   /**
    * Cancel an alert based on the information stored in the database.
@@ -176,6 +180,6 @@ object AlertSender {
   private case class DeliveryReceipt(response: Try[Option[String]], officerId: String, deliveredBy: ActorRef[Messaging.Protocol]) extends Protocol
   private case object Write extends Protocol
   private case object Persisted extends Protocol
-  private case object Cancel extends Protocol
+  case object Cancel extends Protocol
 
 }

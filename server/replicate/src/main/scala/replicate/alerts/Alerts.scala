@@ -2,8 +2,9 @@ package replicate.alerts
 
 import java.util.UUID
 
-import akka.actor.{Actor, ActorLogging, PoisonPill, Props, ActorRef ⇒ UntypedActorRef}
 import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.adapter._
+import akka.actor.{Actor, ActorLogging, PoisonPill}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
@@ -29,7 +30,7 @@ class Alerts(database: Database) extends Actor with ActorLogging {
    * Cache for alerts whose delivery actor is still alive and may be able to stop the diffusion
    * immediately.
    */
-  private[this] var deliveryInProgress: Map[UUID, UntypedActorRef] = Map()
+  private[this] var deliveryInProgress: Map[UUID, ActorRef[AlertSender.Protocol]] = Map()
 
   lazy private[this] val officers: Map[String, ActorRef[Messaging.Protocol]] =
     Global.replicateConfig.as[Map[String, Config]]("officers").collect {
@@ -59,14 +60,14 @@ class Alerts(database: Database) extends Actor with ActorLogging {
     case ('message, message: Message, uuid: UUID) ⇒
       // Deliver a new message through a dedicated actor
       log.debug("sending message {} with UUID {}", message, uuid)
-      deliveryInProgress += uuid → context.actorOf(Props(new AlertSender(database, message, uuid, officers)))
+      deliveryInProgress += uuid → context.spawnAnonymous(AlertSender(self, database, message, uuid, officers))
 
     case ('cancel, uuid: UUID) ⇒
       // Cancel a message either through its delivery actor if it is still active, or using stored information
       // in the database otherwise.
       log.debug("cancelling message with UUID {}", uuid)
       if (deliveryInProgress.contains(uuid))
-        deliveryInProgress(uuid) ! 'cancel
+        deliveryInProgress(uuid) ! AlertSender.Cancel
       else
         AlertSender.cancelPersisted(database, officers, uuid)
 

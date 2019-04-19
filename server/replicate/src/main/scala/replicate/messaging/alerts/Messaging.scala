@@ -2,7 +2,6 @@ package replicate.messaging.alerts
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
-import akka.actor.{ActorRef ⇒ UntypedActorRef}
 import replicate.messaging.Message
 import replicate.utils.Global
 
@@ -47,7 +46,7 @@ abstract class Messaging(context: ActorContext[Messaging.Protocol]) extends Abst
 object Messaging {
 
   sealed trait Protocol
-  private[alerts] case class Deliver(message: Message, token: String, respondTo: UntypedActorRef) extends Protocol
+  private[alerts] case class Deliver(message: Message, token: String, respondTo: ActorRef[DeliveryReceipt]) extends Protocol
   private[alerts] case class Cancel(cancellationId: String) extends Protocol
 
   private[alerts] case class DeliveryReceipt(result: Try[Option[String]], token: String, deliveredBy: ActorRef[Protocol])
