@@ -15,7 +15,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scalaz.@@
 
-class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId, originalPoints: Seq[Point]) {
+class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
 
   import Analyzer._
 
@@ -279,7 +279,7 @@ object Analyzer {
 
   def analyze(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId, points: Seq[Point]): ContestantAnalysis = {
     val raceInfo = Global.infos.get.races(raceId)
-    val analyzer = new Analyzer(raceInfo, contestantId, points)
+    val analyzer = new Analyzer(raceInfo, contestantId)
     val result = analyzer.analyze(points)
     result
   }

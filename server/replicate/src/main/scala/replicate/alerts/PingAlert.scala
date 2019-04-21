@@ -19,8 +19,8 @@ import replicate.utils.Types.SiteId
 import replicate.utils._
 import scalaz.@@
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
 
 object PingAlert {
 
@@ -38,7 +38,7 @@ object PingAlert {
   case object Warning extends State
   case object Critical extends State
 
-  def checkpointWatcher(siteId: Int @@ SiteId, database: Database): Behavior[CheckpointWatcher.Protocol] = Behaviors.setup { context ⇒
+  def checkpointWatcher(siteId: Int @@ SiteId): Behavior[CheckpointWatcher.Protocol] = Behaviors.setup { context ⇒
     Behaviors.withTimers { timers ⇒
 
       import CheckpointWatcher._
@@ -155,7 +155,7 @@ object PingAlert {
   /**
    * Return the timestamp corresponding to the last proof of live of a site.
    */
-  private def lastPing(siteId: Int @@ SiteId, database: Database)(implicit ec: ExecutionContext): Future[Option[Long]] =
+  private def lastPing(siteId: Int @@ SiteId, database: Database): Future[Option[Long]] =
     database.view[Int, JsObject]("admin", "alive",
       Seq("startkey" → SiteId.unwrap(siteId).toString, "endkey" → SiteId.unwrap(siteId).toString, "group" → "true")).map { rows ⇒
         rows.headOption.map(row ⇒ (row._2 \ "max").as[Long])
@@ -200,7 +200,7 @@ object PingAlert {
 
     in ~> Flow[JsObject].map(js ⇒ (js \ "doc").as[JsObject]) ~> partition
     for (siteId ← 0 until sites) {
-      val actorRef: ActorRef[Protocol] = context.spawn(checkpointWatcher(SiteId(siteId), database), s"site-$siteId")
+      val actorRef: ActorRef[Protocol] = context.spawn(checkpointWatcher(SiteId(siteId)), s"site-$siteId")
       val sink: Sink[Long, NotUsed] = ActorSink.actorRefWithAck(ref               = actorRef, onCompleteMessage = Complete,
                                                                 onFailureMessage  = Failure.apply, messageAdapter = TimeStamp.apply,
                                                                 onInitMessage     = Initial.apply, ackMessage = Ack)

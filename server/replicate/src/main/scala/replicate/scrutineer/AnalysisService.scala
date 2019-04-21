@@ -7,7 +7,6 @@ import akka.stream.scaladsl.{Flow, Keep, Sink}
 import net.rfc1149.canape.Database
 import replicate.alerts.Alerts
 import replicate.messaging
-import replicate.messaging.Message
 import replicate.messaging.Message.{Checkpoint, Severity}
 import replicate.scrutineer.Analyzer.ContestantAnalysis
 
@@ -15,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object AnalysisService {
 
-  def analysisServiceSink(database: Database)(implicit fm: Materializer, ec: ExecutionContext): Sink[ContestantAnalysis, Future[Done]] =
+  def analysisServiceSink(database: Database)(implicit ec: ExecutionContext): Sink[ContestantAnalysis, Future[Done]] =
     Flow[ContestantAnalysis]
       .mapAsyncUnordered(1) { analysis ⇒
         database.updateBody("replicate", "set-analysis", analysis.id, analysis).map((analysis, _))
