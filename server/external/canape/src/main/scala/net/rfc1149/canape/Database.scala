@@ -38,7 +38,7 @@ case class Database(couch: Couch, databaseName: String) {
 
   def uriFrom(other: Couch): String = if (couch == other) databaseName else uri.toString()
 
-  private def encode(extra: String, properties: Seq[(String, String)] = Seq()): Uri = {
+  private def encode(extra: String, properties: Seq[(String, String)] = Seq.empty): Uri = {
     val components = extra.split('/')
     val base = Uri().withPath(components.foldLeft(localPath)(_ / _))
     if (properties.isEmpty) base else base.withQuery(Query(properties.toMap))
@@ -106,7 +106,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @return a future containing the result
    * @throws CouchError if an error occurs
    */
-  def mapOnly(design: String, name: String, properties: Seq[(String, String)] = Seq()): Future[Result] =
+  def mapOnly(design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[Result] =
     query(s"_design/$design/_view/$name", properties :+ ("reduce" → "false"))
 
   /**
@@ -118,7 +118,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @tparam V the value type
    * @return a future containing a sequence of results
    */
-  def view[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq()): Future[Seq[(K, V)]] =
+  def view[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[Seq[(K, V)]] =
     couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties)).map(result ⇒ (result \ "rows").as[Array[JsValue]] map { row ⇒
       (row \ "key").as[K] → (row \ "value").as[V]
     })
@@ -132,7 +132,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @tparam V the value type
    * @return a future containing the update sequence and a sequence of results
    */
-  def viewWithUpdateSeq[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq()): Future[(UpdateSequence, Seq[(K, V)])] =
+  def viewWithUpdateSeq[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[(UpdateSequence, Vector[(K, V)])] =
     couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties :+ ("update_seq" → "true"))).map(result ⇒
       ((result \ "update_seq").as[UpdateSequence],
         (result \ "rows").as[Array[JsValue]] map (row ⇒ (row \ "key").as[K] → (row \ "value").as[V])))
@@ -147,7 +147,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @param keepBody do not consume the entity body (default is to consume it to prevent stalling the connection)
    * @return a future containing a HTTP response
    */
-  def list(design: String, list: String, view: String, properties: Seq[(String, String)] = Seq(), keepBody: Boolean = false): Future[HttpResponse] =
+  def list(design: String, list: String, view: String, properties: Seq[(String, String)] = Seq.empty, keepBody: Boolean = false): Future[HttpResponse] =
     couch.makeRawGetRequest(encode(s"_design/$design/_list/$list/$view", properties)).map(Couch.maybeConsumeBody(_, keepBody))
 
   /**
@@ -237,12 +237,12 @@ case class Database(couch: Couch, databaseName: String) {
    * @throws CouchError if an error occurs
    */
   def insert(doc: JsObject, id: String = null, batch: Boolean = false, newEdits: Boolean = true): Future[JsValue] = {
-    val batchParams: Seq[(String, String)] = if (batch) Seq(("batch", "ok")) else Seq()
+    val batchParams: Seq[(String, String)] = if (batch) Seq(("batch", "ok")) else Seq.empty
     if (id == null) {
       require(newEdits, "newEdits=false is only supported with an explicit id")
       couch.makePostRequest[JsValue](encode("", batchParams), doc)
     } else {
-      val newEditsParam: Seq[(String, String)] = if (newEdits) Seq() else Seq(("new_edits", "false"))
+      val newEditsParam: Seq[(String, String)] = if (newEdits) Seq.empty else Seq(("new_edits", "false"))
       couch.makePutRequest[JsObject, JsValue](encode(id, batchParams ++ newEditsParam), doc)
     }
   }
@@ -288,7 +288,7 @@ case class Database(couch: Couch, databaseName: String) {
         case Nil ⇒
           FastFuture.successful(Nil)
         case revs@(rev :: Nil) ⇒
-          delete(id, rev).map(_ ⇒ revs).recover { case _ ⇒ Seq() }
+          delete(id, rev).map(_ ⇒ revs).recover { case _ ⇒ Seq.empty }
         case _ ⇒
           bulkDocs(revs.map(rev ⇒ Json.obj("_id" → id, "_rev" → rev, "_deleted" → true)), allOrNothing = allOrNothing)
             .map(revs.zip(_) collect { case (rev, js) if !js.keys.contains("error") ⇒ rev })

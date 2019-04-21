@@ -29,7 +29,7 @@ class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[
    * Transport-dependent ids to use to cancel the message for a given officer. Only unused cancellation ids are
    * stored here, they are removed as soon as they have been used.
    */
-  private[this] var cancellationIds: Seq[(String, String)] = Seq()
+  private[this] var cancellationIds: Seq[(String, String)] = Seq.empty
 
   /**
    * Number of (positive or negative) delivery confirmations still to arrive.
@@ -49,7 +49,7 @@ class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[
   /**
    * Targets of the message, to be saved in the document.
    */
-  private[this] var targets: Seq[String] = Seq()
+  private[this] var targets: Seq[String] = Seq.empty
 
   /**
    * True if the information has been persisted in the database already. From this point on, cancellation
@@ -132,7 +132,7 @@ class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[
         // The message is not yet being written into the database as we are still waiting on confirmations. We will
         // cancel the already sent deliveries, others will be cancelled as the confirmations arrive.
         cancellationIds.foreach { case (officerId, cancellationId) ⇒ cancelAlert(officers(officerId), cancellationId) }
-        cancellationIds = Seq()
+        cancellationIds = Seq.empty
       }
       Behaviors.same
 

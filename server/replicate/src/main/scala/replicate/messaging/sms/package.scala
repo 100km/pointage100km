@@ -53,7 +53,7 @@ package object sms {
     def balanceError(failure: Throwable) = {
       log.error(failure, "Unable to get balance for {}", messageTitle)
       latestAlert.foreach(Alerts.cancelAlert)
-      latestAlert = Some(Alerts.sendAlert(messaging.Message(TextMessage, Severity.Critical, messageTitle, s"Unable to get balance", icon = icon)))
+      latestAlert = Some(Alerts.sendAlert(messaging.Message(TextMessage, Severity.Critical, messageTitle, "Unable to get balance", icon = icon)))
     }
 
   }

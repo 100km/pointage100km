@@ -27,13 +27,13 @@ class ReplicateSpec extends Specification with After {
 
   trait WithCleanup extends BeforeAfter {
 
-    var idsToCleanup: Seq[String] = Seq()
+    var idsToCleanup: Seq[String] = Seq.empty
 
     def get(doc: JsObject): Future[JsObject] = db((doc \ "_id").as[String])
 
     def delete(id: String): Future[Seq[String]] = {
       helpers.getRevs(db, id).recover {
-        case StatusError(404, _, _) ⇒ Seq()
+        case StatusError(404, _, _) ⇒ Seq.empty
       }.map(_.filterNot(_.keys.contains("_deleted"))).flatMap(ds ⇒ Future.sequence(ds.map(db.delete)))
     }
 

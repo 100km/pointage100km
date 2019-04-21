@@ -15,7 +15,7 @@ trait ConflictsSolver {
 
   val log: Logger
 
-  private def solveConflicts(db: Database, id: String, revs: List[String]): Future[Seq[JsObject]] =
+  private def solveConflicts(db: Database, id: String, revs: Array[String]): Future[Seq[JsObject]] =
     getRevs(db, id, revs) flatMap {
       docs ⇒
         val f = solve(db, docs)(makeSolver[CheckpointData](_.reduce(_.merge(_))))
@@ -35,7 +35,7 @@ trait ConflictsSolver {
    */
   def fixConflictingCheckpoints(db: Database): Future[Iterable[Seq[JsObject]]] =
     db.mapOnly("common", "conflicting-checkpoints") flatMap { r ⇒
-      Future.sequence(for ((id, _, value) ← r.items[JsValue, List[String]])
+      Future.sequence(for ((id, _, value) ← r.items[JsValue, Array[String]])
         yield solveConflicts(db, id, value))
     }
 

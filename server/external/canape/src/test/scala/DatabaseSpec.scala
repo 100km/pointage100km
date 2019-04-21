@@ -288,7 +288,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
     }
 
     "be able to bulk delete zero revisions of a non-existent document" in new freshDb {
-      waitForResult(db.delete("docid", Seq())) must beEmpty
+      waitForResult(db.delete("docid", Seq.empty)) must beEmpty
     }
 
     "be able to bulk delete one revision of a document" in new freshDb {
@@ -641,7 +641,7 @@ class DatabaseSpec extends WithDbSpecification("db") {
     }
   }
 
-  "db.viewWithUpdateSeq()" should {
+  "db.viewWithUpdateSeq.empty" should {
 
     "see the same sequence number when no changes happened" in new freshDb {
       installDesignAndDocs(db)

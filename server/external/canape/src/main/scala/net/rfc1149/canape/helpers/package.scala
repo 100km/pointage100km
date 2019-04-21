@@ -32,7 +32,7 @@ package object helpers {
   def makeSolver[T](solver: Seq[T] ⇒ T)(implicit ev1: Reads[T], ev2: Writes[T]): (Seq[JsObject] ⇒ JsObject) =
     (docs: Seq[JsObject]) ⇒ solver(docs.map(_.as[T])).withIdRev(docs.head)
 
-  def getRevs(db: Database, id: String, revs: Seq[String] = Seq())(implicit context: ExecutionContext): Future[Seq[JsObject]] = {
+  def getRevs(db: Database, id: String, revs: Seq[String] = Seq.empty)(implicit context: ExecutionContext): Future[Seq[JsObject]] = {
     val revsList = if (revs.isEmpty) "all" else s"[${revs.map(r ⇒ s""""$r"""").mkString(",")}]"
     db(id, Map("open_revs" → revsList)) map (_.as[Seq[JsObject]].collect {
       case j if j.keys.contains("ok") ⇒ (j \ "ok").as[JsObject]
@@ -47,7 +47,7 @@ package object helpers {
 
   def getConflictingRevs(db: Database, id: String)(implicit context: ExecutionContext): Future[Seq[String]] =
     db(id, Map("conflicts" → "true")) map { js: JsValue ⇒
-      (js \ "_rev").as[String] +: (js \ "_conflicts").asOpt[List[String]].getOrElse(Seq())
+      (js \ "_rev").as[String] +: (js \ "_conflicts").asOpt[List[String]].getOrElse(Seq.empty)
     }
 
   implicit class EnrichedWritable[T: Writes](obj: T) {

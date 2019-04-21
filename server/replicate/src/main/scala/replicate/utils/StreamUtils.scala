@@ -50,7 +50,7 @@ trait StreamUtils {
     override def createLogic(inheritedAttributes: Attributes) = new TimerGraphStageLogic(shape) {
 
       private var queue: Queue[Holder] = Queue()
-      private var inQueue: Set[K] = Set()
+      private var inQueue: Set[K] = Set.empty
 
       private def sendFromQueue() =
         if (isAvailable(out))

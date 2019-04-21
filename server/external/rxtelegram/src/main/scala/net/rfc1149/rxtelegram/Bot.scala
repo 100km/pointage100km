@@ -31,7 +31,7 @@ trait Bot {
 
   private[this] var offset: Long = -1
 
-  private[this] def send(methodName: String, fields: Seq[(String, String)] = Seq(), media: Option[MediaParameter] = None,
+  private[this] def send(methodName: String, fields: Seq[(String, String)] = Seq.empty, media: Option[MediaParameter] = None,
     potentiallyBlocking: Boolean = false): Future[JsValue] =
     sendInternal(methodName, buildEntity(fields, media), potentiallyBlocking = potentiallyBlocking)
 
@@ -206,12 +206,12 @@ object Bot extends PlayJsonSupport {
 
     def buildEntity(target: Target, includeMethod: Boolean): MEntity = {
       assert(!target.isInlineMessageId || supportsInlineMessageId, "this action does not support inline_message_id targets")
-      val allFields = fields ++ replyMarkup.toField("reply_markup") ++ target.toFields ++ (if (includeMethod) Seq("method" → methodName) else Seq())
+      val allFields = fields ++ replyMarkup.toField("reply_markup") ++ target.toFields ++ (if (includeMethod) Seq("method" → methodName) else Seq.empty)
       Bot.buildEntity(allFields, media)
     }
 
     override def buildEntity(includeMethod: Boolean) = {
-      val allFields = fields ++ replyMarkup.toField("reply_markup") ++ (if (includeMethod) Seq("method" → methodName) else Seq())
+      val allFields = fields ++ replyMarkup.toField("reply_markup") ++ (if (includeMethod) Seq("method" → methodName) else Seq.empty)
       Bot.buildEntity(allFields, media)
     }
 
