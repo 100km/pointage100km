@@ -54,14 +54,14 @@ object CheckpointScrutineer {
       .mapAsync(1) { case (checkpointData, initial) ⇒ CheckpointsState.setTimes(checkpointData).map((_, initial)) }
       .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider) and Attributes.name("checkpointDataToPoints"))
 
-    val pointsToAnalyzed = Flow[(Seq[CheckpointData], Boolean)].mapConcat {
+    val pointsToAnalyzed = Flow[(IndexedSeq[CheckpointData], Boolean)].mapConcat {
       case (data, initial) ⇒
         try {
-          List((Analyzer.analyze(data), initial))
+          Vector((Analyzer.analyze(data), initial))
         } catch {
           case t: Throwable ⇒
             log.error(t, "unable to analyse contestant {} in race {}", data.head.contestantId, data.head.raceId)
-            Nil
+            Vector()
         }
     }.named("analyzer")
 

@@ -34,19 +34,19 @@ class AnalyzerSpec extends Specification with ResultMatchers {
   "median" should {
 
     "return the correct value for a one element list" in {
-      Analyzer.median(List(10)) should be equalTo 10
+      Analyzer.median(Vector(10)) should be equalTo 10
     }
 
     "return the correct value for a two element list" in {
-      Analyzer.median(List(20, 10)) should be equalTo 15
+      Analyzer.median(Vector(20, 10)) should be equalTo 15
     }
 
     "return the correct value for a list with an odd number of elements" in {
-      Analyzer.median(List(10, 22, 30)) should be equalTo 22
+      Analyzer.median(Vector(10, 22, 30)) should be equalTo 22
     }
 
     "return the correct value for a list with an even number of elements" in {
-      Analyzer.median(List(10, 20, 30, 40)) should be equalTo 25
+      Analyzer.median(Vector(10, 20, 30, 40)) should be equalTo 25
     }
 
   }

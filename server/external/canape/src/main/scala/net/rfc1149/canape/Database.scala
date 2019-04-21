@@ -135,7 +135,7 @@ case class Database(couch: Couch, databaseName: String) {
   def viewWithUpdateSeq[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[(UpdateSequence, Vector[(K, V)])] =
     couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties :+ ("update_seq" → "true"))).map(result ⇒
       ((result \ "update_seq").as[UpdateSequence],
-        (result \ "rows").as[Array[JsValue]] map (row ⇒ (row \ "key").as[K] → (row \ "value").as[V])))
+        (result \ "rows").as[Vector[JsValue]] map (row ⇒ (row \ "key").as[K] → (row \ "value").as[V])))
 
   /**
    * Query a list from the database.

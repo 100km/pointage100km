@@ -6,8 +6,8 @@ import replicate.utils.Types._
 
 import scalaz.@@
 
-case class CheckpointData(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId, siteId: Int @@ SiteId, timestamps: List[Long],
-    deletedTimestamps: List[Long], insertedTimestamps: List[Long]) {
+case class CheckpointData(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId, siteId: Int @@ SiteId, timestamps: Vector[Long],
+    deletedTimestamps: Vector[Long], insertedTimestamps: Vector[Long]) {
 
   /**
    * Create a pristine checkpoint, with only the original times. Deleted times are reinstated,
@@ -18,8 +18,8 @@ case class CheckpointData(raceId: Int @@ RaceId, contestantId: Int @@ Contestant
   def pristine: CheckpointData =
     copy(
       timestamps         = (timestamps ++ deletedTimestamps).diff(insertedTimestamps).distinct.sorted,
-      deletedTimestamps  = Nil,
-      insertedTimestamps = Nil)
+      deletedTimestamps  = Vector.empty,
+      insertedTimestamps = Vector.empty)
 
   /**
    * Merge the times of another checkpoint into this one. The other fields will not be checked
@@ -45,9 +45,9 @@ object CheckpointData {
       val raceId = RaceId((js \ "race_id").as[Int])
       val contestantId = ContestantId((js \ "bib").as[Int])
       val siteId = SiteId((js \ "site_id").as[Int])
-      val timestamps = (js \ "times").as[List[Long]]
-      val deletedTimestamps = (js \ "deleted_times").asOpt[List[Long]].getOrElse(Nil)
-      val insertedTimestamps = (js \ "artificial_times").asOpt[List[Long]].getOrElse(Nil)
+      val timestamps = (js \ "times").as[Vector[Long]]
+      val deletedTimestamps = (js \ "deleted_times").asOpt[Vector[Long]].getOrElse(Vector.empty)
+      val insertedTimestamps = (js \ "artificial_times").asOpt[Vector[Long]].getOrElse(Vector.empty)
       JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps, deletedTimestamps, insertedTimestamps))
     } catch {
       case t: Throwable ⇒ JsError(t.getMessage)
@@ -58,7 +58,7 @@ object CheckpointData {
     (JsPath \ "race_id").write[Int @@ RaceId] and
     (JsPath \ "bib").write[Int @@ ContestantId] and
     (JsPath \ "site_id").write[Int @@ SiteId] and
-    (JsPath \ "times").write[List[Long]] and
-    (JsPath \ "deleted_times").write[List[Long]] and
-    (JsPath \ "artificial_times").write[List[Long]])(unlift(CheckpointData.unapply))
+    (JsPath \ "times").write[Vector[Long]] and
+    (JsPath \ "deleted_times").write[Vector[Long]] and
+    (JsPath \ "artificial_times").write[Vector[Long]])(unlift(CheckpointData.unapply))
 }

@@ -24,23 +24,23 @@ class CheckpointsStateSpec extends Specification {
   "checkpointData#pristine()" should {
 
     "insert deleted timestamps" in {
-      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1300), Nil, Nil).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1300), Nil, Nil)
-      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1300), List(1000, 1100), Nil).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1000, 1100, 1300), Nil, Nil)
+      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1300), Vector.empty, Vector.empty).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1300), Vector.empty, Vector.empty)
+      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1300), Vector(1000, 1100), Vector.empty).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1000, 1100, 1300), Vector.empty, Vector.empty)
     }
 
     "remove artificial timestamps" in {
-      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1000, 1100), Nil, Nil).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1000, 1100), Nil, Nil)
-      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1000, 1100), Nil, List(950, 1100)).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(1000), Nil, Nil)
+      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1000, 1100), Vector.empty, Vector.empty).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1000, 1100), Vector.empty, Vector.empty)
+      CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1000, 1100), Vector.empty, Vector(950, 1100)).pristine should be equalTo CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(1000), Vector.empty, Vector.empty)
     }
   }
 
   "setTimes()" should {
 
     "return a sorted list of timestamps" in new CleanRanking {
-      val result1 = Await.result(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950, 1300), Nil, Nil)), 1.second)
-      CheckpointsState.sortedTimestamps(result1) must be equalTo List(Point(SiteId(1), 950), Point(SiteId(1), 1300))
-      val result2 = Await.result(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(2), List(800, 900, 1000, 1100), Nil, Nil)), 1.second)
-      CheckpointsState.sortedTimestamps(result2) must be equalTo List(Point(SiteId(2), 800), Point(SiteId(2), 900), Point(SiteId(1), 950), Point(SiteId(2), 1000), Point(SiteId(2), 1100), Point(SiteId(1), 1300))
+      val result1 = Await.result(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950, 1300), Vector.empty, Vector.empty)), 1.second)
+      CheckpointsState.sortedTimestamps(result1) must be equalTo Vector(Point(SiteId(1), 950), Point(SiteId(1), 1300))
+      val result2 = Await.result(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(2), Vector(800, 900, 1000, 1100), Vector.empty, Vector.empty)), 1.second)
+      CheckpointsState.sortedTimestamps(result2) must be equalTo Vector(Point(SiteId(2), 800), Point(SiteId(2), 900), Point(SiteId(1), 950), Point(SiteId(2), 1000), Point(SiteId(2), 1100), Point(SiteId(1), 1300))
     }
   }
 
@@ -51,9 +51,9 @@ class CheckpointsStateSpec extends Specification {
     }
 
     "return the existing points for a contestant" in new CleanRanking {
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950), Nil, Nil)), 1.second)
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(2), List(1000, 900, 1100, 800), Nil, Nil)), 1.second)
-      Await.result(CheckpointsState.timesFor(RaceId(1), ContestantId(42)), 1.second) must be equalTo List(Point(SiteId(2), 800), Point(SiteId(2), 900), Point(SiteId(1), 950), Point(SiteId(2), 1000), Point(SiteId(2), 1100))
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950), Vector.empty, Vector.empty)), 1.second)
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(2), Vector(1000, 900, 1100, 800), Vector.empty, Vector.empty)), 1.second)
+      Await.result(CheckpointsState.timesFor(RaceId(1), ContestantId(42)), 1.second) must be equalTo Vector(Point(SiteId(2), 800), Point(SiteId(2), 900), Point(SiteId(1), 950), Point(SiteId(2), 1000), Point(SiteId(2), 1100))
     }
   }
 
@@ -64,36 +64,36 @@ class CheckpointsStateSpec extends Specification {
     }
 
     "return the existing points for a contestant" in new CleanRanking {
-      private val cpd1: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950), Nil, Nil)
-      private val cpd2: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(2), List(1000, 900, 1100, 800), Nil, Nil)
+      private val cpd1: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950), Vector.empty, Vector.empty)
+      private val cpd2: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(2), Vector(1000, 900, 1100, 800), Vector.empty, Vector.empty)
       Await.ready(CheckpointsState.setTimes(cpd1), 1.second)
       Await.ready(CheckpointsState.setTimes(cpd2), 1.second)
-      Await.result(CheckpointsState.checkpointDataFor(RaceId(1), ContestantId(42)), 1.second) must be equalTo List(cpd1, cpd2)
+      Await.result(CheckpointsState.checkpointDataFor(RaceId(1), ContestantId(42)), 1.second) must be equalTo Vector(cpd1, cpd2)
     }
 
     "replace data for a given site id" in new CleanRanking {
-      private val cpd1: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950), Nil, Nil)
-      private val cpd2: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(2), List(1000, 900, 1100, 800), Nil, Nil)
-      private val cpd1bis: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950), Nil, Nil)
+      private val cpd1: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950), Vector.empty, Vector.empty)
+      private val cpd2: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(2), Vector(1000, 900, 1100, 800), Vector.empty, Vector.empty)
+      private val cpd1bis: CheckpointData = CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950), Vector.empty, Vector.empty)
       Await.ready(CheckpointsState.setTimes(cpd1), 1.second)
       Await.ready(CheckpointsState.setTimes(cpd2), 1.second)
       Await.ready(CheckpointsState.setTimes(cpd1bis), 1.second)
-      Await.result(CheckpointsState.checkpointDataFor(RaceId(1), ContestantId(42)), 1.second) must be equalTo List(cpd2, cpd1bis)
+      Await.result(CheckpointsState.checkpointDataFor(RaceId(1), ContestantId(42)), 1.second) must be equalTo Vector(cpd2, cpd1bis)
     }
   }
 
   "contestants()" should {
 
     "return the full list of contestants" in new CleanRanking {
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950), Nil, Nil)), 1.second)
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(50), SiteId(2), List(1000, 900, 1100, 800), Nil, Nil)), 1.second)
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950), Vector.empty, Vector.empty)), 1.second)
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(50), SiteId(2), Vector(1000, 900, 1100, 800), Vector.empty, Vector.empty)), 1.second)
       Await.result(CheckpointsState.contestants(RaceId(1)), 1.second) must be equalTo Set(ContestantId(42), ContestantId(50))
     }
 
     "remove contestants with no points" in new CleanRanking {
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(950), Nil, Nil)), 1.second)
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), List(), List(950), Nil)), 1.second)
-      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(50), SiteId(2), List(1000, 900, 1100, 800), Nil, Nil)), 1.second)
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(950), Vector.empty, Vector.empty)), 1.second)
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(42), SiteId(1), Vector(), Vector(950), Vector.empty)), 1.second)
+      Await.ready(CheckpointsState.setTimes(CheckpointData(RaceId(1), ContestantId(50), SiteId(2), Vector(1000, 900, 1100, 800), Vector.empty, Vector.empty)), 1.second)
       Await.result(CheckpointsState.contestants(RaceId(1)), 1.second) must be equalTo Set(ContestantId(50))
     }
   }

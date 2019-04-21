@@ -24,36 +24,36 @@ object CheckpointsState {
       (JsPath \ "time").write[Long])(unlift(Point.unapply))
   }
 
-  type Race = Map[Int @@ ContestantId, Seq[CheckpointData]]
+  type Race = Map[Int @@ ContestantId, IndexedSeq[CheckpointData]]
 
-  def toPoints(siteId: Int @@ SiteId, timestamps: Seq[Long]): Seq[Point] = timestamps.map(Point(siteId, _))
+  def toPoints(siteId: Int @@ SiteId, timestamps: IndexedSeq[Long]): IndexedSeq[Point] = timestamps.map(Point(siteId, _))
 
-  def sortedTimestamps(contestantTimes: Seq[CheckpointData]): Seq[Point] =
+  def sortedTimestamps(contestantTimes: IndexedSeq[CheckpointData]): IndexedSeq[Point] =
     contestantTimes.flatMap {
       case CheckpointData(_, _, siteId, ts, _, _) ⇒ ts.map(Point(siteId, _))
     }.toVector.sortBy(_.timestamp)
 
-  private def sortedTimestamps(races: Map[Int @@ RaceId, Race], raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): Seq[Point] =
-    races.get(raceId).flatMap(_.get(contestantId)).map(sortedTimestamps).getOrElse(Seq())
+  private def sortedTimestamps(races: Map[Int @@ RaceId, Race], raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): IndexedSeq[Point] =
+    races.get(raceId).flatMap(_.get(contestantId)).map(sortedTimestamps).getOrElse(IndexedSeq.empty)
 
   private val racesAgent = Agent(Map[Int @@ RaceId, Race]())
 
   def reset(): Future[Done] = racesAgent.alter(Map[Int @@ RaceId, Race]()).map(_ ⇒ Done)
 
-  def setTimes(checkpointData: CheckpointData): Future[Seq[CheckpointData]] = {
+  def setTimes(checkpointData: CheckpointData): Future[IndexedSeq[CheckpointData]] = {
     val CheckpointData(raceId, contestantId, siteId, _, _, _) = checkpointData
     racesAgent.alter { races ⇒
       val race = races.getOrElse(raceId, Map())
-      val contestantTimes = race.getOrElse(contestantId, Seq()).filterNot(_.siteId == siteId) :+ checkpointData
+      val contestantTimes = race.getOrElse(contestantId, IndexedSeq.empty).filterNot(_.siteId == siteId) :+ checkpointData
       val newRace = race + (contestantId → contestantTimes)
       races + (raceId → newRace)
     }.map(_(raceId)(contestantId))
   }
 
-  def checkpointDataFor(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): Future[Seq[CheckpointData]] =
-    racesAgent.future().map(_.getOrElse(raceId, Map()).getOrElse(contestantId, Seq()))
+  def checkpointDataFor(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): Future[IndexedSeq[CheckpointData]] =
+    racesAgent.future().map(_.getOrElse(raceId, Map()).getOrElse(contestantId, IndexedSeq.empty))
 
-  def timesFor(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): Future[Seq[Point]] =
+  def timesFor(raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): Future[IndexedSeq[Point]] =
     racesAgent.future().map(sortedTimestamps(_, raceId, contestantId))
 
   def contestants(raceId: Int @@ RaceId): Future[Set[Int @@ ContestantId]] =

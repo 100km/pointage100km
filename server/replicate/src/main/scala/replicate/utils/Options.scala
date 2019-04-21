@@ -24,7 +24,7 @@ object Options {
       stalking: Boolean = false,
       resetSiteId: Boolean = true,
       siteId: Int = -1,
-      modes: List[Mode] = Nil,
+      modes: Vector[Mode] = Vector.empty,
       _ping: Boolean = true) {
 
     def fixConflicts: Boolean = _fixConflicts && !isSlave

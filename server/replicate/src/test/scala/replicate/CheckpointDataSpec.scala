@@ -41,9 +41,9 @@ class CheckpointDataSpec extends Specification {
       cpd.raceId must be equalTo RaceId(2)
       cpd.contestantId must be equalTo ContestantId(42)
       cpd.siteId must be equalTo SiteId(3)
-      cpd.timestamps must be equalTo List(1000, 1001)
-      cpd.deletedTimestamps must be equalTo List(1002)
-      cpd.insertedTimestamps must be equalTo List(1001)
+      cpd.timestamps must be equalTo Vector(1000, 1001)
+      cpd.deletedTimestamps must be equalTo Vector(1002)
+      cpd.insertedTimestamps must be equalTo Vector(1001)
     }
 
     "be readable from an incomplete Json document" in {
@@ -51,9 +51,9 @@ class CheckpointDataSpec extends Specification {
       cpd.raceId must be equalTo RaceId(2)
       cpd.contestantId must be equalTo ContestantId(42)
       cpd.siteId must be equalTo SiteId(3)
-      cpd.timestamps must be equalTo List(1000, 1001)
-      cpd.deletedTimestamps must be equalTo Nil
-      cpd.insertedTimestamps must be equalTo Nil
+      cpd.timestamps must be equalTo Vector(1000, 1001)
+      cpd.deletedTimestamps must be equalTo Vector.empty
+      cpd.insertedTimestamps must be equalTo Vector.empty
     }
 
     "be readable from its own Json dump" in {
@@ -73,15 +73,15 @@ class CheckpointDataSpec extends Specification {
       cpd.raceId must be equalTo RaceId(2)
       cpd.contestantId must be equalTo ContestantId(42)
       cpd.siteId must be equalTo SiteId(3)
-      cpd.timestamps must be equalTo List(1000, 1002)
-      cpd.deletedTimestamps must be equalTo Nil
-      cpd.insertedTimestamps must be equalTo Nil
+      cpd.timestamps must be equalTo Vector(1000, 1002)
+      cpd.deletedTimestamps must be equalTo Vector.empty
+      cpd.insertedTimestamps must be equalTo Vector.empty
     }
 
     "be mergeable with another checkpoint" in {
       val cpd = js.as[CheckpointData]
-      val cpd2 = CheckpointData(RaceId(2), ContestantId(42), SiteId(3), List(1002, 1003, 1004), List(1000), List(1004))
-      cpd.merge(cpd2) must be equalTo CheckpointData(RaceId(2), ContestantId(42), SiteId(3), List(1001, 1003, 1004), List(1000, 1002), List(1001, 1004))
+      val cpd2 = CheckpointData(RaceId(2), ContestantId(42), SiteId(3), Vector(1002, 1003, 1004), Vector(1000), Vector(1004))
+      cpd.merge(cpd2) must be equalTo CheckpointData(RaceId(2), ContestantId(42), SiteId(3), Vector(1001, 1003, 1004), Vector(1000, 1002), Vector(1001, 1004))
     }
 
     "be idempotent while merging itself" in {
