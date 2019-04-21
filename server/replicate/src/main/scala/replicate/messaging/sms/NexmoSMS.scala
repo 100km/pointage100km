@@ -50,8 +50,10 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
 
   log.debug("NexmoSMS service started")
   checkBalance().flatMap(Couch.checkResponse[JsObject]).map(js ⇒ (js \ "value").as[Double])
-    .transform(Balance, BalanceError)
-    .foreach(context.self ! _)
+    .onComplete {
+      case Success(balance) ⇒ context.self ! Balance(balance)
+      case Failure(e)       ⇒ context.self ! BalanceError(e)
+    }
 
   override def onMessage(msg: SMSProtocol) = msg match {
     case SMSMessage(recipient, message) ⇒

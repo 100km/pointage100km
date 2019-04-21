@@ -61,6 +61,6 @@ package object sms {
   private[sms] trait SMSProtocol
   case class SMSMessage(recipient: String @@ PhoneNumber, text: String) extends SMSProtocol
   case class Balance(balance: Double) extends SMSProtocol
-  case class BalanceError(failure: Throwable) extends Exception(failure) with SMSProtocol
+  case class BalanceError(failure: Throwable) extends SMSProtocol
 
 }
