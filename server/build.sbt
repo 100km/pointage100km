@@ -6,6 +6,8 @@ import sbtassembly.AssemblyPlugin.defaultShellScript
 
 import scalariform.formatter.preferences._
 
+scapegoatVersion in ThisBuild := "1.3.3"
+
 lazy val akka =
   Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.22",
     "com.typesafe.akka" %% "akka-actor-typed" % "2.5.22",
