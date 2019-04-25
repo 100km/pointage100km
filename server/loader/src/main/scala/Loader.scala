@@ -105,7 +105,7 @@ object Loader extends App {
       val q = run.query(
         "SELECT registrations.*, teams.name as team_name FROM registrations LEFT JOIN teams ON registrations.team_id = teams.id WHERE registrations.year = ?",
         new MapListHandler,
-        new java.lang.Integer(options.year)).asScala.toList.map(_.asScala)
+        java.lang.Integer.valueOf(options.year)).asScala.toList.map(_.asScala)
       println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
       // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
       // be overloaded and that we will encounter no timeouts.
