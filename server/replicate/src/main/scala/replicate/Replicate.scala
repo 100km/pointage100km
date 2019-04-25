@@ -98,14 +98,21 @@ class Replicate(options: Options.Config) extends LoggingError {
     dbName.get
   }
 
-  private lazy val previousDbName: Option[String] =
-    try {
-      Some(localDatabase("configuration").execute()(timeout).as[Configuration].dbname)
-    } catch {
-      case t: Exception ⇒
-        log.info("cannot retrieve previous database name: {}", t.getMessage)
-        None
+  private lazy val previousDbName: Option[String] = {
+    var dbName: Option[Option[String]] = None
+    while (dbName.isEmpty) {
+      try {
+        dbName = Some(Some(localDatabase("configuration").execute()(timeout).as[Configuration].dbname))
+      } catch {
+        case StatusError(404, _, _) ⇒
+          dbName = Some(None)
+        case t: Exception ⇒
+          log.info("cannot retrieve previous database name, will retry: {}", t.getMessage)
+          Thread.sleep(5000)
+      }
     }
+    dbName.get
+  }
 
   private lazy val hubDatabase = hubCouch.db(remoteDbName)
 
