@@ -1,5 +1,7 @@
 package net.rfc1149.octopush
 
+import scala.io.Source
+
 object ErrorCodes {
 
   private val errorsFromDocumentation = """
@@ -65,7 +67,7 @@ object ErrorCodes {
 """.stripMargin
 
   val errorMessage: Map[Int, String] =
-    errorsFromDocumentation.lines.map(_.split(" ", 2)).collect {
+    Source.fromString(errorsFromDocumentation).getLines().map(_.split(" ", 2)).collect {
       case Array(n, t) ⇒ n.toInt → t.trim.stripSuffix(".")
     }.toMap
 
