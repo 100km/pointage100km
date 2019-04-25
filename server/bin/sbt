@@ -69,7 +69,7 @@ declare -r win_sbt_opts_file="${sbt_home}/conf/sbtconfig.txt"
 
 usage() {
  cat <<EOM
-Usage: $script_name [options]
+Usage: `basename "$0"` [options]
 
   -h | -help         print this message
   -v | -verbose      this runner is chattier
@@ -79,7 +79,7 @@ Usage: $script_name [options]
   -sbt-dir   <path>  path to global settings/plugins directory (default: ~/.sbt)
   -sbt-boot  <path>  path to shared boot directory (default: ~/.sbt/boot in 0.11 series)
   -ivy       <path>  path to local Ivy repository (default: ~/.ivy2)
-  -mem    <integer>  set memory options (default: $sbt_mem, which is $(get_mem_opts $sbt_mem))
+  -mem    <integer>  set memory options (default: $sbt_default_mem, which is $(get_mem_opts))
   -no-share          use all local caches; no sharing
   -no-global         uses global caches, but does not use global ~/.sbt directory.
   -jvm-debug <port>  Turn on JVM debugging, open at the given port.
@@ -127,17 +127,36 @@ process_my_args () {
 
     -sbt-create) sbt_create=true && shift ;;
 
+            new) sbt_new=true && addResidual "$1" && shift ;;
+
               *) addResidual "$1" && shift ;;
     esac
   done
   
   # Now, ensure sbt version is used.
   [[ "${sbt_version}XXX" != "XXX" ]] && addJava "-Dsbt.version=$sbt_version" 
+
+  # Confirm a user's intent if the current directory does not look like an sbt
+  # top-level directory and neither the -sbt-create option nor the "new"
+  # command was given.
+  [[ -f ./build.sbt || -d ./project || -n "$sbt_create" || -n "$sbt_new" ]] || {
+    echo "[warn] Neither build.sbt nor a 'project' directory in the current directory: $(pwd)"
+    while true; do
+      echo 'c) continue'
+      echo 'q) quit'
+
+      read -p '? ' || exit 1
+      case "$REPLY" in
+        c|C) break ;;
+        q|Q) exit 1 ;;
+      esac
+    done
+  }
 }
 
 loadConfigFile() {
   # Make sure the last line is read even if it doesn't have a terminating \n
-  cat "$1" | sed '/^\#/d' | while read -r line || [[ -n "$line" ]]; do
+  cat "$1" | sed $'/^\#/d;s/\r$//' | while read -r line || [[ -n "$line" ]]; do
     eval echo $line
   done
 }

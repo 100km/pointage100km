@@ -12,7 +12,8 @@ declare -a scalac_args
 declare -a sbt_commands
 declare java_cmd=java
 declare java_version
-declare init_sbt_version="1.0.1"
+declare init_sbt_version="1.2.8"
+declare sbt_default_mem=1024
 
 declare SCRIPT=$0
 while [ -h "$SCRIPT" ] ; do
@@ -101,19 +102,37 @@ get_mem_opts () {
   else
     # a ham-fisted attempt to move some memory settings in concert
     # so they need not be messed around with individually.
-    local mem=${1:-1024}
+    local mem=${1:-$sbt_default_mem}
     local codecache=$(( $mem / 8 ))
     (( $codecache > 128 )) || codecache=128
     (( $codecache < 512 )) || codecache=512
     local class_metadata_size=$(( $codecache * 2 ))
-    local class_metadata_opt=$([[ "$java_version" < "1.8" ]] && echo "MaxPermSize" || echo "MaxMetaspaceSize")
+    if [[ -z $java_version ]]; then
+        java_version=$(jdk_version)
+    fi
+    local class_metadata_opt=$((( $java_version < 8 )) && echo "MaxPermSize" || echo "MaxMetaspaceSize")
 
     local arg_xms=$([[ "${java_args[@]}" == *-Xms* ]] && echo "" || echo "-Xms${mem}m")
     local arg_xmx=$([[ "${java_args[@]}" == *-Xmx* ]] && echo "" || echo "-Xmx${mem}m")
     local arg_rccs=$([[ "${java_args[@]}" == *-XX:ReservedCodeCacheSize* ]] && echo "" || echo "-XX:ReservedCodeCacheSize=${codecache}m")
-    local arg_meta=$([[ "${java_args[@]}" == *-XX:${class_metadata_opt}* && ! "$java_version" < "1.8" ]] && echo "" || echo "-XX:${class_metadata_opt}=${class_metadata_size}m")
+    local arg_meta=$([[ "${java_args[@]}" == *-XX:${class_metadata_opt}* && ! (( $java_version < 8 )) ]] && echo "" || echo "-XX:${class_metadata_opt}=${class_metadata_size}m")
 
     echo "${arg_xms} ${arg_xmx} ${arg_rccs} ${arg_meta}"
+  fi
+}
+
+get_gc_opts () {
+  local older_than_9=$(( $java_version < 9 ))
+
+  if [[ "$older_than_9" == "1" ]]; then
+    # don't need to worry about gc
+    echo ""
+  elif [[ "${JAVA_OPTS}" =~ Use.*GC ]] || [[ "${JAVA_TOOL_OPTIONS}" =~ Use.*GC ]] || [[ "${SBT_OPTS}" =~ Use.*GC ]] ; then
+    # GC arg has been passed in - don't change
+    echo ""
+  else
+    # Java 9+ so revert to old
+    echo "-XX:+UseParallelGC"
   fi
 }
 
@@ -131,12 +150,38 @@ is_function_defined() {
   declare -f "$1" > /dev/null
 }
 
+# parses JDK version from the -version output line.
+# 8 for 1.8.0_nn, 9 for 9-ea etc, and "no_java" for undetected
+jdk_version() {
+  local result
+  local lines=$("$java_cmd" -Xms32M -Xmx32M -version 2>&1 | tr '\r' '\n')
+  local IFS=$'\n'
+  for line in $lines; do
+    if [[ (-z $result) && ($line = *"version \""*) ]]
+    then
+      local ver=$(echo $line | sed -e 's/.*version "\(.*\)"\(.*\)/\1/; 1q')
+      # on macOS sed doesn't support '?'
+      if [[ $ver = "1."* ]]
+      then
+        result=$(echo $ver | sed -e 's/1\.\([0-9]*\)\(.*\)/\1/; 1q')
+      else
+        result=$(echo $ver | sed -e 's/\([0-9]*\)\(.*\)/\1/; 1q')
+      fi
+    fi
+  done
+  if [[ -z $result ]]
+  then
+    result=no_java
+  fi
+  echo "$result"
+}
+
 process_args () {
   while [[ $# -gt 0 ]]; do
     case "$1" in
        -h|-help) usage; exit 1 ;;
     -v|-verbose) verbose=1 && shift ;;
-      -d|-debug) debug=1 && shift ;;
+      -d|-debug) debug=1 && addSbt "-debug" && shift ;;
 
            -ivy) require_arg path "$1" "$2" && addJava "-Dsbt.ivy.home=$2" && shift 2 ;;
            -mem) require_arg integer "$1" "$2" && sbt_mem="$2" && shift 2 ;;
@@ -164,22 +209,58 @@ process_args () {
     process_my_args "${myargs[@]}"
   }
 
-  ## parses 1.7, 1.8, 9, etc out of java version "1.8.0_91"
-  java_version=$("$java_cmd" -Xmx512M -version 2>&1 | grep ' version "' | sed 's/.*version "\([0-9]*\)\(\.[0-9]*\)\{0,1\}\(.*\)*"/\1\2/; 1q')
+  java_version="$(jdk_version)"
   vlog "[process_args] java_version = '$java_version'"
 }
 
+# Extracts the preloaded directory from either -Dsbt.preloaded or -Dsbt.global.base
+# properties by looking at:
+#   - _JAVA_OPTIONS environment variable,
+#   - SBT_OPTS environment variable,
+#   - JAVA_OPTS environment variable and
+#   - properties set by command-line options
+# in that order. The last one will be chosen such that `sbt.preloaded` is
+# always preferred over `sbt.global.base`.
+getPreloaded() {
+  local -a _java_options_array
+  local -a sbt_opts_array
+  local -a java_opts_array
+  read -a _java_options_array <<< "$_JAVA_OPTIONS"
+  read -a sbt_opts_array <<< "$SBT_OPTS"
+  read -a java_opts_array <<< "$JAVA_OPTS"
+
+  local args_to_check=(
+    "${_java_options_array[@]}"
+    "${sbt_opts_array[@]}"
+    "${java_opts_array[@]}"
+    "${java_args[@]}")
+  local via_global_base="$HOME/.sbt/preloaded"
+  local via_explicit=""
+
+  for opt in "${args_to_check[@]}"; do
+    if [[ "$opt" == -Dsbt.preloaded=* ]]; then
+      via_explicit="${opt#-Dsbt.preloaded=}"
+    elif [[ "$opt" == -Dsbt.global.base=* ]]; then
+      via_global_base="${opt#-Dsbt.global.base=}/preloaded"
+    fi
+  done
+
+  echo "${via_explicit:-${via_global_base}}"
+}
+
 syncPreloaded() {
+  local source_preloaded="$sbt_home/lib/local-preloaded/"
+  local target_preloaded="$(getPreloaded)"
   if [[ "$init_sbt_version" == "" ]]; then
     # FIXME: better $init_sbt_version detection
-    init_sbt_version="$(ls -1 "$sbt_home/lib/local-preloaded/org.scala-sbt/sbt/")"
+    init_sbt_version="$(ls -1 "$source_preloaded/org.scala-sbt/sbt/")"
   fi
-  [[ -f "$HOME/.sbt/preloaded/org.scala-sbt/sbt/$init_sbt_version/jars/sbt.jar" ]] || {
+  [[ -f "$target_preloaded/org.scala-sbt/sbt/$init_sbt_version/jars/sbt.jar" ]] || {
     # lib/local-preloaded exists (This is optional)
-    [[ -d "$sbt_home/lib/local-preloaded/" ]] && {
+    [[ -d "$source_preloaded" ]] && {
       command -v rsync >/dev/null 2>&1 && {
-        mkdir -p "$HOME/.sbt/preloaded"
-        rsync -a --ignore-existing "$sbt_home/lib/local-preloaded/" "$HOME/.sbt/preloaded"
+        mkdir -p "$target_preloaded"
+        rsync -a --ignore-existing "$source_preloaded" "$target_preloaded"
       }
     }
   }
@@ -189,30 +270,33 @@ syncPreloaded() {
 checkJava() {
   local required_version="$1"
   # Now check to see if it's a good enough version
+  local good_enough="$(expr $java_version ">=" $required_version)"
   if [[ "$java_version" == "" ]]; then
     echo
-    echo No java installations was detected.
-    echo Please go to http://www.java.com/getjava/ and download
+    echo "No Java Development Kit (JDK) installation was detected."
+    echo Please go to http://www.oracle.com/technetwork/java/javase/downloads/ and download.
     echo
     exit 1
-  elif [[ "$java_version" < "$required_version" ]]; then
+  elif [[ "$good_enough" != "1" ]]; then
     echo
-    echo The java installation you have is not up to date
+    echo "The Java Development Kit (JDK) installation you have is not up to date."
     echo $script_name requires at least version $required_version+, you have
     echo version $java_version
     echo
-    echo Please go to http://www.java.com/getjava/ and download
-    echo a valid Java Runtime and install before running $script_name.
+    echo Please go to http://www.oracle.com/technetwork/java/javase/downloads/ and download
+    echo a valid JDK and install before running $script_name.
     echo
     exit 1
   fi
 }
 
 copyRt() {
-  if [[ "$java_version" == "9" ]]; then
+  local at_least_9="$(expr $java_version ">=" 9)"
+  if [[ "$at_least_9" == "1" ]]; then
     rtexport=$(rt_export_file)
+    # The grep for java9-rt-ext- matches the filename prefix printed in Export.java
     java9_ext=$("$java_cmd" ${JAVA_OPTS} ${SBT_OPTS:-$default_sbt_opts} ${java_args[@]} \
-      -jar "$rtexport" --rt-ext-dir)
+      -jar "$rtexport" --rt-ext-dir | grep java9-rt-ext-)
     java9_rt=$(echo "$java9_ext/rt.jar")
     vlog "[copyRt] java9_rt = '$java9_rt'"
     if [[ ! -f "$java9_rt" ]]; then
@@ -230,6 +314,12 @@ copyRt() {
 }
 
 run() {
+  # process the combined args, then reset "$@" to the residuals
+  process_args "$@"
+  set -- "${residual_args[@]}"
+  argumentCount=$#
+
+  # Copy preloaded repo to user's preloaded directory
   syncPreloaded
 
   # no jar? download it.
@@ -239,13 +329,8 @@ run() {
     exit 1
   }
 
-  # process the combined args, then reset "$@" to the residuals
-  process_args "$@"
-  set -- "${residual_args[@]}"
-  argumentCount=$#
-
   # TODO - java check should be configurable...
-  checkJava "1.6"
+  checkJava "6"
 
   # Java 9 support
   copyRt
@@ -260,6 +345,7 @@ run() {
   # run sbt
   execRunner "$java_cmd" \
     $(get_mem_opts $sbt_mem) \
+    $(get_gc_opts) \
     ${JAVA_OPTS} \
     ${SBT_OPTS:-$default_sbt_opts} \
     ${java_args[@]} \
