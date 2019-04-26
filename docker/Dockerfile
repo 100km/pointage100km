@@ -9,7 +9,7 @@ RUN git clone https://github.com/100km/pointage100km.git
 WORKDIR /tmp/pointage100km
 RUN make bin/replicate
 
-FROM apache/couchdb:2.3.0
+FROM apache/couchdb:2.3.1
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 RUN mkdir -p /usr/share/man/man1
 RUN apt-get update && \
