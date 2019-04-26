@@ -3,7 +3,8 @@ import java.io.File
 import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.typesafe.config.{Config, ConfigException, ConfigFactory, ConfigParseOptions}
+import com.typesafe.config.ConfigException.IO
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions}
 import net.ceedubs.ficus.Ficus._
 import net.rfc1149.canape._
 import play.api.libs.json._
@@ -48,7 +49,7 @@ package object steenwerck {
         try {
           Some(ConfigFactory.parseFileAnySyntax(new File(upper(level, baseName)), options))
         } catch {
-          case e: ConfigException ⇒
+          case _: IO ⇒
             None
         }
     } getOrElse ConfigFactory.empty()
