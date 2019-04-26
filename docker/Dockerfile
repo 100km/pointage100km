@@ -1,4 +1,4 @@
-FROM apache/couchdb:2.3.0
+FROM apache/couchdb:2.3.1
 MAINTAINER Samuel Tardieu, sam@rfc1149.net
 RUN mkdir -p /usr/share/man/man1
 RUN apt-get update && \
@@ -21,8 +21,3 @@ ADD start.sh /
 RUN chmod 755 /start.sh
 ENTRYPOINT [ "/start.sh" ]
 RUN useradd -m -c "Steenwerck" -s /bin/bash steenwerck
-
-# It is likely that you will want to extend this Dockerfile by adding a configuration
-# file with -v source:target when creating the container. Also, you might need to
-# create CouchDB administrators by extending this Dockerfile and adding new *.ini files
-# into /opt/couchdb/etc/local.d/.
