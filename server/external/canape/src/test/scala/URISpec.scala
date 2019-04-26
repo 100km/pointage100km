@@ -30,6 +30,11 @@ class URISpec extends Specification {
       scauth.uri.toString mustEqual "https://admin:xyzzy@db.example.com:5984"
     }
 
+    "properly escape special characters in authentified URI" in {
+      val cauth = new Couch("db.example.com", 5984, Some(("admin", "xy!zz@y")))
+      cauth.uri.toString mustEqual "http://admin:xy!zz%40y@db.example.com:5984"
+    }
+
     "complete missing arguments" in {
       (new Couch().uri.toString mustEqual "http://localhost:5984") &&
         (new Couch(auth = Some("admin", "xyzzy")).uri.toString mustEqual "http://admin:xyzzy@localhost:5984") &&
