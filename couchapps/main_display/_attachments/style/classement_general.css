@@ -33,7 +33,7 @@ li {
 /* Clocks */
 #clock_current_time {
   float:left;
-  font-size:1.05em;
+  font-size:0.89em;
   border:4px solid #f70;
   padding-top:0px;
   padding-bottom:0px;
@@ -48,7 +48,7 @@ li {
 
 #clock_100km_open {
   float:left;
-  font-size:1.05em;
+  font-size:0.89em;
   border:4px solid #aca;
   padding-top:0px;
   padding-bottom:0px;
@@ -63,7 +63,7 @@ li {
 
 #clock_100km_race {
   float:left;
-  font-size:1.05em;
+  font-size:0.89em;
   border:4px solid #edd;
   padding-top:0px;
   padding-bottom:0px;
