@@ -43,6 +43,7 @@ class OctopushSMS(context: ActorContext[SMSProtocol], userLogin: String, apiKey:
           case Success(result) ⇒ context.self ! SendOk(sms, result)
           case Failure(e)      ⇒ context.self ! SendError(sms, e)
         }
+        Thread.sleep(10)
       }
       Behaviors.same
 
