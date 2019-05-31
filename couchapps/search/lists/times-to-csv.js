@@ -47,7 +47,7 @@ function(head, req) {
       //  lap = 2;
 
       // race_description is hard-coded
-      send("(" + [70 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
+      send("(" + [73 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
     }
   }
 
