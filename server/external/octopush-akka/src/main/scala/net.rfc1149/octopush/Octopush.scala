@@ -29,21 +29,21 @@ class Octopush(userLogin: String, apiKey: String)(implicit system: ActorSystem) 
   private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("www.octopush-dm.com")
 
   private[this] def apiRequest[T](path: String, fields: (String, String)*)(implicit ev: Unmarshaller[NodeSeq, T]): Future[T] = {
-    val formData = FormData(Seq("user_login" → userLogin, "api_key" → apiKey) ++ fields: _*)
+    val formData = FormData(Seq("user_login" -> userLogin, "api_key" -> apiKey) ++ fields: _*)
     val request = Post(s"/api/$path", formData).addHeader(Accept(MediaTypes.`application/xml`))
     log.debug("Posting {}", request)
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1).flatMap {
-      case Success(response) if response.status.isSuccess() ⇒
+      case Success(response) if response.status.isSuccess() =>
         Unmarshal(response.entity).to[NodeSeq].flatMap {
-          x ⇒
+          x =>
             log.debug("Received succesful answer with payload {}", x)
             // Errors are delivered as 200 OK with a payload containing a non-zero error_code field
-            (x \ "error_code").headOption.map(_.text.toInt).filterNot(_ == 0).fold(Unmarshal(x).to[T])(e ⇒ FastFuture.failed(APIError(e)))
+            (x \ "error_code").headOption.map(_.text.toInt).filterNot(_ == 0).fold(Unmarshal(x).to[T])(e => FastFuture.failed(APIError(e)))
         }
-      case Success(response) ⇒
+      case Success(response) =>
         log.debug("Received unsuccessful answer: {}", response.status)
         FastFuture.failed(new StatusError(response.status))
-      case Failure(t) ⇒
+      case Failure(t) =>
         log.error(t, "Connexion failure")
         FastFuture.failed(t)
     }
@@ -81,42 +81,42 @@ object Octopush {
     import SMS._
 
     def buildParameters: Map[String, String] = {
-      var params: Map[String, String] = Map("sms_recipients" → smsRecipients.mkString(","), "sms_text" → smsText,
-        "sms_type" → smsType.toString)
-      smsSender.foreach(params += "sms_sender" → _)
+      var params: Map[String, String] = Map("sms_recipients" -> smsRecipients.mkString(","), "sms_text" -> smsText,
+        "sms_type" -> smsType.toString)
+      smsSender.foreach(params += "sms_sender" -> _)
       if (sendingTime.isDefined && sendingPeriod.isDefined)
         throw new IllegalArgumentException("only one of sendingTime and sendingPeriod can be defined")
-      sendingTime.foreach(t ⇒ params += "sending_time" → (t.clicks / 1000).toString)
-      sendingPeriod.foreach(params += "sending_period" → _.toSeconds.toString)
-      recipientFirstNames.foreach(params += "recipient_first_names" → _.mkString(","))
-      recipientLastNames.foreach(params += "recipient_last_names" → _.mkString(","))
-      smsFields1.foreach(params += "sms_fields_1" → _.mkString(","))
-      smsFields2.foreach(params += "sms_fields_2" → _.mkString(","))
-      smsFields3.foreach(params += "sms_fields_3" → _.mkString(","))
+      sendingTime.foreach(t => params += "sending_time" -> (t.clicks / 1000).toString)
+      sendingPeriod.foreach(params += "sending_period" -> _.toSeconds.toString)
+      recipientFirstNames.foreach(params += "recipient_first_names" -> _.mkString(","))
+      recipientLastNames.foreach(params += "recipient_last_names" -> _.mkString(","))
+      smsFields1.foreach(params += "sms_fields_1" -> _.mkString(","))
+      smsFields2.foreach(params += "sms_fields_2" -> _.mkString(","))
+      smsFields3.foreach(params += "sms_fields_3" -> _.mkString(","))
       if (simulation)
-        params += "request_mode" → "simu"
-      requestId.foreach(params += "request_id" → _)
+        params += "request_mode" -> "simu"
+      requestId.foreach(params += "request_id" -> _)
       if (withReplies)
-        params += "with_replies" → "1"
+        params += "with_replies" -> "1"
       if (transactional)
-        params += "transactional" → "1"
+        params += "transactional" -> "1"
       if (msisdnSender)
-        params += "msisdn_sender" → "1"
+        params += "msisdn_sender" -> "1"
       if (requestKeys != "") {
         var str = ""
-        for (c ← requestKeys)
+        for (c <- requestKeys)
           sha1keys.get(c) match {
-            case Some(key) ⇒
+            case Some(key) =>
               params.get(key) match {
-                case Some(value) ⇒ str += value
-                case None        ⇒ throw new IllegalArgumentException(s"no value defined for key $key ($c)")
+                case Some(value) => str += value
+                case None        => throw new IllegalArgumentException(s"no value defined for key $key ($c)")
               }
-            case None ⇒
+            case None =>
               throw new IllegalArgumentException(s"unknown key $c")
           }
-        params += "request_keys" → requestKeys
+        params += "request_keys" -> requestKeys
         val md = MessageDigest.getInstance("SHA-1")
-        params += "request_sha1" → md.digest(str.getBytes("UTF-8")).map("%02x".format(_)).mkString
+        params += "request_sha1" -> md.digest(str.getBytes("UTF-8")).map("%02x".format(_)).mkString
       }
 
       params
@@ -126,10 +126,10 @@ object Octopush {
 
   object SMS {
 
-    private val sha1keys = Map('T' → "sms_text", 'R' → "sms_recipients", 'M' → "sms_mode",
-      'Y' → "sms_type", 'S' → "sms_sender", 'D' → "sending_date", 'a' → "recipients_first_names",
-      'b' → "recipients_last_names", 'c' → "sms_fields_1", 'd' → "sms_fields_2", 'e' → "sms_fields_3",
-      'W' → "with_replies", 'N' → "transactional", 'Q' → "request_id")
+    private val sha1keys = Map('T' -> "sms_text", 'R' -> "sms_recipients", 'M' -> "sms_mode",
+      'Y' -> "sms_type", 'S' -> "sms_sender", 'D' -> "sending_date", 'a' -> "recipients_first_names",
+      'b' -> "recipients_last_names", 'c' -> "sms_fields_1", 'd' -> "sms_fields_2", 'e' -> "sms_fields_3",
+      'W' -> "with_replies", 'N' -> "transactional", 'Q' -> "request_id")
   }
 
   case class Balance(lowCostFrance: Double, premiumFrance: Double)
@@ -141,17 +141,17 @@ object Octopush {
       ticket: String, sendingDate: Long, numberOfSendings: Int,
       currencyCode: String, successes: Seq[SMSSuccess])
 
-  val balanceUnmarshaller: Unmarshaller[NodeSeq, Balance] = Unmarshaller.strict { xml ⇒
+  val balanceUnmarshaller: Unmarshaller[NodeSeq, Balance] = Unmarshaller.strict { xml =>
     Balance(
       lowCostFrance = (xml \ "balance" filter (_ \@ "type" == "XXX")).text.toDouble,
       premiumFrance = (xml \ "balance" filter (_ \@ "type" == "FR")).text.toDouble)
   }
 
-  val creditUnmarshaller: Unmarshaller[NodeSeq, Double] = Unmarshaller.strict { xml ⇒
+  val creditUnmarshaller: Unmarshaller[NodeSeq, Double] = Unmarshaller.strict { xml =>
     (xml \ "credit").text.toDouble
   }
 
-  val smsResultUnmarshaller: Unmarshaller[NodeSeq, SMSResult] = Unmarshaller.strict { xml ⇒
+  val smsResultUnmarshaller: Unmarshaller[NodeSeq, SMSResult] = Unmarshaller.strict { xml =>
     SMSResult(
       cost             = (xml \ "cost").text.toDouble,
       balance          = (xml \ "balance").text.toDouble,
@@ -159,7 +159,7 @@ object Octopush {
       sendingDate      = (xml \ "sending_date").text.toLong,
       numberOfSendings = (xml \ "number_of_sendings").text.toInt,
       currencyCode     = (xml \ "currency_code").text,
-      successes        = (xml \ "successs" \ "success").map { success ⇒
+      successes        = (xml \ "successs" \ "success").map { success =>
         SMSSuccess(
           recipient   = (success \ "recipient").text,
           countryCode = (success \ "country_code").text,

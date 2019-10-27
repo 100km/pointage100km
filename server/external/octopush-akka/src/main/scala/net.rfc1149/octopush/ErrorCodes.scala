@@ -68,7 +68,7 @@ object ErrorCodes {
 
   val errorMessage: Map[Int, String] =
     Source.fromString(errorsFromDocumentation).getLines().map(_.split(" ", 2)).collect {
-      case Array(n, t) ⇒ n.toInt → t.trim.stripSuffix(".")
+      case Array(n, t) => n.toInt -> t.trim.stripSuffix(".")
     }.toMap
 
 }

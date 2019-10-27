@@ -33,9 +33,9 @@ class OctopushSpec extends Specification {
   trait ValidOctopushScope extends OctopushScope {
 
     val octopush = (System.getenv("OCTOPUSH_USER_LOGIN"), System.getenv("OCTOPUSH_API_KEY")) match {
-      case (null, _) ⇒
+      case (null, _) =>
         skipped("no octopush credentials in environment"); null
-      case (userLogin, apiKey) ⇒ new Octopush(userLogin, apiKey)
+      case (userLogin, apiKey) => new Octopush(userLogin, apiKey)
     }
 
   }

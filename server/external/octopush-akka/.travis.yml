@@ -1,11 +1,15 @@
 language: scala
+branches:
+  only:
+    - staging
+    - trying
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 sudo: false
 scala:
-  - 2.12.8
+  - 2.13.1
 script:
-  - sbt clean coverage test coverageReport
+  - sbt test
 cache:
   directories:
     - $HOME/.ivy2/cache
