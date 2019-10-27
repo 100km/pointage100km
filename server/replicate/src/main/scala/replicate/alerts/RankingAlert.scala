@@ -23,21 +23,21 @@ object RankingAlert {
     val raceId = rankingInfo.raceId
     val name = ContestantState.contestantFromId(contestantId).fold(s"Contestant $contestantId")(_.full_name_and_bib)
     val raceName = Global.infos.fold(s"Race $raceId")(_.races_names(RaceId.unwrap(raceId)))
-    messaging.Message(RaceInfo, severity, title = rankingInfo.currentRank.fold(raceName)(rank ⇒ s"$raceName rank $rank"),
+    messaging.Message(RaceInfo, severity, title = rankingInfo.currentRank.fold(raceName)(rank => s"$raceName rank $rank"),
                       body  = s"$name $message", icon = Some(Glyphs.runner))
   }
 
-  private val rankingInfoToMessage: Flow[RankingInfo, Message, NotUsed] = Flow[RankingInfo].mapConcat { rankingInfo ⇒
+  private val rankingInfoToMessage: Flow[RankingInfo, Message, NotUsed] = Flow[RankingInfo].mapConcat { rankingInfo =>
     (rankingInfo.previousRank, rankingInfo.currentRank) match {
-      case (Some(_), None) ⇒
+      case (Some(_), None) =>
         List(alert(Severity.Error, rankingInfo, "disappeared from rankings"))
-      case (Some(previous), Some(current)) if previous - current >= Global.RankingAlerts.suspiciousRankJump ⇒
+      case (Some(previous), Some(current)) if previous - current >= Global.RankingAlerts.suspiciousRankJump =>
         List(alert(Severity.Warning, rankingInfo, s"gained ${previous - current} ranks at once (previously at rank $previous)"))
-      case (Some(previous), Some(current)) if previous != current && current <= Global.RankingAlerts.topRunners ⇒
+      case (Some(previous), Some(current)) if previous != current && current <= Global.RankingAlerts.topRunners =>
         List(alert(Severity.Info, rankingInfo, s"is in the top ${Global.RankingAlerts.topRunners} (previously at rank $previous)"))
-      case (None, Some(current)) if current <= Global.RankingAlerts.topRunners ⇒
+      case (None, Some(current)) if current <= Global.RankingAlerts.topRunners =>
         List(alert(Severity.Info, rankingInfo, s"started directly in the top ${Global.RankingAlerts.topRunners}"))
-      case _ ⇒
+      case _ =>
         Nil
     }
   }

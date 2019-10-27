@@ -16,8 +16,8 @@ import scala.language.postfixOps
 object OnChanges {
   private case object Timer
 
-  def onChanges(options: Options.Config, local: Database): Behavior[OnChangesProtocol] = Behaviors.setup[OnChangesProtocol] { context ⇒
-    Behaviors.withTimers { timers ⇒
+  def onChanges(options: Options.Config, local: Database): Behavior[OnChangesProtocol] = Behaviors.setup[OnChangesProtocol] { context =>
+    Behaviors.withTimers { timers =>
 
       import context.executionContext
 
@@ -55,7 +55,7 @@ object OnChanges {
       def trigger() = {
         val f = futures()
         f.failed.foreach(log.error(_, "error when running onChanges task"))
-        f.onComplete(_ ⇒ context.self ! Reset)
+        f.onComplete(_ => context.self ! Reset)
       }
 
       val materializer = ActorMaterializer.boundToActor(context)
@@ -63,7 +63,7 @@ object OnChanges {
       if (options.ping)
         PingService.launchPingService(options.siteId, local)(materializer)
 
-      local.changesSource(Map("filter" → "bib_input/no-ping"))
+      local.changesSource(Map("filter" -> "bib_input/no-ping"))
         .throttle(100, 1.second, 100, ThrottleMode.Shaping)
         .map(Data)
         .runWith(ActorSink.actorRef(context.self, StreamCompleted, StreamFailed))(materializer)
@@ -71,22 +71,22 @@ object OnChanges {
       context.self ! Trigger
 
       Behaviors.receiveMessage {
-        case Data(js) ⇒
+        case Data(js) =>
           if (!timers.isTimerActive(Timer))
             // We do not want to start the conflicts and incomplete checkpoints resolution
             // more than once every 5 seconds (rate limiting).
             timers.startSingleTimer(Timer, Trigger, nextRun - Deadline.now)
           Behaviors.same
-        case Trigger ⇒
+        case Trigger =>
           trigger()
           Behaviors.same
-        case Reset ⇒
+        case Reset =>
           nextRun = Deadline.now + 5.seconds
           Behaviors.same
-        case StreamCompleted ⇒
+        case StreamCompleted =>
           log.error("changes source completed, this is not supposed to happen, aborting")
           Behaviors.stopped
-        case StreamFailed(e) ⇒
+        case StreamFailed(e) =>
           log.error(e, "changes source terminated on error, aborting")
           Behaviors.stopped
       }

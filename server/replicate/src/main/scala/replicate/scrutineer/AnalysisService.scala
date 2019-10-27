@@ -16,13 +16,13 @@ object AnalysisService {
 
   def analysisServiceSink(database: Database)(implicit ec: ExecutionContext): Sink[ContestantAnalysis, Future[Done]] =
     Flow[ContestantAnalysis]
-      .mapAsyncUnordered(1) { analysis ⇒
+      .mapAsyncUnordered(1) { analysis =>
         database.updateBody("replicate", "set-analysis", analysis.id, analysis).map((analysis, _))
       }.map {
-        case (analysis, response) if response.status.isFailure() ⇒
+        case (analysis, response) if response.status.isFailure() =>
           Alerts.sendAlert(messaging.Message(Checkpoint, Severity.Error, s"Analysis for contestant ${analysis.contestantId}",
             s"Unable to store to database: ${response.status}"))
-        case _ ⇒
+        case _ =>
       }.withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider) and Name("analysisServiceSink"))
       .toMat(Sink.ignore)(Keep.right)
 

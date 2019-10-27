@@ -40,9 +40,9 @@ package object sms {
       if (status != currentStatus) {
         val current = FormatUtils.formatEuros(balance)
         val message = (currentStatus, status) match {
-          case (null, Ok) ⇒ s"Current balance is $current"
-          case (_, Ok)    ⇒ s"Balance has been restored to $current"
-          case _          ⇒ s"Balance is $current, below the limit of ${FormatUtils.formatEuros(limit)}"
+          case (null, Ok) => s"Current balance is $current"
+          case (_, Ok)    => s"Balance has been restored to $current"
+          case _          => s"Balance is $current, below the limit of ${FormatUtils.formatEuros(limit)}"
         }
         currentStatus = status
         latestAlert.foreach(Alerts.cancelAlert)

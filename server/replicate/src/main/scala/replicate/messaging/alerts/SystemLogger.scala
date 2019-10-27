@@ -14,8 +14,8 @@ class SystemLogger extends Messaging {
     val strMessage = s"${message.category}/${message.severity.toString.toLowerCase} $message"
     message.severity match {
       case Severity.Debug | Severity.Verbose |
-        Severity.Info | Severity.Warning ⇒ context.log.info(strMessage)
-      case Severity.Error | Severity.Critical ⇒ context.log.warning(strMessage)
+        Severity.Info | Severity.Warning => context.log.info(strMessage)
+      case Severity.Error | Severity.Critical => context.log.warning(strMessage)
     }
     FastFuture.successful(None)
   }

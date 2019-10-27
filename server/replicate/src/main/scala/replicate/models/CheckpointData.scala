@@ -40,7 +40,7 @@ object CheckpointData {
 
   // We are lenient about the presence of `deleted_times` and `artificial_times` as some older
   // administration tools may not insert them initially.
-  implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js ⇒
+  implicit val checkpointDataReads: Reads[CheckpointData] = Reads { js =>
     try {
       val raceId = RaceId((js \ "race_id").as[Int])
       val contestantId = ContestantId((js \ "bib").as[Int])
@@ -50,7 +50,7 @@ object CheckpointData {
       val insertedTimestamps = (js \ "artificial_times").asOpt[Vector[Long]].getOrElse(Vector.empty)
       JsSuccess(CheckpointData(raceId, contestantId, siteId, timestamps, deletedTimestamps, insertedTimestamps))
     } catch {
-      case t: Throwable ⇒ JsError(t.getMessage)
+      case t: Throwable => JsError(t.getMessage)
     }
   }
 

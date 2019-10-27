@@ -32,13 +32,13 @@ object Loader extends App {
 
   private val parser = new OptionParser[Options]("loader") {
     help("help") text "show this help"
-    opt[String]('h', "host") text "Mysql host" action { (x, c) ⇒ c.copy(host = Some(x)) }
-    opt[Int]('P', "port") text "Mysql port" action { (x, c) ⇒ c.copy(port = Some(x)) }
-    opt[String]('u', "user") text "Mysql user" action { (x, c) ⇒ c.copy(user = Some(x)) }
-    opt[String]('p', "password") text "Mysql password" action { (x, c) ⇒ c.copy(password = Some(x)) }
-    opt[String]('d', "database") text "Mysql database" action { (x, c) ⇒ c.copy(database = Some(x)) }
-    opt[Long]('r', "repeat") text "Minutes between relaunching (default: do not relaunch)" action { (x, c) ⇒ c.copy(repeat = Some(x)) }
-    arg[Int]("<year>") text "Year to import" action { (x, c) ⇒ c.copy(year = x) }
+    opt[String]('h', "host") text "Mysql host" action { (x, c) => c.copy(host = Some(x)) }
+    opt[Int]('P', "port") text "Mysql port" action { (x, c) => c.copy(port = Some(x)) }
+    opt[String]('u', "user") text "Mysql user" action { (x, c) => c.copy(user = Some(x)) }
+    opt[String]('p', "password") text "Mysql password" action { (x, c) => c.copy(password = Some(x)) }
+    opt[String]('d', "database") text "Mysql database" action { (x, c) => c.copy(database = Some(x)) }
+    opt[Long]('r', "repeat") text "Minutes between relaunching (default: do not relaunch)" action { (x, c) => c.copy(repeat = Some(x)) }
+    arg[Int]("<year>") text "Year to import" action { (x, c) => c.copy(year = x) }
     override val showUsageOnError = true
   }
 
@@ -59,27 +59,27 @@ object Loader extends App {
   private def capitalize(name: String) = {
     val capitalized = "[ -]".r.split(name).map(_.toLowerCase.capitalize).mkString(" ")
     capitalized.zip(name) map {
-      case (_, '-') ⇒ '-'
-      case (c, _)   ⇒ c
+      case (_, '-') => '-'
+      case (c, _)   => c
     } mkString
   }
 
   private def fix(m: Map[String, Any]): JsObject = JsObject(m.toSeq map {
-    case ("year", v: java.sql.Date)   ⇒ "year" → JsNumber(v.get(Calendar.YEAR))
-    case (k, v: java.math.BigDecimal) ⇒ k → JsNumber(v.doubleValue())
-    case (k, v: java.lang.Long)       ⇒ k → JsNumber(v.toLong)
-    case (k, v: java.lang.Integer)    ⇒ k → JsNumber(v.toInt)
-    case (k, v: java.util.Date)       ⇒ k → JsString(v.toString)
-    case ("id", id: String)           ⇒ "mysql_id" → JsString(id)
-    case (k, v: Boolean)              ⇒ k → JsBoolean(v)
-    case (k, v: String)               ⇒ k → JsString(v)
-    case (k, v)                       ⇒ throw new IllegalArgumentException(s"unable to decode non-string value `$v' for key `$k'")
+    case ("year", v: java.sql.Date)   => "year" -> JsNumber(v.get(Calendar.YEAR))
+    case (k, v: java.math.BigDecimal) => k -> JsNumber(v.doubleValue())
+    case (k, v: java.lang.Long)       => k -> JsNumber(v.toLong)
+    case (k, v: java.lang.Integer)    => k -> JsNumber(v.toInt)
+    case (k, v: java.util.Date)       => k -> JsString(v.toString)
+    case ("id", id: String)           => "mysql_id" -> JsString(id)
+    case (k, v: Boolean)              => k -> JsBoolean(v)
+    case (k, v: String)               => k -> JsString(v)
+    case (k, v)                       => throw new IllegalArgumentException(s"unable to decode non-string value `$v' for key `$k'")
   })
 
   private def containsAll(doc: JsObject, original: JsObject): Boolean = {
     doc.fields.forall {
-      case (k, v) if original \ k == JsDefined(v) ⇒ true
-      case _                                      ⇒ false
+      case (k, v) if original \ k == JsDefined(v) => true
+      case _                                      => false
     }
   }
 
@@ -109,7 +109,7 @@ object Loader extends App {
       println(s"Starting checking/inserting/updating ${q.size} documents from MySQL")
       // Insertions/updates are grouped by a maximum of 20 at a time to ensure that the database will not
       // be overloaded and that we will encounter no timeouts.
-      val dbops = Source(q).mapAsyncUnordered(20) { contestant ⇒
+      val dbops = Source(q).mapAsyncUnordered(20) { contestant =>
         val bib = contestant("bib").asInstanceOf[java.lang.Long]
         val id = "contestant-" + bib
         val firstName = capitalize(contestant("first_name").asInstanceOf[String])
@@ -117,51 +117,51 @@ object Loader extends App {
         // Team id is never used; val teamId = contestant("team_id").asInstanceOf[java.lang.Integer]
         val doc = fix(contestant.toMap.filterNot(_._2 == null)) ++
           Json.obj(
-            "_id" → id,
-            "type" → "contestant",
-            "name" → name,
-            "first_name" → firstName)
+            "_id" -> id,
+            "type" -> "contestant",
+            "name" -> name,
+            "first_name" -> firstName)
         val desc = s"bib $bib ($firstName $name)"
         existing.get(bib) match {
-          case Some(original) ⇒
+          case Some(original) =>
             if (containsAll(doc, original)) {
               upToDate.incrementAndGet()
               FastFuture.successful(bib)
             } else {
-              db.insert(doc ++ Json.obj("_rev" → (original \ "_rev").get, "stalkers" → (original \ "stalkers").get)) andThen {
-                case _ ⇒
+              db.insert(doc ++ Json.obj("_rev" -> (original \ "_rev").get, "stalkers" -> (original \ "stalkers").get)) andThen {
+                case _ =>
                   println(s"Updated existing $desc")
                   updated.incrementAndGet()
               } recover {
-                case t: Throwable ⇒
+                case t: Throwable =>
                   println(s"Could not update existing $desc: $t")
                   system.log.error(t, s"Could not update existing $desc")
                   Json.obj()
-              } map { _ ⇒ bib }
+              } map { _ => bib }
             }
-          case None ⇒
-            db.insert(doc ++ Json.obj("stalkers" → Json.arr())) andThen {
-              case _ ⇒
+          case None =>
+            db.insert(doc ++ Json.obj("stalkers" -> Json.arr())) andThen {
+              case _ =>
                 println(s"Inserted $desc")
                 inserted.incrementAndGet()
             } recover {
-              case t: Throwable ⇒
+              case t: Throwable =>
                 println(s"Could not insert $desc: $t")
                 Json.obj()
-            } map { _ ⇒ bib }
+            } map { _ => bib }
         }
-      }.runFold(Set[Long]()) { case (set, bib) ⇒ set + bib }
+      }.runFold(Set[Long]()) { case (set, bib) => set + bib }
       val bibs = Await.result(dbops, 1.minute)
-      val removeops = Source(existing.keySet.diff(bibs)).mapAsyncUnordered(20) { bib ⇒
+      val removeops = Source(existing.keySet.diff(bibs)).mapAsyncUnordered(20) { bib =>
         val contestant = existing(bib)
         val firstName = (contestant \ "first_name").asOpt[String].getOrElse("John")
         val lastName = (contestant \ "name").asOpt[String].getOrElse("Doe")
         db.delete(contestant) map {
-          case _ ⇒
+          case _ =>
             println(s"Remove contestant $bib ($firstName $lastName)")
             1
         } recover {
-          case t: Throwable ⇒
+          case t: Throwable =>
             println(s"Could not remove contestant $bib ($firstName $lastName)")
             0
         }
@@ -172,7 +172,7 @@ object Loader extends App {
       println(s"Removed documents: $removed")
       println(s"Documents already up-to-date: ${upToDate.get()}")
 
-      options.repeat.foreach { minutes ⇒
+      options.repeat.foreach { minutes =>
         println(s"Sleeping for $minutes minute${if (minutes > 1) "s" else ""}")
         Thread.sleep(minutes * 60000)
       }

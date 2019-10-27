@@ -21,7 +21,7 @@ trait StreamUtils {
    * @return the filtered stream
    */
   def sample[T](interSampleDelay: FiniteDuration): Flow[T, T, NotUsed] =
-    Flow[T].statefulMapConcat { () ⇒
+    Flow[T].statefulMapConcat { () =>
       var nextSampleDate = Deadline.now
       def filter(t: T): List[T] = {
         if (Deadline.now < nextSampleDate)
@@ -34,7 +34,7 @@ trait StreamUtils {
       filter
     }
 
-  private class IfUnchangedAfter[T, K](key: T ⇒ K, duration: FiniteDuration, maxQueueSize: Int) extends GraphStage[FlowShape[T, T]] {
+  private class IfUnchangedAfter[T, K](key: T => K, duration: FiniteDuration, maxQueueSize: Int) extends GraphStage[FlowShape[T, T]] {
 
     assert(maxQueueSize > 0, "maxQueueSize must be positive")
 
@@ -54,7 +54,7 @@ trait StreamUtils {
 
       private def sendFromQueue() =
         if (isAvailable(out))
-          queue.headOption.map(_.deadline - System.nanoTime()).foreach { remainingNanos ⇒
+          queue.headOption.map(_.deadline - System.nanoTime()).foreach { remainingNanos =>
             if (remainingNanos <= 0) {
               val (dequeued, newQueue) = queue.dequeue
               queue = newQueue
@@ -116,7 +116,7 @@ trait StreamUtils {
    * @tparam K the type of the keys
    * @return the delayed and possibly reduced stream
    */
-  def ifUnchangedAfter[T, K](key: T ⇒ K, duration: FiniteDuration, maxQueueSize: Int): Flow[T, T, NotUsed] =
+  def ifUnchangedAfter[T, K](key: T => K, duration: FiniteDuration, maxQueueSize: Int): Flow[T, T, NotUsed] =
     Flow[T].via(new IfUnchangedAfter[T, K](key, duration, maxQueueSize))
 
   private class IdleAlert[T](timeout: FiniteDuration, alert: T) extends GraphStage[FlowShape[T, T]] {
@@ -190,7 +190,7 @@ trait StreamUtils {
    * @return the stream of paired elements
    */
   def pairDifferent[T]: Flow[T, (T, T), NotUsed] =
-    Flow[T].sliding(2).collect { case Seq(a, b) if a != b ⇒ (a, b) }
+    Flow[T].sliding(2).collect { case Seq(a, b) if a != b => (a, b) }
 
   private class OnlyIncreasing[T](strict: Boolean)(implicit ord: Ordering[T]) extends GraphStage[FlowShape[T, T]] {
 
@@ -206,13 +206,13 @@ trait StreamUtils {
         override def onPush() = {
           val value = grab(in)
           previousValue match {
-            case None ⇒
+            case None =>
               push(out, value)
               previousValue = Some(value)
-            case Some(previous) if ord.compare(previous, value) <= ordCriterium ⇒
+            case Some(previous) if ord.compare(previous, value) <= ordCriterium =>
               push(out, value)
               previousValue = Some(value)
-            case _ ⇒
+            case _ =>
               pull(in)
           }
         }

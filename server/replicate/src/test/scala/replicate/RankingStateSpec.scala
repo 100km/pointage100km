@@ -28,7 +28,7 @@ class RankingStateSpec extends Specification {
     def first10(raceId: Int @@ RaceId): Vector[Int @@ ContestantId] = {
       val inserts = Source.fromFuture(CheckpointsState.contestants(raceId))
         .flatMapConcat(Source(_))
-        .mapAsync(4)(contestantId ⇒ CheckpointsState.timesFor(raceId, contestantId).map(Analyzer.analyze(raceId, contestantId, _)))
+        .mapAsync(4)(contestantId => CheckpointsState.timesFor(raceId, contestantId).map(Analyzer.analyze(raceId, contestantId, _)))
         .mapAsync(16)(RankingState.enterAnalysis)
         .runWith(Sink.ignore)
       Await.ready(inserts, 5.seconds)

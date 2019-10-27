@@ -30,7 +30,7 @@ object CheckpointsState {
 
   def sortedTimestamps(contestantTimes: IndexedSeq[CheckpointData]): IndexedSeq[Point] =
     contestantTimes.flatMap {
-      case CheckpointData(_, _, siteId, ts, _, _) ⇒ ts.map(Point(siteId, _))
+      case CheckpointData(_, _, siteId, ts, _, _) => ts.map(Point(siteId, _))
     }.toVector.sortBy(_.timestamp)
 
   private def sortedTimestamps(races: Map[Int @@ RaceId, Race], raceId: Int @@ RaceId, contestantId: Int @@ ContestantId): IndexedSeq[Point] =
@@ -38,15 +38,15 @@ object CheckpointsState {
 
   private val racesAgent = Agent(Map[Int @@ RaceId, Race]())
 
-  def reset(): Future[Done] = racesAgent.alter(Map[Int @@ RaceId, Race]()).map(_ ⇒ Done)
+  def reset(): Future[Done] = racesAgent.alter(Map[Int @@ RaceId, Race]()).map(_ => Done)
 
   def setTimes(checkpointData: CheckpointData): Future[IndexedSeq[CheckpointData]] = {
     val CheckpointData(raceId, contestantId, siteId, _, _, _) = checkpointData
-    racesAgent.alter { races ⇒
+    racesAgent.alter { races =>
       val race = races.getOrElse(raceId, Map())
       val contestantTimes = race.getOrElse(contestantId, IndexedSeq.empty).filterNot(_.siteId == siteId) :+ checkpointData
-      val newRace = race + (contestantId → contestantTimes)
-      races + (raceId → newRace)
+      val newRace = race + (contestantId -> contestantTimes)
+      races + (raceId -> newRace)
     }.map(_(raceId)(contestantId))
   }
 

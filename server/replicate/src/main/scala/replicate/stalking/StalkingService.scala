@@ -24,24 +24,24 @@ import scala.util.{Failure, Success}
  */
 object StalkingService {
 
-  private def stalkingService(database: Database, textService: ActorRef[SMSMessage]): Behavior[StalkingProtocol] = Behaviors.setup[StalkingProtocol] { context ⇒
+  private def stalkingService(database: Database, textService: ActorRef[SMSMessage]): Behavior[StalkingProtocol] = Behaviors.setup[StalkingProtocol] { context =>
 
     import context.executionContext
 
     // Map of contestant to signalled distance
     var stalkingInfo: Map[Int @@ ContestantId, Double] = Map()
 
-    database.view[Int @@ ContestantId, JsObject]("replicate", "sms-distance", List("group" → "true")).map(_.map {
-      case (k, v) ⇒ (k, (v \ "max").as[Double])
+    database.view[Int @@ ContestantId, JsObject]("replicate", "sms-distance", List("group" -> "true")).map(_.map {
+      case (k, v) => (k, (v \ "max").as[Double])
     }).onComplete {
-      case Success(notifications) ⇒ context.self ! InitialNotifications(notifications)
-      case Failure(e)             ⇒ context.self ! InitialFailure(e)
+      case Success(notifications) => context.self ! InitialNotifications(notifications)
+      case Failure(e)             => context.self ! InitialFailure(e)
     }
 
     def sendToStalkers(analysis: ContestantAnalysis) = {
       val contestantId = analysis.contestantId
       ContestantState.contestantFromId(contestantId) match {
-        case Some(contestant) ⇒
+        case Some(contestant) =>
           if (contestant.stalkers.nonEmpty) {
             val point = analysis.after.last
             if (System.currentTimeMillis() - point.timestamp <= Global.TextMessages.maxAcceptableDelay.toMillis) {
@@ -53,20 +53,20 @@ object StalkingService {
                   contestant.full_name_and_bib, analysis.raceId, distanceStr,
                   FormatUtils.formatDistance(stalkingInfo(contestantId)))
               else {
-                stalkingInfo += analysis.contestantId → point.distance
+                stalkingInfo += analysis.contestantId -> point.distance
                 val message = s"${contestant.full_name_and_bib} : passage à ${FormatUtils.formatDate(point.timestamp, withSeconds = true)} " +
                   s"""au site "${Global.infos.get.checkpoints(point.siteId).name}" (tour ${point.lap}, $distanceStr)"""
                 contestant.stalkers.foreach(textService ! SMSMessage(_, message))
-                database.insert(Json.obj("type" → "sms", "bib" → contestantId, "distance" → point.distance,
-                  "timestamp" → System.currentTimeMillis(), "recipients" → contestant.stalkers,
-                  "message" → message, "_id" → s"sms-$contestantId-${point.distance}"))
+                database.insert(Json.obj("type" -> "sms", "bib" -> contestantId, "distance" -> point.distance,
+                  "timestamp" -> System.currentTimeMillis(), "recipients" -> contestant.stalkers,
+                  "message" -> message, "_id" -> s"sms-$contestantId-${point.distance}"))
               }
             } else
               context.log.info(
                 "Not sending obsolete (older than {}) checkpoint information for {} in race {}",
                 Global.TextMessages.maxAcceptableDelay.toCoarsest, contestant.full_name_and_bib, analysis.raceId)
           }
-        case None ⇒
+        case None =>
           context.log.warning("no information known on contestant {}", analysis.contestantId)
       }
     }
@@ -75,28 +75,28 @@ object StalkingService {
 
     def initialBehavior = Behaviors.receiveMessage[StalkingProtocol] {
 
-      case InitialNotifications(notifications) ⇒
+      case InitialNotifications(notifications) =>
         stalkingInfo = notifications.toMap
         stash.unstashAll(context, regularBehavior)
         context.log.info("Stalking service starting with existing information")
         regularBehavior
 
-      case InitialFailure(throwable) ⇒
+      case InitialFailure(throwable) =>
         context.log.error(throwable, "could not get initial notifications state, aborting")
         throw throwable
 
-      case msg ⇒
+      case msg =>
         stash.stash(msg)
         Behaviors.same
     }
 
     def regularBehavior = Behaviors.receiveMessagePartial[StalkingProtocol] {
-      case OnInit(ackTo) ⇒
+      case OnInit(ackTo) =>
         // Request an initial analysis
         ackTo ! Ack
         Behaviors.same
 
-      case Wrapped(ackTo, analysis) ⇒
+      case Wrapped(ackTo, analysis) =>
         // Request another analysis
         ackTo ! Ack
         // Do not send an empty analysis (last point removed)
@@ -104,11 +104,11 @@ object StalkingService {
           sendToStalkers(analysis)
         Behaviors.same
 
-      case OnComplete ⇒
+      case OnComplete =>
         context.log.info("end of stream, terminating")
         Behaviors.stopped
 
-      case StreamFailure(throwable: Throwable) ⇒
+      case StreamFailure(throwable: Throwable) =>
         context.log.error(throwable, "stream terminating on error")
         Behaviors.stopped
     }

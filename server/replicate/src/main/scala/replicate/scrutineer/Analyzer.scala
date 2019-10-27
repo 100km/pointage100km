@@ -27,7 +27,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
   private def analyze(points: IndexedSeq[Point]): ContestantAnalysis = {
     val analyzed = analyzeRace(points)
     val before = enrichPoints(points)
-    val after = enrichPoints(analyzed.collect { case p: KeepPoint ⇒ p.point })
+    val after = enrichPoints(analyzed.collect { case p: KeepPoint => p.point })
     ContestantAnalysis(contestantId, raceInfo.raceId, analyzeRace(points), before, after)
   }
 
@@ -63,7 +63,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
 
   private[this] def findSurroundedByMissing(points: IndexedSeq[AnalyzedPoint]): IndexedSeq[AnalyzedPoint] = {
     points.filterNot(_.isInstanceOf[RemovePoint]).sliding(surroundedByMissing + 1)
-      .filter(pts ⇒ pts.count(_.isInstanceOf[MissingPoint]) == surroundedByMissing &&
+      .filter(pts => pts.count(_.isInstanceOf[MissingPoint]) == surroundedByMissing &&
         pts.head.isInstanceOf[MissingPoint] && pts.last.isInstanceOf[MissingPoint])
       .flatMap(_.find(_.isInstanceOf[GenuinePoint])).toIndexedSeq
   }
@@ -72,8 +72,8 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
     points.filterNot(_.isInstanceOf[RemovePoint]).sliding(maxConsecutiveMissing + 1)
       .filter(_.count(_.isInstanceOf[MissingPoint]) == maxConsecutiveMissing)
       .collect {
-        case pts if pts.head.isInstanceOf[GenuinePoint] ⇒ pts.head
-        case pts if pts.last.isInstanceOf[GenuinePoint] ⇒ pts.last
+        case pts if pts.head.isInstanceOf[GenuinePoint] => pts.head
+        case pts if pts.last.isInstanceOf[GenuinePoint] => pts.last
       }
       .toIndexedSeq.reverse // Favor end points in case of a night stop
   }
@@ -99,36 +99,36 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
       else
         (firstKept, firstRemoved)) >> dropLong >> dropSuspiciousEnd(absoluteMaxSpeed)
     val added = missingPoints(kept)
-    val points = kept.map(p ⇒ GenuinePoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
+    val points = kept.map(p => GenuinePoint(p.point, p.lap, p.distance, p.speed)) ++ removed ++ added
     points.sortBy(_.point.timestamp)
   }
 
-  private[this] def dropEarly: KeepRemoveFilter = { points ⇒
-    val early = points.takeWhile(_.timestamp < raceInfo.startTime).map(p ⇒ RemovePoint(p.point, "Race has not started yet"))
+  private[this] def dropEarly: KeepRemoveFilter = { points =>
+    val early = points.takeWhile(_.timestamp < raceInfo.startTime).map(p => RemovePoint(p.point, "Race has not started yet"))
     (reenrichPoints(points.drop(early.size)), early)
   }
 
-  private[this] def dropLate: KeepRemoveFilter = { points ⇒
+  private[this] def dropLate: KeepRemoveFilter = { points =>
     val kept = points.takeWhile(_.timestamp <= raceInfo.endTime)
-    val late = points.drop(kept.size).map(p ⇒ RemovePoint(p.point, "Race is already finished"))
+    val late = points.drop(kept.size).map(p => RemovePoint(p.point, "Race is already finished"))
     (kept, late)
   }
 
-  private[this] def dropLong: KeepRemoveFilter = { points ⇒
-    val kept = points.filter { point ⇒ Lap.unwrap(point.lap) <= raceInfo.laps }
-    (kept, points.drop(kept.size).map(p ⇒ RemovePoint(p.point, s"Number of laps in this race: ${raceInfo.laps}")))
+  private[this] def dropLong: KeepRemoveFilter = { points =>
+    val kept = points.filter { point => Lap.unwrap(point.lap) <= raceInfo.laps }
+    (kept, points.drop(kept.size).map(p => RemovePoint(p.point, s"Number of laps in this race: ${raceInfo.laps}")))
   }
 
   // Speeds exceeding the maximum allowed speed at the start cannot be a mistake due to
   // a later checkpoint. We can remove those points to work on the rest.
-  private[this] def dropSuspiciousStart(maxSpeed: Double): KeepRemoveFilter = { points ⇒
-    val suspicious = points.takeWhile(_.speed > maxSpeed).map(p ⇒ RemovePoint(p.point, s"${q(maxSpeed)} initial speed: ${formatSpeed(p.speed)}"))
+  private[this] def dropSuspiciousStart(maxSpeed: Double): KeepRemoveFilter = { points =>
+    val suspicious = points.takeWhile(_.speed > maxSpeed).map(p => RemovePoint(p.point, s"${q(maxSpeed)} initial speed: ${formatSpeed(p.speed)}"))
     (reenrichPoints(points.drop(suspicious.size)), suspicious)
   }
 
-  private[this] def dropSuspiciousEnd(maxSpeed: Double): KeepRemoveFilter = { points ⇒
+  private[this] def dropSuspiciousEnd(maxSpeed: Double): KeepRemoveFilter = { points =>
     points.takeRight(3) match {
-      case Seq(a, b, end) if b.speed <= maxSpeed && end.speed > maxSpeed ⇒
+      case Seq(a, b, end) if b.speed <= maxSpeed && end.speed > maxSpeed =>
         val previousSpeed = speedBetween(a.distance, end.distance, a.timestamp, end.timestamp)
         if (previousSpeed > maxSpeed)
           (points.dropRight(1), IndexedSeq(RemovePoint(
@@ -136,7 +136,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
             s"${q(maxSpeed)} speed on the last section (${formatSpeed(end.speed)}) and the two last sections (${formatSpeed(previousSpeed)})")))
         else
           (points, IndexedSeq.empty)
-      case _ ⇒
+      case _ =>
         (points, IndexedSeq.empty)
     }
   }
@@ -145,9 +145,9 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
 
   private[this] def missingPoints(points: IndexedSeq[EnrichedPoint]): IndexedSeq[ExtraPoint] = {
     (startingPoint +: points).sliding(2).flatMap {
-      case Seq(before, after) ⇒
-        for (index ← toIndex(before) + 1 until toIndex(after)) yield intermediatePoint(before, after, index)
-      case _ ⇒
+      case Seq(before, after) =>
+        for (index <- toIndex(before) + 1 until toIndex(after)) yield intermediatePoint(before, after, index)
+      case _ =>
         // Less than 2 points
         IndexedSeq.empty
     }.toIndexedSeq
@@ -198,7 +198,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
       DownPoint(point, lap, distance, after.speed, lastPing)
   }
 
-  private[this] def dropWhile(f: IndexedSeq[EnrichedPoint] ⇒ Option[RemovePoint]): KeepRemoveFilter = { original ⇒
+  private[this] def dropWhile(f: IndexedSeq[EnrichedPoint] => Option[RemovePoint]): KeepRemoveFilter = { original =>
     var kept = original
     var extra = IndexedSeq.empty[RemovePoint]
     var toRemove = f(kept)
@@ -214,26 +214,26 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
   private[this] def findMinVarianceExtraPoint(maxSpeed: Double)(points: IndexedSeq[EnrichedPoint]): Option[RemovePoint] = {
     // Compute the points at either end of a segment where the speed is out of range. The latest point
     // is never considered for removal unless it goes beyond the end of the race.
-    val consideredPoints = if (points.lastOption.exists(point ⇒ Lap.unwrap(point.lap) > raceInfo.laps)) points else points.dropRight(1)
+    val consideredPoints = if (points.lastOption.exists(point => Lap.unwrap(point.lap) > raceInfo.laps)) points else points.dropRight(1)
     val excessiveSpeedBefore = consideredPoints.filter(_.speed > maxSpeed).toSet
-    val excessiveSpeedAfter = points.sliding(2).collect { case Seq(start, end) if end.speed > maxSpeed ⇒ start }.toSet
+    val excessiveSpeedAfter = points.sliding(2).collect { case Seq(start, end) if end.speed > maxSpeed => start }.toSet
     val excessiveSpeed = excessiveSpeedBefore ++ excessiveSpeedAfter
     if (excessiveSpeed.isEmpty)
       None
     else {
       // Find the point whose removal will lead to the smallest variance
-      val toRemove = excessiveSpeed.toVector.map(p ⇒ (p, speedVariance(reenrichPoints(points.filterNot(_.eq(p)))))).minBy(_._2)._1
+      val toRemove = excessiveSpeed.toVector.map(p => (p, speedVariance(reenrichPoints(points.filterNot(_.eq(p)))))).minBy(_._2)._1
       // We might need to find the point following the removed point
-      val successor = points.sliding(2).collectFirst { case Seq(`toRemove`, next) ⇒ next }
+      val successor = points.sliding(2).collectFirst { case Seq(`toRemove`, next) => next }
       // Remove this point with a meaningful error message
       (excessiveSpeedBefore.contains(toRemove), excessiveSpeedAfter.contains(toRemove), successor) match {
-        case (true, false, _) ⇒
+        case (true, false, _) =>
           Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed before this checkpoint: ${formatSpeed(toRemove.speed)}"))
-        case (false, true, Some(next)) ⇒
+        case (false, true, Some(next)) =>
           Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed after this checkpoint: ${formatSpeed(next.speed)}"))
-        case (true, true, Some(next)) ⇒
+        case (true, true, Some(next)) =>
           Some(RemovePoint(toRemove.point, s"${q(maxSpeed)} speed around this checkpoint: ${formatSpeed(toRemove.speed)} before and ${formatSpeed(next.speed)} after"))
-        case _ ⇒
+        case _ =>
           // This can never happen
           None
       }
@@ -248,12 +248,12 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
    */
   private[this] def enrichPoints(points: IndexedSeq[Point]): IndexedSeq[EnrichedPoint] = {
     points.scanLeft((startingPoint.point, Lap(0), 0.0, 0.0)) {
-      case ((prevPoint, prevLap, prevDistance, prevSpeed), point@Point(siteId, timestamp)) ⇒
+      case ((prevPoint, prevLap, prevDistance, prevSpeed), point@Point(siteId, timestamp)) =>
         val lap = if (SiteId.unwrap(siteId) <= SiteId.unwrap(prevPoint.siteId)) Lap(Lap.unwrap(prevLap) + 1) else prevLap
         val distance = infos.distance(siteId, lap)
         val speed = speedBetween(prevDistance, distance, prevPoint.timestamp, timestamp)
         (point, lap, distance, speed)
-    }.tail.map { case (point, lap, distance, speed) ⇒ EnrichedPoint(point, lap, distance, speed) }
+    }.tail.map { case (point, lap, distance, speed) => EnrichedPoint(point, lap, distance, speed) }
   }
 
   /**
@@ -290,11 +290,11 @@ object Analyzer {
     val points = CheckpointsState.sortedTimestamps(data)
     val analysis = analyze(sample.raceId, sample.contestantId, points)
     // Enrich the analysis with information about the extra points
-    val deletedPoints = data.flatMap(cpd ⇒ CheckpointsState.toPoints(cpd.siteId, cpd.deletedTimestamps).map(DeletedPoint))
-    val inserted = data.flatMap(cpd ⇒ CheckpointsState.toPoints(cpd.siteId, cpd.insertedTimestamps)).toSet
+    val deletedPoints = data.flatMap(cpd => CheckpointsState.toPoints(cpd.siteId, cpd.deletedTimestamps).map(DeletedPoint))
+    val inserted = data.flatMap(cpd => CheckpointsState.toPoints(cpd.siteId, cpd.insertedTimestamps)).toSet
     val newCheckpoints = deletedPoints ++ analysis.checkpoints.map {
-      case p: GenuinePoint if inserted.contains(p.point) ⇒ ArtificialPoint(p)
-      case p ⇒ p
+      case p: GenuinePoint if inserted.contains(p.point) => ArtificialPoint(p)
+      case p => p
     }
     analysis.copy(checkpoints = newCheckpoints.sortBy(_.point.timestamp))
   }
@@ -307,15 +307,15 @@ object Analyzer {
   }
 
   case object EnrichedPoint {
-    implicit val enrichedPointWrites: Writes[EnrichedPoint] = Writes { p ⇒
-      Json.obj("site_id" → p.point.siteId, "time" → p.point.timestamp,
-        "lap" → p.lap, "distance" → p.distance, "speed" → p.speed)
+    implicit val enrichedPointWrites: Writes[EnrichedPoint] = Writes { p =>
+      Json.obj("site_id" -> p.point.siteId, "time" -> p.point.timestamp,
+        "lap" -> p.lap, "distance" -> p.distance, "speed" -> p.speed)
     }
   }
 
   sealed trait AnalyzedPoint {
     def point: Point
-    def toJson: JsObject = Json.obj("site_id" → point.siteId, "time" → point.timestamp)
+    def toJson: JsObject = Json.obj("site_id" -> point.siteId, "time" -> point.timestamp)
   }
 
   object AnalyzedPoint {
@@ -326,7 +326,7 @@ object Analyzer {
     def lap: Int @@ Lap
     def distance: Double
     def speed: Double
-    override def toJson = super.toJson ++ Json.obj("lap" → lap, "distance" → distance, "speed" → speed)
+    override def toJson = super.toJson ++ Json.obj("lap" -> lap, "distance" -> distance, "speed" -> speed)
   }
 
   sealed trait KeepPoint extends AnalyzedPoint with WithCheckpointInfo
@@ -336,12 +336,12 @@ object Analyzer {
   sealed trait ExtraPoint extends KeepPoint with Anomaly
 
   final case class GenuinePoint(point: Point, lap: Int @@ Lap, distance: Double, speed: Double) extends KeepPoint {
-    override def toJson = super.toJson ++ Json.obj("type" → "genuine")
+    override def toJson = super.toJson ++ Json.obj("type" -> "genuine")
     override def toString = s"CorrectPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
   final case class ArtificialPoint(point: Point, lap: Int @@ Lap, distance: Double, speed: Double) extends KeepPoint {
-    override def toJson = super.toJson ++ Json.obj("type" → "artificial")
+    override def toJson = super.toJson ++ Json.obj("type" -> "artificial")
     override def toString = s"ArtificialPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
@@ -350,22 +350,22 @@ object Analyzer {
   }
 
   final case class DeletedPoint(point: Point) extends AnalyzedPoint {
-    override def toJson = super.toJson ++ Json.obj("type" → "deleted")
+    override def toJson = super.toJson ++ Json.obj("type" -> "deleted")
   }
 
   final case class RemovePoint(point: Point, reason: String) extends AnalyzedPoint with Anomaly {
-    override def toJson = super.toJson ++ Json.obj("type" → "remove", "reason" → reason, "action" → "remove")
+    override def toJson = super.toJson ++ Json.obj("type" -> "remove", "reason" -> reason, "action" -> "remove")
   }
 
   final case class MissingPoint(point: Point, lap: Int @@ Lap, distance: Double, speed: Double) extends ExtraPoint {
-    override def toJson = super.toJson ++ Json.obj("type" → "missing", "action" → "add")
+    override def toJson = super.toJson ++ Json.obj("type" -> "missing", "action" -> "add")
     override def toString = s"MissingPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)})"
   }
 
   final case class DownPoint(point: Point, lap: Int @@ Lap, distance: Double, speed: Double, lastPing: Option[Long])
     extends ExtraPoint {
-    private def reason = lastPing.fold("Site has never been up")(downSince ⇒ s"Site is down since ${formatDate(downSince)}")
-    override def toJson = super.toJson ++ Json.obj("type" → "down", "reason" → reason)
+    private def reason = lastPing.fold("Site has never been up")(downSince => s"Site is down since ${formatDate(downSince)}")
+    override def toJson = super.toJson ++ Json.obj("type" -> "down", "reason" -> reason)
     override def toString = s"DownPoint($point, $lap, ${formatDistance(distance)}, ${formatSpeed(speed)}, $reason)"
   }
 
@@ -377,14 +377,14 @@ object Analyzer {
     val isOk = anomalies == 0
     val id = s"analysis-$contestantId"
 
-    def bestPoint: Option[KeepPoint] = if (valid) checkpoints.reverse.collectFirst { case p: KeepPoint ⇒ p } else None
+    def bestPoint: Option[KeepPoint] = if (valid) checkpoints.reverse.collectFirst { case p: KeepPoint => p } else None
   }
 
   private def countAnomalies(checkpoints: IndexedSeq[AnalyzedPoint]) = checkpoints.count(_.isInstanceOf[Anomaly])
 
   private def countConsecutiveAnomalies(checkpoints: IndexedSeq[AnalyzedPoint]) =
     checkpoints.scanLeft(0) {
-      case (encountered, point) ⇒
+      case (encountered, point) =>
         if (point.isInstanceOf[Anomaly])
           encountered + 1
         else
@@ -392,11 +392,11 @@ object Analyzer {
     }.max
 
   object ContestantAnalysis {
-    implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis ⇒
-      Json.obj("type" → "analysis", "bib" → analysis.contestantId, "race_id" → analysis.raceId,
-        "valid" → analysis.valid, "anomalies" → analysis.anomalies,
-        "checkpoints" → analysis.checkpoints, "before" → analysis.before, "after" → analysis.after,
-        "_id" → analysis.id)
+    implicit val contestantAnalysisWrites: Writes[ContestantAnalysis] = Writes { analysis =>
+      Json.obj("type" -> "analysis", "bib" -> analysis.contestantId, "race_id" -> analysis.raceId,
+        "valid" -> analysis.valid, "anomalies" -> analysis.anomalies,
+        "checkpoints" -> analysis.checkpoints, "before" -> analysis.before, "after" -> analysis.after,
+        "_id" -> analysis.id)
     }
   }
 
@@ -409,7 +409,7 @@ object Analyzer {
   def sq(a: Double): Double = a * a
 
   type KeptRemoved = (IndexedSeq[EnrichedPoint], IndexedSeq[RemovePoint])
-  type KeepRemoveFilter = IndexedSeq[EnrichedPoint] ⇒ KeptRemoved
+  type KeepRemoveFilter = IndexedSeq[EnrichedPoint] => KeptRemoved
 
   private implicit class Check(data: KeptRemoved) {
     def >>(f: KeepRemoveFilter): KeptRemoved = {
@@ -422,7 +422,7 @@ object Analyzer {
     assert(points.nonEmpty, "points cannot be empty")
     val speeds = points.map(_.speed)
     val mean = speeds.sum / speeds.size
-    speeds.fold(0.0)((a, e) ⇒ a + math.pow(e - mean, 2)) / speeds.size
+    speeds.fold(0.0)((a, e) => a + math.pow(e - mean, 2)) / speeds.size
   }
 
   def median(data: IndexedSeq[Double]): Double = {

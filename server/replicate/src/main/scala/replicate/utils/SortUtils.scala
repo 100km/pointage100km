@@ -13,12 +13,12 @@ object SortUtils {
     while (left != right) {
       val pivot = (left + right) / 2
       ord.compare(data(pivot), element) match {
-        case 0 ⇒
+        case 0 =>
           left = pivot
           right = pivot
-        case 1 ⇒
+        case 1 =>
           right = pivot
-        case -1 ⇒
+        case -1 =>
           if (left == pivot)
             left = pivot + 1
           else
@@ -38,7 +38,7 @@ object SortUtils {
       insertInto[T, Repr](element, data)
 
     def insertionSorted(implicit ord: Ordering[T], bf: CanBuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeqLike[T, Repr]): Repr =
-      data.foldLeft(bf().result()) { case (b, e) ⇒ insertInto(e, b) }
+      data.foldLeft(bf().result()) { case (b, e) => insertInto(e, b) }
   }
 
 }

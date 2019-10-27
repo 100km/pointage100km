@@ -26,7 +26,7 @@ import scala.util.{Failure, Success}
 
 class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: String, apiSecret: String) extends AbstractBehavior[SMSProtocol] with BalanceTracker {
 
-  import NexmoSMS.{Message ⇒ _, _}
+  import NexmoSMS.{Message => _, _}
 
   private[this] implicit val executionContext = context.executionContext
   private[this] implicit val materializer = ActorMaterializer.boundToActor(context)
@@ -38,48 +38,48 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
   private[this] def sendSMS(recipient: String @@ PhoneNumber, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(
       SMSEndpoint,
-      FormData("from" → senderId, "to" → PhoneNumber.unwrap(recipient).stripPrefix("+"),
-        "text" → message, "api_key" → apiKey, "api_secret" → apiSecret)).addHeader(Accept(MediaTypes.`application/json`))
+      FormData("from" -> senderId, "to" -> PhoneNumber.unwrap(recipient).stripPrefix("+"),
+        "text" -> message, "api_key" -> apiKey, "api_secret" -> apiSecret)).addHeader(Accept(MediaTypes.`application/json`))
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
 
   private[this] def checkBalance(): Future[HttpResponse] = {
-    val uri = Uri(accountEndpoint + "get-balance").withQuery(Query("api_key" → apiKey, "api_secret" → apiSecret))
+    val uri = Uri(accountEndpoint + "get-balance").withQuery(Query("api_key" -> apiKey, "api_secret" -> apiSecret))
     Source.single((RequestBuilding.Get(uri), NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get)
   }
 
   log.debug("NexmoSMS service started")
-  checkBalance().flatMap(Couch.checkResponse[JsObject]).map(js ⇒ (js \ "value").as[Double])
+  checkBalance().flatMap(Couch.checkResponse[JsObject]).map(js => (js \ "value").as[Double])
     .onComplete {
-      case Success(balance) ⇒ context.self ! Balance(balance)
-      case Failure(e)       ⇒ context.self ! BalanceError(e)
+      case Success(balance) => context.self ! Balance(balance)
+      case Failure(e)       => context.self ! BalanceError(e)
     }
 
   override def onMessage(msg: SMSProtocol) = msg match {
-    case SMSMessage(recipient, message) ⇒
+    case SMSMessage(recipient, message) =>
       sendSMS(recipient, message).flatMap(Couch.checkResponse[Response]).onComplete {
-        case Success(response) ⇒ context.self ! DeliveryReport(recipient, message, response)
-        case Failure(e)        ⇒ context.self ! DeliveryError(recipient, message, e)
+        case Success(response) => context.self ! DeliveryReport(recipient, message, response)
+        case Failure(e)        => context.self ! DeliveryError(recipient, message, e)
       }
       Behavior.same
 
-    case DeliveryReport(recipient, text, response) ⇒
+    case DeliveryReport(recipient, text, response) =>
       val parts = response.messageCount
       if (parts == 0)
         context.log.error("no message in response")
       else {
         var remaining = Double.MaxValue
-        for ((message, idx) ← response.messages.zipWithIndex) {
+        for ((message, idx) <- response.messages.zipWithIndex) {
           if (message.status == 0) {
-            val network = message.network.flatMap(Networks.byMCCMNC.get).fold("unknown network")(op ⇒ s"${op.network} (${op.country})")
+            val network = message.network.flatMap(Networks.byMCCMNC.get).fold("unknown network")(op => s"${op.network} (${op.country})")
             val cost = message.messagePrice.fold("an unknown cost")(FormatUtils.formatEuros)
             val dst = message.to.fold("unknown recipient")('+' + _)
             val msg = Message(TextMessage, Severity.Debug, s"Text message delivered to $dst (${idx + 1}/$parts)",
               s"Delivered through $network for $cost", icon = Some(Glyphs.telephoneReceiver))
             Alerts.sendAlert(msg)
-            message.remainingBalance.foreach(b ⇒ remaining = remaining.min(b))
+            message.remainingBalance.foreach(b => remaining = remaining.min(b))
           } else {
-            val errorMessage = message.errorText.fold(s"${message.status}")(explanation ⇒ s"${message.status}: $explanation")
+            val errorMessage = message.errorText.fold(s"${message.status}")(explanation => s"${message.status}: $explanation")
             val msg = Message(TextMessage, Severity.Error, s"Error when delivering text message to $recipient",
               s"$errorMessage (message was: $text)",
                               icon = Some(Glyphs.telephoneReceiver))
@@ -91,15 +91,15 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
       }
       Behavior.same
 
-    case DeliveryError(recipient, text, t) ⇒
+    case DeliveryError(recipient, text, t) =>
       context.log.error(t, "Error when sending SMS to {} through Nexmo: {}", recipient, text)
       Behavior.same
 
-    case Balance(balance) ⇒
+    case Balance(balance) =>
       trackBalance(balance)
       Behavior.same
 
-    case BalanceError(failure) ⇒
+    case BalanceError(failure) =>
       balanceError(failure)
       Behavior.same
   }
@@ -136,7 +136,7 @@ object NexmoSMS {
   private val SMSEndpoint = "/sms/json"
   private val accountEndpoint = "/account/"
 
-  def nexmoSMS(senderId: String, apiKey: String, apiSecret: String): Behavior[SMSMessage] = Behaviors.setup[SMSProtocol] { context ⇒
+  def nexmoSMS(senderId: String, apiKey: String, apiSecret: String): Behavior[SMSMessage] = Behaviors.setup[SMSProtocol] { context =>
     new NexmoSMS(context, senderId, apiKey, apiSecret)
   }.narrow
 

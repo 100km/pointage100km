@@ -12,6 +12,6 @@ package object messaging {
   private[messaging] case object Critical extends Status
 
   private[messaging] val severities: Map[Status, Severity] =
-    Map(Ok → Severity.Info, Notice → Severity.Info, Warning → Severity.Warning, Critical → Severity.Critical)
+    Map(Ok -> Severity.Info, Notice -> Severity.Info, Warning -> Severity.Warning, Critical -> Severity.Critical)
 
 }

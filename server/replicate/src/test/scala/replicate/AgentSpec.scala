@@ -34,7 +34,7 @@ class AgentSpec extends Specification {
 
     "alter its value in order" in {
       val a = Agent(42)
-      for (i ← 2 to 10) {
+      for (i <- 2 to 10) {
         a.alter(_ * i)
         a.alter(_ + 1)
       }

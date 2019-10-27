@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object Alerts {
 
-  val alertsBehavior: Behavior[Protocol] = Behaviors.setup[Protocol] { context ⇒
+  val alertsBehavior: Behavior[Protocol] = Behaviors.setup[Protocol] { context =>
 
     implicit val materializer = ActorMaterializer.boundToActor(context)
 
@@ -39,32 +39,32 @@ object Alerts {
     }
 
     Behaviors.receiveMessage {
-      case Initialize(database) ⇒
+      case Initialize(database) =>
         // Create officers documents asynchronously then send starting message
         val officers: Map[String, ActorRef[Messaging.Protocol]] =
           Global.replicateConfig.as[Map[String, Config]]("officers").collect {
-            case (officerId, config) if !config.as[Option[Boolean]]("disabled").contains(true) ⇒ (officerId, startOfficerActor(officerId, config))
+            case (officerId, config) if !config.as[Option[Boolean]]("disabled").contains(true) => (officerId, startOfficerActor(officerId, config))
           }
         val officersStr = officers.keys.toSeq.sorted.mkString(", ")
         createOfficerDocuments(database, officers.keys.toSeq).andThen {
-          case _ ⇒ sendAlert(messaging.Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
-                                               icon = Some(Glyphs.wrench)))
+          case _ => sendAlert(messaging.Message(Administrativia, Severity.Verbose, "Alert service starting", s"Delivering alerts to $officersStr",
+                                                icon = Some(Glyphs.wrench)))
         }
-        database.updateForm("bib_input", "force-update", "officers", Map("json" → Json.stringify(Json.obj("officers" → officersStr))))
+        database.updateForm("bib_input", "force-update", "officers", Map("json" -> Json.stringify(Json.obj("officers" -> officersStr))))
 
         var deliveryInProgress: Map[UUID, ActorRef[AlertSender.Protocol]] = Map()
 
         val permanentBehavior: Behavior[Protocol] = Behaviors.receiveMessagePartial {
 
-          case Msg(message, uuid) ⇒
+          case Msg(message, uuid) =>
             // Deliver a new message through a dedicated actor
             context.log.debug("sending message {} with UUID {}", message, uuid)
-            deliveryInProgress += uuid → context.spawnAnonymous(AlertSender(context.messageAdapter {
-              case AlertSender.Persisted(uuid, persistedBy) ⇒ Persisted(uuid, persistedBy)
+            deliveryInProgress += uuid -> context.spawnAnonymous(AlertSender(context.messageAdapter {
+              case AlertSender.Persisted(uuid, persistedBy) => Persisted(uuid, persistedBy)
             }, database, message, uuid, officers))
             Behaviors.same
 
-          case Cancel(uuid) ⇒
+          case Cancel(uuid) =>
             // Cancel a message either through its delivery actor if it is still active, or using stored information
             // in the database otherwise.
             context.log.debug("cancelling message with UUID {}", uuid)
@@ -74,7 +74,7 @@ object Alerts {
               AlertSender.cancelPersisted(database, officers, uuid)
             Behaviors.same
 
-          case Persisted(uuid, persistedBy) ⇒
+          case Persisted(uuid, persistedBy) =>
             // When delivery and cancellation information has been persisted into the database, the delivery actor may
             // be stopped. Cancellation information will be pulled up from the database if needed later.
             context.log.debug("message with UUID {} persisted, removing from cache and stopping actor", uuid)
@@ -91,7 +91,7 @@ object Alerts {
         // Switch to the permanent behavior
         permanentBehavior
 
-      case msg ⇒
+      case msg =>
         // Further alerts will be logged later on
         stash.stash(msg)
         Behaviors.same
@@ -145,9 +145,9 @@ object Alerts {
    * @return a future which will be completed once the insertions are done
    */
   private def createOfficerDocuments(database: Database, officers: Seq[String])(implicit ec: ExecutionContext): Future[Unit] = {
-    val docs = officers.map(officerId ⇒ Json.obj("_id" → s"officer-$officerId", "type" → "officer", "officer" → officerId,
-      "log_levels" → Json.obj("*" → (if (officerId == "system") "debug" else "warning"))))
-    database.bulkDocs(docs, allOrNothing = false).map(_ ⇒ ())
+    val docs = officers.map(officerId => Json.obj("_id" -> s"officer-$officerId", "type" -> "officer", "officer" -> officerId,
+      "log_levels" -> Json.obj("*" -> (if (officerId == "system") "debug" else "warning"))))
+    database.bulkDocs(docs, allOrNothing = false).map(_ => ())
   }
 
 }

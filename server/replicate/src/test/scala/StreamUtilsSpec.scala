@@ -31,7 +31,7 @@ class StreamUtilsSpec extends Specification {
   "sample()" should {
 
     "filter the right number of elements" in new WithActorSystem {
-      val source = Source.tick(0.second, 100.milliseconds, 1).zipWith(Source(1 to 100)) { case (_, n) ⇒ n }
+      val source = Source.tick(0.second, 100.milliseconds, 1).zipWith(Source(1 to 100)) { case (_, n) => n }
       // This will get the samples at 0, 200, 300, and 040 milliseconds, namely 1, 3, 5, and 7
       val result = source.via(sample(140.milliseconds)).take(4).runWith(Sink.reduce[Int](_ + _))
       Await.result(result, 1.second) must be equalTo 16
@@ -62,7 +62,7 @@ class StreamUtilsSpec extends Specification {
 
     def delay(duration: FiniteDuration): Unit =
       try Thread.sleep(duration.toMillis)
-      catch { case _: InterruptedException ⇒ }
+      catch { case _: InterruptedException => }
 
     "close an empty stream" in new WithActorSystem {
       val (upstream, downstream) = probes()
@@ -115,7 +115,7 @@ class StreamUtilsSpec extends Specification {
     "backpressure the input when the queue is full" in new WithActorSystem {
       val (upstream, downstream) = probes()
       // "k", "l", and "m" cannot be accepted before respectively "a", "b", abd "c" are pulled
-      for (s ← List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"))
+      for (s <- List("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"))
         upstream.sendNext(s)
       upstream.sendComplete()
       downstream.request(20).expectNext("a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
@@ -132,7 +132,7 @@ class StreamUtilsSpec extends Specification {
     }
 
     "trigger exactly once per alert period" in new WithActorSystem {
-      val result = Source.tick(0.second, 1.second, NotUsed).zip(Source.fromIterator(() ⇒ Iterator.from(0))).map(_._2)
+      val result = Source.tick(0.second, 1.second, NotUsed).zip(Source.fromIterator(() => Iterator.from(0))).map(_._2)
         .via(idleAlert[Int](200.milliseconds, 100))
         .take(5).runWith(Sink.fold(List[Int]())(_ :+ _))
       Await.result(result, 5.seconds) must be equalTo List(0, 100, 1, 100, 2)

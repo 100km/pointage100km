@@ -22,22 +22,22 @@ private class BroadcastAlert {
   def sendOrCancelBroadcast(json: JsObject): Unit =
     try {
       (json \ "doc").validate[Broadcast] match {
-        case JsSuccess(bcast, _) ⇒
+        case JsSuccess(bcast, _) =>
           if (bcast.isDeleted) {
             sentBroadcasts.get(bcast._id) match {
-              case Some(uuid) ⇒
+              case Some(uuid) =>
                 Alerts.cancelAlert(uuid)
                 sentBroadcasts -= bcast._id
-              case None ⇒
+              case None =>
               // We did not send this broadcast, it was sent before we started
             }
           } else
-            sentBroadcasts += bcast._id → Alerts.sendAlert(bcast.toMessage)
-        case error: JsError ⇒
+            sentBroadcasts += bcast._id -> Alerts.sendAlert(bcast.toMessage)
+        case error: JsError =>
           Global.system.log.error("BroadcastAlert: unable to analyze alert {}: {}", (json \ "id").as[String], error);
       }
     } catch {
-      case throwable: Throwable ⇒
+      case throwable: Throwable =>
         Global.system.log.error(throwable, "BroadcastAlert: crash when analyzing {}", (json \ "id").as[String]);
     }
 }
@@ -49,7 +49,7 @@ object BroadcastAlert {
     val isDeleted: Boolean = deletedTS.isDefined
 
     lazy val toMessage: Message = {
-      val title = target.fold("Broadcast message")(siteId ⇒ s"Message for ${Global.infos.get.checkpoints(siteId).name}")
+      val title = target.fold("Broadcast message")(siteId => s"Message for ${Global.infos.get.checkpoints(siteId).name}")
       val icon = if (target.isDefined) Glyphs.telephoneReceiver else Glyphs.publicAddressLoudspeaker
       messaging.Message(Message.Broadcast, Severity.Info, title = title, body = message, url = None, icon = Some(icon))
     }
@@ -59,7 +59,7 @@ object BroadcastAlert {
 
   def runBroadcastAlerts(database: Database)(context: ActorContext[_]) = {
     val broadcaster = new BroadcastAlert
-    database.changesSource(Map("filter" → "replicate/messages", "include_docs" → "true"))
+    database.changesSource(Map("filter" -> "replicate/messages", "include_docs" -> "true"))
       .runForeach(broadcaster.sendOrCancelBroadcast)(ActorMaterializer()(context.system))
   }
 

@@ -41,7 +41,7 @@ class Replicate(options: Options.Config) extends LoggingError {
 
   private implicit val timeout: Duration = (5, SECONDS)
 
-  private val localInfo = Json.obj("type" → "site-info", "scope" → "local", "site-id" → options.siteId)
+  private val localInfo = Json.obj("type" -> "site-info", "scope" -> "local", "site-id" -> options.siteId)
 
   private def createLocalInfo(db: Database) {
     val name = "site-info"
@@ -49,11 +49,11 @@ class Replicate(options: Options.Config) extends LoggingError {
       if (options.resetSiteId)
         db.insert(localInfo, name).execute()
     } catch {
-      case Couch.StatusError(409, _, _) ⇒
+      case Couch.StatusError(409, _, _) =>
         try {
           forceUpdate(db, name, localInfo).execute()
         } catch {
-          case t: Exception ⇒
+          case t: Exception =>
             log.error(t, "cannot force-update, hoping it is right")
         }
     }
@@ -64,11 +64,11 @@ class Replicate(options: Options.Config) extends LoggingError {
    * is not an error if we cannot create them since CouchDB works fine without them.
    */
   private def createSystemDatabases() = {
-    for (systemDb ← Seq("_global_changes", "_metadata", "_replicator", "_users"))
+    for (systemDb <- Seq("_global_changes", "_metadata", "_replicator", "_users"))
       localCouch.db(systemDb).create().onComplete {
-        case Success(_)                      ⇒ log.info("created database {}", systemDb)
-        case Failure(StatusError(412, _, _)) ⇒ // Nothing to do
-        case Failure(f)                      ⇒ log.info("could not create database {}: {}", systemDb, f)
+        case Success(_)                      => log.info("created database {}", systemDb)
+        case Failure(StatusError(412, _, _)) => // Nothing to do
+        case Failure(f)                      => log.info("could not create database {}: {}", systemDb, f)
       }
   }
 
@@ -89,7 +89,7 @@ class Replicate(options: Options.Config) extends LoggingError {
           dbName = Global.configuration.map(_.dbname)
           dbName.foreach(log.info("server database name is {}", _))
         } catch {
-          case t: Throwable ⇒
+          case t: Throwable =>
             log.error(t, "cannot retrieve database name")
             Thread.sleep(5000)
         }
@@ -104,9 +104,9 @@ class Replicate(options: Options.Config) extends LoggingError {
       try {
         dbName = Some(Some(localDatabase("configuration").execute()(timeout).as[Configuration].dbname))
       } catch {
-        case StatusError(404, _, _) ⇒
+        case StatusError(404, _, _) =>
           dbName = Some(None)
-        case t: Exception ⇒
+        case t: Exception =>
           log.info("cannot retrieve previous database name, will retry: {}", t.getMessage)
           Thread.sleep(5000)
       }
@@ -126,9 +126,9 @@ class Replicate(options: Options.Config) extends LoggingError {
         localDatabase.delete().execute()
         log.info("previous local database deleted")
       } catch {
-        case StatusError(404, _, _) ⇒
+        case StatusError(404, _, _) =>
           log.info("previous local database did not exist, nothing to delete")
-        case t: Exception ⇒
+        case t: Exception =>
           log.error(t, "deletion of previous local database failed, cannot continue")
           exit(1)
       }
@@ -136,14 +136,14 @@ class Replicate(options: Options.Config) extends LoggingError {
         localDatabase.create().execute()
         log.info("local database created")
       } catch {
-        case t: Exception ⇒
+        case t: Exception =>
           log.error(t, "cannot create local database")
           exit(1)
       }
     }
   }
 
-  val proxyOptions: JsObject = steenwerck.proxyUrl.fold(Json.obj())(url ⇒ Json.obj("proxy" → url))
+  val proxyOptions: JsObject = steenwerck.proxyUrl.fold(Json.obj())(url => Json.obj("proxy" -> url))
 
   try {
     if (!options.isSlave) {
@@ -160,17 +160,17 @@ class Replicate(options: Options.Config) extends LoggingError {
           localDatabase.replicateFrom(hubDatabase, proxyOptions).execute()(initialReplicationTimeout)
           log.info("initial replication done")
           val loadInfos = localDatabase("infos") map (_.as[Infos]) andThen {
-            case Success(i) ⇒
+            case Success(i) =>
               Global.infos = Some(i)
               log.info("race information loaded from database")
-            case Failure(t) ⇒
+            case Failure(t) =>
               log.error(t, "unable to read race information from database")
               exit(1)
           }
           loadInfos.execute()
           loaded = true
         } catch {
-          case t: Exception ⇒
+          case t: Exception =>
             // Sometimes, since nothing passes on the TCP stream, the connection aborts while the
             // replication is still in progress. We can just restart it as it will be an idempotent
             // operation.
@@ -183,7 +183,7 @@ class Replicate(options: Options.Config) extends LoggingError {
         }
     }
   } catch {
-    case t: Exception ⇒
+    case t: Exception =>
       log.error(t, "cannot create local information")
       exit(1)
   }
@@ -197,13 +197,13 @@ class Replicate(options: Options.Config) extends LoggingError {
         if (options.mode == Checkpoint) {
           val sites = Global.infos.get.sites.length
           val queryParams = Json.obj(
-            "site_id" → options.siteId.toString,
-            "prev_site_id" → ((options.siteId + sites - 1) % sites).toString)
-          (Json.obj("filter" → "replicate/to-download", "query_params" → queryParams), Json.obj("filter" → "replicate/to-upload"))
+            "site_id" -> options.siteId.toString,
+            "prev_site_id" -> ((options.siteId + sites - 1) % sites).toString)
+          (Json.obj("filter" -> "replicate/to-download", "query_params" -> queryParams), Json.obj("filter" -> "replicate/to-upload"))
         } else
-          (Json.obj("filter" → "replicate/no-local"), Json.obj("filter" → "replicate/no-local"))
-      val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" → true) ++ proxyOptions
-      val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" → true) ++ proxyOptions
+          (Json.obj("filter" -> "replicate/no-local"), Json.obj("filter" -> "replicate/no-local"))
+      val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" -> true) ++ proxyOptions
+      val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" -> true) ++ proxyOptions
       system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
         withError(localDatabase.replicateFrom(hubDatabase, replicateDownloadOptions), "cannot start remote to local replication")
         if (!options.isSlave) {
@@ -242,11 +242,11 @@ class Replicate(options: Options.Config) extends LoggingError {
       // If we have activated the stalking service, build a sink for it, or ignore
       val stalkingSink = if (options.stalking) {
         TextService.startTextService(system) match {
-          case Some(textService) ⇒
+          case Some(textService) =>
             Flow[(ContestantAnalysis, Boolean)].map(_._1)
               .via(Global.TextMessages.ifAnalysisUnchanged)
               .to(StalkingService.stalkingServiceSink(localDatabase, textService))
-          case None ⇒
+          case None =>
             log.info("Not starting stalking service because no text service is configured")
             Sink.ignore
         }
@@ -258,9 +258,9 @@ class Replicate(options: Options.Config) extends LoggingError {
 
       // Enter rankings all the times, but do not send alerts until we are no longer in the initial mode
       val rankingAlertSink = Flow[(ContestantAnalysis, Boolean)].mapAsync(1) {
-        case (analysis, initial) ⇒
+        case (analysis, initial) =>
           RankingState.enterContestant(analysis).map((_, initial))
-      }.collect { case (rankingInfo, initial) if !initial ⇒ rankingInfo }.to(RankingAlert.rankingAlertSink)
+      }.collect { case (rankingInfo, initial) if !initial => rankingInfo }.to(RankingAlert.rankingAlertSink)
 
       checkpointScrutineerSource.runWith(Sink.combine(stalkingSink, analysisServiceSink, rankingAlertSink)(Broadcast(_)))
     }

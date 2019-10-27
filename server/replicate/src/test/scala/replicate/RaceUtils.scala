@@ -21,7 +21,7 @@ object RaceUtils {
   def installFullRace(pristine: Boolean = false): Future[Int] = {
     val infos = loadInfos
     CheckpointsState.reset()
-    Future.sequence(for (checkpointData ← loadRaceData if RaceId.unwrap(checkpointData.raceId) > 0) yield {
+    Future.sequence(for (checkpointData <- loadRaceData if RaceId.unwrap(checkpointData.raceId) > 0) yield {
       CheckpointsState.setTimes(if (pristine) checkpointData.pristine else checkpointData)
     }).map(_.size)
   }

@@ -18,16 +18,16 @@ object PingService extends LoggingError {
   def pingService(siteId: Int, db: Database)(implicit fm: Materializer): Sink[JsObject, Future[Done]] = {
     val prefix = s"checkpoints-$siteId-"
     Flow[JsObject]
-      .filter(js ⇒ (js \ "id").as[String].startsWith(prefix)).map(_ ⇒ false)
-      .keepAlive(Global.pingTimeout, () ⇒ true)
+      .filter(js => (js \ "id").as[String].startsWith(prefix)).map(_ => false)
+      .keepAlive(Global.pingTimeout, () => true)
       .filter(identity).prepend(Source.single(true))
-      .mapAsync(1)(_ ⇒ withError(steenwerck.ping(db, siteId), "cannot ping database"))
+      .mapAsync(1)(_ => withError(steenwerck.ping(db, siteId), "cannot ping database"))
       .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
       .toMat(Sink.ignore)(Keep.right)
   }
 
   def launchPingService(siteId: Int, db: Database)(implicit fm: Materializer): Future[Done] = {
-    db.changesSource(Map("filter" → "bib_input/no-ping")).toMat(pingService(siteId, db))(Keep.right).run()
+    db.changesSource(Map("filter" -> "bib_input/no-ping")).toMat(pingService(siteId, db))(Keep.right).run()
   }
 
 }

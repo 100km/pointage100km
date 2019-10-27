@@ -21,7 +21,7 @@ object PingState {
    * @return a future completed when the write has been performed
    */
   def setLastPing(siteId: Int @@ SiteId, timestamp: Long): Future[Done] =
-    lastPings.alter(_ + (siteId → timestamp)).map(_ ⇒ Done)
+    lastPings.alter(_ + (siteId -> timestamp)).map(_ => Done)
 
   /**
    * Remove the timestamp associated to a site.
@@ -30,7 +30,7 @@ object PingState {
    * @return a future completed when the removal has been performed
    */
   def removePing(siteId: Int @@ SiteId): Future[Done] =
-    lastPings.alter(_ - siteId).map(_ ⇒ Done)
+    lastPings.alter(_ - siteId).map(_ => Done)
 
   /**
    * Get the latest timestamp for a site.

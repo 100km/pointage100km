@@ -23,48 +23,48 @@ class OctopushSMS(context: ActorContext[SMSProtocol], userLogin: String, apiKey:
   val log = context.log
 
   octopush.credit().onComplete {
-    case Success(amount) ⇒ context.self ! Balance(amount)
-    case Failure(e)      ⇒ context.self ! BalanceError(e)
+    case Success(amount) => context.self ! Balance(amount)
+    case Failure(e)      => context.self ! BalanceError(e)
   }
 
   override def onMessage(msg: SMSProtocol) = msg match {
-    case SMSMessage(recipient, message: String) ⇒
+    case SMSMessage(recipient, message: String) =>
       log.info("Sending SMS to {}: {}", recipient, message)
       val octopushSMSType = PhoneNumber.unwrap(recipient).take(3) match {
-        case "+33" ⇒ Some(PremiumFrance)
-        case "+32" ⇒ Some(WWW)
-        case _ ⇒
+        case "+33" => Some(PremiumFrance)
+        case "+32" => Some(WWW)
+        case _ =>
           log.error("No Octopush SMS type defined for this phone number, not sending it: {}", recipient)
           None
       }
-      octopushSMSType foreach { smsType ⇒
+      octopushSMSType foreach { smsType =>
         val sms = SMS(smsRecipients = List(PhoneNumber.unwrap(recipient)), smsText = message, smsType = smsType, smsSender = sender, transactional = true)
         octopush.sms(sms).onComplete {
-          case Success(result) ⇒ context.self ! SendOk(sms, result)
-          case Failure(e)      ⇒ context.self ! SendError(sms, e)
+          case Success(result) => context.self ! SendOk(sms, result)
+          case Failure(e)      => context.self ! SendError(sms, e)
         }
         Thread.sleep(10)
       }
       Behaviors.same
 
-    case SendOk(sms, result) ⇒
+    case SendOk(sms, result) =>
       log.debug(
         "SMS to {} sent succesfully with {} SMS (cost: {}): {}",
         sms.smsRecipients.head, result.numberOfSendings, FormatUtils.formatEuros(result.cost), sms.smsText)
       context.self ! Balance(result.balance)
       Behaviors.same
 
-    case SendError(sms, failure) ⇒
+    case SendError(sms, failure) =>
       log.error(failure, "SMS to {} ({}) failed", sms.smsRecipients.head, sms.smsText)
       Alerts.sendAlert(messaging.Message(TextMessage, Severity.Error, s"Unable to send SMS to ${sms.smsRecipients.head}",
         s"${failure.getMessage}", icon = Some(Glyphs.telephoneReceiver)))
       Behaviors.same
 
-    case Balance(balance) ⇒
+    case Balance(balance) =>
       trackBalance(balance)
       Behaviors.same
 
-    case BalanceError(failure) ⇒
+    case BalanceError(failure) =>
       balanceError(failure)
       Behaviors.same
   }
@@ -76,7 +76,7 @@ object OctopushSMS {
   private case class SendOk(sms: SMS, result: SMSResult) extends SMSProtocol
   private case class SendError(sms: SMS, failure: Throwable) extends SMSProtocol
 
-  def octopushSMS(userLogin: String, apiKey: String, sender: Option[String]): Behavior[SMSMessage] = Behaviors.setup[SMSProtocol] { context ⇒
+  def octopushSMS(userLogin: String, apiKey: String, sender: Option[String]): Behavior[SMSMessage] = Behaviors.setup[SMSProtocol] { context =>
     new OctopushSMS(context, userLogin, apiKey, sender)
   }.narrow
 

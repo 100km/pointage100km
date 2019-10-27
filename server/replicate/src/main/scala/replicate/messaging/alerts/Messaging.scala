@@ -15,10 +15,10 @@ abstract class Messaging extends ExtensibleBehavior[Messaging.Protocol] {
   import Global.dispatcher
 
   override def receive(context: TypedActorContext[Protocol], msg: Protocol): Behavior[Protocol] = msg match {
-    case Deliver(message, token, respondTo) ⇒
-      sendMessage(context.asScala, message).onComplete(r ⇒ respondTo ! DeliveryReceipt(r, token, context.asScala.self))
+    case Deliver(message, token, respondTo) =>
+      sendMessage(context.asScala, message).onComplete(r => respondTo ! DeliveryReceipt(r, token, context.asScala.self))
       Behaviors.same
-    case Cancel(cancellationId) ⇒
+    case Cancel(cancellationId) =>
       cancelMessage(context.asScala, cancellationId)
       Behaviors.same
   }

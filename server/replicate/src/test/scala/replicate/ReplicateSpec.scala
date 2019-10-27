@@ -33,8 +33,8 @@ class ReplicateSpec extends Specification with After {
 
     def delete(id: String): Future[Seq[String]] = {
       helpers.getRevs(db, id).recover {
-        case StatusError(404, _, _) ⇒ Seq.empty
-      }.map(_.filterNot(_.keys.contains("_deleted"))).flatMap(ds ⇒ Future.sequence(ds.map(db.delete)))
+        case StatusError(404, _, _) => Seq.empty
+      }.map(_.filterNot(_.keys.contains("_deleted"))).flatMap(ds => Future.sequence(ds.map(db.delete)))
     }
 
     def delete(doc: JsObject): Future[Seq[String]] = delete((doc \ "_id").as[String])
@@ -44,14 +44,14 @@ class ReplicateSpec extends Specification with After {
     def delInsert(doc: JsObject): Future[JsValue] = {
       val id = (doc \ "_id").as[String]
       idsToCleanup :+= id
-      delete(id).flatMap(_ ⇒ db.insert(doc))
+      delete(id).flatMap(_ => db.insert(doc))
     }
 
     def bulkDelInsert(id: String, docs: JsObject*): Future[Seq[JsValue]] = {
-      val ids = docs.map(d ⇒ (d \ "_id").as[String]).distinct
+      val ids = docs.map(d => (d \ "_id").as[String]).distinct
       idsToCleanup ++= ids
-      bulkDelete(ids).flatMap { _ ⇒
-        Future.sequence(for (doc ← docs) yield db.insert(doc      = doc, id = id, newEdits = false))
+      bulkDelete(ids).flatMap { _ =>
+        Future.sequence(for (doc <- docs) yield db.insert(doc      = doc, id = id, newEdits = false))
       }
     }
 
@@ -70,11 +70,11 @@ class ReplicateSpec extends Specification with After {
   "Replicate" should {
 
     "complete missing checkpoints" in new WithCleanup {
-      val contestant = Json.obj("first_name" → "John", "name" → "Doe", "bib" → 10000,
-        "race" → 17, "_id" → "contestant-10000", "type" → "contestant", "stalkers" → List[String]())
+      val contestant = Json.obj("first_name" -> "John", "name" -> "Doe", "bib" -> 10000,
+        "race" -> 17, "_id" -> "contestant-10000", "type" -> "contestant", "stalkers" -> List[String]())
       waitForResult(delete(contestant))
-      val checkpoint = Json.obj("_id" → "checkpoint-99-10000", "bib" → 10000, "race_id" → 0, "site_id" → 99,
-        "times" → Array(12345), "bib" → 10000, "type" → "checkpoint")
+      val checkpoint = Json.obj("_id" -> "checkpoint-99-10000", "bib" -> 10000, "race_id" -> 0, "site_id" -> 99,
+        "times" -> Array(12345), "bib" -> 10000, "type" -> "checkpoint")
       waitForResult(delInsert(checkpoint))
       waitForResult(delInsert(contestant))
       Thread.sleep(6000)
@@ -84,12 +84,12 @@ class ReplicateSpec extends Specification with After {
 
     "fix conflicting checkpoints" in new WithCleanup {
       val id = "checkpoint-98-11000"
-      val base = Json.obj("_id" → id, "bib" → 11000, "race_id" → 19, "site_id" → 98,
-        "uuid" → UUID.randomUUID().toString, "type" → "checkpoint")
+      val base = Json.obj("_id" -> id, "bib" -> 11000, "race_id" -> 19, "site_id" -> 98,
+        "uuid" -> UUID.randomUUID().toString, "type" -> "checkpoint")
       val timeBase = System.currentTimeMillis() / 1000
-      val cp1 = base ++ Json.obj("times" → Array(1, 2, 8), "deleted_times" → Array(4), "_rev" → s"$timeBase-cp1")
-      val cp2 = base ++ Json.obj("times" → Array(4, 5, 7), "artificial_times" → Array(5), "_rev" → s"$timeBase-cp2")
-      val cp3 = base ++ Json.obj("times" → Array(3, 6, 9), "_rev" → s"$timeBase-cp3")
+      val cp1 = base ++ Json.obj("times" -> Array(1, 2, 8), "deleted_times" -> Array(4), "_rev" -> s"$timeBase-cp1")
+      val cp2 = base ++ Json.obj("times" -> Array(4, 5, 7), "artificial_times" -> Array(5), "_rev" -> s"$timeBase-cp2")
+      val cp3 = base ++ Json.obj("times" -> Array(3, 6, 9), "_rev" -> s"$timeBase-cp3")
       waitForResult(bulkDelInsert(id, cp1, cp2, cp3))
       Thread.sleep(6000)
       val c = waitForResult(get(cp1))

@@ -23,18 +23,18 @@ case class Infos(
   import Infos._
 
   val races: Map[Int @@ RaceId, RaceInfo] =
-    races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(RaceId[Int]).map(id ⇒ id → new RaceInfo(id, this)).toMap
+    races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(RaceId[Int]).map(id => id -> new RaceInfo(id, this)).toMap
 
   val checkpoints: Map[Int @@ SiteId, CheckpointInfo] =
-    sites.indices.map(SiteId[Int]).map(id ⇒ id → new CheckpointInfo(id, this)).toMap
+    sites.indices.map(SiteId[Int]).map(id => id -> new CheckpointInfo(id, this)).toMap
 
   /**
    * Mapping of distances in kilometers from (siteId, lap)
    */
   val distances: Map[(Int @@ SiteId, Int @@ Lap), Double] = {
     var d: Map[(Int @@ SiteId, Int @@ Lap), Double] = Map()
-    for (lap ← (1 |-> races_laps.max).map(Lap[Int]); siteId ← sites.indices.map(SiteId[Int])) {
-      d += (siteId, lap) → distance(siteId, lap)
+    for (lap <- (1 |-> races_laps.max).map(Lap[Int]); siteId <- sites.indices.map(SiteId[Int])) {
+      d += (siteId, lap) -> distance(siteId, lap)
     }
     d
   }
@@ -46,7 +46,7 @@ case class Infos(
 object Infos {
 
   case class Coordinates(latitude: Double, longitude: Double) {
-    lazy val url = Uri("https://maps.google.com/maps").withQuery(Query("q" → s"loc:$latitude,$longitude"))
+    lazy val url = Uri("https://maps.google.com/maps").withQuery(Query("q" -> s"loc:$latitude,$longitude"))
   }
 
   implicit val coordinatesRead: Reads[Coordinates] = Json.reads[Coordinates]

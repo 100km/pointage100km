@@ -17,20 +17,20 @@ import scala.concurrent.duration._
 class Telegram(id: String) extends Messaging {
 
   override def sendMessage(context: ActorContext[Protocol], message: Message): Future[Option[String]] = {
-    val mdUrl = message.url.fold("")(uri ⇒ s" [(link)]($uri)")
+    val mdUrl = message.url.fold("")(uri => s" [(link)]($uri)")
     val mdMsg = message.severityOrMessageIcon.fold("")(_ + ' ') + s"*[${message.title}]* ${message.body} $mdUrl"
     implicit val scheduler: Scheduler = context.system.scheduler
     import context.executionContext
     implicit val timeout: Timeout = 5.seconds
-    Telegram.bot.toTyped[RedirectedCommand].ask[model.Message](ref ⇒
+    Telegram.bot.toTyped[RedirectedCommand].ask[model.Message](ref =>
       Targetted(To(id), ActionMessage(mdMsg, parse_mode = ParseModeMarkdown)).redirectResponseTo(ref.toUntyped))
-      .map(answer ⇒ Some(answer.message_id.toString))
+      .map(answer => Some(answer.message_id.toString))
   }
 
   override def cancelMessage(context: ActorContext[Protocol], identifier: String): Future[Boolean] = {
     implicit val scheduler: Scheduler = context.system.scheduler
     implicit val timeout: Timeout = 5.seconds
-    Telegram.bot.toTyped[RedirectedCommand].ask[Boolean] { ref ⇒
+    Telegram.bot.toTyped[RedirectedCommand].ask[Boolean] { ref =>
       Targetted(To(id), ActionDeleteMessage(identifier.toLong)).redirectResponseTo(ref.toUntyped)
     }
   }
@@ -41,7 +41,7 @@ object Telegram {
   private class TelegramBot extends BotActor(Global.replicateConfig.getString("telegram.token"), new Options(Global.replicateConfig)) with ActorLogging {
 
     override protected[this] def handleMessage(message: model.Message) {
-      message.from.fold(log.info("received unknown message without sender")) { from ⇒
+      message.from.fold(log.info("received unknown message without sender")) { from =>
         log.info("received unknown message from {} ({})", from.fullName, from.id)
       }
     }

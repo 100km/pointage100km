@@ -20,10 +20,10 @@ class FreeMobileSMS(user: String, password: String) extends Messaging {
   private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("smsapi.free-mobile.fr")
 
   override def sendMessage(context: ActorContext[Protocol], message: Message): Future[Option[String]] = {
-    val request = HttpRequest().withUri(Uri("/sendmsg").withQuery(Query("user" → user, "pass" → password, "msg" → message.toString)))
+    val request = HttpRequest().withUri(Uri("/sendmsg").withQuery(Query("user" -> user, "pass" -> password, "msg" -> message.toString)))
     Source.single((request, NotUsed)).via(apiPool).runWith(Sink.head).map(_._1.get match {
-      case r if r.status.isSuccess() ⇒ None
-      case r                         ⇒ throw new Couch.StatusError(r.status)
+      case r if r.status.isSuccess() => None
+      case r                         => throw new Couch.StatusError(r.status)
     })(context.executionContext)
   }
 
