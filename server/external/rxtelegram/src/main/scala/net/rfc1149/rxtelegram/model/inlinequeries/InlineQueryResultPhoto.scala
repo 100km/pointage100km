@@ -8,7 +8,7 @@ case class InlineQueryResultPhoto(id: String, photo_url: String, photo_width: Op
     reply_markup: Option[InlineKeyboardMarkup] = None, input_message_content: Option[InputMessageContent] = None)
 
 object InlineQueryResultPhoto {
-  implicit val iqrpWrites: Writes[InlineQueryResultPhoto] = Writes { iqrp ⇒
-    Json.writes[InlineQueryResultPhoto].writes(iqrp) ++ Json.obj("type" → "photo")
+  implicit val iqrpWrites: Writes[InlineQueryResultPhoto] = Writes { iqrp =>
+    Json.writes[InlineQueryResultPhoto].writes(iqrp) ++ Json.obj("type" -> "photo")
   }
 }

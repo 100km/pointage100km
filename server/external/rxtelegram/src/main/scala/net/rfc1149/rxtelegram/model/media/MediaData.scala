@@ -5,5 +5,5 @@ import akka.http.scaladsl.model.{ContentType, HttpEntity, MediaType}
 
 case class MediaData(mediaType: MediaType.Binary, data: Array[Byte], fileName: Option[String] = None) extends Media {
   def toBodyPart(fieldName: String) = BodyPart(fieldName, HttpEntity(ContentType(mediaType), data),
-                                               Map("filename" → fileName.getOrElse(s"media.${mediaType.subType}")))
+                                               Map("filename" -> fileName.getOrElse(s"media.${mediaType.subType}")))
 }

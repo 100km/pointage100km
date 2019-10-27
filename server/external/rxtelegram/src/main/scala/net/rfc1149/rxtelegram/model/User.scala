@@ -7,13 +7,13 @@ case class User(id: Long, first_name: String, last_name: Option[String], usernam
   override def canEqual(other: Any): Boolean = other.isInstanceOf[User]
 
   override def equals(other: Any): Boolean = other match {
-    case that: User ⇒ id == that.id
-    case _          ⇒ false
+    case that: User => id == that.id
+    case _          => false
   }
 
   override def hashCode(): Int = id.hashCode()
 
-  def fullName: String = first_name + last_name.fold("")(' ' + _)
+  def fullName: String = first_name + last_name.fold("")(name => s" $name")
 }
 
 object User {

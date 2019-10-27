@@ -13,7 +13,7 @@ abstract class DispatcherBotActor(token: String, options: Options) extends BotAc
     val chat = message.chat
     val chat_id = chat.id
     actorRef(chat_id).fold {
-      for (actorRef ← createActor(chat, message, context)) {
+      for (actorRef <- createActor(chat, message, context)) {
         addChat(chat_id, actorRef)
         actorRef ! message
       }
@@ -23,18 +23,18 @@ abstract class DispatcherBotActor(token: String, options: Options) extends BotAc
   }
 
   override def handleOther(other: Any): Unit = other match {
-    case CreateChat(chat_id, propsCreator, name) ⇒
+    case CreateChat(chat_id, propsCreator, name) =>
       addChat(chat_id, context.actorOf(propsCreator(chat_id), name))
-    case RemoveChat(id) ⇒
+    case RemoveChat(id) =>
       removeChat(id)
-    case _ ⇒
+    case _ =>
       super.handleOther(other)
   }
 
 }
 
 object DispatcherBotActor {
-  case class CreateChat(chat_id: Long, propsCreator: Long ⇒ Props, name: String)
+  case class CreateChat(chat_id: Long, propsCreator: Long => Props, name: String)
   case class RemoveChat(chat_id: Long)
 }
 

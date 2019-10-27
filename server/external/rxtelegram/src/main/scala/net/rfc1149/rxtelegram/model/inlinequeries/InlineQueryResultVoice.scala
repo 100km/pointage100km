@@ -7,7 +7,7 @@ case class InlineQueryResultVoice(id: String, voice_url: String, title: String, 
   extends InlineQueryResult
 
 object InlineQueryResultVoice {
-  implicit val iqrvWrites: Writes[InlineQueryResultVoice] = Writes { iqrv ⇒
-    Json.writes[InlineQueryResultVoice].writes(iqrv) ++ Json.obj("type" → "voice")
+  implicit val iqrvWrites: Writes[InlineQueryResultVoice] = Writes { iqrv =>
+    Json.writes[InlineQueryResultVoice].writes(iqrv) ++ Json.obj("type" -> "voice")
   }
 }

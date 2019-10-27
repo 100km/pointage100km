@@ -8,7 +8,7 @@ case class InlineQueryResultContact(id: String, phone_number: String, first_name
   extends InlineQueryResult
 
 object InlineQueryResultContact {
-  val iqrcWrites: Writes[InlineQueryResultContact] = Writes { iqrc ⇒
-    Json.writes[InlineQueryResultContact].writes(iqrc) ++ Json.obj("type" → "contact")
+  val iqrcWrites: Writes[InlineQueryResultContact] = Writes { iqrc =>
+    Json.writes[InlineQueryResultContact].writes(iqrc) ++ Json.obj("type" -> "contact")
   }
 }

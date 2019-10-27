@@ -9,8 +9,8 @@ case class InlineQueryResultArticle(id: String, title: String, message_text: Str
     thumb_width: Option[Long] = None, thumb_height: Option[Long] = None) extends InlineQueryResult
 
 object InlineQueryResultArticle {
-  implicit val iqraWrites: Writes[InlineQueryResultArticle] = Writes { iqra ⇒
-    Json.writes[InlineQueryResultArticle].writes(iqra) ++ Json.obj("type" → "article")
+  implicit val iqraWrites: Writes[InlineQueryResultArticle] = Writes { iqra =>
+    Json.writes[InlineQueryResultArticle].writes(iqra) ++ Json.obj("type" -> "article")
   }
 }
 

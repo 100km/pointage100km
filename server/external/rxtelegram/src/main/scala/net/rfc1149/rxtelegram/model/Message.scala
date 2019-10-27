@@ -22,7 +22,7 @@ object Message {
   // Since Message has more than 22 fields, the Json.reads[Message] macro cannot be used because
   // apply() won't be defined.
 
-  implicit lazy val messageReads: Reads[Message] = Reads { js ⇒
+  implicit lazy val messageReads: Reads[Message] = Reads { js =>
     JsSuccess(Message(
       message_id              = (js \ "message_id").as[Long],
       from                    = (js \ "from").asOpt[User],

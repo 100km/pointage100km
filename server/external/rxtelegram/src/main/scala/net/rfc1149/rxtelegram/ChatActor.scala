@@ -24,22 +24,22 @@ trait ChatActor extends Actor with Stash {
   }
 
   override def receive = {
-    case me: User ⇒
+    case me: User =>
       this.me = me
       unstashAll()
       context.become(receivePermanent)
 
-    case _ ⇒
+    case _ =>
       stash()
   }
 
   val receivePermanent: Receive = {
-    case message: Message ⇒
+    case message: Message =>
       chat = chat.orElse(Some(message.chat))
       handleMessage(message)
-    case action: Action ⇒
+    case action: Action =>
       context.parent.forward(Targetted(target, action))
-    case other ⇒
+    case other =>
       handleOther(other)
   }
 

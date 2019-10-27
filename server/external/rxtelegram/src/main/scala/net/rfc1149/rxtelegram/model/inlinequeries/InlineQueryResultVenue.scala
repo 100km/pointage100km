@@ -9,7 +9,7 @@ case class InlineQueryResultVenue(id: String, latitude: Float, longitude: Float,
   extends InlineQueryResult
 
 object InlineQueryResultVenue {
-  implicit val iqrvWrites: Writes[InlineQueryResultVenue] = Writes { iqrv ⇒
-    Json.writes[InlineQueryResultVenue].writes(iqrv) ++ Json.obj("type" → "venue")
+  implicit val iqrvWrites: Writes[InlineQueryResultVenue] = Writes { iqrv =>
+    Json.writes[InlineQueryResultVenue].writes(iqrv) ++ Json.obj("type" -> "venue")
   }
 }

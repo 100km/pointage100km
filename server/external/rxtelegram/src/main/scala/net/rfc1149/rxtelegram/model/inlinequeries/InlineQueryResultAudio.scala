@@ -7,7 +7,7 @@ case class InlineQueryResultAudio(id: String, audio_url: String, title: String, 
   extends InlineQueryResult
 
 object InlineQueryResultAudio {
-  val iqraWrites: Writes[InlineQueryResultAudio] = Writes { iqra ⇒
-    Json.writes[InlineQueryResultAudio].writes(iqra) ++ Json.obj("type" → "audio")
+  val iqraWrites: Writes[InlineQueryResultAudio] = Writes { iqra =>
+    Json.writes[InlineQueryResultAudio].writes(iqra) ++ Json.obj("type" -> "audio")
   }
 }

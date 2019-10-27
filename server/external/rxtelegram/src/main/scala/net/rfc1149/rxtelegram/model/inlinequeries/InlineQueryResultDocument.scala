@@ -9,7 +9,7 @@ case class InlineQueryResultDocument(id: String, title: String, caption: Option[
   extends InlineQueryResult
 
 object InlineQueryResultDocument {
-  val iqrdWrites: Writes[InlineQueryResultDocument] = Writes { iqrd ⇒
-    Json.writes[InlineQueryResultDocument].writes(iqrd) ++ Json.obj("type" → "document")
+  val iqrdWrites: Writes[InlineQueryResultDocument] = Writes { iqrd =>
+    Json.writes[InlineQueryResultDocument].writes(iqrd) ++ Json.obj("type" -> "document")
   }
 }

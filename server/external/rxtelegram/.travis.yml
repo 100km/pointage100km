@@ -1,9 +1,13 @@
 language: scala
+branches:
+  only:
+    - staging
+    - trying
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 sudo: false
 scala:
-  - 2.12.2
+  - 2.13.1
 cache:
   directories:
     - $HOME/.ivy2/cache

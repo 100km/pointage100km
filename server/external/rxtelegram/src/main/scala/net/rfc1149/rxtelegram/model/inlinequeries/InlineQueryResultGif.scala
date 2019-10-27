@@ -8,7 +8,7 @@ case class InlineQueryResultGif(id: String, gif_url: String, gif_width: Option[L
     reply_markup: Option[InlineKeyboardMarkup] = None, input_message_content: Option[InputMessageContent] = None)
 
 object InlineQueryResultGif {
-  implicit val iqrgWrites: Writes[InlineQueryResultGif] = Writes { iqrg ⇒
-    Json.writes[InlineQueryResultGif].writes(iqrg) ++ Json.obj("type" → "gif")
+  implicit val iqrgWrites: Writes[InlineQueryResultGif] = Writes { iqrg =>
+    Json.writes[InlineQueryResultGif].writes(iqrg) ++ Json.obj("type" -> "gif")
   }
 }

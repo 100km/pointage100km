@@ -16,17 +16,17 @@ object UpdateSource {
     override def hasNext: Boolean = true
     override def next(): Future[List[Update]] =
       getUpdates(limit   = options.updatesBatchSize, timeout = options.longPollingDelay)
-        .map { l ⇒ l.lastOption.foreach(acknowledgeUpdate); l }
+        .map { l => l.lastOption.foreach(acknowledgeUpdate); l }
   }
 
   private def source(token: String, options: Options)(implicit system: ActorSystem): Source[Update, NotUsed] =
-    Source.fromIterator(() ⇒ new UpdatesIterator(token, options))
+    Source.fromIterator(() => new UpdatesIterator(token, options))
       .mapAsync(parallelism = 1)(identity)
       .mapConcat(identity)
 
   def apply(token: String, options: Options)(implicit system: ActorSystem): Source[Update, NotUsed] =
     RestartSource.withBackoff(minBackoff   = options.httpMinErrorRetryDelay, maxBackoff = options.httpMaxErrorRetryDelay, randomFactor = 0.2) {
-      () ⇒ source(token, options)
+      () => source(token, options)
     }
 
 }

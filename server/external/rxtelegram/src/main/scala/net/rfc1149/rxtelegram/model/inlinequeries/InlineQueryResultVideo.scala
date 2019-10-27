@@ -10,7 +10,7 @@ case class InlineQueryResultVideo(id: String, video_url: String, mime_type: Stri
     reply_markup: Option[InlineKeyboardMarkup] = None, input_message_content: Option[InputMessageContent] = None)
 
 object InlineQueryResultVideo {
-  implicit val iqrvWrites: Writes[InlineQueryResultVideo] = Writes { iqrv ⇒
-    Json.writes[InlineQueryResultVideo].writes(iqrv) ++ Json.obj("type" → "video")
+  implicit val iqrvWrites: Writes[InlineQueryResultVideo] = Writes { iqrv =>
+    Json.writes[InlineQueryResultVideo].writes(iqrv) ++ Json.obj("type" -> "video")
   }
 }

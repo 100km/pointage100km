@@ -8,7 +8,7 @@ case class InlineQueryResultLocation(id: String, latitude: String, longitude: St
   extends InlineQueryResult
 
 object InlineQueryResultLocation {
-  val iqrlWrites: Writes[InlineQueryResultLocation] = Writes { iqrl ⇒
-    Json.writes[InlineQueryResultLocation].writes(iqrl) ++ Json.obj("type" → "location")
+  val iqrlWrites: Writes[InlineQueryResultLocation] = Writes { iqrl =>
+    Json.writes[InlineQueryResultLocation].writes(iqrl) ++ Json.obj("type" -> "location")
   }
 }

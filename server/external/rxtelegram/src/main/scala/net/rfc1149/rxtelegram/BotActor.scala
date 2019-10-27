@@ -29,26 +29,26 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
     self ! GetMyself
 
   override def receive = {
-    case GetMyself ⇒
+    case GetMyself =>
       getMe.pipeTo(self)
 
-    case user: User ⇒
+    case user: User =>
       me = user
       setWebhook("")
       unstashAll()
       context.become(receiveIKnowMe)
       UpdateSource(token, options).runWith(Sink.actorRefWithAck(self, Init, Ack, Complete, Fail))
 
-    case Failure(t) ⇒
+    case Failure(t) =>
       log.error(t, "cannot get information about myself")
       throw t
 
-    case _ ⇒
+    case _ =>
       stash()
   }
 
   private[this] var ongoingSend: Boolean = false
-  private[this] val sendQueue = new scala.collection.mutable.Queue[(() ⇒ Future[_], ActorRef)]
+  private[this] val sendQueue = new scala.collection.mutable.Queue[(() => Future[_], ActorRef)]
 
   /**
    * Perform one send operation and send a `Done` message to `self`.
@@ -60,7 +60,7 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
     assert(!ongoingSend)
     ongoingSend = true
     pipe(f).to(r)
-    f.onComplete(_ ⇒ self ! Done)
+    f.onComplete(_ => self ! Done)
   }
 
   /**
@@ -69,64 +69,64 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
    * @param f the send operation
    * @param r the actor to send the result of the operation to
    */
-  private[this] def attemptSend(f: () ⇒ Future[_], r: ActorRef): Unit =
+  private[this] def attemptSend(f: () => Future[_], r: ActorRef): Unit =
     if (ongoingSend)
       sendQueue += ((f, r))
     else
       computeAndSendResult(f(), r)
 
   def receiveIKnowMe: Receive = {
-    case GetMe ⇒
+    case GetMe =>
       sender ! me
 
-    case Init ⇒
+    case Init =>
       sender ! Ack
 
-    case Complete ⇒
+    case Complete =>
       log.debug("end of updates stream from Telegram")
       context.stop(self)
 
-    case Fail(t) ⇒
+    case Fail(t) =>
       log.error(t, "error when fetching updates stream from Telegram")
       throw t
 
-    case update: Update ⇒
+    case update: Update =>
       sender ! Ack
       handleUpdate(update)
 
-    case data: ActionAnswerInlineQuery ⇒
-      attemptSend(() ⇒ send(data), sender())
+    case data: ActionAnswerInlineQuery =>
+      attemptSend(() => send(data), sender())
 
-    case data: ActionDeleteMessage ⇒
-      attemptSend(() ⇒ sendTo[Boolean](data), sender())
+    case data: ActionDeleteMessage =>
+      attemptSend(() => sendTo[Boolean](data), sender())
 
-    case data: Command ⇒
-      attemptSend(() ⇒ sendTo[Message](data), sender())
+    case data: Command =>
+      attemptSend(() => sendTo[Message](data), sender())
 
-    case RedirectedCommand(data: ActionAnswerInlineQuery, target) ⇒
-      attemptSend(() ⇒ send(data), target)
+    case RedirectedCommand(data: ActionAnswerInlineQuery, target) =>
+      attemptSend(() => send(data), target)
 
-    case RedirectedCommand(data: ActionDeleteMessage, target) ⇒
-      attemptSend(() ⇒ sendTo[Boolean](data), target)
+    case RedirectedCommand(data: ActionDeleteMessage, target) =>
+      attemptSend(() => sendTo[Boolean](data), target)
 
-    case RedirectedCommand(command, target) ⇒
-      attemptSend(() ⇒ sendTo[Message](command), target)
+    case RedirectedCommand(command, target) =>
+      attemptSend(() => sendTo[Message](command), target)
 
-    case Done ⇒
+    case Done =>
       // End of a serialized operation. Start next one if needed.
       ongoingSend = false
-      sendQueue.dequeueFirst(_ ⇒ true).foreach { case (f, r) ⇒ computeAndSendResult(f(), r) }
+      sendQueue.dequeueFirst(_ => true).foreach { case (f, r) => computeAndSendResult(f(), r) }
 
-    case SetWebhook(uri, certificate) ⇒
+    case SetWebhook(uri, certificate) =>
       setWebhook(uri, certificate).pipeTo(sender())
 
-    case GetUserProfilePhotos(user, offset, limit) ⇒
+    case GetUserProfilePhotos(user, offset, limit) =>
       getUserProfilePhotos(user.id, offset, limit).pipeTo(sender())
 
-    case GetFile(file_id) ⇒
+    case GetFile(file_id) =>
       getFile(file_id).pipeTo(sender())
 
-    case other ⇒
+    case other =>
       handleOther(other)
   }
 
