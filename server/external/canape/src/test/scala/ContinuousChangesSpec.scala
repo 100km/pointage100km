@@ -16,14 +16,14 @@ class ContinuousChangesSpec extends WithDbSpecification("db") {
 
     "see the creation of new documents" in new freshDb {
       val changes = db.continuousChanges()
-      val result = changes.via(Database.onlySeq).map(j ⇒ (j \ "id").as[String]).take(3).runFold[List[String]](Nil)(_ :+ _)
+      val result = changes.via(Database.onlySeq).map(j => (j \ "id").as[String]).take(3).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.insert(JsObject(Nil), "docid1"), db.insert(JsObject(Nil), "docid2"), db.insert(JsObject(Nil), "docid3"))
       waitForResult(result).sorted must be equalTo List("docid1", "docid2", "docid3")
     }
 
     "see the creation of new documents as soon as they are created" in new freshDb {
       val changes = db.continuousChanges()
-      val downstream = changes.map(j ⇒ (j \ "id").as[String]).take(3).runWith(TestSink.probe)
+      val downstream = changes.map(j => (j \ "id").as[String]).take(3).runWith(TestSink.probe)
       waitEventually(db.insert(JsObject(Nil), "docid1"))
       downstream.requestNext("docid1")
       waitEventually(db.insert(JsObject(Nil), "docid2"))
@@ -35,65 +35,65 @@ class ContinuousChangesSpec extends WithDbSpecification("db") {
 
     "see the creation of new documents with non-ASCII id" in new freshDb {
       val changes = db.continuousChanges()
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(3).runFold[List[String]](Nil)(_ :+ _)
+      val result = changes.map(j => (j \ "id").as[String]).take(3).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.insert(JsObject(Nil), "docidé"), db.insert(JsObject(Nil), "docidà"), db.insert(JsObject(Nil), "docidß"))
       waitForResult(result).sorted must be equalTo List("docidß", "docidà", "docidé")
     }
 
     "allow the specification of a timeout" in new freshDb {
-      val result = db.continuousChanges(Map("timeout" → "10")).runWith(Sink.ignore)
-      Await.result(result, 500.milliseconds) must be equalTo Done
+      val result = db.continuousChanges(Map("timeout" -> "10")).runWith(Sink.ignore)
+      Await.result(result, 2.seconds) must be equalTo Done
     }
 
     "allow the specification of a timeout with explicit erasure of the heartbeat" in new freshDb {
-      val result = db.continuousChanges(Map("timeout" → "10", "heartbeat" → "")).runWith(Sink.ignore)
-      Await.result(result, 500.milliseconds) must be equalTo Done
+      val result = db.continuousChanges(Map("timeout" -> "10", "heartbeat" -> "")).runWith(Sink.ignore)
+      Await.result(result, 2.seconds) must be equalTo Done
     }
 
     "allow the erasure of the heartbeat without a timeout" in new freshDb {
-      def result = db.continuousChanges(Map("heartbeat" → "")).idleTimeout(200.milliseconds).runWith(Sink.ignore)
-      Await.result(result, 500.milliseconds) must throwA[TimeoutException]
+      def result = db.continuousChanges(Map("heartbeat" -> "")).idleTimeout(400.milliseconds).runWith(Sink.ignore)
+      Await.result(result, 2.seconds) must throwA[TimeoutException]
     }
 
     "allow the specification of a heartbeat without a timeout" in new freshDb {
-      def result = db.continuousChanges(Map("heartbeat" → "30000")).idleTimeout(200.milliseconds).runWith(Sink.ignore)
-      Await.result(result, 500.milliseconds) must throwA[TimeoutException]
+      def result = db.continuousChanges(Map("heartbeat" -> "30000")).idleTimeout(400.milliseconds).runWith(Sink.ignore)
+      Await.result(result, 1.seconds) must throwA[TimeoutException]
     }
 
     "allow the specification of a heartbeat" in new freshDb {
-      val result = db.continuousChanges(Map("timeout" → "10", "heartbeat" → "30000")).runWith(Sink.ignore)
-      Await.result(result, 500.milliseconds) must throwA[TimeoutException]
+      val result = db.continuousChanges(Map("timeout" -> "10", "heartbeat" -> "30000")).runWith(Sink.ignore)
+      Await.result(result, 1.seconds) must throwA[TimeoutException]
     }
 
     "properly disconnect after a timeout" in new freshDb {
-      val changes = db.continuousChanges(Map("timeout" → "100"))
-      val result = changes.map(_ \ "id").collect { case JsDefined(JsString(id)) ⇒ id }.runFold[List[String]](Nil)(_ :+ _)
+      val changes = db.continuousChanges(Map("timeout" -> "100"))
+      val result = changes.map(_ \ "id").collect { case JsDefined(JsString(id)) => id }.runFold[List[String]](Nil)(_ :+ _)
       waitForResult(result).sorted must be equalTo List()
     }
 
     "see documents operations occurring before the timeout" in new freshDb {
       waitForEnd(db.insert(JsObject(Nil), "docid1"), db.insert(JsObject(Nil), "docid2"))
-      val changes = db.continuousChanges(Map("timeout" → "100"))
-      val result = changes.map(_ \ "id").collect { case JsDefined(JsString(id)) ⇒ id }.runFold[List[String]](Nil)(_ :+ _)
+      val changes = db.continuousChanges(Map("timeout" -> "100"))
+      val result = changes.map(_ \ "id").collect { case JsDefined(JsString(id)) => id }.runFold[List[String]](Nil)(_ :+ _)
       waitForResult(result).sorted must be equalTo List("docid1", "docid2")
     }
 
     "be able to filter changes with a stored filter" in new freshDb {
       val filter = """function(doc, req) { return doc.name == "foo"; }"""
-      waitForEnd(db.insert(Json.obj("filters" → Json.obj("f" → filter)), "_design/d"))
-      val changes = db.continuousChanges(Map("filter" → "d/f"))
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
-      waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+      waitForEnd(db.insert(Json.obj("filters" -> Json.obj("f" -> filter)), "_design/d"))
+      val changes = db.continuousChanges(Map("filter" -> "d/f"))
+      val result = changes.map(j => (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
+      waitEventually(db.bulkDocs(Seq(Json.obj("name" -> "foo", "_id" -> "docid1"), Json.obj("name" -> "bar", "_id" -> "docid2"),
+                                     Json.obj("name" -> "foo", "_id" -> "docid3"), Json.obj("name" -> "bar", "_id" -> "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid3")
     }
 
     "be able to filter changes by document ids" in new freshDb {
       val filter = """function(doc, req) { return doc.name == "foo"; }"""
       val changes = db.continuousChangesByDocIds(List("docid1", "docid4"))
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
-      waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+      val result = changes.map(j => (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
+      waitEventually(db.bulkDocs(Seq(Json.obj("name" -> "foo", "_id" -> "docid1"), Json.obj("name" -> "bar", "_id" -> "docid2"),
+                                     Json.obj("name" -> "foo", "_id" -> "docid3"), Json.obj("name" -> "bar", "_id" -> "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid4")
     }
 

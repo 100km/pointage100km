@@ -77,7 +77,7 @@ class Couch(
    * @param request the request to send
    */
   def sendRequest(request: HttpRequest): Future[HttpResponse] =
-    Source.single(request → NotUsed).via(hostConnectionPool).runWith(Sink.head).map(_._1.get)
+    Source.single(request -> NotUsed).via(hostConnectionPool).runWith(Sink.head).map(_._1.get)
 
   /**
    * Send an arbitrary HTTP request on the potentially blocking bool.
@@ -85,7 +85,7 @@ class Couch(
    * @param request the request to send
    */
   def sendPotentiallyBlockingRequest(request: Future[HttpRequest]): Source[HttpResponse, NotUsed] = {
-    Source.fromFuture(request).map { r ⇒
+    Source.fromFuture(request).map { r =>
       if (r.method != HttpMethods.POST)
         throw new IllegalArgumentException("potentially blocking request must use POST method")
       r
@@ -93,17 +93,17 @@ class Couch(
   }
 
   private[this] val defaultHeaders = {
-    val authHeader = auth map { case (login, password) ⇒ Authorization(BasicHttpCredentials(login, password)) }
+    val authHeader = auth map { case (login, password) => Authorization(BasicHttpCredentials(login, password)) }
     userAgent :: Accept(`application/json`) :: authHeader.toList
   }
 
   private[this] def Get(query: Uri): HttpRequest = HttpRequest(GET, uri = query, headers = defaultHeaders)
 
   private[canape] def Post[T: ToEntityMarshaller](query: Uri, data: T): Future[HttpRequest] =
-    Marshal(data).to[RequestEntity].map(e ⇒ HttpRequest(POST, uri = query, entity = e, headers = defaultHeaders))
+    Marshal(data).to[RequestEntity].map(e => HttpRequest(POST, uri = query, entity = e, headers = defaultHeaders))
 
   private[this] def Put[T: ToEntityMarshaller](query: Uri, data: T = HttpEntity.Empty): Future[HttpRequest] =
-    Marshal(data).to[RequestEntity].map(e ⇒ HttpRequest(PUT, uri = query, entity = e, headers = defaultHeaders))
+    Marshal(data).to[RequestEntity].map(e => HttpRequest(PUT, uri = query, entity = e, headers = defaultHeaders))
 
   private[this] def Delete(query: Uri): HttpRequest =
     HttpRequest(DELETE, uri = query, headers = defaultHeaders)
@@ -210,7 +210,7 @@ class Couch(
     sendRequest(Delete(query)).flatMap(checkResponse[T])
 
   private[this] def buildURI(fixedAuth: Option[(String, String)]): Uri = {
-    val uri = Uri().withScheme(if (secure) "https" else "http").withHost(host).withUserInfo(fixedAuth.map(u ⇒ s"${u._1}:${u._2}").getOrElse(""))
+    val uri = Uri().withScheme(if (secure) "https" else "http").withHost(host).withUserInfo(fixedAuth.map(u => s"${u._1}:${u._2}").getOrElse(""))
     if ((!secure && port == 80) || (secure && port == 443))
       uri
     else
@@ -223,13 +223,13 @@ class Couch(
   protected def canEqual(that: Any) = that.isInstanceOf[Couch]
 
   override def equals(that: Any) = that match {
-    case other: Couch if other.canEqual(this) ⇒ uri == other.uri
-    case _                                    ⇒ false
+    case other: Couch if other.canEqual(this) => uri == other.uri
+    case _                                    => false
   }
 
   override def hashCode() = toString.hashCode()
 
-  override def toString = buildURI(auth.map(x ⇒ (x._1, "********"))).toString()
+  override def toString = buildURI(auth.map(x => (x._1, "********"))).toString()
 
   /**
    * Launch a mono-directional replication.
@@ -241,7 +241,7 @@ class Couch(
    * @throws CouchError if an error occurs
    */
   def replicate(source: Database, target: Database, params: JsObject = Json.obj()): Future[JsObject] = {
-    makePostRequest[JsObject]("/_replicate", params ++ Json.obj("source" → source.uri.toString, "target" → target.uri.toString))
+    makePostRequest[JsObject]("/_replicate", params ++ Json.obj("source" -> source.uri.toString, "target" -> target.uri.toString))
   }
 
   /**
@@ -267,7 +267,7 @@ class Couch(
    * @return a sequence of UUIDs
    */
   def getUUIDs(count: Int): Future[Seq[String]] =
-    makeGetRequest[JsObject](s"/_uuids?count=$count") map { r ⇒ (r \ "uuids").as[Seq[String]] }
+    makeGetRequest[JsObject](s"/_uuids?count=$count") map { r => (r \ "uuids").as[Seq[String]] }
 
   /**
    * Request an UUID from the database.
@@ -343,9 +343,9 @@ object Couch extends PlayJsonSupport {
    */
   def checkResponse[T: Reads](response: HttpResponse)(implicit fm: Materializer, ec: ExecutionContext): Future[T] = {
     response.status match {
-      case status if status.isFailure() ⇒
+      case status if status.isFailure() =>
         statusErrorFromResponse(response)
-      case _ ⇒
+      case _ =>
         Unmarshal(response.entity).to[T]
     }
   }

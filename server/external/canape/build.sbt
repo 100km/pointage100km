@@ -7,27 +7,24 @@ lazy val canape = project
       name := "canape",
       organization := "net.rfc1149",
       version := "0.0.9-SNAPSHOT",
-      scalaVersion := "2.12.8",
+      scalaVersion := "2.13.1",
       scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
-      resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-            Resolver.jcenterRepo),
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-actor" % "2.5.22",
-        "com.typesafe.akka" %% "akka-stream" % "2.5.22",
-        "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.22" % "test",
-        "com.typesafe.akka" %% "akka-http" % "10.1.8",
-        "de.heikoseeberger" %% "akka-http-play-json" % "1.23.0",
-        "com.iheart" %% "ficus" % "1.4.4",
-        "org.specs2" %% "specs2-core" % "4.3.3" % "test",
-        "org.specs2" %% "specs2-mock" % "4.3.3" % "test"
+        "com.typesafe.akka" %% "akka-actor" % "2.5.26",
+        "com.typesafe.akka" %% "akka-stream" % "2.5.26",
+        "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.26" % "test",
+        "com.typesafe.akka" %% "akka-http" % "10.1.10",
+        "de.heikoseeberger" %% "akka-http-play-json" % "1.29.1",
+        "com.iheart" %% "ficus" % "1.4.7",
+        "org.specs2" %% "specs2-core" % "4.6.0" % "test",
+        "org.specs2" %% "specs2-mock" % "4.6.0" % "test"
       ),
       fork in Test := true,
-      scalariformSettings(autoformat = true),
+      scalariformAutoformat := true,
       ScalariformKeys.preferences := ScalariformKeys.preferences.value
         .setPreference(AlignArguments, true)
         .setPreference(AlignSingleLineCaseStatements, true)
         .setPreference(DoubleIndentConstructorArguments, true)
-        .setPreference(RewriteArrowSymbols, true)
         .setPreference(SpacesWithinPatternBinders, false)
         .setPreference(SpacesAroundMultiImports, false))
 

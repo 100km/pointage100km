@@ -15,12 +15,12 @@ case class Result(
 
   def values[V: Reads]: Seq[V] = rows map (_.value.as[V])
 
-  def docs[D: Reads]: Seq[D] = rows flatMap (d ⇒ d.doc.toList.map(_.as[D]))
+  def docs[D: Reads]: Seq[D] = rows flatMap (d => d.doc.toList.map(_.as[D]))
 
-  def items[K: Reads, V: Reads]: Iterable[(String, K, V)] = rows map (r ⇒ (r.id, r.key.as[K], r.value.as[V]))
+  def items[K: Reads, V: Reads]: Iterable[(String, K, V)] = rows map (r => (r.id, r.key.as[K], r.value.as[V]))
 
   def itemsWithDoc[K: Reads, V: Reads, D: Reads]: Iterable[(String, K, V, Option[D])] =
-    rows map (r ⇒ (r.id, r.key.as[K], r.value.as[V], r.doc.map(_.as[D])))
+    rows map (r => (r.id, r.key.as[K], r.value.as[V], r.doc.map(_.as[D])))
 
 }
 

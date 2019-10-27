@@ -32,8 +32,8 @@ case class Database(couch: Couch, databaseName: String) {
   override def canEqual(that: Any) = that.isInstanceOf[Database]
 
   override def equals(that: Any): Boolean = that match {
-    case other: Database if other.canEqual(this) ⇒ uri == other.uri
-    case _                                       ⇒ false
+    case other: Database if other.canEqual(this) => uri == other.uri
+    case _                                       => false
   }
 
   def uriFrom(other: Couch): String = if (couch == other) databaseName else uri.toString()
@@ -70,7 +70,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @throws CouchError if an error occurs
    */
   def apply(id: String, rev: String): Future[JsObject] =
-    couch.makeGetRequest[JsObject](encode(id, Seq("rev" → rev)))
+    couch.makeGetRequest[JsObject](encode(id, Seq("rev" -> rev)))
 
   /**
    * Get an existing document from the database.
@@ -107,7 +107,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @throws CouchError if an error occurs
    */
   def mapOnly(design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[Result] =
-    query(s"_design/$design/_view/$name", properties :+ ("reduce" → "false"))
+    query(s"_design/$design/_view/$name", properties :+ ("reduce" -> "false"))
 
   /**
    * Query a view from the database using map/reduce.
@@ -119,8 +119,8 @@ case class Database(couch: Couch, databaseName: String) {
    * @return a future containing a sequence of results
    */
   def view[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[Seq[(K, V)]] =
-    couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties)).map(result ⇒ (result \ "rows").as[Array[JsValue]] map { row ⇒
-      (row \ "key").as[K] → (row \ "value").as[V]
+    couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties)).map(result => (result \ "rows").as[Array[JsValue]] map { row =>
+      (row \ "key").as[K] -> (row \ "value").as[V]
     })
 
   /**
@@ -133,9 +133,9 @@ case class Database(couch: Couch, databaseName: String) {
    * @return a future containing the update sequence and a sequence of results
    */
   def viewWithUpdateSeq[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[(UpdateSequence, Vector[(K, V)])] =
-    couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties :+ ("update_seq" → "true"))).map(result ⇒
+    couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties :+ ("update_seq" -> "true"))).map(result =>
       ((result \ "update_seq").as[UpdateSequence],
-        (result \ "rows").as[Vector[JsValue]] map (row ⇒ (row \ "key").as[K] → (row \ "value").as[V])))
+        (result \ "rows").as[Vector[JsValue]] map (row => (row \ "key").as[K] -> (row \ "value").as[V])))
 
   /**
    * Query a list from the database.
@@ -220,7 +220,7 @@ case class Database(couch: Couch, databaseName: String) {
    */
   def bulkDocs(docs: Seq[JsObject], allOrNothing: Boolean = false): Future[Seq[JsObject]] = {
     checkAllOrNothing(allOrNothing) {
-      val args = Json.obj("all_or_nothing" → JsBoolean(allOrNothing), "docs" → docs)
+      val args = Json.obj("all_or_nothing" -> JsBoolean(allOrNothing), "docs" -> docs)
       couch.makePostRequest[Seq[JsObject]](encode("_bulk_docs"), args)
     }
   }
@@ -255,10 +255,10 @@ case class Database(couch: Couch, databaseName: String) {
    */
   def latestRev(id: String): Future[String] =
     couch.sendRequest(RequestBuilding.Head(encode(id))).map {
-      case response if response.status.isSuccess ⇒
+      case response if response.status.isSuccess =>
         response.entity.discardBytes()
         response.header[ETag].map(_.value()).get.stripPrefix("\"").stripSuffix("\"")
-      case response ⇒
+      case response =>
         response.entity.discardBytes()
         throw new StatusError(response.status)
     }
@@ -272,7 +272,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @throws CouchError if an error occurs
    */
   def delete(id: String, rev: String): Future[String] =
-    couch.makeDeleteRequest[JsValue](encode(id, Seq("rev" → rev))).map(js ⇒ (js \ "rev").as[String])
+    couch.makeDeleteRequest[JsValue](encode(id, Seq("rev" -> rev))).map(js => (js \ "rev").as[String])
 
   /**
    * Delete multiple revisions of a document from the database. There will be no error if the document does not exist.
@@ -285,13 +285,13 @@ case class Database(couch: Couch, databaseName: String) {
   def delete(id: String, revs: Seq[String], allOrNothing: Boolean = false): Future[Seq[String]] =
     checkAllOrNothing(allOrNothing) {
       revs match {
-        case Nil ⇒
+        case Nil =>
           FastFuture.successful(Nil)
-        case revs@(rev :: Nil) ⇒
-          delete(id, rev).map(_ ⇒ revs).recover { case _ ⇒ Seq.empty }
-        case _ ⇒
-          bulkDocs(revs.map(rev ⇒ Json.obj("_id" → id, "_rev" → rev, "_deleted" → true)), allOrNothing = allOrNothing)
-            .map(revs.zip(_) collect { case (rev, js) if !js.keys.contains("error") ⇒ rev })
+        case revs@(rev :: Nil) =>
+          delete(id, rev).map(_ => revs).recover { case _ => Seq.empty }
+        case _ =>
+          bulkDocs(revs.map(rev => Json.obj("_id" -> id, "_rev" -> rev, "_deleted" -> true)), allOrNothing = allOrNothing)
+            .map(revs.zip(_) collect { case (rev, js) if !js.keys.contains("error") => rev })
       }
     }
 
@@ -324,7 +324,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @return a sequence of all deleted revisions
    */
   def deleteAll(id: String): Future[Seq[String]] = {
-    this(id, Seq("conflicts" → "true")).map(doc ⇒ (doc \ "_rev").as[String] :: (doc \ "_conflicts").asOpt[List[String]].getOrElse(Nil)) flatMap {
+    this(id, Seq("conflicts" -> "true")).map(doc => (doc \ "_rev").as[String] :: (doc \ "_conflicts").asOpt[List[String]].getOrElse(Nil)) flatMap {
       delete(id, _)
     }
   }
@@ -336,7 +336,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @return the documents
    */
   def find(query: JsObject): Future[Seq[JsObject]] =
-    couch.makePostRequest[JsObject](encode("_find"), query).map(js ⇒ (js \ "docs").as[Seq[JsObject]])
+    couch.makePostRequest[JsObject](encode("_find"), query).map(js => (js \ "docs").as[Seq[JsObject]])
 
   /**
    * Create a Mango index.
@@ -424,11 +424,11 @@ case class Database(couch: Couch, databaseName: String) {
     val promise = Promise[Done]
     val requestParams = {
       val heartBeatParam = (params.get("timeout"), params.get("heartbeat")) match {
-        case (Some(_), Some(h)) if h.nonEmpty ⇒ Map("heartbeat" → h) // Timeout will be ignored by the DB, but the user has chosen
-        case (Some(_), _)                     ⇒ Map() // Use provided timeout only
-        case (None, Some(""))                 ⇒ Map() // Disable heartbeat
-        case (None, Some(h))                  ⇒ Map("heartbeat" → h) // Use provided heartbeat
-        case (None, None) ⇒ Map("heartbeat" → // Use default heartbeat from configuration
+        case (Some(_), Some(h)) if h.nonEmpty => Map("heartbeat" -> h) // Timeout will be ignored by the DB, but the user has chosen
+        case (Some(_), _)                     => Map() // Use provided timeout only
+        case (None, Some(""))                 => Map() // Disable heartbeat
+        case (None, Some(h))                  => Map("heartbeat" -> h) // Use provided heartbeat
+        case (None, None) => Map("heartbeat" -> // Use default heartbeat from configuration
           couch.canapeConfig.as[FiniteDuration]("continuous-changes.heartbeat-interval").toMillis.toString)
       }
       params - "heartbeat" ++ heartBeatParam
@@ -436,26 +436,26 @@ case class Database(couch: Couch, databaseName: String) {
     // CouchDB 2.0.0-RC4 does not allow a proper empty JSON payload and require an empty (though invalid) payload
     // to be sent.
     val request = if (extraParams.keys.isEmpty)
-      couch.Post(encode("_changes", (requestParams + ("feed" → "continuous")).toSeq), Couch.fakeEmptyJsonPayload)
+      couch.Post(encode("_changes", (requestParams + ("feed" -> "continuous")).toSeq), Couch.fakeEmptyJsonPayload)
     else
-      couch.Post(encode("_changes", (requestParams + ("feed" → "continuous")).toSeq), extraParams)
+      couch.Post(encode("_changes", (requestParams + ("feed" -> "continuous")).toSeq), extraParams)
     couch.sendPotentiallyBlockingRequest(request)
       .mapError {
-        case t ⇒
+        case t =>
           // The promise might have been already completed if the error happens after the connection
           promise.tryFailure(t)
           t
       }
       .flatMapConcat {
-        case response if response.status.isSuccess() ⇒
+        case response if response.status.isSuccess() =>
           promise.success(Done)
           response.entity.dataBytes.via(filterJson)
-        case response ⇒
+        case response =>
           val error = statusErrorFromResponse(response)
           promise.completeWith(error)
           Source.fromFuture(error)
       }
-      .mapMaterializedValue(_ ⇒ promise.future)
+      .mapMaterializedValue(_ => promise.future)
   }
 
   /**
@@ -468,7 +468,7 @@ case class Database(couch: Couch, databaseName: String) {
    *         the materialized value contains Done or an error if the HTTP request was unsuccesful
    */
   def continuousChangesByDocIds(docIds: Seq[String], params: Map[String, String] = Map(), extraParams: JsObject = Json.obj()): Source[JsObject, Future[Done]] =
-    continuousChanges(params + ("filter" → "_doc_ids"), extraParams ++ Json.obj("doc_ids" → docIds))
+    continuousChanges(params + ("filter" -> "_doc_ids"), extraParams ++ Json.obj("doc_ids" -> docIds))
 
   /**
    * Return a continuous changes stream.
@@ -496,7 +496,7 @@ case class Database(couch: Couch, databaseName: String) {
    */
   def changesSourceByDocIds(docIds: Seq[String], params: Map[String, String] = Map(), extraParams: JsObject = Json.obj(),
     sinceSeq: UpdateSequence = FromNow): Source[JsObject, Future[Done]] =
-    changesSource(params + ("filter" → "_doc_ids"), extraParams ++ Json.obj("doc_ids" → docIds), sinceSeq)
+    changesSource(params + ("filter" -> "_doc_ids"), extraParams ++ Json.obj("doc_ids" -> docIds), sinceSeq)
 
   /**
    * Reject the current request with `IllegalArgumentException` if `allOrNothing` is `true` and the CouchDB
@@ -507,8 +507,8 @@ case class Database(couch: Couch, databaseName: String) {
    * @tparam T the type of the result
    * @return the result, or `IllegalArgumentException` if not allowed
    */
-  private def checkAllOrNothing[T](allOrNothing: Boolean)(action: ⇒ Future[T]): Future[T] =
-    couch.isCouchDB1.flatMap { isCouchDB1 ⇒
+  private def checkAllOrNothing[T](allOrNothing: Boolean)(action: => Future[T]): Future[T] =
+    couch.isCouchDB1.flatMap { isCouchDB1 =>
       require(isCouchDB1 || !allOrNothing, "allOrNothing cannot only be used with CouchDB 1.x")
       action
     }
@@ -545,16 +545,16 @@ object Database {
 
   object UpdateSequence {
     def apply(js: JsValue): UpdateSequence = js match {
-      case JsNumber(n) ⇒ UpdateSequenceLong(n.toLongExact)
-      case JsString(s) ⇒ UpdateSequenceString(s)
-      case _           ⇒ throw new IllegalArgumentException("update sequence must be number or string")
+      case JsNumber(n) => UpdateSequenceLong(n.toLongExact)
+      case JsString(s) => UpdateSequenceString(s)
+      case _           => throw new IllegalArgumentException("update sequence must be number or string")
     }
   }
 
   implicit val updateSequenceReads: Reads[UpdateSequence] = Reads {
-    case JsNumber(n) ⇒ JsSuccess(UpdateSequenceLong(n.toLongExact))
-    case JsString(s) ⇒ JsSuccess(UpdateSequenceString(s))
-    case _           ⇒ JsError("update sequence must be number or string")
+    case JsNumber(n) => JsSuccess(UpdateSequenceLong(n.toLongExact))
+    case JsString(s) => JsSuccess(UpdateSequenceString(s))
+    case _           => JsError("update sequence must be number or string")
   }
 
   val FromNow = UpdateSequenceString("now")

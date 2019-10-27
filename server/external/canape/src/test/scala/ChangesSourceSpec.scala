@@ -16,14 +16,14 @@ import scala.concurrent.{Await, Future}
 class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
 
   def addDone[T, M](source: Source[T, M]): Source[T, Future[Done]] =
-    source.mapMaterializedValue(_ ⇒ FastFuture.successful(Done))
+    source.mapMaterializedValue(_ => FastFuture.successful(Done))
 
   "db.changesSource()" should {
 
     "respect the since parameter" in new freshDb {
       waitForResult(db.insert(JsObject(Nil), "docid0"))
       val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart)
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(4).runFold[List[String]](Nil)(_ :+ _)
+      val result = changes.map(j => (j \ "id").as[String]).take(4).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.insert(JsObject(Nil), "docid1"), db.insert(JsObject(Nil), "docid2"), db.insert(JsObject(Nil), "docid3"))
       waitForResult(result).sorted must be equalTo List("docid0", "docid1", "docid2", "docid3")
     }
@@ -31,13 +31,13 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
     "signal the connection without the initial since parameter" in new freshDb {
       waitForEnd(db.insert(JsObject(Nil), "docid0"))
       val changes: Source[JsObject, Future[Done]] = db.changesSource()
-      val (done, result) = changes.map(j ⇒ (j \ "id").as[String]).take(3).toMat(Sink.fold[List[String], String](Nil)(_ :+ _))(Keep.both).run()
+      val (done, result) = changes.map(j => (j \ "id").as[String]).take(3).toMat(Sink.fold[List[String], String](Nil)(_ :+ _))(Keep.both).run()
 
       // CouchDB 2.0.0-RC4 does not send an acknowledgement until a change is potentially available (it may be blocked
       // by a filter). So we cannot wait for connection, we have to use a sleep to ensure that the changes feed is connected.
       // See issue COUCHDB-3133.
       // waitForResult(done)
-      try Thread.sleep(1000) catch { case _: InterruptedException ⇒ }
+      try Thread.sleep(1000) catch { case _: InterruptedException => }
 
       waitEventually(db.insert(JsObject(Nil), "docid1"), db.insert(JsObject(Nil), "docid2"), db.insert(JsObject(Nil), "docid3"))
       waitForResult(result).sorted must be equalTo List("docid1", "docid2", "docid3")
@@ -45,8 +45,8 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
 
     "reconnect in case of a timeout" in new freshDb {
       waitForResult(db.insert(JsObject(Nil), "docid0"))
-      val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart, params = Map("timeout" → "1"))
-      val (done, result) = changes.map(j ⇒ (j \ "id").as[String]).take(4).toMat(Sink.fold[List[String], String](Nil)(_ :+ _))(Keep.both).run()
+      val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart, params = Map("timeout" -> "1"))
+      val (done, result) = changes.map(j => (j \ "id").as[String]).take(4).toMat(Sink.fold[List[String], String](Nil)(_ :+ _))(Keep.both).run()
       waitForResult(done)
       waitEventually(db.insert(JsObject(Nil), "docid1"), db.insert(JsObject(Nil), "docid2"), db.insert(JsObject(Nil), "docid3"))
       waitForResult(result).sorted must be equalTo List("docid0", "docid1", "docid2", "docid3")
@@ -69,8 +69,8 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       // See issue COUCHDB-3132.
       pendingIfCouchDB20("garbage will be sent on the connection")
       waitForResult(db.insert(JsObject(Nil), "docid0"))
-      val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart).recoverWithRetries(-1, { case _ ⇒ Source.empty })
-      val result = changes.map(j ⇒ (j \ "id").as[String]).runFold[List[String]](Nil)(_ :+ _)
+      val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart).recoverWithRetries(-1, { case _ => Source.empty })
+      val result = changes.map(j => (j \ "id").as[String]).runFold[List[String]](Nil)(_ :+ _)
       waitForResult(db.insert(JsObject(Nil), "docid1"))
       waitForResult(db.insert(JsObject(Nil), "docid2"))
       waitForResult(db.insert(JsObject(Nil), "docid3"))
@@ -80,7 +80,7 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
 
     "see the creation of new documents as soon as they are created" in new freshDb {
       val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart)
-      val downstream = changes.map(j ⇒ (j \ "id").as[String]).take(3).runWith(TestSink.probe)
+      val downstream = changes.map(j => (j \ "id").as[String]).take(3).runWith(TestSink.probe)
       waitEventually(db.insert(JsObject(Nil), "docid1"))
       downstream.requestNext("docid1")
       waitEventually(db.insert(JsObject(Nil), "docid2"))
@@ -96,14 +96,14 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       val mockedCouch: Couch = mock[Couch].canapeConfig returns config
       val mockedDb = mock[Database]
       val sourceWithError = Source(List(
-        Source.repeat(Json.obj("seq" → 42, "id" → "someid")).take(100),
+        Source.repeat(Json.obj("seq" -> 42, "id" -> "someid")).take(100),
         Source.failed(new RuntimeException()))).flatMapConcat(identity)
       mockedDb.continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()) returns
         addDone(sourceWithError)
       mockedDb.couch returns mockedCouch
 
       val changes: Source[JsObject, Future[Done]] = ChangesSource.changesSource(mockedDb, sinceSeq = FromStart)
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(950).runFold(0) { case (n, _) ⇒ n + 1 }
+      val result = changes.map(j => (j \ "id").as[String]).take(950).runFold(0) { case (n, _) => n + 1 }
       waitForResult(result) must be equalTo 950
       there was atLeast(10)(mockedDb).continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())
     }
@@ -114,15 +114,15 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       val mockedCouch: Couch = mock[Couch].canapeConfig returns config
       val mockedDb = mock[Database]
       val sourceWithError = Source(List(
-        Source(1 to 10).map(n ⇒ Json.obj("seq" → JsNumber(30 + n))),
+        Source(1 to 10).map(n => Json.obj("seq" -> JsNumber(30 + n))),
         Source.failed(new RuntimeException()))).flatMapConcat(identity)
       mockedDb.continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()) returns
         addDone(sourceWithError) thenReturns
-        addDone(Source(1 to 5).map(n ⇒ Json.obj("seq" → JsNumber(n))))
+        addDone(Source(1 to 5).map(n => Json.obj("seq" -> JsNumber(n))))
       mockedDb.couch returns mockedCouch
 
       val changes: Source[JsObject, Future[Done]] = ChangesSource.changesSource(mockedDb, sinceSeq = FromStart)
-      val result = changes.map(j ⇒ (j \ "seq").as[Long]).take(15).runFold(0L) { case (n, e) ⇒ n.max(e) }
+      val result = changes.map(j => (j \ "seq").as[Long]).take(15).runFold(0L) { case (n, e) => n.max(e) }
       waitForResult(result) must be equalTo 40
       there was atLeast(2)(mockedDb).continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())
     }
@@ -133,38 +133,38 @@ class ChangesSourceSpec extends WithDbSpecification("db") with Mockito {
       val mockedCouch: Couch = mock[Couch].canapeConfig returns config
       val mockedDb = mock[Database]
       mockedDb.continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()) returns
-        addDone(Source.repeat(Json.obj("seq" → 42, "id" → "someid")).buffer(10, OverflowStrategy.fail))
+        addDone(Source.repeat(Json.obj("seq" -> 42, "id" -> "someid")).buffer(10, OverflowStrategy.fail))
       mockedDb.couch returns mockedCouch
 
       val changes: Source[JsObject, Future[Done]] = ChangesSource.changesSource(mockedDb, sinceSeq = FromStart)
-      val result = changes.throttle(100, 1.second, 100, ThrottleMode.Shaping).map(j ⇒ (j \ "id").as[String]).take(37).runFold(0) { case (n, _) ⇒ n + 1 }
+      val result = changes.throttle(100, 1.second, 100, ThrottleMode.Shaping).map(j => (j \ "id").as[String]).take(37).runFold(0) { case (n, _) => n + 1 }
       Await.result(result, 15.seconds) must be equalTo 37
       there was atLeast(2)(mockedDb).continuousChanges(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any())
     }
 
     "see the creation of new documents with non-ASCII id" in new freshDb {
       val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart)
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(3).runFold[List[String]](Nil)(_ :+ _)
+      val result = changes.map(j => (j \ "id").as[String]).take(3).runFold[List[String]](Nil)(_ :+ _)
       waitEventually(db.insert(JsObject(Nil), "docidé"), db.insert(JsObject(Nil), "docidà"), db.insert(JsObject(Nil), "docidß"))
       waitForResult(result).sorted must be equalTo List("docidß", "docidà", "docidé")
     }
 
     "be able to filter changes with a stored filter" in new freshDb {
       val filter = """function(doc, req) { return doc.name == "foo"; }"""
-      waitForEnd(db.insert(Json.obj("filters" → Json.obj("namedfoo" → filter)), "_design/common"))
-      val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart, params = Map("filter" → "common/namedfoo"))
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
-      waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+      waitForEnd(db.insert(Json.obj("filters" -> Json.obj("namedfoo" -> filter)), "_design/common"))
+      val changes: Source[JsObject, Future[Done]] = db.changesSource(sinceSeq = FromStart, params = Map("filter" -> "common/namedfoo"))
+      val result = changes.map(j => (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
+      waitEventually(db.bulkDocs(Seq(Json.obj("name" -> "foo", "_id" -> "docid1"), Json.obj("name" -> "bar", "_id" -> "docid2"),
+                                     Json.obj("name" -> "foo", "_id" -> "docid3"), Json.obj("name" -> "bar", "_id" -> "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid3")
     }
 
     "be able to filter changes by document ids" in new freshDb {
       val filter = """function(doc, req) { return doc.name == "foo"; }"""
       val changes: Source[JsObject, Future[Done]] = db.changesSourceByDocIds(List("docid1", "docid4"), sinceSeq = FromStart)
-      val result = changes.map(j ⇒ (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
-      waitEventually(db.bulkDocs(Seq(Json.obj("name" → "foo", "_id" → "docid1"), Json.obj("name" → "bar", "_id" → "docid2"),
-                                     Json.obj("name" → "foo", "_id" → "docid3"), Json.obj("name" → "bar", "_id" → "docid4"))))
+      val result = changes.map(j => (j \ "id").as[String]).take(2).runFold[List[String]](Nil)(_ :+ _)
+      waitEventually(db.bulkDocs(Seq(Json.obj("name" -> "foo", "_id" -> "docid1"), Json.obj("name" -> "bar", "_id" -> "docid2"),
+                                     Json.obj("name" -> "foo", "_id" -> "docid3"), Json.obj("name" -> "bar", "_id" -> "docid4"))))
       waitForResult(result).sorted must be equalTo List("docid1", "docid4")
     }
 

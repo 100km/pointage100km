@@ -5,6 +5,7 @@ import akka.stream.ActorMaterializer
 import net.rfc1149.canape.Couch.StatusError
 import net.rfc1149.canape._
 import org.specs2.mutable._
+import play.api.libs.json.Json
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -16,24 +17,26 @@ abstract class WithDbSpecification(dbSuffix: String) extends Specification {
 
   implicit val system = ActorSystem("canape-test")
   implicit val dispatcher = system.dispatcher
-  implicit val timeout: Duration = (6, SECONDS)
+  implicit val timeout: Duration = (10, SECONDS)
   implicit val materializer = ActorMaterializer.create(system)
 
   val couch = new Couch
 
   trait freshDb extends BeforeAfter {
 
+    val createDb: Boolean = true
+
     val db = couch.db(s"canape-test-$dbSuffix-${UUID.randomUUID()}")
     var _waitEventually: List[Future[Any]] = Nil
 
-    override def before = Await.ready(db.create(), timeout)
+    override def before = if (createDb) Await.ready(db.create(), timeout) else Future.successful(Json.obj())
 
     override def after =
       try {
         Await.ready(Future.sequence(_waitEventually), timeout)
         Await.ready(db.delete(), timeout)
       } catch {
-        case _: StatusError ⇒
+        case _: StatusError =>
       }
 
     def waitEventually[T](fs: Future[T]*): Unit = _waitEventually ++= fs
