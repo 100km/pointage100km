@@ -6,17 +6,15 @@ import sbtassembly.AssemblyPlugin.defaultShellScript
 
 import scalariform.formatter.preferences._
 
-scapegoatVersion in ThisBuild := "1.3.3"
-
 lazy val akka =
-  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.22",
-    "com.typesafe.akka" %% "akka-actor-typed" % "2.5.22",
-    "com.typesafe.akka" %% "akka-slf4j" % "2.5.22",
-    "com.typesafe.akka" %% "akka-stream" % "2.5.22",
-    "com.typesafe.akka" %% "akka-stream-typed" % "2.5.22",
-    "com.typesafe.akka" %% "akka-http-core" % "10.1.8",
-    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.22" % "test",
-    "com.iheart" %% "ficus" % "1.4.4",
+  Seq(libraryDependencies ++= Seq("com.typesafe.akka" %% "akka-actor" % "2.5.26",
+    "com.typesafe.akka" %% "akka-actor-typed" % "2.5.26",
+    "com.typesafe.akka" %% "akka-slf4j" % "2.5.26",
+    "com.typesafe.akka" %% "akka-stream" % "2.5.26",
+    "com.typesafe.akka" %% "akka-stream-typed" % "2.5.26",
+    "com.typesafe.akka" %% "akka-http-core" % "10.1.10",
+    "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.26" % "test",
+    "com.iheart" %% "ficus" % "1.4.7",
     "ch.qos.logback" % "logback-classic" % "1.2.3"))
 
 lazy val assemble =
@@ -27,28 +25,26 @@ lazy val assemble =
 
 lazy val scopt = Seq(libraryDependencies += "com.github.scopt" %% "scopt" % "3.7.1")
 
-lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "4.3.3" % "test",
+lazy val specs2 = Seq(libraryDependencies += "org.specs2" %% "specs2-core" % "4.6.0" % "test",
   fork in Test := true)
 
-lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.5")
+lazy val csv = Seq(libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.6")
 
 lazy val mysql =
-  Seq(libraryDependencies ++= Seq("org.apache.commons" % "commons-dbcp2" % "2.5.0",
+  Seq(libraryDependencies ++= Seq("org.apache.commons" % "commons-dbcp2" % "2.7.0",
     "commons-dbutils" % "commons-dbutils" % "1.7",
-    "mysql" % "mysql-connector-java" % "8.0.15"))
+    "mysql" % "mysql-connector-java" % "8.0.18"))
 
-lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.27")
+lazy val scalaz = Seq(libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.29")
 
 lazy val common = Defaults.coreDefaultSettings ++ assemble ++
-  scalariformSettings(autoformat = true) ++
-  Seq(scalaVersion := "2.12.8",
+  Seq(scalaVersion := "2.13.1",
+    scalariformAutoformat := true,
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
-    resolvers ++= Seq("Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/", Resolver.jcenterRepo),
     ScalariformKeys.preferences := ScalariformKeys.preferences.value
       .setPreference(AlignArguments, true)
       .setPreference(AlignSingleLineCaseStatements, true)
       .setPreference(DoubleIndentConstructorArguments, true)
-      .setPreference(RewriteArrowSymbols, true)
       .setPreference(SpacesWithinPatternBinders, false)
       .setPreference(SpacesAroundMultiImports, false))
 
