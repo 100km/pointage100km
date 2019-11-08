@@ -13,7 +13,7 @@ import akka.http.scaladsl.settings.{ClientConnectionSettings, ConnectionPoolSett
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.Materializer
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
@@ -45,7 +45,6 @@ class Couch(
   import Couch._
 
   private[canape] implicit val dispatcher = system.dispatcher
-  private[canape] implicit val fm = ActorMaterializer()
 
   val canapeConfig: Config = config.getConfig("canape")
   private[this] val userAgent = `User-Agent`(canapeConfig.as[String]("user-agent"))
@@ -85,7 +84,7 @@ class Couch(
    * @param request the request to send
    */
   def sendPotentiallyBlockingRequest(request: Future[HttpRequest]): Source[HttpResponse, NotUsed] = {
-    Source.fromFuture(request).map { r =>
+    Source.future(request).map { r =>
       if (r.method != HttpMethods.POST)
         throw new IllegalArgumentException("potentially blocking request must use POST method")
       r

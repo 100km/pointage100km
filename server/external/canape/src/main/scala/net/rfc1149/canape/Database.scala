@@ -18,7 +18,7 @@ case class Database(couch: Couch, databaseName: String) {
 
   import Couch._
   import Database._
-  import couch.fm
+  import couch.system
 
   private[canape] implicit val dispatcher = couch.dispatcher
 
@@ -453,7 +453,7 @@ case class Database(couch: Couch, databaseName: String) {
         case response =>
           val error = statusErrorFromResponse(response)
           promise.completeWith(error)
-          Source.fromFuture(error)
+          Source.future(error)
       }
       .mapMaterializedValue(_ => promise.future)
   }

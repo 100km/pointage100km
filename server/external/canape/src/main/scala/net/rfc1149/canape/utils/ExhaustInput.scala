@@ -30,7 +30,7 @@ class ExhaustInput[T] extends GraphStage[FlowShape[T, T]] {
     setHandler(out, new OutHandler {
       override def onPull() = pull(in)
 
-      override def onDownstreamFinish = {
+      override def onDownstreamFinish(cause: Throwable) = {
         outputClosed = true
         pull(in)
       }

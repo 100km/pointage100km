@@ -38,7 +38,7 @@ object ChangesSource {
       def connectMany(): Source[JsObject, Future[Done]] =
         connectOnce()
           .concat(Source.fromIterator(() => Iterator.continually {
-            Source.lazily(() => connectOnce()).initialDelay(reconnectionDelay)
+            Source.lazySource(() => connectOnce()).initialDelay(reconnectionDelay)
           }).flatMapConcat(identity))
 
       connectMany()
