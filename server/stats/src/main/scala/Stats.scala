@@ -35,7 +35,7 @@ object Stats extends App {
 
   val db: Database = steenwerck.localCouch().db(steenwerck.localDbName)
 
-  def update(checkpoint: Int, bib: Int, race: Int) {
+  def update(checkpoint: Int, bib: Int, race: Int): Unit = {
     val id = "checkpoints-" + checkpoint + "-" + bib
     val r = db.updateForm("bib_input", "add-checkpoint", id,
                                                          Map("ts" -> System.currentTimeMillis.toString), keepBody = true).flatMap(Couch.checkResponse[JsObject]).execute()

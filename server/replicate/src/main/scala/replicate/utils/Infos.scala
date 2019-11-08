@@ -22,8 +22,9 @@ case class Infos(
 
   import Infos._
 
+  // The "toVector" is needed to prevent getting "No ClassTag available for Int @@ RaceId"
   val races: Map[Int @@ RaceId, RaceInfo] =
-    races_laps.zipWithIndex.filter(_._1 != -1).map(_._2).map(RaceId[Int]).map(id => id -> new RaceInfo(id, this)).toMap
+    races_laps.toVector.zipWithIndex.filter(_._1 != -1).map(_._2).map(RaceId[Int]).map(id => id -> new RaceInfo(id, this)).toMap
 
   val checkpoints: Map[Int @@ SiteId, CheckpointInfo] =
     sites.indices.map(SiteId[Int]).map(id => id -> new CheckpointInfo(id, this)).toMap

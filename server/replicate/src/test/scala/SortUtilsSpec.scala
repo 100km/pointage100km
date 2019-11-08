@@ -42,11 +42,6 @@ class SortUtilsSpec extends Specification {
       Vector(5, 10).insert(10) should be equalTo (Vector(5, 10, 10))
     }
 
-    "correctly sort a list through an insertion sort" in {
-      val source = Vector(4, 18, 0, -27, 4, 914, 4, 24, 17, 12)
-      source.insertionSorted should be equalTo (source.sorted)
-    }
-
   }
 
 }

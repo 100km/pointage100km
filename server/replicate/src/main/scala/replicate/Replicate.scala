@@ -43,7 +43,7 @@ class Replicate(options: Options.Config) extends LoggingError {
 
   private val localInfo = Json.obj("type" -> "site-info", "scope" -> "local", "site-id" -> options.siteId)
 
-  private def createLocalInfo(db: Database) {
+  private def createLocalInfo(db: Database): Unit = {
     val name = "site-info"
     try {
       if (options.resetSiteId)
@@ -267,7 +267,7 @@ class Replicate(options: Options.Config) extends LoggingError {
 
   }
 
-  private def exit(status: Int) {
+  private def exit(status: Int): Unit = {
     localCouch.releaseExternalResources().execute()
     hubCouch.releaseExternalResources().execute()
     system.terminate()

@@ -6,6 +6,7 @@ import akka.actor.typed.scaladsl.ActorContext
 import akka.stream.typed.scaladsl._
 import net.rfc1149.canape.Database
 import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import replicate.messaging
 import replicate.messaging.Message
 import replicate.messaging.Message.Severity
@@ -55,7 +56,21 @@ object BroadcastAlert {
     }
   }
 
-  implicit val broadcastReads: Reads[Broadcast] = Json.reads[Broadcast]
+  // XXXXX Why doesn't this work? It used to before Scala 2.13
+  // implicit val broadcastReads: Reads[Broadcast] = Json.reads[Broadcast]
+
+  implicit val broadcastReads: Reads[Broadcast] = Reads { js =>
+    try {
+      val id = (js \ "_id").as[String]
+      val message = (js \ "message").as[String]
+      val target = (js \ "target").asOpt[Int].map(SiteId.apply)
+      val addedTS = (js \ "addedTS").as[Long]
+      val deletedTS = (js \ "deletedTS").asOpt[Long]
+      JsSuccess(Broadcast(id, message, target, addedTS, deletedTS))
+    } catch {
+      case t: Throwable => JsError(t.getMessage)
+    }
+  }
 
   def runBroadcastAlerts(database: Database)(context: ActorContext[_]) = {
     val broadcaster = new BroadcastAlert

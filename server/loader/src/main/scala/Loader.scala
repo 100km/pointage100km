@@ -14,9 +14,9 @@ import org.apache.commons.dbutils.handlers.MapListHandler
 import play.api.libs.json._
 import scopt.OptionParser
 
-import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.jdk.CollectionConverters._
 import scala.language.{implicitConversions, postfixOps, reflectiveCalls}
 
 // Usage: loader dbfile

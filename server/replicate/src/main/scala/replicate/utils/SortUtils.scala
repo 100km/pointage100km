@@ -1,12 +1,12 @@
 package replicate.utils
 
-import scala.collection.IndexedSeqLike
-import scala.collection.generic.CanBuildFrom
+import scala.collection.IndexedSeq
+import scala.collection.BuildFrom
 import scala.language.higherKinds
 
 object SortUtils {
 
-  private def insertInto[T, Repr](element: T, data: Repr)(implicit ord: Ordering[T], bf: CanBuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeqLike[T, Repr]): Repr = {
+  private def insertInto[T, Repr](element: T, data: Repr)(implicit ord: Ordering[T], bf: BuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeq[T]): Repr = {
     // Perform dichotomy to find the place before which we need to insert the element
     var left = 0
     var right = data.size
@@ -25,7 +25,7 @@ object SortUtils {
             left = pivot
       }
     }
-    val builder = bf()
+    val builder = bf.newBuilder(data)
     builder ++= data.take(left)
     builder += element
     builder ++= data.drop(left)
@@ -34,11 +34,9 @@ object SortUtils {
 
   implicit class WithInsert[T, Repr](data: Repr) {
 
-    def insert(element: T)(implicit ord: Ordering[T], bf: CanBuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeqLike[T, Repr]): Repr =
+    def insert(element: T)(implicit ord: Ordering[T], bf: BuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeq[T]): Repr =
       insertInto[T, Repr](element, data)
 
-    def insertionSorted(implicit ord: Ordering[T], bf: CanBuildFrom[Repr, T, Repr], ev: Repr <:< IndexedSeqLike[T, Repr]): Repr =
-      data.foldLeft(bf().result()) { case (b, e) => insertInto(e, b) }
   }
 
 }

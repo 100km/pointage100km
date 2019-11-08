@@ -57,5 +57,5 @@ object CheckpointsState {
     racesAgent.future().map(sortedTimestamps(_, raceId, contestantId))
 
   def contestants(raceId: Int @@ RaceId): Future[Set[Int @@ ContestantId]] =
-    racesAgent.future().map(_.getOrElse(raceId, Map()).mapValues(sortedTimestamps).filterNot(_._2.isEmpty).keySet)
+    racesAgent.future().map(_.getOrElse(raceId, Map()).mapValues(sortedTimestamps).filterNot(_._2.isEmpty).keySet.toSet)
 }
