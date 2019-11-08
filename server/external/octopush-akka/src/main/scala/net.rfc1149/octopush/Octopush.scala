@@ -11,7 +11,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 
 import scala.concurrent.Future
@@ -23,7 +22,6 @@ class Octopush(userLogin: String, apiKey: String)(implicit system: ActorSystem) 
 
   import Octopush._
 
-  private[this] implicit val materializer = ActorMaterializer()
   private[this] implicit val executionContext = system.dispatcher
   private[this] implicit val log = system.log
   private[this] val apiPool = Http().cachedHostConnectionPoolHttps[NotUsed]("www.octopush-dm.com")

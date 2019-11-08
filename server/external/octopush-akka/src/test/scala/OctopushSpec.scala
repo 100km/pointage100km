@@ -1,5 +1,4 @@
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import net.rfc1149.octopush.Octopush._
 import net.rfc1149.octopush.{ErrorCodes, Octopush}
 import org.specs2.mutable._
@@ -16,7 +15,6 @@ class OctopushSpec extends Specification {
 
     implicit val system = ActorSystem()
     implicit val dispatcher = system.dispatcher
-    implicit val materializer = ActorMaterializer()
 
     override def after = {
       system.terminate()
