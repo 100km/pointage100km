@@ -26,7 +26,7 @@ object CheckpointScrutineer {
   def checkpointScrutineer(database: Database)(implicit log: LoggingAdapter, fm: Materializer): Source[(ContestantAnalysis, Boolean), NotUsed] = {
     import fm.executionContext
 
-    val source = Source.fromFuture(database.viewWithUpdateSeq[Int, CheckpointData]("replicate", "checkpoint", Seq("include_docs" -> "true")))
+    val source = Source.future(database.viewWithUpdateSeq[Int, CheckpointData]("replicate", "checkpoint", Seq("include_docs" -> "true")))
       .flatMapConcat {
         case (lastSeq, checkpoints) =>
           val groupedByContestants = Source(checkpoints.filterNot(_._2.raceId == RaceId(0)).groupBy(_._1).map(_._2.map(_._2)))

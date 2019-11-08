@@ -2,7 +2,7 @@ package replicate.messaging
 
 import java.util.UUID
 
-import akka.actor.typed.Logger
+import org.slf4j.Logger
 import replicate.alerts.Alerts
 import replicate.messaging
 import replicate.messaging.Message.{Severity, TextMessage}
@@ -51,7 +51,7 @@ package object sms {
     }
 
     def balanceError(failure: Throwable) = {
-      log.error(failure, "Unable to get balance for {}", messageTitle)
+      log.error("Unable to get balance for {}", messageTitle, failure)
       latestAlert.foreach(Alerts.cancelAlert)
       latestAlert = Some(Alerts.sendAlert(messaging.Message(TextMessage, Severity.Critical, messageTitle, "Unable to get balance", icon = icon)))
     }

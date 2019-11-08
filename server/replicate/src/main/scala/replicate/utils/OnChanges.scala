@@ -3,8 +3,8 @@ package replicate.utils
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.ThrottleMode
-import akka.stream.typed.scaladsl.{ActorMaterializer, ActorSink}
+import akka.stream.{Materializer, ThrottleMode}
+import akka.stream.typed.scaladsl.ActorSink
 import net.rfc1149.canape.Database
 import play.api.libs.json.JsObject
 import replicate.maintenance.{ConflictsSolver, IncompleteCheckpoints, PingService}
@@ -25,7 +25,7 @@ object OnChanges {
         override val log = context.log
 
         def withError[T](future: Future[T], message: String): Future[Any] = {
-          future.failed.foreach(log.error(_, message))
+          future.failed.foreach(log.error(message, _))
           future
         }
       }
@@ -54,11 +54,11 @@ object OnChanges {
 
       def trigger() = {
         val f = futures()
-        f.failed.foreach(log.error(_, "error when running onChanges task"))
+        f.failed.foreach(log.error("error when running onChanges task", _))
         f.onComplete(_ => context.self ! Reset)
       }
 
-      val materializer = ActorMaterializer.boundToActor(context)
+      val materializer = Materializer(context)
 
       if (options.ping)
         PingService.launchPingService(options.siteId, local)(materializer)
@@ -87,7 +87,7 @@ object OnChanges {
           log.error("changes source completed, this is not supposed to happen, aborting")
           Behaviors.stopped
         case StreamFailed(e) =>
-          log.error(e, "changes source terminated on error, aborting")
+          log.error("changes source terminated on error, aborting", e)
           Behaviors.stopped
       }
     }

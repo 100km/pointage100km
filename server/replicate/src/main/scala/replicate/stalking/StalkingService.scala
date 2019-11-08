@@ -67,27 +67,27 @@ object StalkingService {
                 Global.TextMessages.maxAcceptableDelay.toCoarsest, contestant.full_name_and_bib, analysis.raceId)
           }
         case None =>
-          context.log.warning("no information known on contestant {}", analysis.contestantId)
+          context.log.warn("no information known on contestant {}", analysis.contestantId)
       }
     }
 
-    val stash = StashBuffer[StalkingProtocol](capacity = 100)
+    def initialBehavior = Behaviors.withStash[StalkingProtocol](100) { stash =>
+      Behaviors.receiveMessage[StalkingProtocol] {
 
-    def initialBehavior = Behaviors.receiveMessage[StalkingProtocol] {
+        case InitialNotifications(notifications) =>
+          stalkingInfo = notifications.toMap
+          stash.unstashAll(regularBehavior)
+          context.log.info("Stalking service starting with existing information")
+          regularBehavior
 
-      case InitialNotifications(notifications) =>
-        stalkingInfo = notifications.toMap
-        stash.unstashAll(context, regularBehavior)
-        context.log.info("Stalking service starting with existing information")
-        regularBehavior
+        case InitialFailure(throwable) =>
+          context.log.error("could not get initial notifications state, aborting", throwable)
+          throw throwable
 
-      case InitialFailure(throwable) =>
-        context.log.error(throwable, "could not get initial notifications state, aborting")
-        throw throwable
-
-      case msg =>
-        stash.stash(msg)
-        Behaviors.same
+        case msg =>
+          stash.stash(msg)
+          Behaviors.same
+      }
     }
 
     def regularBehavior = Behaviors.receiveMessagePartial[StalkingProtocol] {
@@ -109,7 +109,7 @@ object StalkingService {
         Behaviors.stopped
 
       case StreamFailure(throwable: Throwable) =>
-        context.log.error(throwable, "stream terminating on error")
+        context.log.error("stream terminating on error", throwable)
         Behaviors.stopped
     }
 
@@ -129,7 +129,7 @@ object StalkingService {
 
   def stalkingServiceSink(database: Database, textService: ActorRef[SMSMessage])(implicit system: ActorSystem): Sink[ContestantAnalysis, NotUsed] = {
     val actorRef = system.spawn(stalkingService(database, textService), "stalking")
-    ActorSink.actorRefWithAck(actorRef, Wrapped, OnInit, Ack, OnComplete, StreamFailure)
+    ActorSink.actorRefWithBackpressure(actorRef, Wrapped, OnInit, Ack, OnComplete, StreamFailure)
   }
 }
 

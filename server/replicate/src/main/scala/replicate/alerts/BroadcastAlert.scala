@@ -3,6 +3,7 @@ package replicate.alerts
 import java.util.UUID
 
 import akka.actor.typed.scaladsl.ActorContext
+import akka.stream.Materializer
 import akka.stream.typed.scaladsl._
 import net.rfc1149.canape.Database
 import play.api.libs.json._
@@ -75,7 +76,7 @@ object BroadcastAlert {
   def runBroadcastAlerts(database: Database)(context: ActorContext[_]) = {
     val broadcaster = new BroadcastAlert
     database.changesSource(Map("filter" -> "replicate/messages", "include_docs" -> "true"))
-      .runForeach(broadcaster.sendOrCancelBroadcast)(ActorMaterializer()(context.system))
+      .runForeach(broadcaster.sendOrCancelBroadcast)(Materializer(context.system))
   }
 
 }

@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 
 case class Agent[T](initialValue: T) {
   private[this] val system = Global.system
-  private[this] implicit val scheduler = system.scheduler
+  private[this] implicit val scheduler = system.toTyped.scheduler
   private[this] implicit val timeout: Timeout = 1.minute // This is virtually infinite
 
   private[this] sealed trait Command

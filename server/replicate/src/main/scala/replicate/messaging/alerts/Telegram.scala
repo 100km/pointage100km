@@ -3,7 +3,8 @@ package replicate.messaging.alerts
 import akka.actor.typed.scaladsl.ActorContext
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter._
-import akka.actor.{ActorLogging, Props, Scheduler}
+import akka.actor.typed.Scheduler
+import akka.actor.{ActorLogging, Props}
 import akka.util.Timeout
 import net.rfc1149.rxtelegram.Bot.{ActionDeleteMessage, ActionMessage, ParseModeMarkdown, RedirectedCommand, Targetted, To}
 import net.rfc1149.rxtelegram.{BotActor, Options, model}

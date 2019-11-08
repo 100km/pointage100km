@@ -15,7 +15,7 @@ class SystemLogger extends Messaging {
     message.severity match {
       case Severity.Debug | Severity.Verbose |
         Severity.Info | Severity.Warning => context.log.info(strMessage)
-      case Severity.Error | Severity.Critical => context.log.warning(strMessage)
+      case Severity.Error | Severity.Critical => context.log.warn(strMessage)
     }
     FastFuture.successful(None)
   }

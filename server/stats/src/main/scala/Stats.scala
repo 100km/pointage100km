@@ -28,7 +28,6 @@ object Stats extends App {
   private val options = parser.parse(args, Config()) getOrElse { sys.exit(1) }
 
   private implicit val system = ActorSystem()
-  private implicit val materializer = ActorMaterializer()
   private implicit val dispatcher = system.dispatcher
 
   private implicit val timeout: Duration = (5, SECONDS)

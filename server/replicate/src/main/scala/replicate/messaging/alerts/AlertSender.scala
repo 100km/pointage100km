@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
  * @param uuid the unique ID to use when cancelling the message
  * @param officers the officers to deliver the message to
  */
-class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[AlertSender.Persisted], database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]) extends AbstractBehavior[AlertSender.Protocol] {
+class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[AlertSender.Persisted], database: Database, message: Message, uuid: UUID, officers: Map[String, ActorRef[Messaging.Protocol]]) extends AbstractBehavior[AlertSender.Protocol](context) {
 
   import AlertSender._
   import Global.dispatcher
@@ -83,7 +83,7 @@ class AlertSender(context: ActorContext[AlertSender.Protocol], parent: ActorRef[
       context.log.debug("confirmation for {} received ({}): {}", officerId, response, message)
       response match {
         case Failure(t) =>
-          context.log.warning("cannot send to {}: {}", officerId, message)
+          context.log.warn("cannot send to {}: {}", officerId, message)
         case Success(Some(cancellationId)) =>
           if (cancelled)
             // Cancel delivery immediately as the message has been cancelled

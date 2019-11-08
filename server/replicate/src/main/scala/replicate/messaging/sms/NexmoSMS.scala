@@ -9,8 +9,8 @@ import akka.http.scaladsl.client.RequestBuilding
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.{FormData, HttpResponse, MediaTypes, Uri}
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import akka.stream.typed.scaladsl.ActorMaterializer
 import net.rfc1149.canape.Couch
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsObject, JsPath, Reads}
@@ -24,12 +24,12 @@ import scalaz.@@
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: String, apiSecret: String) extends AbstractBehavior[SMSProtocol] with BalanceTracker {
+class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: String, apiSecret: String) extends AbstractBehavior[SMSProtocol](context) with BalanceTracker {
 
   import NexmoSMS.{Message => _, _}
 
   private[this] implicit val executionContext = context.executionContext
-  private[this] implicit val materializer = ActorMaterializer.boundToActor(context)
+  private[this] implicit val materializer = Materializer(context)
   val messageTitle = "Nexmo"
   val log = context.log
 
@@ -61,7 +61,7 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
         case Success(response) => context.self ! DeliveryReport(recipient, message, response)
         case Failure(e)        => context.self ! DeliveryError(recipient, message, e)
       }
-      Behavior.same
+      Behaviors.same
 
     case DeliveryReport(recipient, text, response) =>
       val parts = response.messageCount
@@ -89,19 +89,19 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
         if (remaining != Double.MaxValue)
           trackBalance(remaining)
       }
-      Behavior.same
+      Behaviors.same
 
     case DeliveryError(recipient, text, t) =>
-      context.log.error(t, "Error when sending SMS to {} through Nexmo: {}", recipient, text)
-      Behavior.same
+      context.log.error("Error when sending SMS to {} through Nexmo: {}", recipient, text, t)
+      Behaviors.same
 
     case Balance(balance) =>
       trackBalance(balance)
-      Behavior.same
+      Behaviors.same
 
     case BalanceError(failure) =>
       balanceError(failure)
-      Behavior.same
+      Behaviors.same
   }
 
 }

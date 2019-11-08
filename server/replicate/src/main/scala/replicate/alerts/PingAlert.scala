@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.typed.scaladsl._
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.stream.ClosedShape
+import akka.stream.{ClosedShape, Materializer}
 import akka.stream.scaladsl.{Flow, GraphDSL, Partition, RunnableGraph, Sink, Source}
 import akka.stream.typed.scaladsl._
 import akka.{Done, NotUsed}
@@ -124,7 +124,7 @@ object PingAlert {
           Behaviors.stopped
 
         case Failure(t) =>
-          context.log.error(t, "CheckpointWatcher for site {} has terminated on failure", siteId)
+          context.log.error("CheckpointWatcher for site {} has terminated on failure", siteId, t)
           Behaviors.stopped
       }
     }
@@ -169,7 +169,7 @@ object PingAlert {
   private def docToMaxTimestamp(siteId: Int @@ SiteId, database: Database): Flow[JsObject, Long, NotUsed] =
     Flow[JsObject].flatMapConcat { doc =>
       if ((doc \ "_deleted").asOpt[Boolean].contains(true))
-        Source.fromFuture(lastPing(siteId, database).map(_.getOrElse(-1)))
+        Source.future(lastPing(siteId, database).map(_.getOrElse(-1)))
       else
         (doc \ "type").asOpt[String] match {
           case Some("ping") =>
@@ -201,9 +201,9 @@ object PingAlert {
     in ~> Flow[JsObject].map(js => (js \ "doc").as[JsObject]) ~> partition
     for (siteId <- 0 until sites) {
       val actorRef: ActorRef[Protocol] = context.spawn(checkpointWatcher(SiteId(siteId)), s"site-$siteId")
-      val sink: Sink[Long, NotUsed] = ActorSink.actorRefWithAck(ref               = actorRef, onCompleteMessage = Complete,
-                                                                onFailureMessage  = Failure.apply, messageAdapter = TimeStamp.apply,
-                                                                onInitMessage     = Initial.apply, ackMessage = Ack)
+      val sink: Sink[Long, NotUsed] = ActorSink.actorRefWithBackpressure(ref               = actorRef, onCompleteMessage = Complete,
+                                                                         onFailureMessage  = Failure.apply, messageAdapter = TimeStamp.apply,
+                                                                         onInitMessage     = Initial.apply, ackMessage = Ack)
       partition.out(siteId) ~> Flow[JsObject].prepend(Source.single(Json.obj("_deleted" -> true))) ~>
         docToMaxTimestamp(SiteId(siteId), database) ~> sink
     }
@@ -212,6 +212,6 @@ object PingAlert {
   })
 
   def runPingAlerts(database: Database)(implicit context: ActorContext[_]) =
-    pingAlerts(database).run()(ActorMaterializer()(context.system))
+    pingAlerts(database).run()(Materializer(context.system))
 
 }

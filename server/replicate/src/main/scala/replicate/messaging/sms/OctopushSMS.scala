@@ -13,7 +13,7 @@ import replicate.utils.{FormatUtils, Glyphs}
 
 import scala.util.{Failure, Success}
 
-class OctopushSMS(context: ActorContext[SMSProtocol], userLogin: String, apiKey: String, sender: Option[String]) extends AbstractBehavior[SMSProtocol] with BalanceTracker {
+class OctopushSMS(context: ActorContext[SMSProtocol], userLogin: String, apiKey: String, sender: Option[String]) extends AbstractBehavior[SMSProtocol](context) with BalanceTracker {
 
   import OctopushSMS._
 
@@ -55,7 +55,7 @@ class OctopushSMS(context: ActorContext[SMSProtocol], userLogin: String, apiKey:
       Behaviors.same
 
     case SendError(sms, failure) =>
-      log.error(failure, "SMS to {} ({}) failed", sms.smsRecipients.head, sms.smsText)
+      log.error("SMS to {} ({}) failed", sms.smsRecipients.head, sms.smsText, failure)
       Alerts.sendAlert(messaging.Message(TextMessage, Severity.Error, s"Unable to send SMS to ${sms.smsRecipients.head}",
         s"${failure.getMessage}", icon = Some(Glyphs.telephoneReceiver)))
       Behaviors.same

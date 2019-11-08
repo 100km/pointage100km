@@ -1,10 +1,10 @@
 package replicate.maintenance
 
-import akka.actor.typed.Logger
 import akka.http.scaladsl.util.FastFuture
 import akka.{Done, NotUsed}
 import net.rfc1149.canape.helpers._
 import net.rfc1149.canape.{Couch, Database}
+import org.slf4j.Logger
 import play.api.libs.json._
 import replicate.models.{CheckpointData, Contestant}
 import replicate.utils.Global._
@@ -29,8 +29,8 @@ trait IncompleteCheckpoints {
               inserter onComplete {
                 case Success(_) =>
                   log.info("successfully fixed incomplete race information for {}", contestant)
-                case Failure(t) =>
-                  log.error(t, "unable to fix incomplete race information for {}", contestant)
+                case Failure(t: Throwable) =>
+                  log.error("unable to fix incomplete race information for {}", contestant, t)
               }
               inserter
             } else

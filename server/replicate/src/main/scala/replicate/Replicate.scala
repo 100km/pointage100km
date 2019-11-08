@@ -204,7 +204,7 @@ class Replicate(options: Options.Config) extends LoggingError {
           (Json.obj("filter" -> "replicate/no-local"), Json.obj("filter" -> "replicate/no-local"))
       val replicateDownloadOptions = downloadFilter ++ Json.obj("continuous" -> true) ++ proxyOptions
       val replicateUploadOptions = uploadFilter ++ Json.obj("continuous" -> true) ++ proxyOptions
-      system.scheduler.schedule(0.seconds, replicateRelaunchInterval) {
+      system.scheduler.scheduleWithFixedDelay(0.seconds, replicateRelaunchInterval) { () =>
         withError(localDatabase.replicateFrom(hubDatabase, replicateDownloadOptions), "cannot start remote to local replication")
         if (!options.isSlave) {
           withError(localDatabase.replicateTo(hubDatabase, replicateUploadOptions), "cannot start local to remote replication")
@@ -212,15 +212,15 @@ class Replicate(options: Options.Config) extends LoggingError {
       }
     }
     if (options.compactLocal)
-      system.scheduler.schedule(localCompactionInterval, localCompactionInterval) {
+      system.scheduler.scheduleWithFixedDelay(localCompactionInterval, localCompactionInterval) { () =>
         withError(localDatabase.compact(), "cannot start local database compaction")
       }
     if (options.compactMaster)
-      system.scheduler.schedule(localCompactionInterval, localCompactionInterval) {
+      system.scheduler.scheduleWithFixedDelay(localCompactionInterval, localCompactionInterval) { () =>
         withError(hubDatabase.compact(), "cannot start master database compaction")
       }
     if (options.obsolete)
-      system.scheduler.schedule(obsoleteRemoveInterval, obsoleteRemoveInterval) {
+      system.scheduler.scheduleWithFixedDelay(obsoleteRemoveInterval, obsoleteRemoveInterval) { () =>
         withError(
           RemoveObsoleteDocuments.removeObsoleteDocuments(localDatabase, log),
           "cannot remove obsolete documents")

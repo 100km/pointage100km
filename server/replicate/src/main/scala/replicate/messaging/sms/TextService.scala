@@ -12,7 +12,7 @@ import replicate.messaging
 import replicate.messaging.Message.{Severity, TextMessage}
 import replicate.utils.{Global, Glyphs}
 
-private class TextService(context: ActorContext[SMSMessage], textService: Behavior[SMSMessage], name: String) extends AbstractBehavior[SMSMessage] {
+private class TextService(context: ActorContext[SMSMessage], textService: Behavior[SMSMessage], name: String) extends AbstractBehavior[SMSMessage](context) {
 
   val textServiceActor = context.spawn(Behaviors.supervise(textService).onFailure(SupervisorStrategy.restart), name)
 
@@ -21,7 +21,7 @@ private class TextService(context: ActorContext[SMSMessage], textService: Behavi
       val alert = messaging.Message(TextMessage, Severity.Verbose, s"SMS for $recipient", message, None, Some(Glyphs.envelope))
       Alerts.sendAlert(alert)
       textServiceActor ! SMSMessage(recipient, message)
-      Behavior.same
+      Behaviors.same
   }
 
 }

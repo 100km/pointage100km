@@ -1,8 +1,8 @@
 package replicate.maintenance
 
-import akka.actor.typed.Logger
 import net.rfc1149.canape._
 import net.rfc1149.canape.helpers._
+import org.slf4j.Logger
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 import replicate.models.CheckpointData
@@ -21,7 +21,7 @@ trait ConflictsSolver {
         val f = solve(db, docs)(makeSolver[CheckpointData](_.reduce(_.merge(_))))
         f.onComplete {
           case Success(result) => log.info("solved conflicts for {} ({} documents)", id, revs.size)
-          case Failure(t)      => log.error(t, "unable to solve conflicts for {} ({} documents)", id, revs.size)
+          case Failure(t)      => log.error("unable to solve conflicts for {} ({} documents)", id, revs.size, t)
         }
         f
     }

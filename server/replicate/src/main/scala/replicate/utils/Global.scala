@@ -2,7 +2,7 @@ package replicate.utils
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
@@ -16,7 +16,7 @@ object Global {
   private[replicate] val replicateConfig = config.getConfig("replicate").withFallback(config)
   implicit val system = ActorSystem("replicator", replicateConfig)
   implicit val dispatcher = system.dispatcher
-  implicit val flowMaterializer = ActorMaterializer()
+  implicit val flowMaterializer = Materializer(system)
   val log = Logging(system, "replicate")
 
   val replicateRelaunchInterval: FiniteDuration = replicateConfig.as[FiniteDuration]("replication-relaunch-interval")

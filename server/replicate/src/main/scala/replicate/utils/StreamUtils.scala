@@ -154,7 +154,7 @@ trait StreamUtils {
               scheduleOnce(None, timeout)
           }
 
-        override def onDownstreamFinish() =
+        override def onDownstreamFinish(cause: Throwable) =
           cancelTimer(None)
       })
 

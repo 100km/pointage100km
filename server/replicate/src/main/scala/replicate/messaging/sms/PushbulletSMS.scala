@@ -29,7 +29,7 @@ object PushbulletSMS {
           case Success(_) =>
             context.log.info("sent message to {}: {}", recipient, message)
           case Failure(t) =>
-            context.log.error(t, """could not send message {} to {}""", message, recipient)
+            context.log.error("""could not send message {} to {}""", message, recipient, t)
         }(context.system.executionContext)
         Behaviors.same
     }

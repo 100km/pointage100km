@@ -3,7 +3,7 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.stream.testkit.scaladsl.{TestSink, TestSource}
 import akka.stream.testkit.{TestPublisher, TestSubscriber}
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.Materializer
 import org.specs2.mutable._
 import replicate.utils.StreamUtils._
 
@@ -23,7 +23,6 @@ class StreamUtilsSpec extends Specification {
     implicit val system = ActorSystem("test-system", config)
     */
     implicit val system = ActorSystem()
-    implicit val materializer = ActorMaterializer()
 
     override def after() = system.terminate()
   }
