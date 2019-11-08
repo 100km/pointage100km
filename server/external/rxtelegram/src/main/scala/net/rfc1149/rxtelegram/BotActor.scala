@@ -17,7 +17,6 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
 
   implicit val actorSystem: ActorSystem = context.system
   implicit val ec: ExecutionContext = context.dispatcher
-  implicit val fm: Materializer = ActorMaterializer()
 
   protected[this] var me: User = _
 
@@ -37,7 +36,7 @@ abstract class BotActor(val token: String, val options: Options) extends Actor w
       setWebhook("")
       unstashAll()
       context.become(receiveIKnowMe)
-      UpdateSource(token, options).runWith(Sink.actorRefWithAck(self, Init, Ack, Complete, Fail))
+      UpdateSource(token, options).runWith(Sink.actorRefWithBackpressure(self, Init, Ack, Complete, Fail))
 
     case Failure(t) =>
       log.error(t, "cannot get information about myself")

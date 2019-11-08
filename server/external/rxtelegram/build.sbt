@@ -10,8 +10,8 @@ lazy val rxTelegram = project
     scalaVersion := "2.13.1",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-actor" % "2.5.26",
-      "com.typesafe.akka" %% "akka-stream" % "2.5.26",
+      "com.typesafe.akka" %% "akka-actor" % "2.6.0",
+      "com.typesafe.akka" %% "akka-stream" % "2.6.0",
       "com.typesafe.akka" %% "akka-http-core" % "10.1.10",
       "de.heikoseeberger" %% "akka-http-play-json" % "1.29.1",
       "com.iheart" %% "ficus" % "1.4.7",

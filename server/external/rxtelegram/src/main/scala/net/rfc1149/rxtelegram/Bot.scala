@@ -7,7 +7,6 @@ import akka.http.scaladsl.model.headers.Accept
 import akka.http.scaladsl.model.{MessageEntity => MEntity, _}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
-import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import net.rfc1149.rxtelegram.model._
@@ -23,7 +22,6 @@ trait Bot {
 
   implicit val actorSystem: ActorSystem
   implicit val ec: ExecutionContext
-  implicit val fm: Materializer
 
   import Bot._
 

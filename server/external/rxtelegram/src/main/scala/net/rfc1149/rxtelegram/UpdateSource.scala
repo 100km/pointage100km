@@ -2,7 +2,6 @@ package net.rfc1149.rxtelegram
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{RestartSource, Source}
 import net.rfc1149.rxtelegram.model._
 
@@ -12,7 +11,6 @@ object UpdateSource {
 
   private class UpdatesIterator(val token: String, val options: Options)(implicit val actorSystem: ActorSystem) extends Bot with Iterator[Future[List[Update]]] {
     implicit val ec = actorSystem.dispatcher
-    implicit val fm = ActorMaterializer.create(actorSystem)
     override def hasNext: Boolean = true
     override def next(): Future[List[Update]] =
       getUpdates(limit   = options.updatesBatchSize, timeout = options.longPollingDelay)

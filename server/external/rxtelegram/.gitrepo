@@ -6,7 +6,7 @@
 [subrepo]
 	remote = git@github.com:samueltardieu/rxtelegram
 	branch = master
-	commit = 76e967f043b690121eaa6d7ed52bc6d37ae5a800
+	commit = fdb99b7f436f0b0bbdada38242123839cf41afe4
 	parent = 93fc334422a618f977288b3d2c7282a1a1500cf2
 	cmdver = 0.4.1
 	method = merge
