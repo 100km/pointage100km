@@ -77,7 +77,7 @@ object Stats extends App {
       val race = nextInt(5)
       update(checkpoint, bib, race)
       Thread sleep options.delay
-      println(i + " " + recentCheckpointsMillis)
+      println(s"$i $recentCheckpointsMillis")
     }
   } finally {
     db.couch.releaseExternalResources().execute()

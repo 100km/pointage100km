@@ -33,7 +33,7 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
   val messageTitle = "Nexmo"
   val log = context.log
 
-  private[this] val apiPool = Http()(context.system.toUntyped).cachedHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
+  private[this] val apiPool = Http()(context.system.toClassic).cachedHostConnectionPoolHttps[NotUsed]("rest.nexmo.com")
 
   private[this] def sendSMS(recipient: String @@ PhoneNumber, message: String): Future[HttpResponse] = {
     val request = RequestBuilding.Post(
@@ -73,7 +73,7 @@ class NexmoSMS(context: ActorContext[SMSProtocol], senderId: String, apiKey: Str
           if (message.status == 0) {
             val network = message.network.flatMap(Networks.byMCCMNC.get).fold("unknown network")(op => s"${op.network} (${op.country})")
             val cost = message.messagePrice.fold("an unknown cost")(FormatUtils.formatEuros)
-            val dst = message.to.fold("unknown recipient")('+' + _)
+            val dst = message.to.fold("unknown recipient")(number => s"+$number")
             val msg = Message(TextMessage, Severity.Debug, s"Text message delivered to $dst (${idx + 1}/$parts)",
               s"Delivered through $network for $cost", icon = Some(Glyphs.telephoneReceiver))
             Alerts.sendAlert(msg)

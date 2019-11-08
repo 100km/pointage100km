@@ -18,7 +18,7 @@ class OctopushSMS(context: ActorContext[SMSProtocol], userLogin: String, apiKey:
   import OctopushSMS._
 
   private[this] implicit val executionContext = context.executionContext
-  private[this] val octopush = new Octopush(userLogin, apiKey)(context.system.toUntyped)
+  private[this] val octopush = new Octopush(userLogin, apiKey)(context.system.toClassic)
   val messageTitle = "Octopush"
   val log = context.log
 

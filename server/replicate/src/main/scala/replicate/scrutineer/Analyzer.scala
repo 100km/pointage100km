@@ -222,7 +222,7 @@ class Analyzer(raceInfo: RaceInfo, contestantId: Int @@ ContestantId) {
       None
     else {
       // Find the point whose removal will lead to the smallest variance
-      val toRemove = excessiveSpeed.toVector.map(p => (p, speedVariance(reenrichPoints(points.filterNot(_.eq(p)))))).minBy(_._2)._1
+      val toRemove = excessiveSpeed.toVector.map(p => (p, speedVariance(reenrichPoints(points.filterNot(_.eq(p)))))).minBy(_._2)(Ordering.Double.TotalOrdering)._1
       // We might need to find the point following the removed point
       val successor = points.sliding(2).collectFirst { case Seq(`toRemove`, next) => next }
       // Remove this point with a meaningful error message
@@ -429,7 +429,7 @@ object Analyzer {
     val size = data.size
     val halfSize = size / 2
     assert(size > 0)
-    val sorted = data.sorted
+    val sorted = data.sorted(Ordering.Double.TotalOrdering)
     if (size % 2 == 1)
       sorted(halfSize)
     else {

@@ -23,7 +23,7 @@ class Telegram(id: String) extends Messaging {
     import context.executionContext
     implicit val timeout: Timeout = 5.seconds
     Telegram.bot.toTyped[RedirectedCommand].ask[model.Message](ref =>
-      Targetted(To(id), ActionMessage(mdMsg, parse_mode = ParseModeMarkdown)).redirectResponseTo(ref.toUntyped))
+      Targetted(To(id), ActionMessage(mdMsg, parse_mode = ParseModeMarkdown)).redirectResponseTo(ref.toClassic))
       .map(answer => Some(answer.message_id.toString))
   }
 
@@ -31,7 +31,7 @@ class Telegram(id: String) extends Messaging {
     implicit val scheduler: Scheduler = context.system.scheduler
     implicit val timeout: Timeout = 5.seconds
     Telegram.bot.toTyped[RedirectedCommand].ask[Boolean] { ref =>
-      Targetted(To(id), ActionDeleteMessage(identifier.toLong)).redirectResponseTo(ref.toUntyped)
+      Targetted(To(id), ActionDeleteMessage(identifier.toLong)).redirectResponseTo(ref.toClassic)
     }
   }
 }
