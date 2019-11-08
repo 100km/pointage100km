@@ -119,7 +119,7 @@ case class Database(couch: Couch, databaseName: String) {
    * @return a future containing a sequence of results
    */
   def view[K: Reads, V: Reads](design: String, name: String, properties: Seq[(String, String)] = Seq.empty): Future[Seq[(K, V)]] =
-    couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties)).map(result => (result \ "rows").as[Array[JsValue]] map { row =>
+    couch.makeGetRequest[JsObject](encode(s"_design/$design/_view/$name", properties)).map(result => (result \ "rows").as[Vector[JsValue]] map { row =>
       (row \ "key").as[K] -> (row \ "value").as[V]
     })
 
