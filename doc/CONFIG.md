@@ -148,7 +148,6 @@ $ docker rm -f steenwerck-replicate
         - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate mirror`
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
-      - launch `./couchsync --init` to prepare one or more USB keys with the right password, and follow the instructions
       - launch replicate master on the main server : `/kvm/launch-steenwerck`
       - setup correct log level in the documents officer-<name> in the server database
   - foreach checkpoint pc X:
@@ -160,7 +159,6 @@ $ docker rm -f steenwerck-replicate
     - in screen, launch
         - `docker ps -a -q -f name=steenwerck-replicate | xargs -r docker rm -f` to ensure no previous containers
         - `docker run --rm --add-host steenwerck.rfc1149.net:10.8.0.1 --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/opt/couchdb/data rfc1149/pointage100km replicate checkpoint X`
-    - in screen, launch `./couchsync --watch`
     - in screen, launch the appropriate command for getting 3G Internet:
        - !! if X == 6 || X == 3, no need for USB key, use the wifi network
        - use `clef[1-7]` scripts (should be in your PATH in /usr/local/bin)
