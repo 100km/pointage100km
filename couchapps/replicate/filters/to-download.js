@@ -12,7 +12,6 @@ function(doc, req) {
 
   return doc._id === "infos" ||
     doc._id === "configuration" ||
-    doc._id === "couchsync" ||
     (site_id !== undefined && startsWith("checkpoints-" + site_id + "-")) ||
     (prev_site_id !== undefined && startsWith("checkpoints-" + prev_site_id + "-")) ||
     startsWith("contestant-") ||

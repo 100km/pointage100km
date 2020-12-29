@@ -67,9 +67,6 @@ object Wipe extends App {
     println("Inserting configuration document")
     hubDatabase.insert(Json.obj("dbname" -> newName, "tests_allowed" -> false,
       "created" -> (System.currentTimeMillis() / 1000).toInt), "configuration").execute()
-    println("Generating random identification for couchsync")
-    val key = scala.util.Random.alphanumeric.take(64).mkString
-    hubDatabase.insert(Json.obj("key" -> key), "couchsync").execute()
     for (extraDoc <- cfgDatabase.allDocs(Map("include_docs" -> "true")).execute().docs[JsObject]) {
       val id = (extraDoc \ "_id").as[String]
       if (id != "configuration" && !id.startsWith("_")) {
