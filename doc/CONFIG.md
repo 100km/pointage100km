@@ -145,7 +145,7 @@ $ docker rm -f steenwerck-replicate
       - check that everything you are couchapp_pushing is committed and pushed to git (infos.json, JS, HTML, ...)
       - push couchapps: cd couchapps && ./server_pushapps server LOGIN PASSWD
       - ensure couchdb and replicate are running on developper PC.
-        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate mirror`
+        - `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf 100km/stk replicate mirror`
       - establish tunnel with mysql server : ssh -L 3306:localhost:3306 SERVERNAME (maybe need to stop local mysql to release port 3306)
       - launch loader with 100km_prod credentials (lookup website code): `bin/loader -u 100km_prod -p XXXXXX -d 100km_prod [-r minutes] YEAR`
       - launch replicate master on the main server : `/kvm/launch-steenwerck`
@@ -158,7 +158,7 @@ $ docker rm -f steenwerck-replicate
     - open screen
     - in screen, launch
         - `docker ps -a -q -f name=steenwerck-replicate | xargs -r docker rm -f` to ensure no previous containers
-        - `docker run --rm --add-host steenwerck.rfc1149.net:10.8.0.1 --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/opt/couchdb/data rfc1149/pointage100km replicate checkpoint X`
+        - `docker run --rm --add-host steenwerck.rfc1149.net:10.8.0.1 --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf -v steenwerck-data:/opt/couchdb/data 100km/stk replicate checkpoint X`
     - in screen, launch the appropriate command for getting 3G Internet:
        - !! if X == 6 || X == 3, no need for USB key, use the wifi network
        - use `clef[1-7]` scripts (should be in your PATH in /usr/local/bin)
@@ -167,8 +167,8 @@ $ docker rm -f steenwerck-replicate
     - for checkpoint0, setup 2 PCs and share the connection on the first PC
     - put to sleep.
   - On the 100km website:
-    - launch `docker pull rfc1149/pointage100km`
-    - launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf rfc1149/pointage100km replicate slave`
+    - launch `docker pull 100km/stk`
+    - launch `docker run --name steenwerck-replicate -p 5984:5984 -v ~/steenwerck.conf:/steenwerck.conf 100km/stk replicate slave`
     - launch friends app
       - go to /usr/local/var/lib/node/100km-results
       - run grunt browserify (to build the webapp)
