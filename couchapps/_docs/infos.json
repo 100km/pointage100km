@@ -1,32 +1,26 @@
 {
   "sites": [
-    "La blanche",
-    "La gare",
-    "La menegatte",
-    "La salle des sports, boucle 1",
     "La Croix du Bac",
-    "Le froid nid",
-    "La salle des sports, boucle 2"
+    "La Salle Saint Joseph",
+    "Le Doulieu",
+    "La Blanche",
+    "La Salle Des Sports"
   ],
   "sites_short": [
-    "Blanche",
-    "Gare",
-    "Menegatte",
-    "Boucle 1",
     "Croix du Bac",
-    "Froid nid",
-    "Boucle 2"
+    "Salle Saint Joseph",
+    "Doulieu",
+    "Blanche",
+    "Salle Des Sports"
   ],
   "kms_offset": [
-    10,
-    15,
-    17.5,
-    21.7,
-    25.82,
-    30.91,
-    37.14
+    12.87,
+    17.74,
+    24.22,
+    28.26,
+    34.10
   ],
-  "kms_lap": 31.43,
+  "kms_lap": 32.95,
   "races_names": [
     "",
     "100 km Open",
@@ -56,9 +50,9 @@
   ],
   "start_times": [
     0,
-    1559149200000,
-    1559188800000,
-    1559149200000,
+    1652532785000,
+    1652533685000,
+    1652532785000,
     0,
     0,
     0
@@ -80,32 +74,24 @@
   ],
   "sites_coordinates": [
     {
-      "latitude": 50.702567,
-      "longitude": 2.736555
+      "latitude": 50.6756418,
+      "longitude": 2.7905108
     },
     {
-      "latitude": 50.71255,
-      "longitude": 2.78678
+      "latitude": 50.6999865,
+      "longitude": 2.7785307
     },
     {
-      "latitude": 50.696444,
-      "longitude": 2.798444
+      "latitude": 50.6825125,
+      "longitude": 2.7166215
     },
     {
-      "latitude": 50.701045,
-      "longitude": 2.779363
+      "latitude": 50.7055973,
+      "longitude": 2.7360782
     },
     {
-      "latitude": 50.675542,
-      "longitude": 2.790285
-    },
-    {
-      "latitude": 50.682368,
-      "longitude": 2.748249
-    },
-    {
-      "latitude": 50.700161,
-      "longitude": 2.779041
+      "latitude": 50.7007989,
+      "longitude": 2.7794978
     }
   ],
   "timezone": "Europe/Paris"
