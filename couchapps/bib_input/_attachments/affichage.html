@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title></title> <!-- will be generated from the database -->
+    <link rel="stylesheet" href="style/main.css" type="text/css">
+  </head>
+  <body>
+    <div id="bib_output_title"></div>
+    <div style="clear:both"></div>
+    <div id="bib_output_last_contestant_infos"></div>
+    <div id="bib_output_last_contestants" class="bottom_pane"></div>
+
+  </body>
+  <script src="../common/vendor/couchapp/loader.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $.couch.app(function(app) {
+      $.evently.changesOpts.filter = "bib_input/no-ping";
+      app.bibs_clocked_here = [];
+      $("#bib_output_title").evently("bib_output_title", app);
+      $("#bib_output_last_contestant_infos").evently("bib_output_last_contestant_infos", app);
+      $("#bib_output_last_contestants").evently("bib_output_last_contestants", app);
+      $.evently.connect("#bib_output_title", "#bib_output_last_contestants", ["app_info_changed"]);
+      $.evently.connect("#bib_output_last_contestants", "#bib_output_last_contestant_infos", ["change_infos"]);
+    });
+
+  </script>
+</html>
