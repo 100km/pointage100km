@@ -14,8 +14,10 @@ which curl 2>&1 > /dev/null || { echo "This script needs curl. Please install it
 
 if [ "$1" = local ]; then
   host=localhost:5984
+  scheme=http
 elif [ "$1" = server ]; then
   host=steenwerck.rfc1149.net
+  scheme=https
 else
   usage
   exit 1
@@ -47,6 +49,6 @@ done
 
 echo Pushing into $dbname at $host
 ./set-start-times.sh --info
-full_name=https://$auth$host/$dbname
+full_name=$scheme://$auth$host/$dbname
 couchapp pushapps . $full_name
 couchapp pushdocs _docs $full_name
