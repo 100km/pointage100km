@@ -1,0 +1,46 @@
+{{#warning}}
+<h3>Le dossard {{bib}} n'est pas connu ! Veuillez contacter un responsable informatique par talkie-walkie.</h3>
+{{/warning}}
+{{^warning}}
+<h3>Infos dernier concurrent</h3>
+<center>
+  <h3>Dossard {{bib}} : {{name}} {{first_name}} au tour {{lap}}</h3>
+  <h4>{{race_name}}</h4>
+{{#team}}
+  <p>Membre de l'équipe {{team_name}}</p>
+{{/team}}
+{{^team}}
+  <table>
+    <caption>Classement intermédiaire</caption>
+    <tr>
+      <th>Classement</th>
+      <th>Dossard</th>
+      <th>Heure</th>
+      <th>Temps</th>
+    </tr>
+    {{#bibs}}
+    <tr>
+      <td>{{rank}}</td>
+      <td>{{bib}}</td>
+      <td>{{hour_time}}</td>
+      <td>{{time}}</td>
+    </tr>
+    {{/bibs}}
+    {{#bib_time}}
+    <tr id="bib_time">
+      <td>{{rank}}</td>
+      <td>{{bib}}</td>
+      <td>{{hour_time}}</td>
+      <td>{{time}}</td>
+    </tr>
+    {{/bib_time}}
+  </table>
+</center>
+  <p>Moyenne depuis le départ&nbsp;: <strong>{{global_average}} km/h</strong><br/>({{kms}} km en {{global_time}})</p>
+  {{#average}}
+  {{#avg_present}}
+  <p>Moyenne depuis {{last_site_name}}&nbsp;: <strong>{{local_average}} km/h</strong><br/>({{local_kms}} km en {{local_time}})</p>
+  {{/avg_present}}
+  {{/average}}
+{{/team}}
+{{/warning}}
