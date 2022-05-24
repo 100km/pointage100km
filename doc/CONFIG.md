@@ -179,7 +179,7 @@ $ docker rm -f steenwerck-replicate
 1. @all checkpoints site
   - NEEDS: 7 checkpoints PCs, 7 3G keys, 14 pens, paper, site keys;
   - wakeup pc, setup 3G, put 2pen and paper
-  - open pointage couchapp @ localhost:5984/steenwerck100km/_design/bib_input/pointage.html
+  - open pointage couchapp @ http://localhost:5984/steenwerck100km/_design/bib_input/pointage.html
   - set fullscreen (F11)
   - only at the finish line: setup the display pc :
     - setup LAN to finish line checkpoint PC
