@@ -20,7 +20,7 @@
       $("#arrow").hide();
     });
     $.couch.app(function(app) {
-      $.evently.changesOpts.filter = "bib_input/no-ping";
+      $.evently.changesOpts.filter = "bib_input/no-ping"; //TODO I think this is useless, remove it ? but the race starts tomorow
       app.bibs_clocked_here = [];
       $("#bib_input").evently("bib_input", app);
       $("#items").evently("items", app);
