@@ -41,7 +41,7 @@ then
         date2=$(date --date="+30 minutes" +%s)
 else
         date1=$(date --date="$@ 19:00:00 (CET DST)" +%s)
-        date2=$(( $date1 + 11 * 3600)) # 11 hours later
+        date2=$(( $date1 + 10 * 3600)) # 10 hours later
 fi
 
 jq ". + {start_times: [0,${date1}000,${date2}000,${date1}000,0,0,0]}" _docs/infos.json > _docs/infos.json.tmp && mv _docs/infos.json.tmp _docs/infos.json
