@@ -2,6 +2,8 @@ function(data) {
   var p = {};
   p.items = [];
   var first_cat = [[], []];
+  var second_cat = [[], []];
+  var third_cat = [[], []];
   var first_steen_found = [false, false];
   var i = 0;
   var current_rank = 0;
@@ -10,7 +12,9 @@ function(data) {
   var sql_export = app.sql_export === true;
   var race_id = data.race_id;
   var start_time = app.start_times[race_id];
-  var text_gender = ["Premier homme ", "Première femme "];
+  var text_gender_first = ["Premier homme ", "Première femme "];
+  var text_gender_second = ["Deuxième homme ", "Deuxième femme "];
+  var text_gender_third = ["Troisième homme ", "Troisième femme "];
   p.race_id = race_id;
   p.race_name = app.races_names[race_id];
   p.sql_export = sql_export;
@@ -60,15 +64,23 @@ function(data) {
       item.spec = "";
       if (first_cat[gender_female][current_contestant.cat] === undefined) {
         item.font_weight = "bold";
-        item.spec = text_gender[gender_female] + item.cat_name;
+        item.spec = text_gender_first[gender_female] + item.cat_name;
         first_cat[gender_female][current_contestant.cat] = true;
+      } else if (second_cat[gender_female][current_contestant.cat] === undefined) {
+        item.font_weight = "bold";
+        item.spec = text_gender_second[gender_female] + item.cat_name;
+        second_cat[gender_female][current_contestant.cat] = true;
+      } else if (third_cat[gender_female][current_contestant.cat] === undefined) {
+        item.font_weight = "bold";
+        item.spec = text_gender_third[gender_female] + item.cat_name;
+        third_cat[gender_female][current_contestant.cat] = true;
       }
 
       if ((item.zipcode == "59181") && (first_steen_found[gender_female] == false)) {
         item.font_weight = "bold";
         if (item.spec != "")
           item.spec = item.spec + " et ";
-        item.spec = item.spec + text_gender[gender_female] + "Steenwerckois";
+        item.spec = item.spec + text_gender_first[gender_female] + "Steenwerckois";
         first_steen_found[gender_female] = true;
       }
     }
