@@ -66,11 +66,17 @@
     "Juniors",
     "Espoirs",
     "Séniors",
+    "Masters 0",
     "Masters 1",
     "Masters 2",
     "Masters 3",
     "Masters 4",
-    "Masters 5"
+    "Masters 5",
+    "Masters 6",
+    "Masters 7",
+    "Masters 8",
+    "Masters 9",
+    "Masters 10"
   ],
   "sites_coordinates": [
     {

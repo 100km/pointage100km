@@ -251,18 +251,30 @@ function cat_from_year(year) {
     return 5; // junior
   else if (age <= 22)
     return 6; // espoir
-  else if (age <= 39)
+  else if (age <= 34)
     return 7; // senior
+  else if (age <= 39)
+    return 8; // master 0
+  else if (age <= 44)
+    return 9; // master 1
   else if (age <= 49)
-    return 8; // master 1
+    return 10; // master 2
+  else if (age <= 54)
+    return 11; // master 3
   else if (age <= 59)
-    return 9; // master 2
+    return 12; // master 4
+  else if (age <= 64)
+    return 13; // master 5
   else if (age <= 69)
-    return 10; // master 3
+    return 14; // master 6
+  else if (age <= 74)
+    return 15; // master 7
   else if (age <= 79)
-    return 11; // master 4
+    return 16; // master 8
+  else if (age <= 84)
+    return 17; // master 9
   else
-    return 12; // master 5
+    return 18; // master 10
 }
 
 
