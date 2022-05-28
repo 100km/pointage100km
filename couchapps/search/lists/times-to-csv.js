@@ -9,8 +9,9 @@ function(head, req) {
   var row;
   var race_id;
   // first doc contains the infos
-  row = getRow()
+  row = getRow();
   var start_times = row.value.start_times;
+  var nb_checkpoints = row.value.sites.length;
 
   send("INSERT INTO `race_checkpoint_times` (`race_description`, `bib`, `time`, `checkpoint_index`) VALUES\r\n");
   while(row = getRow()) {
@@ -47,7 +48,7 @@ function(head, req) {
       //  lap = 2;
 
       // race_description is hard-coded
-      send("(" + [73 + race_id, row.value.bib, date_str, row.value.site_id + lap * 7].join(", ") + "),\r\n");
+      send("(" + [76 + race_id, row.value.bib, date_str, row.value.site_id + lap * nb_checkpoints].join(", ") + "),\r\n");
     }
   }
 
