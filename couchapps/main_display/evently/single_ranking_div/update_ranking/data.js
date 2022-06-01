@@ -18,7 +18,7 @@ function(data) {
     return p;
 
   while (data.data.rows[0].contestants[i]) {
-    var item = {race_id: 73 + race_id};
+    var item = {race_id: 76 + race_id};
     var current_infos = data.data.rows[0].contestants[i].value;
     var current_contestant = app.contestants[current_infos.bib];
     var lap = - data.data.rows[0].contestants[i].key[1];
