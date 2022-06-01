@@ -41,7 +41,6 @@ function map_contestants(data) {
   result.sex          = data.sex;
   result.zipcode      = data.zipcode;
   result.city         = data.city;
-  result.handisport   = data.handisport;
   result.championship = data.championship;
 
   return result;

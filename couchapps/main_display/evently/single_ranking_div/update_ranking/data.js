@@ -6,7 +6,6 @@ function(data) {
   var i = 0;
   var current_rank = 0;
   var app = $$(this).app;
-  var handi_ranking = app.handi_ranking === true;
   var sql_export = app.sql_export === true;
   var race_id = data.race_id;
   var start_time = app.start_times[race_id];
@@ -14,10 +13,6 @@ function(data) {
   p.race_id = race_id;
   p.race_name = app.races_names[race_id];
   p.sql_export = sql_export;
-  if (handi_ranking)
-    p.handi_name = " HANDISPORT";
-  else
-    p.handi_name = "";
 
   if (! data.data.rows[0])
     return p;
@@ -29,10 +24,6 @@ function(data) {
     var lap = - data.data.rows[0].contestants[i].key[1];
 
     i++;
-
-    if (current_contestant.handisport ^ handi_ranking) {
-      continue;
-    }
 
     // $.log("current_infos = " + JSON.stringify(current_infos));
     item.is_odd = current_rank%2;

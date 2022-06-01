@@ -6,7 +6,6 @@ function(data) {
   p.items = [];
   var items = [];
   var app = $$(this).app;
-  var handi_ranking = app.handi_ranking === true;
   var sql_export = app.sql_export === true;
   var race_id = data.race_id;
   var start_time = app.start_times[race_id];
