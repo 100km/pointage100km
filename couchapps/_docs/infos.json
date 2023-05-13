@@ -1,7 +1,7 @@
 {
   "sites": [
     "La Croix du Bac",
-    "La Salle Saint Joseph",
+    "L'école Jean Monnet",
     "Le Doulieu",
     "La Blanche",
     "La Salle Des Sports"
@@ -9,18 +9,18 @@
   "sites_short": [
     "Croix du Bac",
     "Salle Saint Joseph",
-    "Doulieu",
+    "École Jean Monnet",
     "Blanche",
     "Salle Des Sports"
   ],
   "kms_offset": [
-    12.87,
-    17.74,
-    24.22,
-    28.26,
-    34.1
+    12.90,
+    19.05,
+    25.86,
+    29.90,
+    35.72
   ],
-  "kms_lap": 32.95,
+  "kms_lap": 32.14,
   "races_names": [
     "",
     "100 km Open",
