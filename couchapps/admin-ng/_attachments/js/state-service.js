@@ -32,7 +32,7 @@ angular.module("steenwerck.state", ["changes", "txx.diacritics"]).factory("state
 
 angular.module("steenwerck.state")
         .component("contestant", {
-          template: "<span ng-link=\"['/Analysis', 'Contestant', {bib: $ctrl.bib}]\">{{$ctrl.displayName}}<img ng-if=\"$ctrl.championship\" src=\"images/belgian_flag.svg\" class=\"flag\"></img></span> <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
+          template: "<span ng-link=\"['/Analysis', 'Contestant', {bib: $ctrl.bib}]\">{{$ctrl.displayName}}<img ng-if=\"$ctrl.championship\" src=\"images/french_flag.svg\" class=\"flag\"></img></span> <small><race race-id=\"$ctrl.raceId\" infos=\"$ctrl.infos\"></race><span ng-if=\"$ctrl.teamName\"> – Team \"{{$ctrl.teamName}}\"</span></small>",
             bindings: { bib: "<", infos: "<" },
             controller: function($scope, stateService) {
               this.$onInit = () =>  {
