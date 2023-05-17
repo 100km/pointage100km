@@ -26,7 +26,7 @@ then
 $0 [--help] [--test] <day> : set all the start times in infos.json
 if no argument is given, display the date in the current infos.json
         --test : set the start_times of race 0 in 15 minutes, and the start_times of race 1 in 30 minutes
-        <day>  : if specified, set the start_time of race 0 at the day @7p.m. and the race 1 at day+1 6a.m. WARN: day must be an English date.
+        <day>  : if specified, set the start_time of race 0 at the day @7p.m. and the race 1 at day+1 5a.m. WARN: day must be an English date.
 
 EXAMPLE: $0 "9 May 2018"
 EOF
