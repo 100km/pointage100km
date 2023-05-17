@@ -8,6 +8,7 @@ function(data) {
   var start_time = app.start_times[race_id];
   p.race_id = race_id;
   p.race_name = app.races_names[race_id];
+  p.displayrank = (p.race_id != 3);
 
   if (! data.data.rows[0])
     return p;
@@ -56,7 +57,6 @@ function(data) {
       p.items.push({});
   }
 
-  p.displayrank = (p.race_id != 3);
   //$.log("p: " + JSON.stringify(p));
 
   return p;
