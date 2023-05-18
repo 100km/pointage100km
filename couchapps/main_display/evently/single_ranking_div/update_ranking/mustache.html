@@ -25,7 +25,7 @@ INSERT INTO race_rankings (race_id, bib, position, distance, time) VALUES </br>
   {{#items}}
   <tr {{^is_odd}}class="odd"{{/is_odd}} style="font-weight:{{font_weight}}">
     <td>{{rank}}</td>
-    <td>{{name}}</td>
+    <td>{{name}}{{#championship}}&nbsp;&nbsp;<img src="french_flag.svg" height="8px"></img>{{/championship}}</td>
     <td>{{first_name}}</td>
     <td>{{bib}}</td>
     <td>{{kms}}</td>

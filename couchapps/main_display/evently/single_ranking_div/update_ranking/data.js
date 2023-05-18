@@ -45,6 +45,7 @@ function(data) {
       item.city       = current_contestant.city;
       item.cat_name   = app.cat_names[current_contestant.cat];
       item.sex        = current_contestant.sex;
+      item.championship = current_contestant.championship;
 
       // default font
       item.font_weight = "normal";
