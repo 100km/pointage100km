@@ -18,6 +18,6 @@ function(doc, req) {
     startsWith("_design/") ||
     startsWith("message-") ||
 
-    // Analysis documents are needed on site 6 for the main display.
-    (startsWith("analysis-") && site_id == 6);
+    // Analysis documents are needed on site 4 for the main display.
+    (startsWith("analysis-") && site_id == 4);
 }
